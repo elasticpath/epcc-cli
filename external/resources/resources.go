@@ -2,7 +2,6 @@ package resources
 
 import (
 	_ "embed"
-	"fmt"
 	"gopkg.in/yaml.v3"
 )
 
@@ -18,9 +17,6 @@ func init() {
 		panic("Couldn't load the resource meta data")
 	}
 
-	// You can delete this line later.
-	fmt.Printf("Loaded data for %d resources: ", len(Resources))
-
 	for key, val := range Resources {
 		// Fix the key
 		val.Type = key
@@ -29,13 +25,7 @@ func init() {
 			// Fix the key
 			attributeVal.Key = attributeName
 		}
-
-		// Delete me later
-		fmt.Printf("%s,", key)
 	}
-
-	// Delete me later
-	fmt.Print("\n")
 }
 
 type Resource struct {
