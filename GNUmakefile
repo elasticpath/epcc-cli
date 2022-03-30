@@ -1,4 +1,4 @@
-BINARY=epcc2
+BINARY=epcc
 
 build:
 	go build -o ./bin/${BINARY} ./cmd/
