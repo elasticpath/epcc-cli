@@ -1,7 +1,11 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	_ "github.com/elasticpath/epcc-cli/external/resources"
+)
 
 func main() {
 	fmt.Printf("Hello %s", "World!")
+
 }
