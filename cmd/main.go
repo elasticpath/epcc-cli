@@ -10,7 +10,6 @@ import (
 
 var commands = []command.Command{
 	help.Command,
-	help.Command,
 }
 
 func main() {
