@@ -2,6 +2,7 @@ package help
 
 import (
 	"fmt"
+	"github.com/elasticpath/epcc-cli/config"
 	"github.com/elasticpath/epcc-cli/external/command"
 	"sort"
 )
@@ -9,7 +10,7 @@ import (
 var Command = command.Command{
 	Keyword:     "help",
 	Description: "Displays this screen",
-	Execute: func(cmds map[string]command.Command, args []string) int {
+	Execute: func(cmds map[string]command.Command, cmd string, args []string, envs config.Env) int {
 
 		keys := make([]string, 0, len(cmds))
 		for k := range cmds {
