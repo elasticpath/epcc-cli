@@ -1,22 +1,21 @@
-package commercemanager
+package cmd
 
 import (
 	"fmt"
-	"github.com/elasticpath/epcc-cli/config"
-	"github.com/elasticpath/epcc-cli/external/command"
+	"github.com/spf13/cobra"
 	"net/url"
 	"os/exec"
 	"runtime"
 )
 
-var Command = command.Command{
-	Keyword:     "commerce-manager",
-	Description: "Open commerce manager",
-	Execute: func(cmds map[string]command.Command, cmd string, args []string, envs config.Env) int {
-		u, err := url.Parse(envs.EPCC_API_BASE_URL)
+var cmCommand = &cobra.Command{
+	Use:   "commerce-manager",
+	Short: "Open commerce manager",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		u, err := url.Parse(Envs.EPCC_API_BASE_URL)
 		if err != nil {
 			fmt.Println(err)
-			return 1
+			return err
 		}
 		var cmUrl string
 		switch u.Host {
@@ -27,8 +26,8 @@ var Command = command.Command{
 		}
 
 		if cmUrl == "" {
-			fmt.Printf("Don't know where Commerce Manager is for $EPCC_API_BASE_URL=%s \n", envs.EPCC_API_BASE_URL)
-			return 1
+			fmt.Printf("Don't know where Commerce Manager is for $EPCC_API_BASE_URL=%s \n", u)
+			return err
 		}
 
 		switch runtime.GOOS {
@@ -41,11 +40,14 @@ var Command = command.Command{
 		default:
 			err = fmt.Errorf("unsupported platform")
 		}
+
 		if err != nil {
 			fmt.Println(err)
-			return 1
+			return err
 		}
 
-		return 0
+		fmt.Printf("Opening browser to %s", cmUrl)
+
+		return nil
 	},
 }
