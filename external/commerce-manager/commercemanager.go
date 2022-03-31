@@ -46,18 +46,6 @@ var Command = command.Command{
 			return 1
 		}
 
-		//local URL="https://euwest.cm.elasticpath.com/"
-		//;;
-		//"useast.api.elasticpath.com")
-		//local URL="https://useast.cm.elasticpath.com"
-		//;;
-		//"api.epcc-staging.epcloudops.com")
-		//local URL="https://ep-react-dashboard-staging.netlify.app/"
-		//;;
-		//"epcc-integration.global.ssl.fastly.net"|"auth.epcc-integration.epcloudops.com"|"api.epcc-platform-qa.epcloudops.com")
-		//local URL="https://ep-react-dashboard-integration.netlify.app/"
-		//;;
-		//*)
 		return 0
 	},
 }
