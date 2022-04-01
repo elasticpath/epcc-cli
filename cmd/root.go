@@ -23,6 +23,7 @@ func init() {
 		cmCommand,
 		docsCommand,
 		testJson,
+		get,
 	)
 
 }
