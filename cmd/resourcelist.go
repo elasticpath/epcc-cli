@@ -11,11 +11,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func printCrudCommands(programName, operation, resource, url string) {
-	numIdRequired := strings.Count(url, "%")
-	fmt.Printf("%16s %-70s ==> %s\n", programName, operation+" "+resource+strings.Repeat(" [ID]", numIdRequired), url)
-}
-
 var resourceListCommand = &cobra.Command{
 	Use:   "resource-list",
 	Short: "Lists all resources and supported operations for each",
@@ -62,4 +57,9 @@ var resourceListCommand = &cobra.Command{
 
 		return nil
 	},
+}
+
+func printCrudCommands(programName, operation, resource, url string) {
+	numIdRequired := strings.Count(url, "%")
+	fmt.Printf("%16s %-70s ==> %s\n", programName, operation+" "+resource+strings.Repeat(" [ID]", numIdRequired), url)
 }
