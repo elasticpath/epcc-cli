@@ -8,7 +8,7 @@ import (
 	"regexp"
 )
 
-func ToJson(args []string) (string, error) {
+func ToJson(args []string, noWrapping bool) (string, error) {
 
 	if len(args)%2 == 1 {
 		return "", fmt.Errorf("The number arguments %d supplied isn't even, json should be passed in key value pairs", len(args))
@@ -31,7 +31,10 @@ func ToJson(args []string) (string, error) {
 
 	}
 
-	result, err = runJQ(`{ "data": . }`, result)
+	if !noWrapping {
+		result, err = runJQ(`{ "data": . }`, result)
+	}
+
 	jsonStr, err := gojson.Marshal(result)
 
 	return string(jsonStr), err
