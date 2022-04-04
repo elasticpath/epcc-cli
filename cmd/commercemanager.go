@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/elasticpath/epcc-cli/config"
 	"github.com/spf13/cobra"
 	"net/url"
 	"os/exec"
@@ -12,7 +13,7 @@ var cmCommand = &cobra.Command{
 	Use:   "commerce-manager",
 	Short: "Open commerce manager",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		u, err := url.Parse(Envs.EPCC_API_BASE_URL)
+		u, err := url.Parse(config.Envs.EPCC_API_BASE_URL)
 		if err != nil {
 			fmt.Println(err)
 			return err

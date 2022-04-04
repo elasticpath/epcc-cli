@@ -1,17 +1,17 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
+	"github.com/elasticpath/epcc-cli/external/httpclient"
 	"github.com/elasticpath/epcc-cli/external/json"
 	"github.com/elasticpath/epcc-cli/external/resources"
 	"github.com/spf13/cobra"
 	"io/ioutil"
 	"log"
-	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
-	"time"
 )
 
 var get = &cobra.Command{
@@ -19,11 +19,6 @@ var get = &cobra.Command{
 	Short: "Retrieves a single resource.",
 	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		// Set up client to make requests
-		client := &http.Client{
-			Timeout: time.Second * 10,
-		}
-
 		// Find Resource
 		resource, ok := resources.Resources[args[0]]
 		if !ok {
@@ -63,21 +58,15 @@ var get = &cobra.Command{
 		for i := idCount + 1; i+1 < len(args); i = i + 2 {
 			params.Add(args[i], args[i+1])
 		}
-		resourceURL = resourceURL + "?" + params.Encode()
+
+		// Steve doesn't understand this logic check
 		if (idCount-len(args)+1)%2 != 0 {
 			resourceURL = resourceURL + url.QueryEscape(args[len(args)-1])
 		}
 
-		// Create the GET request
-		req, err := http.NewRequest("GET", Envs.EPCC_API_BASE_URL+resourceURL, nil)
-		if err != nil {
-			return fmt.Errorf("Got error %s", err.Error())
-		}
-		req.Header.Set("user-agent", "golang application")
-		req.Header.Set("Authorization", "Bearer: 86afed525eab0255c8690223ce02b787707ed38a")
-
 		// Submit request
-		resp, err := client.Do(req)
+		resp, err := httpclient.DoRequest(context.TODO(), "GET", "/v2/"+args[0], params.Encode(), nil)
+
 		if err != nil {
 			return fmt.Errorf("Got error %s", err.Error())
 		}
