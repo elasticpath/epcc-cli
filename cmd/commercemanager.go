@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/elasticpath/epcc-cli/config"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"net/url"
 	"os/exec"
@@ -27,8 +28,7 @@ var cmCommand = &cobra.Command{
 		}
 
 		if cmUrl == "" {
-			fmt.Printf("Don't know where Commerce Manager is for $EPCC_API_BASE_URL=%s \n", u)
-			return err
+			return fmt.Errorf("Don't know where Commerce Manager is for $EPCC_API_BASE_URL=%s \n", u)
 		}
 
 		switch runtime.GOOS {
@@ -43,11 +43,10 @@ var cmCommand = &cobra.Command{
 		}
 
 		if err != nil {
-			fmt.Println(err)
 			return err
 		}
 
-		fmt.Printf("Opening browser to %s", cmUrl)
+		log.Trace("Opening browser to %s", cmUrl)
 
 		return nil
 	},
