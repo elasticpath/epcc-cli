@@ -38,7 +38,7 @@ var get = &cobra.Command{
 			idCount = strings.Count(resourceURL, "%")
 		} else {
 			// Count ids in get-collection
-			resourceURL := resource.GetCollectionInfo.Url
+			resourceURL = resource.GetCollectionInfo.Url
 			idCount = strings.Count(resourceURL, "%")
 
 			// Determine if call should be get-collection or get-entity
@@ -65,17 +65,12 @@ var get = &cobra.Command{
 		}
 
 		// Submit request
-		resp, err := httpclient.DoRequest(context.TODO(), "GET", "/v2/"+args[0], params.Encode(), nil)
+		resp, err := httpclient.DoRequest(context.TODO(), "GET", resourceURL, params.Encode(), nil)
 
 		if err != nil {
 			return fmt.Errorf("Got error %s", err.Error())
 		}
 		defer resp.Body.Close()
-
-		// Check if error response
-		if resp.StatusCode >= 400 && resp.StatusCode <= 600 {
-			return fmt.Errorf(resp.Status)
-		}
 
 		// Print the body
 		body, err := ioutil.ReadAll(resp.Body)
@@ -83,8 +78,12 @@ var get = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		json.PrintJson(string(body))
+		// Check if error response
+		if resp.StatusCode >= 400 && resp.StatusCode <= 600 {
+			json.PrintJson(string(body))
+			return fmt.Errorf(resp.Status)
+		}
 
-		return nil
+		return json.PrintJson(string(body))
 	},
 }

@@ -7,6 +7,7 @@ import (
 	"github.com/elasticpath/epcc-cli/config"
 	"github.com/elasticpath/epcc-cli/external/authentication"
 	"github.com/elasticpath/epcc-cli/external/version"
+	log "github.com/sirupsen/logrus"
 	"io"
 	"mime/multipart"
 	"net/http"
@@ -57,7 +58,15 @@ func doRequestInternal(ctx context.Context, method string, contentType string, p
 		req.Header.Add("EP-Beta-Features", config.Envs.EPCC_BETA_API_FEATURES)
 	}
 
-	return HttpClient.Do(req)
+	resp, err := HttpClient.Do(req)
+
+	if resp.StatusCode > 400 {
+		log.Warnf("%s %s ==> %s %s", method, reqURL.String(), resp.Proto, resp.Status)
+	} else if resp.StatusCode >= 200 && resp.StatusCode <= 399 {
+		log.Infof("%s %s ==> %s %s", method, reqURL.String(), resp.Proto, resp.Status)
+	}
+
+	return resp, err
 }
 
 // https://stackoverflow.com/questions/20205796/post-data-using-the-content-type-multipart-form-data

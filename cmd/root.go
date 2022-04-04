@@ -1,8 +1,10 @@
 package cmd
 
 import (
-	"fmt"
 	"github.com/elasticpath/epcc-cli/config"
+	"github.com/elasticpath/epcc-cli/external/logger"
+	log "github.com/sirupsen/logrus"
+	"github.com/thediveo/enumflag"
 	"os"
 
 	"github.com/caarlos0/env/v6"
@@ -28,7 +30,13 @@ func init() {
 	)
 
 	testJson.Flags().BoolVarP(&noWrapping, "no-wrapping", "", false, "if set, we won't wrap the output the json in a data tag")
+
+	rootCmd.PersistentFlags().Var(
+		enumflag.New(&logger.Loglevel, "log", logger.LoglevelIds, enumflag.EnumCaseInsensitive),
+		"log",
+		"sets logging level; can be 'trace', 'debug', 'info', 'warn', 'error', 'fatal', 'panic'")
 	rootCmd.PersistentFlags().BoolVarP(&json.MonochromeOutput, "monochrome-output", "M", false, "By default, epcc will output using colors if the terminal supports this. Use this option to disable it.")
+
 }
 
 var rootCmd = &cobra.Command{
@@ -47,11 +55,15 @@ Environment Variables
 - EPCC_CLIENT_SECRET - The client secret (available in Commerce Manager)
 - EPCC_BETA_API_FEATURES - Beta features in the API we want to enable.
 `,
+	PersistentPreRun: func(cmd *cobra.Command, _ []string) {
+		log.SetLevel(logger.Loglevel)
+	},
+	SilenceUsage: true,
 }
 
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
+		log.Errorf("Error occured while processing command %s", err)
 		os.Exit(1)
 	}
 }
@@ -66,7 +78,7 @@ func initConfig() {
 		// Find home directory.
 		home, err := homedir.Dir()
 		if err != nil {
-			fmt.Println(err)
+			log.Errorf("Error %s", err)
 			os.Exit(1)
 		}
 
@@ -79,7 +91,7 @@ func initConfig() {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
 			// Config file not found; ignore error if desired
 		} else {
-			fmt.Println("Can't read config:", err)
+			log.Errorf("Can't read config %s", err)
 			os.Exit(1)
 		}
 

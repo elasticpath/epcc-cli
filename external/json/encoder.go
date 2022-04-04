@@ -10,6 +10,7 @@ import (
 	"runtime"
 	"sort"
 	"strconv"
+	"strings"
 	"unicode/utf8"
 )
 
@@ -17,12 +18,13 @@ import (
 // https://github.com/itchyny/gojq/blob/main/cli/color.go
 
 type encoder struct {
-	out    io.Writer
-	w      *bytes.Buffer
-	tab    bool
-	indent int
-	depth  int
-	buf    [64]byte
+	out      io.Writer
+	w        *bytes.Buffer
+	tab      bool
+	indent   int
+	depth    int
+	buf      [64]byte
+	keyStack []string
 }
 
 type colorInfo struct {
@@ -63,6 +65,36 @@ func newColor(unix string, win wincolor.Color, winReset bool) colorInfo {
 		win:      win,
 		winReset: winReset,
 	}
+}
+
+var unimportantPrefixes = map[string]bool{
+	"data":               true,
+	"data.attributes":    true,
+	"data.links":         true,
+	"links":              true,
+	"links.current":      true,
+	"links.first":        true,
+	"links.last":         true,
+	"links.next":         true,
+	"links.prev":         true,
+	"meta":               true,
+	"meta.page":          true,
+	"meta.page.current":  true,
+	"meta.page.limit":    true,
+	"meta.page.offset":   true,
+	"meta.page.total":    true,
+	"meta.results.total": true,
+	"meta.results":       true,
+}
+
+var importantPrefixes = map[string]bool{}
+
+var urgentPrefixes = map[string]bool{
+	"errors.id":     true,
+	"errors.status": true,
+	"errors.detail": true,
+	"errors.title":  true,
+	"errors":        true,
 }
 
 var (
@@ -267,25 +299,23 @@ func (e *encoder) encodeMap(vs map[string]interface{}) {
 			e.writeIndent()
 		}
 
-		keyColorToUse := objectKeyColor
-		switch kv.key {
-		case "data":
-			fallthrough
-		case "id":
-			fallthrough
-		case "attributes":
-			fallthrough
-		case "type":
-			keyColorToUse = unimportantObjectKeyColor
-		case "name":
-			fallthrough
-		case "email":
-			keyColorToUse = importantObjectKeyColor
-		case "error":
-			fallthrough
-		case "errors":
-			keyColorToUse = urgentObjectKeyColor
+		old := e.keyStack
+		e.keyStack = append(e.keyStack, kv.key)
 
+		prefix := strings.Join(e.keyStack, ".")
+
+		keyColorToUse := objectKeyColor
+
+		if _, ok := unimportantPrefixes[prefix]; ok {
+			keyColorToUse = unimportantObjectKeyColor
+		}
+
+		if _, ok := importantPrefixes[prefix]; ok {
+			keyColorToUse = importantObjectKeyColor
+		}
+
+		if _, ok := urgentPrefixes[prefix]; ok {
+			keyColorToUse = urgentObjectKeyColor
 		}
 
 		e.encodeString(kv.key, &keyColorToUse)
@@ -293,7 +323,11 @@ func (e *encoder) encodeMap(vs map[string]interface{}) {
 		if e.indent != 0 {
 			e.w.WriteByte(' ')
 		}
+
 		e.encode(kv.val)
+
+		e.keyStack = old
+
 	}
 	e.depth -= e.indent
 	if len(vs) > 0 && e.indent != 0 {

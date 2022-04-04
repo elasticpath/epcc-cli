@@ -6,7 +6,8 @@ import (
 	"fmt"
 	"github.com/elasticpath/epcc-cli/config"
 	"github.com/elasticpath/epcc-cli/external/version"
-	"log"
+	log "github.com/sirupsen/logrus"
+
 	"net/http"
 	"net/url"
 	"strings"
@@ -96,6 +97,6 @@ func auth() (string, error) {
 		return "", err
 	}
 
-	log.Println("authentication successful")
+	log.Trace("Authentication successful")
 	return authResponse.AccessToken, nil
 }
