@@ -27,17 +27,30 @@ var get = &cobra.Command{
 		// Find Resource
 		resource, ok := resources.Resources[args[0]]
 		if !ok {
-			return fmt.Errorf("Could not find resource")
+			return fmt.Errorf("Could not find resource %s", args[0])
 		}
 
-		// Count ids in get-collection
-		resourceURL := resource.GetCollectionInfo.Url
-		idCount := strings.Count(resourceURL, "%")
+		var resourceURL string
+		var idCount int
 
-		// Determine if call should be get-collection or get-entity
-		if (idCount-len(args)+1)%2 != 0 {
-			idCount += 1
+		if resource.GetCollectionInfo == nil && resource.GetEntityInfo == nil {
+			return fmt.Errorf("Resource %s doesn't support GET", args[0])
+		} else if resource.GetCollectionInfo != nil && resource.GetEntityInfo == nil {
+			resourceURL = resource.GetCollectionInfo.Url
+			idCount = strings.Count(resourceURL, "%")
+		} else if resource.GetCollectionInfo == nil && resource.GetEntityInfo != nil {
 			resourceURL = resource.GetEntityInfo.Url
+			idCount = strings.Count(resourceURL, "%")
+		} else {
+			// Count ids in get-collection
+			resourceURL := resource.GetCollectionInfo.Url
+			idCount = strings.Count(resourceURL, "%")
+
+			// Determine if call should be get-collection or get-entity
+			if (idCount-len(args)+1)%2 != 0 {
+				idCount += 1
+				resourceURL = resource.GetEntityInfo.Url
+			}
 		}
 
 		// Replace ids with args in resourceURL
