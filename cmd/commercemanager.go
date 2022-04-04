@@ -46,7 +46,7 @@ var cmCommand = &cobra.Command{
 			return err
 		}
 
-		log.Trace("Opening browser to %s", cmUrl)
+		log.Tracef("Opening browser to %s", cmUrl)
 
 		return nil
 	},
