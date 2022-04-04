@@ -571,7 +571,7 @@ promotions:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/promotions/get-a-promotion.html"
     url: "/v2/promotions/%1"
   delete-entity:
-    docs: "????https://documentation.elasticpath.com/commerce-cloud/docs/api/promotions/index.html"
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/promotions/delete-a-promotion.html"
     url: "/v2/promotions/%1"
   create-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/promotions/create-a-cart-fixed-discount-promotion.html"
