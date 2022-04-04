@@ -2,22 +2,20 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/elasticpath/epcc-cli/config"
 	"os"
 
 	"github.com/caarlos0/env/v6"
-	"github.com/elasticpath/epcc-cli/config"
 	"github.com/elasticpath/epcc-cli/external/json"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
-var Envs = &config.Env{}
-
 func init() {
 	cobra.OnInitialize(initConfig)
 
-	if err := env.Parse(Envs); err != nil {
+	if err := env.Parse(config.Envs); err != nil {
 		panic("Could not parse environment variables")
 	}
 
