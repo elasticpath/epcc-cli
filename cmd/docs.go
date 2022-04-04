@@ -12,7 +12,6 @@ var docsCommand = &cobra.Command{
 	Use:   "docs <resource>",
 	Short: "Opens up API documentation for the resource",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		
 		if len(args) != 0 {
 			resource := resources.Resources[args[0]]
 			url := resource.Docs
