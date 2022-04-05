@@ -1,16 +1,16 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
+	"github.com/elasticpath/epcc-cli/external/httpclient"
 	"github.com/elasticpath/epcc-cli/external/json"
 	"github.com/elasticpath/epcc-cli/external/resources"
 	"github.com/spf13/cobra"
 	"io/ioutil"
 	"log"
-	"net/http"
 	"strconv"
 	"strings"
-	"time"
 )
 
 var create = &cobra.Command{
@@ -18,11 +18,6 @@ var create = &cobra.Command{
 	Short: "Creates an entity of a resource.",
 	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		// Set up client to make requests
-		client := &http.Client{
-			Timeout: time.Second * 10,
-		}
-
 		// Find Resource
 		resource, ok := resources.Resources[args[0]]
 		if !ok {
@@ -50,17 +45,9 @@ var create = &cobra.Command{
 			return err
 		}
 
-		// Create the CREATE request
-		req, err := http.NewRequest("POST", Envs.EPCC_API_BASE_URL+resourceURL, strings.NewReader(body))
-		if err != nil {
-			return fmt.Errorf("Got error %s", err.Error())
-		}
-		req.Header.Set("user-agent", "golang application")
-		req.Header.Set("content-type", resource.CreateEntityInfo.ContentType)
-		req.Header.Set("Authorization", "Bearer: a9503e216234a78913f0545aa6b4209f5569e378")
-
 		// Submit request
-		resp, err := client.Do(req)
+		resp, err := httpclient.DoRequest(context.TODO(), "POST", resourceURL, "", strings.NewReader(body))
+
 		if err != nil {
 			return fmt.Errorf("Got error %s", err.Error())
 		}
@@ -72,13 +59,12 @@ var create = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		json.PrintJson(string(resBody))
-
 		// Check if error response
 		if resp.StatusCode >= 400 && resp.StatusCode <= 600 {
+			json.PrintJson(string(resBody))
 			return fmt.Errorf(resp.Status)
 		}
 
-		return nil
+		return json.PrintJson(string(resBody))
 	},
 }
