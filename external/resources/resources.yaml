@@ -122,6 +122,42 @@ authentication-realms:
       type: URL
     duplicate_email_policy:
       type: ENUM:allowed,api_only
+currencies:
+  singular-name: "currency"
+  json-api-type: "currency"
+  json-api-format: "legacy"
+  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/currencies/index.html"
+  get-collection:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/currencies/get-all-currencies.html"
+    url: "/v2/currencies"
+  get-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/currencies/get-a-currency.html"
+    url: "/v2/currencies/{currencies}"
+  update-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/currencies/update-a-currency.html"
+    url: "/v2/currencies/{currencies}"
+  delete-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/currencies/delete-a-currency.html"
+    url: "/v2/currencies/{currencies}"
+  create-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/currencies/create-a-currency.html"
+    url: "/v2/currencies"
+    content-type: application/json
+  attributes:
+    code:
+      type: STRING
+    exchange_rate:
+      type: FLOAT
+    format:
+      type: STRING
+    decimal_point:
+      type: STRING
+    thousand_separator:
+      type: STRING
+    decimal_places:
+      type: INT
+    default:
+      type: BOOL
 customer-authentication-settings:
   singular-name: "customer-authentication-settings"
   json-api-type: "customer-authentication-settings"
@@ -742,7 +778,7 @@ v2-products:
   singular-name: "v2-product"
   json-api-type: "product"
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/products/get-all-products.html"
+  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/products/index.html"
   get-collection:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/products/get-all-products.html"
     url: "/v2/products"
