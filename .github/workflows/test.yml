@@ -48,7 +48,7 @@ jobs:
       - name: Unit Tests
         timeout-minutes: 15
         run: |
-          go test -v -cover ./cmd/
+          go test -v -cover ./cmd/ ./external/...
 
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v2
