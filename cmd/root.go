@@ -26,6 +26,7 @@ func init() {
 		docsCommand,
 		testJson,
 		get,
+		create,
 		delete,
 		resourceListCommand,
 	)
