@@ -57,6 +57,9 @@ type Resource struct {
 	DeleteEntityInfo *CrudEntityInfo `yaml:"delete-entity"`
 
 	Attributes map[string]*CrudEntityAttribute `yaml:"attributes"`
+
+	// The singular name version of the resource.
+	SingularName string `yaml:"singular-name"`
 }
 
 type CrudEntityInfo struct {
