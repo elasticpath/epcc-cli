@@ -21,12 +21,12 @@ func TestUriTemplatesAllReferenceValidResource(t *testing.T) {
 
 			if err != nil {
 				errors += fmt.Sprintf("Could not process CREATE uri for resource %s, error:%s\n", key, err)
-			}
-
-			for _, variable := range template.Varnames() {
-				resourceName := strings.ReplaceAll(variable, "_", "-")
-				if _, ok := resources[resourceName]; !ok {
-					errors += fmt.Sprintf("Error processing CREATE uri for resource %s, the URI template references a resource %s, but could not find it", key, resourceName)
+			} else {
+				for _, variable := range template.Varnames() {
+					resourceName := strings.ReplaceAll(variable, "_", "-")
+					if _, ok := resources[resourceName]; !ok {
+						errors += fmt.Sprintf("Error processing CREATE uri for resource %s, the URI template references a resource %s, but could not find it\n", key, resourceName)
+					}
 				}
 			}
 		}
@@ -36,12 +36,12 @@ func TestUriTemplatesAllReferenceValidResource(t *testing.T) {
 
 			if err != nil {
 				errors += fmt.Sprintf("Could not process UPDATE uri for resource %s, error:%s\n", key, err)
-			}
-
-			for _, variable := range template.Varnames() {
-				resourceName := strings.ReplaceAll(variable, "_", "-")
-				if _, ok := resources[resourceName]; !ok {
-					errors += fmt.Sprintf("Error processing UPDATE uri for resource %s, the URI template references a resource %s, but could not find it", key, resourceName)
+			} else {
+				for _, variable := range template.Varnames() {
+					resourceName := strings.ReplaceAll(variable, "_", "-")
+					if _, ok := resources[resourceName]; !ok {
+						errors += fmt.Sprintf("Error processing UPDATE uri for resource %s, the URI template references a resource %s, but could not find it\n", key, resourceName)
+					}
 				}
 			}
 		}
@@ -51,12 +51,12 @@ func TestUriTemplatesAllReferenceValidResource(t *testing.T) {
 
 			if err != nil {
 				errors += fmt.Sprintf("Could not process DELETE uri for resource %s, error:%s\n", key, err)
-			}
-
-			for _, variable := range template.Varnames() {
-				resourceName := strings.ReplaceAll(variable, "_", "-")
-				if _, ok := resources[resourceName]; !ok {
-					errors += fmt.Sprintf("Error processing DELETE uri for resource %s, the URI template references a resource %s, but could not find it", key, resourceName)
+			} else {
+				for _, variable := range template.Varnames() {
+					resourceName := strings.ReplaceAll(variable, "_", "-")
+					if _, ok := resources[resourceName]; !ok {
+						errors += fmt.Sprintf("Error processing DELETE uri for resource %s, the URI template references a resource %s, but could not find it\n", key, resourceName)
+					}
 				}
 			}
 		}
@@ -66,12 +66,12 @@ func TestUriTemplatesAllReferenceValidResource(t *testing.T) {
 
 			if err != nil {
 				errors += fmt.Sprintf("Could not process GET entity uri for resource %s, error:%s\n", key, err)
-			}
-
-			for _, variable := range template.Varnames() {
-				resourceName := strings.ReplaceAll(variable, "_", "-")
-				if _, ok := resources[resourceName]; !ok {
-					errors += fmt.Sprintf("Error processing GET entity uri for resource %s, the URI template references a resource %s, but could not find it", key, resourceName)
+			} else {
+				for _, variable := range template.Varnames() {
+					resourceName := strings.ReplaceAll(variable, "_", "-")
+					if _, ok := resources[resourceName]; !ok {
+						errors += fmt.Sprintf("Error processing GET entity uri for resource %s, the URI template references a resource %s, but could not find it\n", key, resourceName)
+					}
 				}
 			}
 		}
@@ -81,12 +81,12 @@ func TestUriTemplatesAllReferenceValidResource(t *testing.T) {
 
 			if err != nil {
 				errors += fmt.Sprintf("Could not process GET collection uri for resource %s, error:%s\n", key, err)
-			}
-
-			for _, variable := range template.Varnames() {
-				resourceName := strings.ReplaceAll(variable, "_", "-")
-				if _, ok := resources[resourceName]; !ok {
-					errors += fmt.Sprintf("Error processing GET collection uri for resource %s, the URI template references a resource %s, but could not find it", key, resourceName)
+			} else {
+				for _, variable := range template.Varnames() {
+					resourceName := strings.ReplaceAll(variable, "_", "-")
+					if _, ok := resources[resourceName]; !ok {
+						errors += fmt.Sprintf("Error processing GET collection uri for resource %s, the URI template references a resource %s, but could not find it\n", key, resourceName)
+					}
 				}
 			}
 		}
