@@ -31,13 +31,14 @@ var get = &cobra.Command{
 			return fmt.Errorf("Resource %s doesn't support GET", args[0])
 		} else if resource.GetCollectionInfo != nil && resource.GetEntityInfo == nil {
 			resourceURL = resource.GetCollectionInfo.Url
-
 		} else if resource.GetCollectionInfo == nil && resource.GetEntityInfo != nil {
 			resourceURL = resource.GetEntityInfo.Url
-
 		} else {
-			// Count ids in get-collection
-			resourceURL = resource.GetCollectionInfo.Url
+			if _, ok := resources.GetPluralResources()[args[0]]; ok {
+				resourceURL = resource.GetCollectionInfo.Url
+			} else {
+				resourceURL = resource.GetEntityInfo.Url
+			}
 		}
 
 		idCount, err := resources.GetNumberOfVariablesNeeded(resourceURL)
@@ -90,7 +91,7 @@ var get = &cobra.Command{
 	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		if len(args) == 0 {
 			return completion.Complete(completion.Request{
-				Type: completion.CompleteResource,
+				Type: completion.CompleteSingularResource + completion.CompletePluralResource,
 			})
 		}
 
