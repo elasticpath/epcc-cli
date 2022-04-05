@@ -80,7 +80,8 @@ accounts:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/account-management/accounts/get-all-accounts.html"
     url: "/v2/accounts"
   get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/account-management/accounts/get-an-account.html"
+    #TODO this link is wrong, but the actual page doesn't exist.
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/account-management/accounts/index.html"
     url: "/v2/accounts/{accounts}"
   update-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/account-management/accounts/update-an-account.html"
@@ -273,47 +274,53 @@ flows:
       type: STRING
 integration-jobs:
   singular-name: "integration-job"
-  json-api-type: "integration-log"
+  json-api-type: "integration-job"
   json-api-format: "legacy"
-  docs: "????/https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/events/get-event-logs.html#get-get-jobs-for-an-event"
+  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/integrations/get-integration-logs.html#get-get-jobs-for-an-integration"
   get-collection:
-    docs: "????/https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/events/get-event-logs.html#get-get-jobs-for-an-event"
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/integrations/get-integration-logs.html#get-get-jobs-for-an-integration"
     url: "/v2/integrations/{integrations}/jobs"
-  get-entity:
-    docs: "????/https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/events/get-event-logs.html#get-get-jobs-for-an-event"
+  attributes:
+integration-job-log:
+  singular-name: "integration-job-log"
+  json-api-type: "integration-job"
+  json-api-format: "legacy"
+  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/integrations/get-integration-logs.html#get-get-all-logs-for-a-job"
+  get-collection:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/integrations/get-integration-logs.html#get-get-all-logs-for-a-job"
     url: "/v2/integrations/{integrations}/jobs/{integration_jobs}/logs"
   attributes:
 integration-logs:
   singular-name: "integration-log"
   json-api-type: "integration-log"
   json-api-format: "legacy"
-  docs: "????/https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/events/get-event-logs.html"
+  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/integrations/get-integration-logs.html"
   get-collection:
-    docs: "????/https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/events/get-event-logs.html"
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/integrations/get-integration-logs.html#get-get-all-logs"
     url: "/v2/integrations/logs"
   get-entity:
-    docs: "????/https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/events/get-event-logs.html"
-    url: "/v2/integrations/logs"
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/integrations/get-integration-logs.html#get-get-logs-for-an-integration"
+    url: "/v2/integrations/{integrations}/logs"
   attributes:
 integrations:
   singular-name: "integration"
   json-api-type: "integration"
   json-api-format: "legacy"
-  docs: "????/https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/events/create-an-event.html"
+  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/integrations/index.html"
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/events/create-an-event.html"
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/integrations/get-all-integrations.html"
     url: "/v2/integrations"
   get-entity:
-    docs: "????/https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/events/create-an-event.html"
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/integrations/get-an-integration.html"
     url: "/v2/integrations/{integrations}"
   update-entity:
-    docs: "????/https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/events/create-an-event.html"
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/integrations/update-an-integration.html"
     url: "/v2/integrations/{integrations}"
   delete-entity:
-    docs: "????/https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/events/create-an-event.html"
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/integrations/delete-an-integration.html"
     url: "/v2/integrations/{integrations}"
   create-entity:
-    docs: "????/https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/events/create-an-event.html"
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/integrations/create-an-integration.html"
     url: "/v2/integrations"
     content-type: application/json
   attributes:
@@ -533,7 +540,7 @@ pcm-products:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/delete-a-product.html"
     url: "/pcm/products/{pcm_products}"
   create-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/create-a-product.htmll"
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/create-a-product.html"
     url: "/pcm/products"
     content-type: application/json
   attributes:
@@ -665,7 +672,7 @@ user-authentication-infos:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/user-authentication-info/get-all-user-authentication-info.html"
     url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info"
   get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/user-authentication-info/get-a-user-authentication-info.htmll"
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/user-authentication-info/get-a-user-authentication-info.html"
     url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info/{user_authentication_infos}"
   update-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/user-authentication-info/update-a-user-authentication-info.html"
