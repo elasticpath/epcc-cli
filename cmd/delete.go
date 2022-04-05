@@ -35,7 +35,7 @@ var delete = &cobra.Command{
 			resp, err := httpclient.DoRequest(context.TODO(), "DELETE", deleteURL, "", nil)
 
 			if err != nil {
-				log.Println("Got error %s", err.Error())
+				log.Println(err)
 			}
 			defer resp.Body.Close()
 
