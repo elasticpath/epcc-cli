@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"net/url"
-	"os/exec"
-	"runtime"
 )
 
 var cmCommand = &cobra.Command{
@@ -29,18 +27,7 @@ var cmCommand = &cobra.Command{
 			fmt.Printf("Don't know where Commerce Manager is for $EPCC_API_BASE_URL=%s \n", u)
 			return err
 		}
-
-		switch runtime.GOOS {
-		case "linux":
-			err = exec.Command("xdg-open", cmUrl).Start()
-		case "windows":
-			err = exec.Command("rundll32", "url.dll,FileProtocolHandler", cmUrl).Start()
-		case "darwin":
-			err = exec.Command("open", cmUrl).Start()
-		default:
-			err = fmt.Errorf("unsupported platform")
-		}
-
+		err = OpenUrl(cmUrl)
 		if err != nil {
 			fmt.Println(err)
 			return err
