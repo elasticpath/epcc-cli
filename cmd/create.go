@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"github.com/elasticpath/epcc-cli/external/completion"
 	"github.com/elasticpath/epcc-cli/external/httpclient"
 	"github.com/elasticpath/epcc-cli/external/json"
 	"github.com/elasticpath/epcc-cli/external/resources"
@@ -66,5 +67,15 @@ var create = &cobra.Command{
 		}
 
 		return json.PrintJson(string(resBody))
+	},
+
+	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		if len(args) == 0 {
+			return completion.Complete(completion.CompletionRequest{
+				Type: completion.CompleteResource,
+			})
+		}
+
+		return []string{}, cobra.ShellCompDirectiveNoFileComp
 	},
 }

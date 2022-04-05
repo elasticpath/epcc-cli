@@ -6,11 +6,11 @@ import (
 )
 
 const (
-	CompleteResource       = 0
-	CompleteAttributeKey   = 1
-	CompleteAttributeValue = 2
-	CompleteQueryParam     = 4
-	CompleteCrudAction     = 8
+	CompleteResource       = 1
+	CompleteAttributeKey   = 2
+	CompleteAttributeValue = 4
+	CompleteQueryParam     = 8
+	CompleteCrudAction     = 16
 )
 
 type CompletionRequest struct {
