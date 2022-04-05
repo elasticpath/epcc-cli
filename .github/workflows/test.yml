@@ -37,7 +37,7 @@ jobs:
           echo "If this command fails you should run go fmt \"./...\""
           if [ "$(gofmt -s -l . | wc -l)" -gt 0 ]; then
               echo "Code style differences detected:"
-              gofmt -s -l .
+              gofmt -s -l -d .
               exit 1
           fi
 

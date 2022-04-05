@@ -22,7 +22,7 @@ func Complete(c Request) ([]string, cobra.ShellCompDirective) {
 	results := make([]string, 0)
 
 	if c.Type&CompleteResource > 0 {
-		for k, _ := range resources.Resources {
+		for k := range resources.Resources {
 			results = append(results, k)
 		}
 	}
