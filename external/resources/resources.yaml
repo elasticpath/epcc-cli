@@ -44,7 +44,7 @@ account-members:
     url: "/v2/account-members"
   get-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/account-management/account-members/get-an-account-member.html"
-    url: "/v2/account-members/{:account-member}"
+    url: "/v2/account-members/{account_members}"
   attributes:
     name:
       type: STRING
@@ -57,16 +57,16 @@ account-memberships:
   docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/account-management/account-memberships/index.html"
   get-collection:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/account-management/account-memberships/get-all-account-memberships.html"
-    url: "/v2/accounts/{:account}/account-memberships"
+    url: "/v2/accounts/{accounts}/account-memberships"
   get-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/account-management/account-memberships/get-an-account-membership.html"
-    url: "/v2/accounts/{:account}/account-memberships/{:account-membership}"
+    url: "/v2/accounts/{accounts}/account-memberships/{account_memberships}"
   delete-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/account-management/account-memberships/delete-an-account-membership.html"
-    url: "/v2/accounts/{:account}/account-memberships/{:account-membership}"
+    url: "/v2/accounts/{accounts}/account-memberships/{account_memberships}"
   create-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/account-management/account-memberships/create-an-account-membership.html"
-    url: "/v2/accounts/{:account}/account-memberships"
+    url: "/v2/accounts/{accounts}/account-memberships"
     content-type: application/json
   attributes:
     account_member_id:
@@ -81,13 +81,13 @@ accounts:
     url: "/v2/accounts"
   get-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/account-management/accounts/get-an-account.html"
-    url: "/v2/accounts/{:account}"
+    url: "/v2/accounts/{accounts}"
   update-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/account-management/accounts/update-an-account.html"
-    url: "/v2/accounts/{:account}"
+    url: "/v2/accounts/{accounts}"
   delete-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/account-management/accounts/delete-an-account.html"
-    url: "/v2/accounts/{:account}"
+    url: "/v2/accounts/{accounts}"
   create-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/account-management/accounts/create-an-account.html"
     url: "/v2/accounts"
@@ -111,10 +111,10 @@ authentication-realms:
     url: "/v2/authentication-realms"
   get-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/authentication-realms/get-an-authentication-realm.html"
-    url: "/v2/authentication-realms/{:authentication-realm}"
+    url: "/v2/authentication-realms/{authentication_realms}"
   update-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/authentication-realms/update-an-authentication-realm.html"
-    url: "/v2/authentication-realms/{:authentication-realm}"
+    url: "/v2/authentication-realms/{authentication_realms}"
   attributes:
     name:
       type: STRING
@@ -144,13 +144,13 @@ customers:
     url: "/v2/customers"
   get-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/customers/get-a-customer.html"
-    url: "/v2/customers/{:customer}"
+    url: "/v2/customers/{customers}"
   update-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/customers/update-a-customer.html"
-    url: "/v2/customers/{:customer}"
+    url: "/v2/customers/{customers}"
   delete-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/customers/delete-a-customer.html"
-    url: "/v2/customers/{:customer}"
+    url: "/v2/customers/{customers}"
   create-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/customers/create-a-customer.html"
     url: "/v2/customers"
@@ -172,13 +172,13 @@ fields:
     url: "/v2/fields"
   get-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/fields/get-a-field.html"
-    url: "/v2/fields/{:field}"
+    url: "/v2/fields/{fields}"
   update-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/fields/update-a-field.html"
-    url: "/v2/fields/{:field}"
+    url: "/v2/fields/{fields}"
   delete-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/fields/delete-a-field.html"
-    url: "/v2/fields/{:field}"
+    url: "/v2/fields/{fields}"
   create-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/fields/create-a-field.html"
     url: "/v2/fields"
@@ -226,10 +226,10 @@ files:
     url: "/v2/files"
   get-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/files/get-a-file.html"
-    url: "/v2/files/{:file}"
+    url: "/v2/files/{files}"
   delete-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/files/delete-a-file.html"
-    url: "/v2/files/{:file}"
+    url: "/v2/files/{files}"
   create-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/files/create-a-file.html"
     url: "/v2/files"
@@ -251,13 +251,13 @@ flows:
     url: "/v2/flows"
   get-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/flows/get-a-flow.html"
-    url: "/v2/flows/{:flow}"
+    url: "/v2/flows/{flows}"
   update-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/flows/update-a-flow.html"
-    url: "/v2/flows/{:flow}"
+    url: "/v2/flows/{flows}"
   delete-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/flows/delete-a-flow.html"
-    url: "/v2/flows/{:flow}"
+    url: "/v2/flows/{flows}"
   create-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/flows/create-a-flow.html"
     url: "/v2/flows"
@@ -278,10 +278,10 @@ integration-jobs:
   docs: "????/https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/events/get-event-logs.html#get-get-jobs-for-an-event"
   get-collection:
     docs: "????/https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/events/get-event-logs.html#get-get-jobs-for-an-event"
-    url: "/v2/integrations/{:integration}/jobs"
+    url: "/v2/integrations/{integrations}/jobs"
   get-entity:
     docs: "????/https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/events/get-event-logs.html#get-get-jobs-for-an-event"
-    url: "/v2/integrations/{:integration}/jobs/{:integration-job}/logs"
+    url: "/v2/integrations/{integrations}/jobs/{integration_jobs}/logs"
   attributes:
 integration-logs:
   singular-name: "integration-log"
@@ -305,13 +305,13 @@ integrations:
     url: "/v2/integrations"
   get-entity:
     docs: "????/https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/events/create-an-event.html"
-    url: "/v2/integrations/{:integration}"
+    url: "/v2/integrations/{integrations}"
   update-entity:
     docs: "????/https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/events/create-an-event.html"
-    url: "/v2/integrations/{:integration}"
+    url: "/v2/integrations/{integrations}"
   delete-entity:
     docs: "????/https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/events/create-an-event.html"
-    url: "/v2/integrations/{:integration}"
+    url: "/v2/integrations/{integrations}"
   create-entity:
     docs: "????/https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/events/create-an-event.html"
     url: "/v2/integrations"
@@ -350,7 +350,7 @@ merchant-realm-mappings:
     url: "/v2/merchant-realm-mappings"
   update-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/settings/merchant-realm-mappings/update-merchant-realm-mapping.html"
-    url: "/v2/merchant-realm-mappings/{:merchant-realm-mapping}"
+    url: "/v2/merchant-realm-mappings/{merchant_realm_mappings}"
   attributes:
 oidc-profiles:
   singular-name: "oidc-profile"
@@ -359,19 +359,19 @@ oidc-profiles:
   docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/oidc-profiles/index.html"
   get-collection:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/oidc-profiles/get-all-oidc-profiles.html"
-    url: "/v2/authentication-realms/{:authentication-realm}/oidc-profiles"
+    url: "/v2/authentication-realms/{authentication_realms}/oidc-profiles"
   get-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/oidc-profiles/get-an-oidc-profile.html"
-    url: "/v2/authentication-realms/{:authentication-realm}/oidc-profiles/{:oidc-profile}"
+    url: "/v2/authentication-realms/{authentication_realms}/oidc-profiles/{oidc_profiles}"
   update-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/oidc-profiles/update-an-oidc-profile.html"
-    url: "/v2/authentication-realms/{:authentication-realm}/oidc-profiles/{:oidc-profile}"
+    url: "/v2/authentication-realms/{authentication_realms}/oidc-profiles/{oidc_profiles}"
   delete-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/oidc-profiles/delete-an-oidc-profile.html"
-    url: "/v2/authentication-realms/{:authentication-realm}/oidc-profiles/{:oidc-profile}"
+    url: "/v2/authentication-realms/{authentication_realms}/oidc-profiles/{oidc_profiles}"
   create-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/oidc-profiles/create-an-oidc-profile.html"
-    url: "/v2/authentication-realms/{:authentication-realm}/oidc-profiles"
+    url: "/v2/authentication-realms/{authentication_realms}/oidc-profiles"
     content-type: application/json
   attributes:
     name:
@@ -389,19 +389,19 @@ password-profiles:
   docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/password-profiles/index.html"
   get-collection:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/password-profiles/get-all-password-profiles.html"
-    url: "/v2/authentication-realms/{:authentication-realm}/password-profiles"
+    url: "/v2/authentication-realms/{authentication_realms}/password-profiles"
   get-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/password-profiles/get-a-password-profile.html"
-    url: "/v2/authentication-realms/{:authentication-realm}/password-profiles/{:password-profile}"
+    url: "/v2/authentication-realms/{authentication_realms}/password-profiles/{password_profiles}"
   update-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/password-profiles/update-a-password-profile.html"
-    url: "/v2/authentication-realms/{:authentication-realm}/password-profiles/{:password-profile}"
+    url: "/v2/authentication-realms/{authentication_realms}/password-profiles/{password_profiles}"
   delete-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/password-profiles/delete-a-password-profile.html"
-    url: "/v2/authentication-realms/{:authentication-realm}/password-profiles/{:password-profile}"
+    url: "/v2/authentication-realms/{authentication_realms}/password-profiles/{password_profiles}"
   create-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/password-profiles/index.html"
-    url: "/v2/authentication-realms/{:authentication-realm}/password-profiles"
+    url: "/v2/authentication-realms/{authentication_realms}/password-profiles"
     content-type: application/json
   attributes:
     username_format:
@@ -418,13 +418,13 @@ pcm-hierarchies:
     url: "/pcm/hierarchies"
   get-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/hierarchies/get-a-hierarchy.html"
-    url: "/pcm/hierarchies/{:pcm-hierarchy}"
+    url: "/pcm/hierarchies/{pcm_hierarchies}"
   update-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/hierarchies/update-a-hierarchy.html"
-    url: "/pcm/hierarchies/{:pcm-hierarchy}"
+    url: "/pcm/hierarchies/{pcm_hierarchies}"
   delete-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/hierarchies/delete-a-hierarchy.html"
-    url: "/pcm/hierarchies/{:pcm-hierarchy}"
+    url: "/pcm/hierarchies/{pcm_hierarchies}"
   create-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/hierarchies/create-a-hierarchy.html"
     url: "/pcm/hierarchies"
@@ -447,7 +447,7 @@ pcm-node-children:
   docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/hierarchies/relationships/get-node-children.html"
   get-collection:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/hierarchies/relationships/get-node-children.html"
-    url: "/pcm/hierarchies/{:pcm-hierarchy}/nodes/{:pcm-node}/children"
+    url: "/pcm/hierarchies/{pcm_hierarchies}/nodes/{pcm_nodes}/children"
   attributes:
 pcm-node-products:
   singular-name: "pcm-node-product"
@@ -456,7 +456,7 @@ pcm-node-products:
   docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/hierarchies/relationships/get-node-products.html"
   get-collection:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/hierarchies/relationships/get-node-products.html"
-    url: "/pcm/hierarchies/{:pcm-hierarchy}/nodes/{:pcm-node}/products"
+    url: "/pcm/hierarchies/{pcm_hierarchies}/nodes/{pcm_nodes}/products"
   attributes:
 pcm-nodes:
   singular-name: "pcm-node"
@@ -465,16 +465,16 @@ pcm-nodes:
   docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/hierarchies/nodes/get-a-hierarchy-node.html"
   get-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/hierarchies/nodes/get-a-hierarchy-node.html"
-    url: "/pcm/hierarchies/{:pcm-hierarchy}/nodes/{:pcm-node}"
+    url: "/pcm/hierarchies/{pcm_hierarchies}/nodes/{pcm_nodes}"
   update-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/hierarchies/nodes/update-a-hierarchy-node.html"
-    url: "/pcm/hierarchies/{:pcm-hierarchy}/nodes/{:pcm-node}"
+    url: "/pcm/hierarchies/{pcm_hierarchies}/nodes/{pcm_nodes}"
   delete-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/hierarchies/nodes/delete-a-hierarchy-node.html"
-    url: "/pcm/hierarchies/{:pcm-hierarchy}/nodes/{:pcm-node}"
+    url: "/pcm/hierarchies/{pcm_hierarchies}/nodes/{pcm_nodes}"
   create-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/hierarchies/nodes/create-a-hierarchy-node.html"
-    url: "/pcm/hierarchies/{:pcm-hierarchy}/nodes"
+    url: "/pcm/hierarchies/{pcm_hierarchies}/nodes"
     content-type: application/json
   attributes:
     name:
@@ -498,19 +498,19 @@ pcm-product-main-image:
   docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/relationships/main-image/get-main-image-relationship.html"
   get-collection:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/relationships/main-image/get-main-image-relationship.html"
-    url: "/pcm/products/{:pcm-product}/relationships/main_image"
+    url: "/pcm/products/{pcm_products}/relationships/main_image"
   get-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/relationships/main-image/get-main-image-relationship.html"
-    url: "/pcm/products/{:pcm-product}/relationships/main_image"
+    url: "/pcm/products/{pcm_products}/relationships/main_image"
   update-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/relationships/main-image/replace-main-image-relationship.html"
-    url: "/pcm/products/{:pcm-product}/relationships/main_image"
+    url: "/pcm/products/{pcm_products}/relationships/main_image"
   delete-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/relationships/main-image/delete-main-image-relationship.html"
-    url: "/pcm/products/{:pcm-product}/relationships/main_image"
+    url: "/pcm/products/{pcm_products}/relationships/main_image"
   create-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/relationships/main-image/create-main-image-relationship.html"
-    url: "/pcm/products/{:pcm-product}/relationships/main_image"
+    url: "/pcm/products/{pcm_products}/relationships/main_image"
     content-type: application/json
   attributes:
     id:
@@ -525,13 +525,13 @@ pcm-products:
     url: "/pcm/products"
   get-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/get-a-product.html"
-    url: "/pcm/products/{:pcm-product}"
+    url: "/pcm/products/{pcm_products}"
   update-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/update-a-product.html"
-    url: "/pcm/products/{:pcm-product}"
+    url: "/pcm/products/{pcm_products}"
   delete-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/delete-a-product.html"
-    url: "/pcm/products/{:pcm-product}"
+    url: "/pcm/products/{pcm_products}"
   create-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/create-a-product.htmll"
     url: "/pcm/products"
@@ -564,16 +564,16 @@ promotion-codes:
   docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/promotions/get-promotion-codes.html"
   get-collection:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/promotions/get-promotion-codes.html"
-    url: "/v2/promotions/{:promotion}/codes"
+    url: "/v2/promotions/{promotions}/codes"
   get-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/promotions/get-promotion-codes.html"
-    url: "/v2/promotions/{:promotion}/codes"
+    url: "/v2/promotions/{promotions}/codes"
   delete-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/promotions/delete-promotion-codes.html"
-    url: "/v2/promotions/{:promotion}/codes/{:promotion-code}"
+    url: "/v2/promotions/{promotions}/codes/{promotion_codes}"
   create-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/promotions/create-promotion-codes.html"
-    url: "/v2/promotions/{:promotion}/codes"
+    url: "/v2/promotions/{promotions}/codes"
     content-type: application/json
   attributes:
     codes[0].code:
@@ -594,10 +594,10 @@ promotions:
     url: "/v2/promotions"
   get-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/promotions/get-a-promotion.html"
-    url: "/v2/promotions/{:promotion}"
+    url: "/v2/promotions/{promotions}"
   delete-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/promotions/delete-a-promotion.html"
-    url: "/v2/promotions/{:promotion}"
+    url: "/v2/promotions/{promotions}"
   create-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/promotions/create-a-cart-fixed-discount-promotion.html"
     url: "/v2/promotions"
@@ -663,19 +663,19 @@ user-authentication-infos:
   docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/user-authentication-info/index.html"
   get-collection:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/user-authentication-info/get-all-user-authentication-info.html"
-    url: "/v2/authentication-realms/{:authentication-realm}/user-authentication-info"
+    url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info"
   get-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/user-authentication-info/get-a-user-authentication-info.htmll"
-    url: "/v2/authentication-realms/{:authentication-realm}/user-authentication-info/{:user-authentication-info}"
+    url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info/{user_authentication_infos}"
   update-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/user-authentication-info/update-a-user-authentication-info.html"
-    url: "/v2/authentication-realms/{:authentication-realm}/user-authentication-info/{:user-authentication-info}"
+    url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info/{user_authentication_infos}"
   delete-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/user-authentication-info/delete-a-user-authentication-info.html"
-    url: "/v2/authentication-realms/{:authentication-realm}/user-authentication-info/{:user-authentication-info}"
+    url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info/{user_authentication_infos}"
   create-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/user-authentication-info/create-a-user-authentication-info.html"
-    url: "/v2/authentication-realms/{:authentication-realm}/user-authentication-info"
+    url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info"
     content-type: application/json
   attributes:
     name:
@@ -689,19 +689,19 @@ user-authentication-oidc-profile-infos:
   docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/user-authentication-oidc-profile-info/index.html"
   get-collection:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/user-authentication-oidc-profile-info/get-all-user-authentication-oidc-profile-info.html"
-    url: "/v2/authentication-realms/{:authentication-realm}/user-authentication-info/{:user-authentication-info}/user-authentication-oidc-profile-info"
+    url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info/{user_authentication_infos}/user-authentication-oidc-profile-info"
   get-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/user-authentication-oidc-profile-info/get-a-user-authentication-oidc-profile-info.html"
-    url: "/v2/authentication-realms/{:authentication-realm}/user-authentication-info/{:user-authentication-info}/user-authentication-oidc-profile-info/{:user-authentication-oidc-profile-info}"
+    url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info/{user_authentication_infos}/user-authentication-oidc-profile-info/{user_authentication_oidc_profile_infos}"
   update-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/user-authentication-oidc-profile-info/update-a-user-authentication-oidc-profile-info.html"
-    url: "/v2/authentication-realms/{:authentication-realm}/user-authentication-info/{:user-authentication-info}/user-authentication-oidc-profile-info/{:user-authentication-oidc-profile-info}"
+    url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info/{user_authentication_infos}/user-authentication-oidc-profile-info/{user_authentication_oidc_profile_infos}"
   delete-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/user-authentication-oidc-profile-info/delete-a-user-authentication-oidc-profile-info.html"
-    url: "/v2/authentication-realms/{:authentication-realm}/user-authentication-info/{:user-authentication-info}/user-authentication-oidc-profile-info/{:user-authentication-oidc-profile-info}"
+    url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info/{user_authentication_infos}/user-authentication-oidc-profile-info/{user_authentication_oidc_profile_infos}"
   create-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/user-authentication-oidc-profile-info/create-a-user-authentication-oidc-profile-info.html"
-    url: "/v2/authentication-realms/{:authentication-realm}/user-authentication-info/{:user-authentication-info}/user-authentication-oidc-profile-info"
+    url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info/{user_authentication_infos}/user-authentication-oidc-profile-info"
     content-type: application/json
   attributes:
     subject:
@@ -717,19 +717,19 @@ user-authentication-password-profile-infos:
   docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/user-authentication-password-profiles/index.html"
   get-collection:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/user-authentication-password-profiles/get-all-user-authentication-password-profile-info.html"
-    url: "/v2/authentication-realms/{:authentication-realm}/user-authentication-info/{:user-authentication-info}/user-authentication-password-profile-info"
+    url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info/{user_authentication_infos}/user-authentication-password-profile-info"
   get-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/user-authentication-password-profiles/get-a-user-authentication-password-profile.html"
-    url: "/v2/authentication-realms/{:authentication-realm}/user-authentication-info/{:user-authentication-info}/user-authentication-password-profile-info/{:user-authentication-password-profile-info}"
+    url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info/{user_authentication_infos}/user-authentication-password-profile-info/{user_authentication_password_profile_infos}"
   update-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/user-authentication-password-profiles/update-a-user-authentication-password-profile.html"
-    url: "/v2/authentication-realms/{:authentication-realm}/user-authentication-info/{:user-authentication-info}/user-authentication-password-profile-info/{:user-authentication-password-profile-info}"
+    url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info/{user_authentication_infos}/user-authentication-password-profile-info/{user_authentication_password_profile_infos}"
   delete-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/user-authentication-password-profiles/delete-a-user-authentication-password-profile.html"
-    url: "/v2/authentication-realms/{:authentication-realm}/user-authentication-info/{:user-authentication-info}/user-authentication-password-profile-info/{:user-authentication-password-profile-info}"
+    url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info/{user_authentication_infos}/user-authentication-password-profile-info/{user_authentication_password_profile_infos}"
   create-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/user-authentication-password-profiles/create-a-user-authentication-password-profile.html"
-    url: "/v2/authentication-realms/{:authentication-realm}/user-authentication-info/{:user-authentication-info}/user-authentication-password-profile-info"
+    url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info/{user_authentication_infos}/user-authentication-password-profile-info"
     content-type: application/json
   attributes:
     username:
@@ -748,13 +748,13 @@ v2-products:
     url: "/v2/products"
   get-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/products/get-a-product.html"
-    url: "/v2/products/{:v2-product}"
+    url: "/v2/products/{v2_products}"
   update-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/products/update-a-product.html"
-    url: "/v2/products/{:v2-product}"
+    url: "/v2/products/{v2_products}"
   delete-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/products/delete-a-product.html"
-    url: "/v2/products/{:v2-product}"
+    url: "/v2/products/{v2_products}"
   create-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/products/create-a-product.html"
     url: "/v2/products"
