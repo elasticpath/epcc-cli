@@ -8,24 +8,29 @@ import (
 //go:embed resources.yaml
 var resourceMetaData string
 
-var Resources map[string]Resource
+var resources map[string]Resource
+
+var resourcesSingular = map[string]Resource{}
 
 func init() {
 
-	err := yaml.Unmarshal([]byte(resourceMetaData), &Resources)
+	err := yaml.Unmarshal([]byte(resourceMetaData), &resources)
 	if err != nil {
 		panic("Couldn't load the resource meta data")
 	}
 
-	for key, val := range Resources {
+	for key, val := range resources {
 		// Fix the key
 		val.Type = key
 
+		val.PluralName = key
 		for attributeName, attributeVal := range val.Attributes {
 			// Fix the key
 			attributeVal.Key = attributeName
 		}
+		resourcesSingular[val.SingularName] = val
 	}
+
 }
 
 type Resource struct {
@@ -60,6 +65,8 @@ type Resource struct {
 
 	// The singular name version of the resource.
 	SingularName string `yaml:"singular-name"`
+
+	PluralName string
 }
 
 type CrudEntityInfo struct {
@@ -80,4 +87,44 @@ type CrudEntityAttribute struct {
 
 	// The type of the attribute
 	Type string `yaml:"type"`
+}
+
+func GetPluralResourceNames() []string {
+	keys := make([]string, len(resources))
+
+	for key := range resources {
+		keys = append(keys, key)
+	}
+
+	return keys
+}
+
+func GetPluralResources() map[string]Resource {
+	return resources
+}
+
+func GetSingularResourceNames() []string {
+	keys := make([]string, len(resourcesSingular))
+
+	for key := range resourcesSingular {
+		keys = append(keys, key)
+	}
+
+	return keys
+}
+
+func GetResourceByName(name string) (Resource, bool) {
+	res, ok := resources[name]
+
+	if ok {
+		return res, true
+	}
+
+	res, ok = resourcesSingular[name]
+
+	if ok {
+		return res, true
+	}
+
+	return Resource{}, false
 }

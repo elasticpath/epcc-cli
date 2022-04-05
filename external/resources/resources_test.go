@@ -14,7 +14,7 @@ func TestUriTemplatesAllReferenceValidResource(t *testing.T) {
 
 	// Execute SUT
 	errors := ""
-	for key, val := range Resources {
+	for key, val := range resources {
 
 		if val.CreateEntityInfo != nil {
 			template, err := uritemplate.New(val.CreateEntityInfo.Url)
@@ -25,7 +25,7 @@ func TestUriTemplatesAllReferenceValidResource(t *testing.T) {
 
 			for _, variable := range template.Varnames() {
 				resourceName := strings.ReplaceAll(variable, "_", "-")
-				if _, ok := Resources[resourceName]; !ok {
+				if _, ok := resources[resourceName]; !ok {
 					errors += fmt.Sprintf("Error processing CREATE uri for resource %s, the URI template references a resource %s, but could not find it", key, resourceName)
 				}
 			}
@@ -40,7 +40,7 @@ func TestUriTemplatesAllReferenceValidResource(t *testing.T) {
 
 			for _, variable := range template.Varnames() {
 				resourceName := strings.ReplaceAll(variable, "_", "-")
-				if _, ok := Resources[resourceName]; !ok {
+				if _, ok := resources[resourceName]; !ok {
 					errors += fmt.Sprintf("Error processing UPDATE uri for resource %s, the URI template references a resource %s, but could not find it", key, resourceName)
 				}
 			}
@@ -55,7 +55,7 @@ func TestUriTemplatesAllReferenceValidResource(t *testing.T) {
 
 			for _, variable := range template.Varnames() {
 				resourceName := strings.ReplaceAll(variable, "_", "-")
-				if _, ok := Resources[resourceName]; !ok {
+				if _, ok := resources[resourceName]; !ok {
 					errors += fmt.Sprintf("Error processing DELETE uri for resource %s, the URI template references a resource %s, but could not find it", key, resourceName)
 				}
 			}
@@ -70,7 +70,7 @@ func TestUriTemplatesAllReferenceValidResource(t *testing.T) {
 
 			for _, variable := range template.Varnames() {
 				resourceName := strings.ReplaceAll(variable, "_", "-")
-				if _, ok := Resources[resourceName]; !ok {
+				if _, ok := resources[resourceName]; !ok {
 					errors += fmt.Sprintf("Error processing GET entity uri for resource %s, the URI template references a resource %s, but could not find it", key, resourceName)
 				}
 			}
@@ -85,7 +85,7 @@ func TestUriTemplatesAllReferenceValidResource(t *testing.T) {
 
 			for _, variable := range template.Varnames() {
 				resourceName := strings.ReplaceAll(variable, "_", "-")
-				if _, ok := Resources[resourceName]; !ok {
+				if _, ok := resources[resourceName]; !ok {
 					errors += fmt.Sprintf("Error processing GET collection uri for resource %s, the URI template references a resource %s, but could not find it", key, resourceName)
 				}
 			}
