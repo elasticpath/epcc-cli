@@ -8,7 +8,7 @@ func TestToJsonEmptyValue(t *testing.T) {
 	expected := `{"data":{}}`
 
 	// Execute SUT
-	actual, _ := ToJson(input)
+	actual, _ := ToJson(input, false)
 
 	// Verification
 	if actual != expected {
@@ -22,7 +22,7 @@ func TestToJsonSimpleKeyStringValue(t *testing.T) {
 	expected := `{"data":{"key":"val"}}`
 
 	// Execute SUT
-	actual, _ := ToJson(input)
+	actual, _ := ToJson(input, false)
 
 	// Verification
 	if actual != expected {
@@ -36,7 +36,7 @@ func TestToJsonSimpleNestedKeyValue(t *testing.T) {
 	expected := `{"data":{"foo":{"bar":"val"}}}`
 
 	// Execute SUT
-	actual, _ := ToJson(input)
+	actual, _ := ToJson(input, false)
 
 	// Verification
 	if actual != expected {
@@ -50,7 +50,7 @@ func TestToJsonSimpleKeyNumericValue(t *testing.T) {
 	expected := `{"data":{"key":3}}`
 
 	// Execute SUT
-	actual, _ := ToJson(input)
+	actual, _ := ToJson(input, false)
 
 	// Verification
 	if actual != expected {
@@ -64,7 +64,7 @@ func TestToJsonSimpleKeyBooleanTrueValue(t *testing.T) {
 	expected := `{"data":{"key":true}}`
 
 	// Execute SUT
-	actual, _ := ToJson(input)
+	actual, _ := ToJson(input, false)
 
 	// Verification
 	if actual != expected {
@@ -78,7 +78,7 @@ func TestToJsonSimpleKeyBooleanFalseValue(t *testing.T) {
 	expected := `{"data":{"key":false}}`
 
 	// Execute SUT
-	actual, _ := ToJson(input)
+	actual, _ := ToJson(input, false)
 
 	// Verification
 	if actual != expected {
@@ -92,7 +92,7 @@ func TestToJsonSimpleKeyNullValue(t *testing.T) {
 	expected := `{"data":{"key":null}}`
 
 	// Execute SUT
-	actual, _ := ToJson(input)
+	actual, _ := ToJson(input, false)
 
 	// Verification
 	if actual != expected {
@@ -106,7 +106,7 @@ func TestToJsonSimpleKeyEmptyArrayValue(t *testing.T) {
 	expected := `{"data":{"key":[]}}`
 
 	// Execute SUT
-	actual, _ := ToJson(input)
+	actual, _ := ToJson(input, false)
 
 	// Verification
 	if actual != expected {
@@ -121,7 +121,7 @@ func TestToJsonSimpleArrayIndexValue(t *testing.T) {
 	expected := `{"data":{"key":["val"]}}`
 
 	// Execute SUT
-	actual, _ := ToJson(input)
+	actual, _ := ToJson(input, false)
 
 	// Verification
 	if actual != expected {
@@ -135,7 +135,7 @@ func TestToJsonSimpleArrayWithTwoValues(t *testing.T) {
 	expected := `{"data":{"key":["val","val2"]}}`
 
 	// Execute SUT
-	actual, _ := ToJson(input)
+	actual, _ := ToJson(input, false)
 
 	// Verification
 	if actual != expected {
