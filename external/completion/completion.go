@@ -13,12 +13,12 @@ const (
 	CompleteCrudAction     = 16
 )
 
-type CompletionRequest struct {
+type Request struct {
 	Type     int
 	Resource string
 }
 
-func Complete(c CompletionRequest) ([]string, cobra.ShellCompDirective) {
+func Complete(c Request) ([]string, cobra.ShellCompDirective) {
 	results := make([]string, 0)
 
 	if c.Type&CompleteResource > 0 {

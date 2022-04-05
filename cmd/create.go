@@ -71,7 +71,7 @@ var create = &cobra.Command{
 
 	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		if len(args) == 0 {
-			return completion.Complete(completion.CompletionRequest{
+			return completion.Complete(completion.Request{
 				Type: completion.CompleteResource,
 			})
 		}
