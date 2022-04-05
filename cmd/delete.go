@@ -44,7 +44,6 @@ var delete = &cobra.Command{
 			if err != nil {
 				log.Println(err)
 			}
-
 			// Check if error response
 			if resp.StatusCode >= 400 && resp.StatusCode <= 600 {
 				json.PrintJson(string(body))
