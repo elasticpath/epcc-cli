@@ -10,8 +10,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"io/ioutil"
-	"strconv"
-	"strings"
 )
 
 var delete = &cobra.Command{
@@ -20,7 +18,7 @@ var delete = &cobra.Command{
 	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		// Find Resource
-		resource, ok := resources.Resources[args[0]]
+		resource, ok := resources.GetResourceByName(args[0])
 		if !ok {
 			return fmt.Errorf("Could not find resource %s", args[0])
 		}
@@ -29,18 +27,17 @@ var delete = &cobra.Command{
 			return fmt.Errorf("Resource %s doesn't support DELETE", args[0])
 		}
 
-		deleteURL := resource.DeleteEntityInfo.Url
-		idCount := strings.Count(deleteURL, "%")
-		if len(args)-1 != idCount {
-			return fmt.Errorf("Not enough args")
-		}
+		resourceURL := resource.DeleteEntityInfo.Url
 
-		for i := 0; i < idCount; i++ {
-			deleteURL = strings.Replace(deleteURL, "%"+strconv.Itoa(i+1), args[i+1], 1)
+		// Replace ids with args in resourceURL
+		resourceURL, err := resources.GenerateUrl(resourceURL, args[1:])
+
+		if err != nil {
+			return err
 		}
 
 		// Submit request
-		resp, err := httpclient.DoRequest(context.TODO(), "DELETE", deleteURL, "", nil)
+		resp, err := httpclient.DoRequest(context.TODO(), "DELETE", resourceURL, "", nil)
 		if err != nil {
 			return fmt.Errorf("Got error %s", err.Error())
 		}
@@ -62,7 +59,7 @@ var delete = &cobra.Command{
 	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		if len(args) == 0 {
 			return completion.Complete(completion.Request{
-				Type: completion.CompleteResource,
+				Type: completion.CompleteSingularResource,
 			})
 		}
 

@@ -10,7 +10,6 @@ import (
 	"github.com/spf13/cobra"
 	"io/ioutil"
 	"log"
-	"strconv"
 	"strings"
 )
 
@@ -20,7 +19,7 @@ var create = &cobra.Command{
 	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		// Find Resource
-		resource, ok := resources.Resources[args[0]]
+		resource, ok := resources.GetResourceByName(args[0])
 		if !ok {
 			return fmt.Errorf("Could not find resource %s", args[0])
 		}
@@ -31,11 +30,18 @@ var create = &cobra.Command{
 
 		// Count ids in CreateEntity
 		resourceURL := resource.CreateEntityInfo.Url
-		idCount := strings.Count(resourceURL, "%")
+
+		idCount, err := resources.GetNumberOfVariablesNeeded(resourceURL)
+
+		if err != nil {
+			return err
+		}
 
 		// Replace ids with args in resourceURL
-		for i := 1; i <= idCount; i++ {
-			resourceURL = strings.Replace(resourceURL, "%"+strconv.Itoa(i), args[i], 1)
+		resourceURL, err = resources.GenerateUrl(resourceURL, args[1:])
+
+		if err != nil {
+			return err
 		}
 
 		args = append(args, "type", resource.JsonApiType)
@@ -72,7 +78,7 @@ var create = &cobra.Command{
 	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		if len(args) == 0 {
 			return completion.Complete(completion.Request{
-				Type: completion.CompleteResource,
+				Type: completion.CompleteSingularResource,
 			})
 		}
 

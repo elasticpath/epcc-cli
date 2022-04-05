@@ -11,8 +11,6 @@ import (
 	"github.com/spf13/cobra"
 	"io/ioutil"
 	"net/url"
-	"strconv"
-	"strings"
 )
 
 var get = &cobra.Command{
@@ -21,7 +19,7 @@ var get = &cobra.Command{
 	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		// Find Resource
-		resource, ok := resources.Resources[args[0]]
+		resource, ok := resources.GetResourceByName(args[0])
 		if !ok {
 			return fmt.Errorf("Could not find resource %s", args[0])
 		}
@@ -33,25 +31,27 @@ var get = &cobra.Command{
 			return fmt.Errorf("Resource %s doesn't support GET", args[0])
 		} else if resource.GetCollectionInfo != nil && resource.GetEntityInfo == nil {
 			resourceURL = resource.GetCollectionInfo.Url
-			idCount = strings.Count(resourceURL, "%")
 		} else if resource.GetCollectionInfo == nil && resource.GetEntityInfo != nil {
 			resourceURL = resource.GetEntityInfo.Url
-			idCount = strings.Count(resourceURL, "%")
 		} else {
-			// Count ids in get-collection
-			resourceURL = resource.GetCollectionInfo.Url
-			idCount = strings.Count(resourceURL, "%")
-
-			// Determine if call should be get-collection or get-entity
-			if (idCount-len(args)+1)%2 != 0 {
-				idCount += 1
+			if _, ok := resources.GetPluralResources()[args[0]]; ok {
+				resourceURL = resource.GetCollectionInfo.Url
+			} else {
 				resourceURL = resource.GetEntityInfo.Url
 			}
 		}
 
+		idCount, err := resources.GetNumberOfVariablesNeeded(resourceURL)
+
+		if err != nil {
+			return err
+		}
+
 		// Replace ids with args in resourceURL
-		for i := 1; i <= idCount; i++ {
-			resourceURL = strings.Replace(resourceURL, "%"+strconv.Itoa(i), args[i], 1)
+		resourceURL, err = resources.GenerateUrl(resourceURL, args[1:])
+
+		if err != nil {
+			return err
 		}
 
 		// Add remaining args as query params
@@ -91,7 +91,7 @@ var get = &cobra.Command{
 	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		if len(args) == 0 {
 			return completion.Complete(completion.Request{
-				Type: completion.CompleteResource,
+				Type: completion.CompleteSingularResource + completion.CompletePluralResource,
 			})
 		}
 

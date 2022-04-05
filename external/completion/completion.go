@@ -6,11 +6,12 @@ import (
 )
 
 const (
-	CompleteResource       = 1
-	CompleteAttributeKey   = 2
-	CompleteAttributeValue = 4
-	CompleteQueryParam     = 8
-	CompleteCrudAction     = 16
+	CompletePluralResource   = 1
+	CompleteSingularResource = 2
+	CompleteAttributeKey     = 4
+	CompleteAttributeValue   = 8
+	CompleteQueryParam       = 16
+	CompleteCrudAction       = 32
 )
 
 type Request struct {
@@ -21,9 +22,15 @@ type Request struct {
 func Complete(c Request) ([]string, cobra.ShellCompDirective) {
 	results := make([]string, 0)
 
-	if c.Type&CompleteResource > 0 {
-		for k := range resources.Resources {
+	if c.Type&CompletePluralResource > 0 {
+		for k := range resources.GetPluralResources() {
 			results = append(results, k)
+		}
+	}
+
+	if c.Type&CompleteSingularResource > 0 {
+		for _, v := range resources.GetSingularResourceNames() {
+			results = append(results, v)
 		}
 	}
 

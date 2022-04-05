@@ -20,9 +20,11 @@ var resourceListCommand = &cobra.Command{
 		programName := filepath.Base(os.Args[0])
 
 		// Generate sorted list of resource names
-		sortedResourceNames := make([]string, 0, len(resources.Resources))
 
-		for i := range resources.Resources {
+		resourceInfo := resources.GetPluralResources()
+		sortedResourceNames := make([]string, 0, len(resourceInfo))
+
+		for i := range resources.GetPluralResources() {
 			sortedResourceNames = append(sortedResourceNames, i)
 		}
 
@@ -30,26 +32,26 @@ var resourceListCommand = &cobra.Command{
 
 		// Print resource list
 		for _, resource := range sortedResourceNames {
-			fmt.Printf("%s => json-type: %s\n", resource, resources.Resources[resource].JsonApiType)
+			fmt.Printf("%s => json-type: %s\n", resource, resourceInfo[resource].JsonApiType)
 
-			if resources.Resources[resource].GetCollectionInfo != nil {
-				printCrudCommands(programName, "get", resource, resources.Resources[resource].GetCollectionInfo.Url)
+			if resourceInfo[resource].GetCollectionInfo != nil {
+				printCrudCommands(programName, "get", resourceInfo[resource].PluralName, resourceInfo[resource].GetCollectionInfo.Url)
 			}
 
-			if resources.Resources[resource].CreateEntityInfo != nil {
-				printCrudCommands(programName, "create", resource, resources.Resources[resource].CreateEntityInfo.Url)
+			if resourceInfo[resource].CreateEntityInfo != nil {
+				printCrudCommands(programName, "create", resourceInfo[resource].SingularName, resourceInfo[resource].CreateEntityInfo.Url)
 			}
 
-			if resources.Resources[resource].GetEntityInfo != nil {
-				printCrudCommands(programName, "get", resource, resources.Resources[resource].GetEntityInfo.Url)
+			if resourceInfo[resource].GetEntityInfo != nil {
+				printCrudCommands(programName, "get", resourceInfo[resource].SingularName, resourceInfo[resource].GetEntityInfo.Url)
 			}
 
-			if resources.Resources[resource].UpdateEntityInfo != nil {
-				printCrudCommands(programName, "update", resource, resources.Resources[resource].UpdateEntityInfo.Url)
+			if resourceInfo[resource].UpdateEntityInfo != nil {
+				printCrudCommands(programName, "update", resourceInfo[resource].SingularName, resourceInfo[resource].UpdateEntityInfo.Url)
 			}
 
-			if resources.Resources[resource].DeleteEntityInfo != nil {
-				printCrudCommands(programName, "delete", resource, resources.Resources[resource].DeleteEntityInfo.Url)
+			if resourceInfo[resource].DeleteEntityInfo != nil {
+				printCrudCommands(programName, "delete", resourceInfo[resource].SingularName, resourceInfo[resource].DeleteEntityInfo.Url)
 			}
 
 			fmt.Printf("\n")

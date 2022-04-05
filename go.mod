@@ -29,6 +29,7 @@ require (
 	github.com/subosito/gotenv v1.2.0 // indirect
 	github.com/thediveo/enumflag v0.10.1 // indirect
 	github.com/xo/terminfo v0.0.0-20210125001918-ca9a967f8778 // indirect
+	github.com/yosida95/uritemplate/v3 v3.0.1 // indirect
 	golang.org/x/sys v0.0.0-20220330033206-e17cdc41300f // indirect
 	golang.org/x/text v0.3.7 // indirect
 	gopkg.in/ini.v1 v1.66.2 // indirect
