@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/elasticpath/epcc-cli/external/completion"
 	"github.com/elasticpath/epcc-cli/external/resources"
 	"github.com/spf13/cobra"
 )
@@ -23,5 +24,15 @@ var docsCommand = &cobra.Command{
 			}
 		}
 		return fmt.Errorf("You must supply a resource type to the docs command")
+	},
+
+	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		if len(args) == 0 {
+			return completion.Complete(completion.Request{
+				Type: completion.CompleteResource,
+			})
+		}
+
+		return []string{}, cobra.ShellCompDirectiveNoFileComp
 	},
 }
