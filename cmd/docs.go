@@ -7,7 +7,7 @@ import (
 )
 
 var docsCommand = &cobra.Command{
-	Use:   "docs [RESOURCE] [ID_1]",
+	Use:   "docs [RESOURCE] [VERB]",
 	Short: "Opens up API documentation for the resource",
 	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
