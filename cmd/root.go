@@ -28,6 +28,7 @@ func init() {
 		get,
 		create,
 		delete,
+		update,
 		resourceListCommand,
 	)
 
