@@ -7,11 +7,13 @@ import (
 	"github.com/elasticpath/epcc-cli/config"
 	"github.com/elasticpath/epcc-cli/external/authentication"
 	"github.com/elasticpath/epcc-cli/external/version"
+	"github.com/elasticpath/epcc-cli/globals"
 	log "github.com/sirupsen/logrus"
 	"io"
 	"mime/multipart"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 )
 
@@ -54,6 +56,10 @@ func doRequestInternal(ctx context.Context, method string, contentType string, p
 
 	req.Header.Add("User-Agent", fmt.Sprintf("epcc-cli/%s-%s", version.Version, version.Commit))
 
+	if err = AddHeaderByFlag(req); err != nil {
+		return nil, err
+	}
+
 	if len(config.Envs.EPCC_BETA_API_FEATURES) > 0 {
 		req.Header.Add("EP-Beta-Features", config.Envs.EPCC_BETA_API_FEATURES)
 	}
@@ -95,4 +101,16 @@ func EncodeForm(values map[string]string, filename string, paramName string, fil
 	}
 
 	return body, writer.FormDataContentType(), nil
+}
+
+func AddHeaderByFlag(r *http.Request) error {
+	for _, header := range globals.RawHeaders {
+		// Validation and formatting logic for headers could be improved
+		entries := strings.Split(header, ":")
+		if len(entries) < 2 {
+			return fmt.Errorf("header has invalid format")
+		}
+		r.Header.Add(entries[0], entries[1])
+	}
+	return nil
 }
