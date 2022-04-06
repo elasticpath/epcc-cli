@@ -13,9 +13,9 @@ import (
 	"strings"
 )
 
-var create = &cobra.Command{
-	Use:   "create <RESOURCE> [ID_1] [ID_2]... <KEY_1> <VAL_1> <KEY_2> <VAL_2>...",
-	Short: "Creates an entity of a resource.",
+var update = &cobra.Command{
+	Use:   "update <RESOURCE> [PARENT_ID_1] [PARENT_ID_2] [ID]... <KEY_1> <VAL_1> <KEY_2> <VAL_2>...",
+	Short: "Updates an entity of a resource.",
 	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		// Find Resource
@@ -24,37 +24,32 @@ var create = &cobra.Command{
 			return fmt.Errorf("Could not find resource %s", args[0])
 		}
 
-		if resource.CreateEntityInfo == nil {
-			return fmt.Errorf("resource %s doesn't support CREATE", args[0])
+		if resource.UpdateEntityInfo == nil {
+			return fmt.Errorf("resource %s doesn't support UPDATE", args[0])
 		}
 
-		// Count ids in CreateEntity
-		resourceURL := resource.CreateEntityInfo.Url
-
+		// Count ids in UpdateEntity
+		resourceURL := resource.UpdateEntityInfo.Url
 		idCount, err := resources.GetNumberOfVariablesNeeded(resourceURL)
-
 		if err != nil {
 			return err
 		}
 
 		// Replace ids with args in resourceURL
 		resourceURL, err = resources.GenerateUrl(resourceURL, args[1:])
-
 		if err != nil {
 			return err
 		}
 
 		args = append(args, "type", resource.JsonApiType)
 		// Create the body from remaining args
-		body, err := json.ToJson(args[(idCount+1):], noWrapping)
-
+		body, err := json.ToJson(args[(idCount+1):], false)
 		if err != nil {
 			return err
 		}
 
 		// Submit request
-		resp, err := httpclient.DoRequest(context.TODO(), "POST", resourceURL, "", strings.NewReader(body))
-
+		resp, err := httpclient.DoRequest(context.TODO(), "PUT", resourceURL, "", strings.NewReader(body))
 		if err != nil {
 			return fmt.Errorf("Got error %s", err.Error())
 		}
