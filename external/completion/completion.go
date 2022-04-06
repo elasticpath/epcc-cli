@@ -15,8 +15,9 @@ const (
 )
 
 type Request struct {
-	Type     int
-	Resource string
+	Type       int
+	Resource   resources.Resource
+	Attributes map[string]int
 }
 
 func Complete(c Request) ([]string, cobra.ShellCompDirective) {
@@ -39,7 +40,11 @@ func Complete(c Request) ([]string, cobra.ShellCompDirective) {
 	}
 
 	if c.Type&CompleteAttributeKey > 0 {
-		// do something with :resources.Resources[c.Resource].Attributes
+		for k := range c.Resource.Attributes {
+			if _, ok := c.Attributes[k]; !ok {
+				results = append(results, k)
+			}
+		}
 	}
 
 	return results, cobra.ShellCompDirectiveNoFileComp
