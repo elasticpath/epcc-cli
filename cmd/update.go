@@ -24,11 +24,11 @@ var update = &cobra.Command{
 			return fmt.Errorf("Could not find resource %s", args[0])
 		}
 
-		if resource.CreateEntityInfo == nil {
+		if resource.UpdateEntityInfo == nil {
 			return fmt.Errorf("resource %s doesn't support UPDATE", args[0])
 		}
 
-		// Count ids in CreateEntity
+		// Count ids in UpdateEntity
 		resourceURL := resource.UpdateEntityInfo.Url
 		idCount, err := resources.GetNumberOfVariablesNeeded(resourceURL)
 		if err != nil {
@@ -43,7 +43,7 @@ var update = &cobra.Command{
 
 		args = append(args, "type", resource.JsonApiType)
 		// Create the body from remaining args
-		body, err := json.ToJson(args[(idCount+1):], noWrapping)
+		body, err := json.ToJson(args[(idCount+1):], false)
 		if err != nil {
 			return err
 		}
