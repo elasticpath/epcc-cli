@@ -11,24 +11,27 @@ var docsCommand = &cobra.Command{
 	Short: "Opens up API documentation for the resource",
 	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		arg := len(args)
-
-		switch arg {
+		var err error
+		switch len(args) {
 		case 0:
 			return fmt.Errorf("You must supply a resource type to the docs command")
 		case 1:
 			resource := resources.Resources[args[0]]
 			if len(resource.Docs) > 0 {
-				openDoc(args[0], "")
+				err = openDoc(args[0], "")
 			} else {
 				return fmt.Errorf("You must supply a valid resource type to the docs command")
 			}
 		case 2:
 			resource := args[0]
 			verb := args[1]
-			openDoc(resource, verb)
+			err = openDoc(resource, verb)
+
 		default:
-			return fmt.Errorf("unsupported platform")
+			return doDefault()
+		}
+		if err != nil {
+			return doDefault()
 		}
 		return nil
 	},
@@ -36,22 +39,43 @@ var docsCommand = &cobra.Command{
 
 func openDoc(resource string, verb string) error {
 	resourceDoc := resources.Resources[resource]
-
+	var err error
 	switch verb {
 	case "":
-		OpenUrl(resourceDoc.Docs)
+		err = OpenUrl(resourceDoc.Docs)
 	case "get-collection":
-		OpenUrl(resourceDoc.GetCollectionInfo.Docs)
+		if len(resourceDoc.GetCollectionInfo.Docs) < 1 {
+			return doDefault()
+		}
+		err = OpenUrl(resourceDoc.GetCollectionInfo.Docs)
 	case "get-entity":
-		OpenUrl(resourceDoc.GetEntityInfo.Docs)
+		if len(resourceDoc.GetEntityInfo.Docs) < 1 {
+			return doDefault()
+		}
+		err = OpenUrl(resourceDoc.GetEntityInfo.Docs)
 	case "update-entity":
-		OpenUrl(resourceDoc.UpdateEntityInfo.Docs)
+		if len(resourceDoc.UpdateEntityInfo.Docs) < 1 {
+			return doDefault()
+		}
+		err = OpenUrl(resourceDoc.UpdateEntityInfo.Docs)
 	case "delete-entity":
-		OpenUrl(resourceDoc.DeleteEntityInfo.Docs)
+		if len(resourceDoc.DeleteEntityInfo.Docs) < 1 {
+			return doDefault()
+		}
+		err = OpenUrl(resourceDoc.DeleteEntityInfo.Docs)
 	case "create-entity":
-		OpenUrl(resourceDoc.CreateEntityInfo.Docs)
+		if len(resourceDoc.CreateEntityInfo.Docs) < 1 {
+			return doDefault()
+		}
+		err = OpenUrl(resourceDoc.CreateEntityInfo.Docs)
 	default:
-		return fmt.Errorf("unsupported platform")
+		doDefault()
+	}
+	if err != nil {
+		return err
 	}
 	return nil
+}
+func doDefault() error {
+	return fmt.Errorf("unsupported platform")
 }
