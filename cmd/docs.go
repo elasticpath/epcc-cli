@@ -18,11 +18,9 @@ var docsCommand = &cobra.Command{
 		case 1:
 			err = openDoc(args[0], "")
 		case 2:
-
 			resource := args[0]
 			verb := args[1]
 			err = openDoc(resource, verb)
-
 		default:
 			return doDefault()
 		}
