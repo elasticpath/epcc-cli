@@ -74,7 +74,30 @@ var update = &cobra.Command{
 		if len(args) == 0 {
 			return completion.Complete(completion.Request{
 				Type: completion.CompleteSingularResource,
+				Verb: completion.Update,
 			})
+		}
+
+		// Find Resource
+		resource, ok := resources.GetResourceByName(args[0])
+		if ok {
+			if resource.UpdateEntityInfo != nil {
+				idCount, _ := resources.GetNumberOfVariablesNeeded(resource.UpdateEntityInfo.Url)
+				if len(args)-idCount >= 1 { // Arg is after IDs
+					if (len(args)-idCount)%2 == 1 { // This is an attribute key
+						usedAttributes := make(map[string]int)
+						for i := idCount + 1; i < len(args); i = i + 2 {
+							usedAttributes[args[i]] = 0
+						}
+						return completion.Complete(completion.Request{
+							Type:       completion.CompleteAttributeKey,
+							Resource:   resource,
+							Attributes: usedAttributes,
+							Verb:       completion.Update,
+						})
+					}
+				}
+			}
 		}
 
 		return []string{}, cobra.ShellCompDirectiveNoFileComp
