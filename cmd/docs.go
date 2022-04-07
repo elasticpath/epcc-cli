@@ -36,7 +36,6 @@ var docsCommand = &cobra.Command{
 func openDoc(resource string, verb string) error {
 	resourceDoc, ok := resources.Resources[resource]
 	if !ok {
-		fmt.Println("errorr:::")
 		panic(fmt.Sprintf("Could not find resource %s", resource))
 	}
 
