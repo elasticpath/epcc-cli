@@ -123,6 +123,105 @@ authentication-realms:
       type: URL
     duplicate_email_policy:
       type: ENUM:allowed,api_only
+carts:
+  singular-name: "cart"
+  json-api-type: "cart"
+  json-api-format: "legacy"
+  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/carts-and-orders/carts/index.html"
+  get-collection:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/carts-and-orders/carts/associations/get-customer-carts.html"
+    url: "/v2/carts"
+  get-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/carts-and-orders/carts/get-a-cart.html"
+    url: "/v2/carts/{carts}"
+  update-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/carts-and-orders/carts/create-multi-cart.html#put-update-a-cart"
+    url: "/v2/carts/{carts}"
+  delete-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/carts-and-orders/carts/delete-a-cart.html"
+    url: "/v2/carts/{carts}"
+  create-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/carts-and-orders/carts/create-multi-cart.html"
+    url: "/v2/carts/"
+    content-type: application/json
+  attributes:
+    id:
+      type: STRING
+    name:
+      type: STRING
+    description:
+      type: STRING
+cart-items:
+  singular-name: "cart-item"
+  json-api-type: "cart_items"
+  json-api-format: "legacy"
+  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/carts-and-orders/carts/cart-items/index.html"
+  get-collection:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/carts-and-orders/carts/cart-items/get-cart-items.html"
+    url: "/v2/carts/{carts}/items"
+  update-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/carts-and-orders/carts/cart-items/update-cart-item.html"
+    url: "/v2/carts/{carts}/items/{cart_items}"
+  delete-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/carts-and-orders/carts/cart-items/remove-cart-item.html"
+    url: "/v2/carts/{carts}/items/{cart_items}"
+  attributes:
+    sku:
+      type: STRING
+    quantity:
+      type: INT
+cart-item:
+  singular-name: "cart-item"
+  json-api-type: "cart_item"
+  json-api-format: "legacy"
+  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/carts-and-orders/carts/cart-items/index.html"
+  create-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/carts-and-orders/carts/add-product-to-cart.html"
+    url: "/v2/carts/{carts}/items"
+    content-type: application/json
+  attributes:
+    sku:
+      type: STRING
+    quantity:
+      type: INT
+cart-checkout:
+  singular-name: "checkout"
+  json-api-type: "checkout"
+  json-api-format: "legacy"
+  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/carts-and-orders/checkout.html#post-with-customer-object"
+  create-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/carts-and-orders/checkout.html#post-with-customer-object"
+    url: "/v2/carts/{carts}/checkout"
+    content-type: application/json
+  attributes:
+    customer.email:
+      type: STRING
+    customer.name:
+      type: STRING
+    billing_address.first_name:
+      type: STRING
+    billing_address.last_name:
+      type: STRING
+    billing_address.line_1:
+      type: STRING
+    billing_address.postcode:
+      type: STRING
+    billing_address.county:
+      type: STRING
+    billing_address.country:
+      type: STRING
+    shipping_address.first_name:
+      type: STRING
+    shipping_address.last_name:
+      type: STRING
+    shipping_address.line_1:
+      type: STRING
+    shipping_address.postcode:
+      type: STRING
+    shipping_address.county:
+      type: STRING
+    shipping_address.country:
+      type: STRING
 currencies:
   singular-name: "currency"
   json-api-type: "currency"
@@ -425,6 +524,78 @@ oidc-profiles:
       type: STRING
     client_secret:
       type: STRING
+orders:
+  singular-name: "order"
+  json-api-type: "order"
+  json-api-format: "legacy"
+  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/carts-and-orders/orders/index.html"
+  get-collection:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/carts-and-orders/orders/get-all-orders.html"
+    url: "/v2/orders"
+  get-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/carts-and-orders/orders/get-an-order.html"
+    url: "/v2/orders/{orders}"
+  update-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/carts-and-orders/orders/update-an-order.html"
+    url: "/v2/orders/{orders}"
+    content-type: application/json
+  attributes:
+    attributes:
+      shipping_address.first_name:
+        type: STRING
+      shipping_address.last_name:
+        type: STRING
+      shipping_address.line_1:
+        type: STRING
+      shipping_address.postcode:
+        type: STRING
+      shipping_address.county:
+        type: STRING
+      shipping_address.country:
+        type: STRING
+      status:
+        type: ENUM:cancelled
+      shipping:
+        type: ENUM:fulfilled
+order-items:
+  singular-name: "order-item"
+  json-api-type: "order_item"
+  json-api-format: "legacy"
+  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/carts-and-orders/orders/order-items.html"
+  get-collection:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/carts-and-orders/orders/order-items.html#get-get-order-items"
+    url: "/v2/orders/{orders}/items"
+  attributes:
+order-transactions:
+  singular-name: "order-transaction"
+  json-api-type: "transaction"
+  json-api-format: "legacy"
+  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/transactions/index.html"
+  get-collection:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/transactions/get-all-transactions.html"
+    url: "/v2/orders/{orders}/transactions"
+  get-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/carts-and-orders/orders/get-an-order.html"
+    url: "/v2/orders/{orders}/transactions/{order_transactions}"
+  create-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/paying-for-an-order/manual-payments.html"
+    url: "/v2/orders/{orders}/payments"
+order-transaction-capture:
+  singular-name: "order-transaction-capture"
+  json-api-type: "transaction"
+  json-api-format: "legacy"
+  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/paying-for-an-order/manual-payments.html#post-capture-transaction"
+  create-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/paying-for-an-order/manual-payments.html#post-capture-transaction"
+    url: "/v2/orders/{orders}/transactions/{order_transactions}/capture"
+order-transaction-refund:
+  singular-name: "order-transaction-refund"
+  json-api-type: "transaction"
+  json-api-format: "legacy"
+  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/transactions/refund-a-transaction.html"
+  create-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/transactions/refund-a-transaction.html"
+    url: "/v2/orders/{orders}/transactions/{order_transactions}/refund"
 password-profiles:
   singular-name: "password_profile"
   json-api-type: "password_profile"
@@ -451,6 +622,29 @@ password-profiles:
       type: ENUM:any,email
     name:
       type: STRING
+payment-gateways:
+  singular-name: "payment-gateway"
+  json-api-type: "gateway"
+  json-api-format: "legacy"
+  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/gateways/index.html"
+  get-collection:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/gateways/get-all-gateways.html"
+    url: "/v2/gateways/"
+  attributes:
+payment-gateways-manual:
+  singular-name: "payment-gateway-manual"
+  json-api-type: "gateway"
+  json-api-format: "legacy"
+  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/paying-for-an-order/manual-payments.html"
+  get-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/gateways/get-a-gateway.html#get-get-a-gateway-by-slug"
+    url: "/v2/gateways/manual"
+  update-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/gateways/update-gateway-settings.html"
+    url: "/v2/gateways/manual"
+  attributes:
+    enabled:
+      type: BOOL
 pcm-hierarchies:
   singular-name: "pcm-hierarchy"
   json-api-type: "hierarchy"
