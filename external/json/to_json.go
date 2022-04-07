@@ -6,9 +6,12 @@ import (
 	"github.com/itchyny/gojq"
 	"log"
 	"regexp"
+	"strings"
 )
 
-func ToJson(args []string, noWrapping bool) (string, error) {
+var segmentRegex = regexp.MustCompile("(.+?)(\\[[0-9]+])?$")
+
+func ToJson(args []string, noWrapping bool, compliant bool) (string, error) {
 
 	if len(args)%2 == 1 {
 		return "", fmt.Errorf("The number arguments %d supplied isn't even, json should be passed in key value pairs", len(args))
@@ -22,7 +25,24 @@ func ToJson(args []string, noWrapping bool) (string, error) {
 		key := args[i]
 		val := formatValue(args[i+1])
 
-		query := fmt.Sprintf(".%s=%s", key, val)
+		jsonKey := key
+		switch {
+		case key == "type" || key == "id":
+			// These should always be in the root json object
+		case strings.HasPrefix("attributes.", key) || strings.HasPrefix("relationships.", key):
+			// We won't double encode these.
+		case compliant:
+			jsonKey = fmt.Sprintf("attributes.%s", key)
+		default:
+
+		}
+		arrayNotationPath := ""
+
+		for _, str := range strings.Split(jsonKey, ".") {
+			arrayNotationPath += segmentRegex.ReplaceAllString(str, "[\"$1\"]$2")
+		}
+
+		query := fmt.Sprintf(".%s=%s", arrayNotationPath, val)
 
 		result, err = runJQ(query, result)
 		if err != nil {

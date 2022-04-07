@@ -6,10 +6,12 @@ import (
 	"fmt"
 	"github.com/elasticpath/epcc-cli/config"
 	"github.com/elasticpath/epcc-cli/external/authentication"
+	"github.com/elasticpath/epcc-cli/external/json"
 	"github.com/elasticpath/epcc-cli/external/version"
 	"github.com/elasticpath/epcc-cli/globals"
 	log "github.com/sirupsen/logrus"
 	"io"
+	"io/ioutil"
 	"mime/multipart"
 	"net/http"
 	"net/url"
@@ -39,6 +41,8 @@ func doRequestInternal(ctx context.Context, method string, contentType string, p
 	reqURL.Path = path
 	reqURL.RawQuery = query
 
+	var bodyBuf bytes.Buffer
+	payload = io.TeeReader(payload, &bodyBuf)
 	req, err := http.NewRequest(method, reqURL.String(), payload)
 	if err != nil {
 		return nil, err
@@ -67,7 +71,17 @@ func doRequestInternal(ctx context.Context, method string, contentType string, p
 	resp, err := HttpClient.Do(req)
 
 	if resp.StatusCode > 400 {
-		log.Warnf("%s %s ==> %s %s", method, reqURL.String(), resp.Proto, resp.Status)
+		body, _ := ioutil.ReadAll(&bodyBuf)
+		if len(body) > 0 {
+			log.Warnf("%s %s", method, reqURL.String())
+
+			// TODO maybe check if it's json and if not do something else.
+			json.PrintJsonToStderr(string(body))
+			log.Warnf("%s %s", resp.Proto, resp.Status)
+		} else {
+			log.Warnf("%s %s ==> %s %s", method, reqURL.String(), resp.Proto, resp.Status)
+		}
+
 	} else if resp.StatusCode >= 200 && resp.StatusCode <= 399 {
 		log.Infof("%s %s ==> %s %s", method, reqURL.String(), resp.Proto, resp.Status)
 	}
