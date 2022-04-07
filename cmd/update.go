@@ -95,6 +95,13 @@ var update = &cobra.Command{
 							Attributes: usedAttributes,
 							Verb:       completion.Update,
 						})
+					} else { // This is an attribute value
+						return completion.Complete(completion.Request{
+							Type:      completion.CompleteAttributeValue,
+							Resource:  resource,
+							Verb:      completion.Update,
+							Attribute: args[len(args)-1],
+						})
 					}
 				}
 			}

@@ -91,7 +91,7 @@ var get = &cobra.Command{
 	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		if len(args) == 0 {
 			return completion.Complete(completion.Request{
-				Type: completion.CompleteSingularResource + completion.CompletePluralResource,
+				Type: completion.CompleteSingularResource | completion.CompletePluralResource,
 				Verb: completion.Get,
 			})
 		}

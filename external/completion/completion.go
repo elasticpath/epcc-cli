@@ -3,6 +3,7 @@ package completion
 import (
 	"github.com/elasticpath/epcc-cli/external/resources"
 	"github.com/spf13/cobra"
+	"strings"
 )
 
 const (
@@ -26,6 +27,7 @@ type Request struct {
 	Resource   resources.Resource
 	Attributes map[string]int
 	Verb       int
+	Attribute  string
 }
 
 func Complete(c Request) ([]string, cobra.ShellCompDirective) {
@@ -81,5 +83,20 @@ func Complete(c Request) ([]string, cobra.ShellCompDirective) {
 		}
 	}
 
-	return results, cobra.ShellCompDirectiveNoFileComp
+	if c.Type&CompleteAttributeValue > 0 {
+		if c.Attribute != "" {
+			if c.Resource.Attributes[c.Attribute].Type == "BOOL" {
+				results = append(results, "true", "false")
+			} else if strings.HasPrefix(c.Resource.Attributes[c.Attribute].Type, "ENUM:") {
+				enums := strings.Replace(c.Resource.Attributes[c.Attribute].Type, "ENUM:", "", 1)
+				for _, k := range strings.Split(enums, ",") {
+					results = append(results, k)
+				}
+			} else if c.Resource.Attributes[c.Attribute].Type == "URL" {
+				results = append(results, "https://")
+			}
+		}
+	}
+
+	return results, cobra.ShellCompDirectiveNoSpace | cobra.ShellCompDirectiveNoFileComp
 }
