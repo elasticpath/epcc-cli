@@ -16,13 +16,9 @@ var docsCommand = &cobra.Command{
 		case 0:
 			return fmt.Errorf("You must supply a resource type to the docs command")
 		case 1:
-			resource := resources.Resources[args[0]]
-			if len(resource.Docs) > 0 {
-				err = openDoc(args[0], "")
-			} else {
-				return fmt.Errorf("You must supply a valid resource type to the docs command")
-			}
+			err = openDoc(args[0], "")
 		case 2:
+
 			resource := args[0]
 			verb := args[1]
 			err = openDoc(resource, verb)
@@ -38,38 +34,47 @@ var docsCommand = &cobra.Command{
 }
 
 func openDoc(resource string, verb string) error {
-	resourceDoc := resources.Resources[resource]
+	resourceDoc, ok := resources.Resources[resource]
+	if !ok {
+		fmt.Println("errorr:::")
+		panic(fmt.Sprintf("Could not find resource %s", resource))
+	}
+
 	var err error
 	switch verb {
 	case "":
+		if len(resourceDoc.Docs) < 1 {
+			panic("You must supply a valid resource type to the docs command")
+		}
 		err = OpenUrl(resourceDoc.Docs)
 	case "get-collection":
-		if len(resourceDoc.GetCollectionInfo.Docs) < 1 {
-			return doDefault()
+		if resourceDoc.GetCollectionInfo != nil && len(resourceDoc.GetCollectionInfo.Docs) < 1 {
+			panic("couldn't find the document")
 		}
 		err = OpenUrl(resourceDoc.GetCollectionInfo.Docs)
-	case "get-entity":
-		if len(resourceDoc.GetEntityInfo.Docs) < 1 {
-			return doDefault()
+	case "get":
+		if resourceDoc.GetEntityInfo != nil && len(resourceDoc.GetEntityInfo.Docs) < 1 {
+			panic("couldn't find the document")
 		}
 		err = OpenUrl(resourceDoc.GetEntityInfo.Docs)
-	case "update-entity":
-		if len(resourceDoc.UpdateEntityInfo.Docs) < 1 {
-			return doDefault()
+	case "update":
+		if resourceDoc.UpdateEntityInfo != nil && len(resourceDoc.UpdateEntityInfo.Docs) < 1 {
+			panic("couldn't find the document")
 		}
 		err = OpenUrl(resourceDoc.UpdateEntityInfo.Docs)
-	case "delete-entity":
-		if len(resourceDoc.DeleteEntityInfo.Docs) < 1 {
-			return doDefault()
+	case "delete":
+		if resourceDoc.DeleteEntityInfo != nil && len(resourceDoc.DeleteEntityInfo.Docs) < 1 {
+			panic("couldn't find the document")
 		}
 		err = OpenUrl(resourceDoc.DeleteEntityInfo.Docs)
-	case "create-entity":
-		if len(resourceDoc.CreateEntityInfo.Docs) < 1 {
-			return doDefault()
+	case "create":
+		if resourceDoc.CreateEntityInfo != nil && len(resourceDoc.CreateEntityInfo.Docs) < 1 {
+			panic("couldn't find the document")
 		}
 		err = OpenUrl(resourceDoc.CreateEntityInfo.Docs)
 	default:
-		doDefault()
+		err = doDefault()
+
 	}
 	if err != nil {
 		return err
@@ -77,5 +82,5 @@ func openDoc(resource string, verb string) error {
 	return nil
 }
 func doDefault() error {
-	return fmt.Errorf("unsupported platform")
+	return fmt.Errorf(" You must supply a resource type to the docs command")
 }
