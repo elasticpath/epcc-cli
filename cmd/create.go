@@ -100,6 +100,13 @@ var create = &cobra.Command{
 							Attributes: usedAttributes,
 							Verb:       completion.Create,
 						})
+					} else { // This is an attribute value
+						return completion.Complete(completion.Request{
+							Type:      completion.CompleteAttributeValue,
+							Resource:  resource,
+							Verb:      completion.Create,
+							Attribute: args[len(args)-1],
+						})
 					}
 				}
 			}
