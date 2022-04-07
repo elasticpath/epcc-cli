@@ -32,6 +32,7 @@ type Request struct {
 
 func Complete(c Request) ([]string, cobra.ShellCompDirective) {
 	results := make([]string, 0)
+	compDir := cobra.ShellCompDirectiveNoFileComp
 
 	if c.Type&CompletePluralResource > 0 {
 		for k := range resources.GetPluralResources() {
@@ -94,9 +95,10 @@ func Complete(c Request) ([]string, cobra.ShellCompDirective) {
 				}
 			} else if c.Resource.Attributes[c.Attribute].Type == "URL" {
 				results = append(results, "https://")
+				compDir = compDir | cobra.ShellCompDirectiveNoSpace
 			}
 		}
 	}
 
-	return results, cobra.ShellCompDirectiveNoSpace | cobra.ShellCompDirectiveNoFileComp
+	return results, compDir
 }
