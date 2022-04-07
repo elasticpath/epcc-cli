@@ -27,52 +27,51 @@ var docsCommand = &cobra.Command{
 			return doDefault()
 		}
 		if err != nil {
-			return doDefault()
+			return fmt.Errorf(err.Error())
 		}
 		return nil
 	},
 }
 
 func openDoc(resource string, verb string) error {
+	var err error
 	resourceDoc, ok := resources.Resources[resource]
 	if !ok {
-		panic(fmt.Sprintf("Could not find resource %s", resource))
+		return fmt.Errorf("Could not find resource %s", resource)
 	}
-
-	var err error
 	switch verb {
 	case "":
 		if len(resourceDoc.Docs) < 1 {
-			panic("You must supply a valid resource type to the docs command")
+			err = doDefault()
 		}
 		err = OpenUrl(resourceDoc.Docs)
 	case "get-collection":
 		if resourceDoc.GetCollectionInfo != nil && len(resourceDoc.GetCollectionInfo.Docs) < 1 {
-			panic("couldn't find the document")
+			err = doDefault()
 		}
 		err = OpenUrl(resourceDoc.GetCollectionInfo.Docs)
 	case "get":
 		if resourceDoc.GetEntityInfo != nil && len(resourceDoc.GetEntityInfo.Docs) < 1 {
-			panic("couldn't find the document")
+			err = doDefault()
 		}
 		err = OpenUrl(resourceDoc.GetEntityInfo.Docs)
 	case "update":
 		if resourceDoc.UpdateEntityInfo != nil && len(resourceDoc.UpdateEntityInfo.Docs) < 1 {
-			panic("couldn't find the document")
+			err = doDefault()
 		}
 		err = OpenUrl(resourceDoc.UpdateEntityInfo.Docs)
 	case "delete":
 		if resourceDoc.DeleteEntityInfo != nil && len(resourceDoc.DeleteEntityInfo.Docs) < 1 {
-			panic("couldn't find the document")
+			err = doDefault()
 		}
 		err = OpenUrl(resourceDoc.DeleteEntityInfo.Docs)
 	case "create":
 		if resourceDoc.CreateEntityInfo != nil && len(resourceDoc.CreateEntityInfo.Docs) < 1 {
-			panic("couldn't find the document")
+			err = doDefault()
 		}
 		err = OpenUrl(resourceDoc.CreateEntityInfo.Docs)
 	default:
-		err = doDefault()
+		return fmt.Errorf("Could not find verb %s", verb)
 
 	}
 	if err != nil {
