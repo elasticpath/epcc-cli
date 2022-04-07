@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"github.com/elasticpath/epcc-cli/external/aliases"
 	"github.com/elasticpath/epcc-cli/external/completion"
 	"github.com/elasticpath/epcc-cli/external/httpclient"
 	"github.com/elasticpath/epcc-cli/external/json"
@@ -71,6 +72,8 @@ var create = &cobra.Command{
 			json.PrintJson(string(resBody))
 			return fmt.Errorf(resp.Status)
 		}
+
+		aliases.SaveAliasesForResources(string(resBody))
 
 		return json.PrintJson(string(resBody))
 	},
