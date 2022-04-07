@@ -8,6 +8,7 @@ A simple project for interacting with EPCC APIs via the command line, the goal i
 
 The following environment variables can be set up to control which environment and store to use with the cli.
 To set the environment variables export the variable in your terminal.
+
 e.g. `export EPCC_API_BASE_URL=https://api.moltin.com`
 
 | Environment Variable   | Description                                                                                                                                                         |
@@ -27,9 +28,11 @@ For convenience this cli has been set up with auto-completion. To make the most 
 
 If shell completion is not already enabled in your environment, you will need to enable it.
 Run the following command once:
+
 `echo "autoload -U compinit; compinit" >> ~/.zshrc`
 
 To load completions for each session, execute once:
+
 `epcc completion zsh > “${fpath[1]}/_epcc`
 
 You will need to start a new shell for this setup to take effect
@@ -39,26 +42,35 @@ You will need to start a new shell for this setup to take effect
 You will need to have the Bash Completion package installed, and restart your bash session.
 
 To load completions for each session, execute once:
+
 ##### Linux
+
 `epcc completion bash > /etc/bash_completion.d/epcc`
+
 ##### macOS
+
 `epcc completion bash > /usr/local/etc/bash_completion.d/epcc`
 
 #### PowerShell
 
 For PowerShell run:
+
 `epcc completion powershell | Out-String | Invoke-Expression`
 
 To load completions for every new session, run:
+
 `epcc completion powershell > epcc.ps1`
+
 and source this file from your PowerShell profile.
 
 #### fish
 
 For fish run:
+
 `epcc completion fish | source`
 
 To load completions for each session, execute once:
+
 `epcc completion fish > ~/.config/fish/completions/epcc.fish`
 
 ### Tutorial
