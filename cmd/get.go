@@ -92,6 +92,7 @@ var get = &cobra.Command{
 		if len(args) == 0 {
 			return completion.Complete(completion.Request{
 				Type: completion.CompleteSingularResource + completion.CompletePluralResource,
+				Verb: completion.Get,
 			})
 		}
 

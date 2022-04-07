@@ -60,6 +60,7 @@ var delete = &cobra.Command{
 		if len(args) == 0 {
 			return completion.Complete(completion.Request{
 				Type: completion.CompleteSingularResource,
+				Verb: completion.Delete,
 			})
 		}
 

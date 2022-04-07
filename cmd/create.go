@@ -79,6 +79,7 @@ var create = &cobra.Command{
 		if len(args) == 0 {
 			return completion.Complete(completion.Request{
 				Type: completion.CompleteSingularResource,
+				Verb: completion.Create,
 			})
 		}
 
@@ -97,6 +98,7 @@ var create = &cobra.Command{
 							Type:       completion.CompleteAttributeKey,
 							Resource:   resource,
 							Attributes: usedAttributes,
+							Verb:       completion.Create,
 						})
 					}
 				}

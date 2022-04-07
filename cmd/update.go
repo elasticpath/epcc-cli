@@ -74,6 +74,7 @@ var update = &cobra.Command{
 		if len(args) == 0 {
 			return completion.Complete(completion.Request{
 				Type: completion.CompleteSingularResource,
+				Verb: completion.Update,
 			})
 		}
 
@@ -92,6 +93,7 @@ var update = &cobra.Command{
 							Type:       completion.CompleteAttributeKey,
 							Resource:   resource,
 							Attributes: usedAttributes,
+							Verb:       completion.Update,
 						})
 					}
 				}
