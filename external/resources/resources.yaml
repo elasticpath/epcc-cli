@@ -9,7 +9,6 @@ account-authentication-settings:
   get-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/settings/account-authentication-settings/get-account-authentication-settings.html"
     url: "/v2/settings/account-authentication"
-  attributes:
 account-management-authentication-tokens:
   singular-name: "account-management-authentication-token"
   json-api-type: "account_management_authentication_token"
@@ -269,7 +268,6 @@ customer-authentication-settings:
   get-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/settings/customer-authentication-settings/get-customer-authentication-settings.html"
     url: "/v2/settings/customer-authentication"
-  attributes:
 customers:
   singular-name: "customer"
   json-api-type: "customer"
@@ -415,7 +413,6 @@ integration-jobs:
   get-collection:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/integrations/get-integration-logs.html#get-get-jobs-for-an-integration"
     url: "/v2/integrations/{integrations}/jobs"
-  attributes:
 integration-job-log:
   singular-name: "integration-job-log"
   json-api-type: "integration-job"
@@ -424,7 +421,6 @@ integration-job-log:
   get-collection:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/integrations/get-integration-logs.html#get-get-all-logs-for-a-job"
     url: "/v2/integrations/{integrations}/jobs/{integration_jobs}/logs"
-  attributes:
 integration-logs:
   singular-name: "integration-log"
   json-api-type: "integration-log"
@@ -436,7 +432,6 @@ integration-logs:
   get-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/integrations/get-integration-logs.html#get-get-logs-for-an-integration"
     url: "/v2/integrations/{integrations}/logs"
-  attributes:
 integrations:
   singular-name: "integration"
   json-api-type: "integration"
@@ -493,7 +488,6 @@ merchant-realm-mappings:
   update-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/settings/merchant-realm-mappings/update-merchant-realm-mapping.html"
     url: "/v2/merchant-realm-mappings/{merchant_realm_mappings}"
-  attributes:
 oidc-profiles:
   singular-name: "oidc-profile"
   json-api-type: "oidc-profile"
@@ -685,7 +679,6 @@ pcm-node-children:
   get-collection:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/hierarchies/relationships/get-node-children.html"
     url: "/pcm/hierarchies/{pcm_hierarchies}/nodes/{pcm_nodes}/children"
-  attributes:
 pcm-node-products:
   singular-name: "pcm-node-product"
   json-api-type: "node"
@@ -694,7 +687,6 @@ pcm-node-products:
   get-collection:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/hierarchies/relationships/get-node-products.html"
     url: "/pcm/hierarchies/{pcm_hierarchies}/nodes/{pcm_nodes}/products"
-  attributes:
 pcm-nodes:
   singular-name: "pcm-node"
   json-api-type: "node"
