@@ -73,7 +73,7 @@ func doRequestInternal(ctx context.Context, method string, contentType string, p
 
 	resp, err := HttpClient.Do(req)
 
-	if resp.StatusCode > 400 {
+	if resp.StatusCode >= 400 {
 		if payload != nil {
 			body, _ := ioutil.ReadAll(&bodyBuf)
 			if len(body) > 0 {

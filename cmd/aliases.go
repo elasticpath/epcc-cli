@@ -10,8 +10,14 @@ import (
 )
 
 var aliasesCmd = &cobra.Command{
-	Use:   "aliases <resource>",
+	Use:          "aliases",
+	SilenceUsage: false,
+}
+
+var aliasListCmd = &cobra.Command{
+	Use:   "list <resource>",
 	Short: "Lists all aliases for a resource",
+	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 0 {
 			resource, ok := resources.GetResourceByName(args[0])
@@ -35,7 +41,7 @@ var aliasesCmd = &cobra.Command{
 
 			return nil
 		}
-		return fmt.Errorf("You must supply a resource type to the docs command")
+		return fmt.Errorf("You must supply a resource type to the aliases command")
 	},
 
 	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {

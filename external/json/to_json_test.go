@@ -1,9 +1,24 @@
 package json
 
 import (
+	"fmt"
 	"github.com/elasticpath/epcc-cli/external/resources"
 	"testing"
 )
+
+func TestErrorMessageWhenOddNumberOfValuesPassed(t *testing.T) {
+	// Fixture Setup
+	input := []string{"[0]"}
+	expected := fmt.Errorf("The number arguments 1 supplied isn't even, json should be passed in key value pairs")
+
+	// Execute SUT
+	_, actual := ToJson(input, false, true, map[string]*resources.CrudEntityAttribute{})
+
+	// Verification
+	if actual.Error() != expected.Error() {
+		t.Fatalf("Testing json conversion of value '%s' did not match\nExpected: %s\nActually: %s", input, expected, actual)
+	}
+}
 
 func TestToJsonLegacyFormatEmptyValue(t *testing.T) {
 	// Fixture Setup
@@ -174,6 +189,34 @@ func TestToJsonCompliantFormatSimpleKeyStringValue(t *testing.T) {
 	}
 }
 
+func TestToJsonCompliantFormatSimpleKeyStringValueAttributesKeyNotDoubleEncoded(t *testing.T) {
+	// Fixture Setup
+	input := []string{"attributes.key", "val"}
+	expected := `{"data":{"attributes":{"key":"val"}}}`
+
+	// Execute SUT
+	actual, _ := ToJson(input, false, true, map[string]*resources.CrudEntityAttribute{})
+
+	// Verification
+	if actual != expected {
+		t.Fatalf("Testing json conversion of empty value %s did not match expected %s, actually: %s", input, expected, actual)
+	}
+}
+
+func TestToJsonCompliantFormatSimpleKeyStringValueRelationshipsKeyNotDoubleEncoded(t *testing.T) {
+	// Fixture Setup
+	input := []string{"relationships.key", "val"}
+	expected := `{"data":{"relationships":{"key":"val"}}}`
+
+	// Execute SUT
+	actual, _ := ToJson(input, false, true, map[string]*resources.CrudEntityAttribute{})
+
+	// Verification
+	if actual != expected {
+		t.Fatalf("Testing json conversion of empty value %s did not match expected %s, actually: %s", input, expected, actual)
+	}
+}
+
 func TestToJsonCompliantFormatSimpleKeyWithTypeStringValue(t *testing.T) {
 	// Fixture Setup
 	input := []string{"type", "val"}
@@ -312,5 +355,103 @@ func TestToJsonCompliantFormatSimpleArrayWithTwoValues(t *testing.T) {
 	// Verification
 	if actual != expected {
 		t.Fatalf("Testing json conversion of empty value %s did not match expected %s, actually: %s", input, expected, actual)
+	}
+}
+
+func TestToJsonErrorsWhenArrayAndObjectKeysSpecified(t *testing.T) {
+	// Fixture Setup
+	input := []string{"[0]", "val", "key", "val2"}
+	expected := fmt.Errorf("Detected both array syntax arguments '[0]' and object syntax arguments 'key'. Only one format can be used.")
+
+	// Execute SUT
+	_, actual := ToJson(input, false, true, map[string]*resources.CrudEntityAttribute{})
+
+	// Verification
+	if actual.Error() != expected.Error() {
+		t.Fatalf("Testing json conversion of value '%s' did not match\nExpected: %s\nActually: %s", input, expected, actual)
+	}
+}
+
+func TestToJsonCreatesSimpleSingleElementArrayWhenArrayKeysSpecified(t *testing.T) {
+	// Fixture Setup
+	input := []string{"[0]", "val"}
+	expected := `{"data":["val"]}`
+	// Execute SUT
+
+	actual, _ := ToJson(input, false, true, map[string]*resources.CrudEntityAttribute{})
+
+	// Verification
+	if actual != expected {
+		t.Fatalf("Testing json conversion of empty value %s did not match\nExpected: %s\nActually: %s", input, expected, actual)
+	}
+}
+
+func TestToJsonCreatesSimpleSingleElementArrayWithNoWrappingWhenArrayKeysSpecified(t *testing.T) {
+	// Fixture Setup
+	input := []string{"[0]", "val"}
+	expected := `["val"]`
+	// Execute SUT
+
+	actual, _ := ToJson(input, true, true, map[string]*resources.CrudEntityAttribute{})
+
+	// Verification
+	if actual != expected {
+		t.Fatalf("Testing json conversion of empty value %s did not match\nExpected: %s\nActually: %s", input, expected, actual)
+	}
+}
+
+func TestToJsonCreatesMultipleElementArrayWhenArrayKeysSpecified(t *testing.T) {
+	// Fixture Setup
+	input := []string{"[0]", "foo", "[1]", "bar"}
+	expected := `{"data":["foo","bar"]}`
+	// Execute SUT
+
+	actual, _ := ToJson(input, false, true, map[string]*resources.CrudEntityAttribute{})
+
+	// Verification
+	if actual != expected {
+		t.Fatalf("Testing json conversion of empty value %s did not match\nExpected: %s\nActually: %s", input, expected, actual)
+	}
+}
+
+func TestToJsonCreatesMultipleElementArrayWhenArrayKeysSpecifiedAndSomeMissing(t *testing.T) {
+	// Fixture Setup
+	input := []string{"[0]", "foo", "[3]", "bar"}
+	expected := `{"data":["foo",null,null,"bar"]}`
+	// Execute SUT
+
+	actual, _ := ToJson(input, false, true, map[string]*resources.CrudEntityAttribute{})
+
+	// Verification
+	if actual != expected {
+		t.Fatalf("Testing json conversion of empty value %s did not match\nExpected: %s\nActually: %s", input, expected, actual)
+	}
+}
+
+func TestToJsonCreatesSimpleSingleElementArrayOfObjectWhenArrayKeysSpecified(t *testing.T) {
+	// Fixture Setup
+	input := []string{"[0].bar", "val"}
+	expected := `{"data":[{"bar":"val"}]}`
+	// Execute SUT
+
+	actual, _ := ToJson(input, false, true, map[string]*resources.CrudEntityAttribute{})
+
+	// Verification
+	if actual != expected {
+		t.Fatalf("Testing json conversion of empty value %s did not match\nExpected: %s\nActually: %s", input, expected, actual)
+	}
+}
+
+func TestToJsonCreatesComplexSingleElementArrayOfObjectWhenArrayKeysSpecified(t *testing.T) {
+	// Fixture Setup
+	input := []string{"[0].bar", "val", "[1].bar", "tree", "[0].foo", "zoo"}
+	expected := `{"data":[{"bar":"val","foo":"zoo"},{"bar":"tree"}]}`
+	// Execute SUT
+
+	actual, _ := ToJson(input, false, true, map[string]*resources.CrudEntityAttribute{})
+
+	// Verification
+	if actual != expected {
+		t.Fatalf("Testing json conversion of empty value %s did not match\nExpected: %s\nActually: %s", input, expected, actual)
 	}
 }

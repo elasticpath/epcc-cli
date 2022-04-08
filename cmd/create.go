@@ -45,9 +45,11 @@ var create = &cobra.Command{
 			return err
 		}
 
-		args = append(args, "type", resource.JsonApiType)
+		if !resource.NoWrapping {
+			args = append(args, "type", resource.JsonApiType)
+		}
 		// Create the body from remaining args
-		body, err := json.ToJson(args[(idCount+1):], noWrapping, resource.JsonApiFormat == "compliant", resource.Attributes)
+		body, err := json.ToJson(args[(idCount+1):], resource.NoWrapping, resource.JsonApiFormat == "compliant", resource.Attributes)
 
 		if err != nil {
 			return err

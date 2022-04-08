@@ -8,10 +8,11 @@
     "(.*?)": {
       "type" : "object",
       "properties": {
+        "docs": { "type": "string", "pattern": "^https://"  },
         "get-collection": {
           "type": "object",
           "properties" : {
-            "docs": { "type": "string" },
+            "docs": { "type": "string", "pattern": "^https://"  },
             "url": { "type": "string" },
             "content-type": { "type": "string" }
           },
@@ -20,7 +21,7 @@
         "get-entity": {
           "type": "object",
           "properties" : {
-            "docs": { "type": "string" },
+            "docs": { "type": "string", "pattern": "^https://" },
             "url": { "type": "string" },
             "content-type": { "type": "string" }
           },
@@ -29,7 +30,7 @@
         "update-entity": {
           "type": "object",
           "properties" : {
-            "docs": { "type": "string" },
+            "docs": { "type": "string", "pattern": "^https://"  },
             "url": { "type": "string" },
             "content-type": { "type": "string" }
           },
@@ -38,16 +39,7 @@
         "create-entity": {
           "type": "object",
           "properties" : {
-            "docs": { "type": "string" },
-            "url": { "type": "string" },
-            "content-type": { "type": "string" }
-          },
-          "required": [ "url", "docs"]
-        },
-        "update-entity": {
-          "type": "object",
-          "properties" : {
-            "docs": { "type": "string" },
+            "docs": { "type": "string", "pattern": "^https://"  },
             "url": { "type": "string" },
             "content-type": { "type": "string" }
           },
@@ -56,7 +48,7 @@
         "delete-entity": {
           "type": "object",
           "properties" : {
-            "docs": { "type": "string" },
+            "docs": { "type": "string",  "pattern": "^https://"  },
             "url": { "type": "string" },
             "content-type": { "type": "string" }
           },

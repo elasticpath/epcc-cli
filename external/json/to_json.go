@@ -19,7 +19,31 @@ func ToJson(args []string, noWrapping bool, compliant bool, attributes map[strin
 		return "", fmt.Errorf("The number arguments %d supplied isn't even, json should be passed in key value pairs", len(args))
 	}
 
-	result := make(map[string]interface{})
+	firstArrayKeyIdx := -1
+	firstFieldKeyIdx := -1
+	for i := 0; i < len(args); i += 2 {
+		key := args[i]
+		if strings.HasPrefix(key, "[") {
+			firstArrayKeyIdx = i
+		} else {
+			firstFieldKeyIdx = i
+		}
+	}
+
+	if firstArrayKeyIdx >= 0 && firstFieldKeyIdx >= 0 {
+		return "", fmt.Errorf("Detected both array syntax arguments '%s' and object syntax arguments '%s'. Only one format can be used.", args[firstArrayKeyIdx], args[firstFieldKeyIdx])
+	}
+
+	if firstArrayKeyIdx >= 0 {
+		return toJsonArray(args, noWrapping, compliant, attributes)
+	} else {
+		return toJsonObject(args, noWrapping, compliant, attributes)
+	}
+}
+
+func toJsonObject(args []string, noWrapping bool, compliant bool, attributes map[string]*resources.CrudEntityAttribute) (string, error) {
+
+	var result interface{} = make(map[string]interface{})
 
 	var err error
 
@@ -61,7 +85,6 @@ func ToJson(args []string, noWrapping bool, compliant bool, attributes map[strin
 
 		arrayNotationPath := ""
 
-		// TODO I can probably embed everything under a sub resource somehow and then pop it at the end to support a notation of [0].id [0].type
 		for _, str := range strings.Split(jsonKey, ".") {
 			arrayNotationPath += segmentRegex.ReplaceAllString(str, "[\"$1\"]$2")
 		}
@@ -85,7 +108,40 @@ func ToJson(args []string, noWrapping bool, compliant bool, attributes map[strin
 
 }
 
-func runJQ(queryStr string, result map[string]interface{}) (map[string]interface{}, error) {
+func toJsonArray(args []string, noWrapping bool, compliant bool, attributes map[string]*resources.CrudEntityAttribute) (string, error) {
+
+	var result interface{} = make([]interface{}, 0)
+
+	var err error
+
+	for i := 0; i < len(args); i += 2 {
+		key := args[i]
+		val := args[i+1]
+
+		jsonKey := key
+
+		val = formatValue(val)
+
+		query := fmt.Sprintf(".%s |= %s", jsonKey, val)
+
+		result, err = runJQ(query, result)
+		if err != nil {
+			return "[]", err
+		}
+
+	}
+
+	if !noWrapping {
+		result, err = runJQ(`{ "data": . }`, result)
+	}
+
+	jsonStr, err := gojson.Marshal(result)
+
+	return string(jsonStr), err
+
+}
+
+func runJQ(queryStr string, result interface{}) (interface{}, error) {
 	query, err := gojq.Parse(queryStr)
 
 	if err != nil {
@@ -103,10 +159,8 @@ func runJQ(queryStr string, result map[string]interface{}) (map[string]interface
 		if err, ok := v.(error); ok {
 			log.Fatalln(err)
 		}
-		if res2, ok := v.(map[string]interface{}); ok {
-			result = res2
-		}
 
+		result = v
 	}
 	return result, nil
 }
