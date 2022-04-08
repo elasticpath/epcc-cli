@@ -1,6 +1,9 @@
 package json
 
-import "testing"
+import (
+	"github.com/elasticpath/epcc-cli/external/resources"
+	"testing"
+)
 
 func TestToJsonLegacyFormatEmptyValue(t *testing.T) {
 	// Fixture Setup
@@ -8,7 +11,7 @@ func TestToJsonLegacyFormatEmptyValue(t *testing.T) {
 	expected := `{"data":{}}`
 
 	// Execute SUT
-	actual, _ := ToJson(input, false, false)
+	actual, _ := ToJson(input, false, false, map[string]*resources.CrudEntityAttribute{})
 
 	// Verification
 	if actual != expected {
@@ -22,7 +25,7 @@ func TestToJsonLegacyFormatSimpleKeyStringValue(t *testing.T) {
 	expected := `{"data":{"key":"val"}}`
 
 	// Execute SUT
-	actual, _ := ToJson(input, false, false)
+	actual, _ := ToJson(input, false, false, map[string]*resources.CrudEntityAttribute{})
 
 	// Verification
 	if actual != expected {
@@ -36,7 +39,7 @@ func TestToJsonLegacyFormatSimpleNestedKeyValue(t *testing.T) {
 	expected := `{"data":{"foo":{"bar":"val"}}}`
 
 	// Execute SUT
-	actual, _ := ToJson(input, false, false)
+	actual, _ := ToJson(input, false, false, map[string]*resources.CrudEntityAttribute{})
 
 	// Verification
 	if actual != expected {
@@ -50,7 +53,7 @@ func TestToJsonLegacyFormatSimpleKeyNumericValue(t *testing.T) {
 	expected := `{"data":{"key":3}}`
 
 	// Execute SUT
-	actual, _ := ToJson(input, false, false)
+	actual, _ := ToJson(input, false, false, map[string]*resources.CrudEntityAttribute{})
 
 	// Verification
 	if actual != expected {
@@ -64,7 +67,7 @@ func TestToJsonLegacyFormatSimpleKeyBooleanTrueValue(t *testing.T) {
 	expected := `{"data":{"key":true}}`
 
 	// Execute SUT
-	actual, _ := ToJson(input, false, false)
+	actual, _ := ToJson(input, false, false, map[string]*resources.CrudEntityAttribute{})
 
 	// Verification
 	if actual != expected {
@@ -78,7 +81,7 @@ func TestToJsonLegacyFormatSimpleKeyBooleanFalseValue(t *testing.T) {
 	expected := `{"data":{"key":false}}`
 
 	// Execute SUT
-	actual, _ := ToJson(input, false, false)
+	actual, _ := ToJson(input, false, false, map[string]*resources.CrudEntityAttribute{})
 
 	// Verification
 	if actual != expected {
@@ -92,7 +95,7 @@ func TestToJsonLegacyFormatSimpleKeyNullValue(t *testing.T) {
 	expected := `{"data":{"key":null}}`
 
 	// Execute SUT
-	actual, _ := ToJson(input, false, false)
+	actual, _ := ToJson(input, false, false, map[string]*resources.CrudEntityAttribute{})
 
 	// Verification
 	if actual != expected {
@@ -106,7 +109,7 @@ func TestToJsonLegacyFormatSimpleKeyEmptyArrayValue(t *testing.T) {
 	expected := `{"data":{"key":[]}}`
 
 	// Execute SUT
-	actual, _ := ToJson(input, false, false)
+	actual, _ := ToJson(input, false, false, map[string]*resources.CrudEntityAttribute{})
 
 	// Verification
 	if actual != expected {
@@ -121,7 +124,7 @@ func TestToJsonLegacyFormatSimpleArrayIndexValue(t *testing.T) {
 	expected := `{"data":{"key":["val"]}}`
 
 	// Execute SUT
-	actual, _ := ToJson(input, false, false)
+	actual, _ := ToJson(input, false, false, map[string]*resources.CrudEntityAttribute{})
 
 	// Verification
 	if actual != expected {
@@ -135,7 +138,7 @@ func TestToJsonLegacyFormatSimpleArrayWithTwoValues(t *testing.T) {
 	expected := `{"data":{"key":["val","val2"]}}`
 
 	// Execute SUT
-	actual, _ := ToJson(input, false, false)
+	actual, _ := ToJson(input, false, false, map[string]*resources.CrudEntityAttribute{})
 
 	// Verification
 	if actual != expected {
@@ -149,7 +152,7 @@ func TestToJsonCompliantFormatEmptyValue(t *testing.T) {
 	expected := `{"data":{}}`
 
 	// Execute SUT
-	actual, _ := ToJson(input, false, true)
+	actual, _ := ToJson(input, false, true, map[string]*resources.CrudEntityAttribute{})
 
 	// Verification
 	if actual != expected {
@@ -163,7 +166,7 @@ func TestToJsonCompliantFormatSimpleKeyStringValue(t *testing.T) {
 	expected := `{"data":{"attributes":{"key":"val"}}}`
 
 	// Execute SUT
-	actual, _ := ToJson(input, false, true)
+	actual, _ := ToJson(input, false, true, map[string]*resources.CrudEntityAttribute{})
 
 	// Verification
 	if actual != expected {
@@ -177,7 +180,7 @@ func TestToJsonCompliantFormatSimpleKeyWithTypeStringValue(t *testing.T) {
 	expected := `{"data":{"type":"val"}}`
 
 	// Execute SUT
-	actual, _ := ToJson(input, false, true)
+	actual, _ := ToJson(input, false, true, map[string]*resources.CrudEntityAttribute{})
 
 	// Verification
 	if actual != expected {
@@ -191,7 +194,7 @@ func TestToJsonCompliantFormatSimpleKeyWithIdStringValue(t *testing.T) {
 	expected := `{"data":{"id":"val"}}`
 
 	// Execute SUT
-	actual, _ := ToJson(input, false, true)
+	actual, _ := ToJson(input, false, true, map[string]*resources.CrudEntityAttribute{})
 
 	// Verification
 	if actual != expected {
@@ -205,7 +208,7 @@ func TestToJsonCompliantFormatSimpleNestedKeyValue(t *testing.T) {
 	expected := `{"data":{"attributes":{"foo":{"bar":"val"}}}}`
 
 	// Execute SUT
-	actual, _ := ToJson(input, false, true)
+	actual, _ := ToJson(input, false, true, map[string]*resources.CrudEntityAttribute{})
 
 	// Verification
 	if actual != expected {
@@ -219,7 +222,7 @@ func TestToJsonCompliantFormatSimpleKeyNumericValue(t *testing.T) {
 	expected := `{"data":{"attributes":{"key":3}}}`
 
 	// Execute SUT
-	actual, _ := ToJson(input, false, true)
+	actual, _ := ToJson(input, false, true, map[string]*resources.CrudEntityAttribute{})
 
 	// Verification
 	if actual != expected {
@@ -233,7 +236,7 @@ func TestToJsonCompliantFormatSimpleKeyBooleanTrueValue(t *testing.T) {
 	expected := `{"data":{"attributes":{"key":true}}}`
 
 	// Execute SUT
-	actual, _ := ToJson(input, false, true)
+	actual, _ := ToJson(input, false, true, map[string]*resources.CrudEntityAttribute{})
 
 	// Verification
 	if actual != expected {
@@ -247,7 +250,7 @@ func TestToJsonCompliantFormatSimpleKeyBooleanFalseValue(t *testing.T) {
 	expected := `{"data":{"attributes":{"key":false}}}`
 
 	// Execute SUT
-	actual, _ := ToJson(input, false, true)
+	actual, _ := ToJson(input, false, true, map[string]*resources.CrudEntityAttribute{})
 
 	// Verification
 	if actual != expected {
@@ -261,7 +264,7 @@ func TestToJsonCompliantFormatSimpleKeyNullValue(t *testing.T) {
 	expected := `{"data":{"attributes":{"key":null}}}`
 
 	// Execute SUT
-	actual, _ := ToJson(input, false, true)
+	actual, _ := ToJson(input, false, true, map[string]*resources.CrudEntityAttribute{})
 
 	// Verification
 	if actual != expected {
@@ -275,7 +278,7 @@ func TestToJsonCompliantFormatSimpleKeyEmptyArrayValue(t *testing.T) {
 	expected := `{"data":{"attributes":{"key":[]}}}`
 
 	// Execute SUT
-	actual, _ := ToJson(input, false, true)
+	actual, _ := ToJson(input, false, true, map[string]*resources.CrudEntityAttribute{})
 
 	// Verification
 	if actual != expected {
@@ -290,7 +293,7 @@ func TestToJsonCompliantFormatSimpleArrayIndexValue(t *testing.T) {
 	expected := `{"data":{"attributes":{"key":["val"]}}}`
 
 	// Execute SUT
-	actual, _ := ToJson(input, false, true)
+	actual, _ := ToJson(input, false, true, map[string]*resources.CrudEntityAttribute{})
 
 	// Verification
 	if actual != expected {
@@ -304,7 +307,7 @@ func TestToJsonCompliantFormatSimpleArrayWithTwoValues(t *testing.T) {
 	expected := `{"data":{"attributes":{"key":["val","val2"]}}}`
 
 	// Execute SUT
-	actual, _ := ToJson(input, false, true)
+	actual, _ := ToJson(input, false, true, map[string]*resources.CrudEntityAttribute{})
 
 	// Verification
 	if actual != expected {

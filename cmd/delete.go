@@ -30,7 +30,7 @@ var delete = &cobra.Command{
 		resourceURL := resource.DeleteEntityInfo.Url
 
 		// Replace ids with args in resourceURL
-		resourceURL, err := resources.GenerateUrl(resourceURL, args[1:])
+		resourceURL, err := resources.GenerateUrl(resource, resourceURL, args[1:])
 
 		if err != nil {
 			return err
@@ -62,6 +62,39 @@ var delete = &cobra.Command{
 				Type: completion.CompleteSingularResource,
 				Verb: completion.Delete,
 			})
+		} else if resource, ok := resources.GetResourceByName(args[0]); ok {
+			// len(args) == 0 means complete resource
+			// len(args) == 1 means first id
+			// lens(args) == 2 means second id.
+
+			resourceURL, err := getUrl(resource, args)
+			if err != nil {
+				return []string{}, cobra.ShellCompDirectiveNoFileComp
+			}
+
+			idCount, err := resources.GetNumberOfVariablesNeeded(resourceURL)
+
+			if err != nil {
+				return []string{}, cobra.ShellCompDirectiveNoFileComp
+			}
+
+			if len(args) > 0 && len(args) < 1+idCount {
+				// Must be for a resource completion
+				types, err := resources.GetTypesOfVariablesNeeded(resourceURL)
+
+				if err != nil {
+					return []string{}, cobra.ShellCompDirectiveNoFileComp
+				}
+
+				typeIdxNeeded := len(args) - 1
+
+				if completionResource, ok := resources.GetResourceByName(types[typeIdxNeeded]); ok {
+					return completion.Complete(completion.Request{
+						Type:     completion.CompleteAlias,
+						Resource: completionResource,
+					})
+				}
+			}
 		}
 
 		return []string{}, cobra.ShellCompDirectiveNoFileComp

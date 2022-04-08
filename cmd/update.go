@@ -36,14 +36,14 @@ var update = &cobra.Command{
 		}
 
 		// Replace ids with args in resourceURL
-		resourceURL, err = resources.GenerateUrl(resourceURL, args[1:])
+		resourceURL, err = resources.GenerateUrl(resource, resourceURL, args[1:])
 		if err != nil {
 			return err
 		}
 
 		args = append(args, "type", resource.JsonApiType)
 		// Create the body from remaining args
-		body, err := json.ToJson(args[(idCount+1):], false, resource.JsonApiFormat == "compliant")
+		body, err := json.ToJson(args[(idCount+1):], false, resource.JsonApiFormat == "compliant", resource.Attributes)
 		if err != nil {
 			return err
 		}

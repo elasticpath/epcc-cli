@@ -687,6 +687,10 @@ pcm-node-products:
   get-collection:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/hierarchies/relationships/get-node-products.html"
     url: "/pcm/hierarchies/{pcm_hierarchies}/nodes/{pcm_nodes}/products"
+  #TBD figure out if this should be the same URL
+  create-collection:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/hierarchies/relationships/create-node-product-relationships.html"
+    url: "/pcm/hierarchies/{pcm_hierarchies}/nodes/{pcm_nodes}/relationships/products"
 pcm-nodes:
   singular-name: "pcm-node"
   json-api-type: "node"
@@ -719,7 +723,7 @@ pcm-nodes:
     relationships.parent.data.type:
       type: ENUM:node
     relationships.parent.data.id:
-      type: STRING
+      type: RESOURCE_ID:pcm-nodes
 pcm-product-main-image:
   singular-name: "pcm-product-main-image"
   json-api-type: "file"

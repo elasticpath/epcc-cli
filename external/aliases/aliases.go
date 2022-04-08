@@ -3,19 +3,118 @@ package aliases
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/elasticpath/epcc-cli/external/profiles"
+	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
+	"gopkg.in/yaml.v3"
+	"io/ioutil"
+	"os"
 	"strconv"
+	"strings"
+	"sync"
 )
+
+// We will serialize our access for aliases to prevent parallel operations in the same process from losing data
+// however, we should use file locking in the OS to stop multiple concurrent invocations.
+var filelock = sync.Mutex{}
+
+func GetAliasesForJsonApiType(jsonApiType string) map[string]string {
+	profileDirectory := profiles.GetProfileDirectory()
+	aliasFile := getDirectoryForJsonApiType(profileDirectory, jsonApiType)
+
+	aliasMap := map[string]string{}
+
+	data, err := ioutil.ReadFile(aliasFile)
+	if err != nil {
+		log.Debugf("Could not read %s, error %s", aliasFile, err)
+		data = []byte{}
+	} else {
+	}
+
+	err = yaml.Unmarshal(data, aliasMap)
+	if err != nil {
+		log.Debugf("Could not unmarshall existing file %s, error %s", data, err)
+	}
+
+	return aliasMap
+}
+
+func ResolveAliasValuesOrReturnIdentity(jsonApiType string, value string) string {
+	if result, ok := GetAliasesForJsonApiType(jsonApiType)[value]; ok {
+		return result
+	}
+	return value
+}
 
 func SaveAliasesForResources(jsonTxt string) {
 	var jsonStruct = map[string]interface{}{}
-	// TODO what if we get a JSON array or string back
-	json.Unmarshal([]byte(jsonTxt), &jsonStruct)
+	err := json.Unmarshal([]byte(jsonTxt), &jsonStruct)
+	if err != nil {
+		log.Warnf("Response was not JSON so not scanning for aliases")
+		return
+	}
 
 	results := map[string]map[string]string{}
 	visitResources(jsonStruct, "", results)
 
-	log.Infof("All aliases: %s", results)
+	log.Tracef("All aliases: %s", results)
+
+	profileDirectory := profiles.GetProfileDirectory()
+	for resourceType, aliases := range results {
+		saveAliasesForResource(profileDirectory, resourceType, aliases)
+	}
+
+}
+
+// This function saves all the aliases for a specific resource.
+func saveAliasesForResource(profileDirectory string, jsonApiType string, aliases map[string]string) {
+	filelock.Lock()
+	defer filelock.Unlock()
+
+	aliasFile := getDirectoryForJsonApiType(profileDirectory, jsonApiType)
+	data, err := ioutil.ReadFile(aliasFile)
+	if err != nil {
+		log.Debugf("Could not read %s, error %s", aliasFile, err)
+		data = []byte{}
+	} else {
+	}
+
+	aliasMap := map[string]string{}
+
+	err = yaml.Unmarshal(data, aliasMap)
+	if err != nil {
+		log.Debugf("Could not unmarshall existing file %s, error %s", data, err)
+	}
+
+	for key, value := range aliases {
+		aliasMap[key] = value
+	}
+
+	// We will write to a temp file and then rename, to prevent data loss. rename's in the same folder are likely atomic in most settings.
+	// Although we should probably sync on the file as well, that might be too much overhead, and I was too lazy to rewrite this
+	// https://github.com/golang/go/issues/20599
+	tmpFileName := aliasFile + "." + uuid.New().String()
+
+	marshal, err := yaml.Marshal(aliasMap)
+
+	if err != nil {
+		log.Warnf("Could not save aliases for %s, error %v", tmpFileName, err)
+	}
+
+	err = ioutil.WriteFile(tmpFileName, marshal, 0600)
+	if err != nil {
+		log.Warnf("Could not save aliases for %s, error %v", tmpFileName, err)
+	}
+
+	err = os.Rename(tmpFileName, aliasFile)
+	if err != nil {
+		log.Warnf("Could not save aliases for %s, error %v", tmpFileName, err)
+	}
+}
+
+func getDirectoryForJsonApiType(profileDirectory string, resourceType string) string {
+	aliasFile := fmt.Sprintf("%s/aliases_%s.yml", profileDirectory, resourceType)
+	return aliasFile
 }
 
 func visitResources(data map[string]interface{}, prefix string, results map[string]map[string]string) {
@@ -24,10 +123,9 @@ func visitResources(data map[string]interface{}, prefix string, results map[stri
 		if idObj, idKeyExists := data["id"]; idKeyExists {
 			if typeKeyValue, typeKeyIsString := typeObj.(string); typeKeyIsString {
 				if idKeyValue, idKeyIsString := idObj.(string); idKeyIsString {
-
 					aliases := generateAliasesForStruct(typeKeyValue, idKeyValue, data)
 
-					log.Infof("Found a type and id pair %s => %s under prefix %s, aliases %s", typeKeyValue, idKeyValue, prefix, aliases)
+					log.Tracef("Found a type and id pair %s => %s under prefix %s, aliases %s", typeKeyValue, idKeyValue, prefix, aliases)
 
 					if _, ok := results[typeKeyValue]; !ok {
 						results[typeKeyValue] = make(map[string]string)
@@ -64,7 +162,7 @@ func visitResources(data map[string]interface{}, prefix string, results map[stri
 func generateAliasesForStruct(typeKey string, idKey string, data map[string]interface{}) map[string]string {
 	results := map[string]string{
 		// Identity, objects should be an alias of themselves.
-		idKey: idKey,
+		"id=" + idKey: idKey,
 	}
 
 	if alias := getAliasForKey("name", data); alias != "" {
@@ -109,8 +207,8 @@ func generateAliasesForStruct(typeKey string, idKey string, data map[string]inte
 func getAliasForKey(key string, data map[string]interface{}) string {
 	if val, ok := data[key]; ok {
 		if strVal, ok := val.(string); ok {
-
-			retVal := fmt.Sprintf("%s-%s", key, strVal)
+			// TODO not sure why spaces don't work with auto completes.
+			retVal := strings.ReplaceAll(fmt.Sprintf("%s=%s", key, strVal), " ", "_")
 			return retVal
 		} else {
 			return ""
