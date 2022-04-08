@@ -1,6 +1,6 @@
 # epcc-cli
 
-A simple project for interacting with EPCC APIs via the command line, the goal is simplicity and quickness for API and not correctness or compeletness.
+A simple project for interacting with EPCC APIs via the command line, the goal is simplicity and quickness for API and not correctness or completeness.
 
 ## Getting Started
 
