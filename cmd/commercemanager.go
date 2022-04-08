@@ -12,6 +12,7 @@ var cmCommand = &cobra.Command{
 	Use:   "commerce-manager",
 	Short: "Open commerce manager",
 	RunE: func(cmd *cobra.Command, args []string) error {
+		logToDisk("POST", "/v2/accounts", nil, nil, 200)
 		u, err := url.Parse(config.Envs.EPCC_API_BASE_URL)
 		if err != nil {
 			fmt.Println(err)
