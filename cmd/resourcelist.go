@@ -5,7 +5,6 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
-	"strings"
 
 	"github.com/elasticpath/epcc-cli/external/resources"
 	"github.com/spf13/cobra"
@@ -61,7 +60,22 @@ var resourceListCommand = &cobra.Command{
 	},
 }
 
-func printCrudCommands(programName, operation, resource, url string) {
-	numIdRequired := strings.Count(url, "%")
-	fmt.Printf("%16s %-70s ==> %s\n", programName, operation+" "+resource+strings.Repeat(" [ID]", numIdRequired), url)
+func printCrudCommands(programName, operation, resource, url string) error {
+	// Determine number of template variables required
+	idCount, err := resources.GetNumberOfVariablesNeeded(url)
+
+	if err != nil {
+		return err
+	}
+
+	// Generate resource operation with ID requirement string
+	resourceOperationString := operation + " " + resource
+
+	for idNum := 1; idNum <= idCount; idNum++ {
+		resourceOperationString += fmt.Sprintf(" [ID%d]", idNum)
+	}
+
+	fmt.Printf("%16s %-70s ==> %s\n", programName, resourceOperationString, url)
+
+	return nil
 }
