@@ -3,39 +3,86 @@ package json
 import (
 	gojson "encoding/json"
 	"fmt"
+	"github.com/elasticpath/epcc-cli/external/aliases"
+	"github.com/elasticpath/epcc-cli/external/resources"
 	"github.com/itchyny/gojq"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"regexp"
 	"strings"
 )
 
 var segmentRegex = regexp.MustCompile("(.+?)(\\[[0-9]+])?$")
 
-func ToJson(args []string, noWrapping bool, compliant bool) (string, error) {
+func ToJson(args []string, noWrapping bool, compliant bool, attributes map[string]*resources.CrudEntityAttribute) (string, error) {
 
 	if len(args)%2 == 1 {
 		return "", fmt.Errorf("The number arguments %d supplied isn't even, json should be passed in key value pairs", len(args))
 	}
 
-	result := make(map[string]interface{})
+	firstArrayKeyIdx := -1
+	firstFieldKeyIdx := -1
+	for i := 0; i < len(args); i += 2 {
+		key := args[i]
+		if strings.HasPrefix(key, "[") {
+			firstArrayKeyIdx = i
+		} else {
+			firstFieldKeyIdx = i
+		}
+	}
+
+	if firstArrayKeyIdx >= 0 && firstFieldKeyIdx >= 0 {
+		return "", fmt.Errorf("Detected both array syntax arguments '%s' and object syntax arguments '%s'. Only one format can be used.", args[firstArrayKeyIdx], args[firstFieldKeyIdx])
+	}
+
+	if firstArrayKeyIdx >= 0 {
+		return toJsonArray(args, noWrapping, compliant, attributes)
+	} else {
+		return toJsonObject(args, noWrapping, compliant, attributes)
+	}
+}
+
+func toJsonObject(args []string, noWrapping bool, compliant bool, attributes map[string]*resources.CrudEntityAttribute) (string, error) {
+
+	var result interface{} = make(map[string]interface{})
 
 	var err error
 
 	for i := 0; i < len(args); i += 2 {
 		key := args[i]
-		val := formatValue(args[i+1])
+		val := args[i+1]
 
 		jsonKey := key
 		switch {
 		case key == "type" || key == "id":
 			// These should always be in the root json object
-		case strings.HasPrefix("attributes.", key) || strings.HasPrefix("relationships.", key):
+		case strings.HasPrefix(key, "attributes.") || strings.HasPrefix(key, "relationships."):
 			// We won't double encode these.
 		case compliant:
 			jsonKey = fmt.Sprintf("attributes.%s", key)
 		default:
 
 		}
+
+		attributeName := key
+		if strings.HasPrefix(key, "attributes.") {
+			attributeName = strings.Replace(key, "attributes.", "", 1)
+
+		}
+
+		if attributeInfo, ok := attributes[attributeName]; ok {
+			if strings.HasPrefix(attributeInfo.Type, "RESOURCE_ID:") {
+				resourceType := strings.Replace(attributeInfo.Type, "RESOURCE_ID:", "", 1)
+
+				if aliasType, ok := resources.GetResourceByName(resourceType); ok {
+					val = aliases.ResolveAliasValuesOrReturnIdentity(aliasType.JsonApiType, val)
+				} else {
+					log.Warnf("Could not find a resource for %s, this is a bug.", resourceType)
+				}
+			}
+		}
+
+		val = formatValue(val)
+
 		arrayNotationPath := ""
 
 		for _, str := range strings.Split(jsonKey, ".") {
@@ -61,7 +108,40 @@ func ToJson(args []string, noWrapping bool, compliant bool) (string, error) {
 
 }
 
-func runJQ(queryStr string, result map[string]interface{}) (map[string]interface{}, error) {
+func toJsonArray(args []string, noWrapping bool, compliant bool, attributes map[string]*resources.CrudEntityAttribute) (string, error) {
+
+	var result interface{} = make([]interface{}, 0)
+
+	var err error
+
+	for i := 0; i < len(args); i += 2 {
+		key := args[i]
+		val := args[i+1]
+
+		jsonKey := key
+
+		val = formatValue(val)
+
+		query := fmt.Sprintf(".%s |= %s", jsonKey, val)
+
+		result, err = runJQ(query, result)
+		if err != nil {
+			return "[]", err
+		}
+
+	}
+
+	if !noWrapping {
+		result, err = runJQ(`{ "data": . }`, result)
+	}
+
+	jsonStr, err := gojson.Marshal(result)
+
+	return string(jsonStr), err
+
+}
+
+func runJQ(queryStr string, result interface{}) (interface{}, error) {
 	query, err := gojq.Parse(queryStr)
 
 	if err != nil {
@@ -79,10 +159,8 @@ func runJQ(queryStr string, result map[string]interface{}) (map[string]interface
 		if err, ok := v.(error); ok {
 			log.Fatalln(err)
 		}
-		if res2, ok := v.(map[string]interface{}); ok {
-			result = res2
-		}
 
+		result = v
 	}
 	return result, nil
 }

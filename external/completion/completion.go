@@ -1,6 +1,7 @@
 package completion
 
 import (
+	"github.com/elasticpath/epcc-cli/external/aliases"
 	"github.com/elasticpath/epcc-cli/external/resources"
 	"github.com/spf13/cobra"
 	"strings"
@@ -13,6 +14,7 @@ const (
 	CompleteAttributeValue   = 8
 	CompleteQueryParam       = 16
 	CompleteCrudAction       = 32
+	CompleteAlias            = 64
 )
 
 const (
@@ -96,9 +98,33 @@ func Complete(c Request) ([]string, cobra.ShellCompDirective) {
 			} else if c.Resource.Attributes[c.Attribute].Type == "URL" {
 				results = append(results, "https://")
 				compDir = compDir | cobra.ShellCompDirectiveNoSpace
+			} else if strings.HasPrefix(c.Resource.Attributes[c.Attribute].Type, "RESOURCE_ID:") {
+				resourceType := strings.Replace(c.Resource.Attributes[c.Attribute].Type, "RESOURCE_ID:", "", 1)
+
+				if aliasType, ok := resources.GetResourceByName(resourceType); ok {
+					for alias := range aliases.GetAliasesForJsonApiType(aliasType.JsonApiType) {
+						results = append(results, alias)
+					}
+				}
 			}
 		}
 	}
 
-	return results, compDir
+	if c.Type&CompleteAlias > 0 {
+		jsonApiType := c.Resource.JsonApiType
+		aliasesForJsonApiType := aliases.GetAliasesForJsonApiType(jsonApiType)
+
+		for alias := range aliasesForJsonApiType {
+			results = append(results, alias)
+		}
+	}
+
+	// This is dead code since I hacked the aliases to never return spaces.
+	newResults := make([]string, len(results))
+
+	for _, result := range results {
+		newResults = append(newResults, strings.ReplaceAll(result, " ", "\\ "))
+	}
+
+	return newResults, compDir
 }

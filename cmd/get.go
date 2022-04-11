@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"github.com/elasticpath/epcc-cli/external/aliases"
 	"github.com/elasticpath/epcc-cli/external/completion"
 	"github.com/elasticpath/epcc-cli/external/httpclient"
 	"github.com/elasticpath/epcc-cli/external/json"
@@ -27,18 +28,9 @@ var get = &cobra.Command{
 		var resourceURL string
 		var idCount int
 
-		if resource.GetCollectionInfo == nil && resource.GetEntityInfo == nil {
-			return fmt.Errorf("Resource %s doesn't support GET", args[0])
-		} else if resource.GetCollectionInfo != nil && resource.GetEntityInfo == nil {
-			resourceURL = resource.GetCollectionInfo.Url
-		} else if resource.GetCollectionInfo == nil && resource.GetEntityInfo != nil {
-			resourceURL = resource.GetEntityInfo.Url
-		} else {
-			if _, ok := resources.GetPluralResources()[args[0]]; ok {
-				resourceURL = resource.GetCollectionInfo.Url
-			} else {
-				resourceURL = resource.GetEntityInfo.Url
-			}
+		resourceURL, err2 := getUrl(resource, args)
+		if err2 != nil {
+			return err2
 		}
 
 		idCount, err := resources.GetNumberOfVariablesNeeded(resourceURL)
@@ -48,7 +40,7 @@ var get = &cobra.Command{
 		}
 
 		// Replace ids with args in resourceURL
-		resourceURL, err = resources.GenerateUrl(resourceURL, args[1:])
+		resourceURL, err = resources.GenerateUrl(resource, resourceURL, args[1:])
 
 		if err != nil {
 			return err
@@ -85,6 +77,7 @@ var get = &cobra.Command{
 			return fmt.Errorf(resp.Status)
 		}
 
+		aliases.SaveAliasesForResources(string(body))
 		return json.PrintJson(string(body))
 	},
 
@@ -94,8 +87,60 @@ var get = &cobra.Command{
 				Type: completion.CompleteSingularResource | completion.CompletePluralResource,
 				Verb: completion.Get,
 			})
+		} else if resource, ok := resources.GetResourceByName(args[0]); ok {
+			// len(args) == 0 means complete resource
+			// len(args) == 1 means first id
+			// lens(args) == 2 means second id.
+
+			resourceURL, err := getUrl(resource, args)
+			if err != nil {
+				return []string{}, cobra.ShellCompDirectiveNoFileComp
+			}
+
+			idCount, err := resources.GetNumberOfVariablesNeeded(resourceURL)
+
+			if err != nil {
+				return []string{}, cobra.ShellCompDirectiveNoFileComp
+			}
+
+			if len(args) > 0 && len(args) < 1+idCount {
+				// Must be for a resource completion
+				types, err := resources.GetTypesOfVariablesNeeded(resourceURL)
+
+				if err != nil {
+					return []string{}, cobra.ShellCompDirectiveNoFileComp
+				}
+
+				typeIdxNeeded := len(args) - 1
+
+				if completionResource, ok := resources.GetResourceByName(types[typeIdxNeeded]); ok {
+					return completion.Complete(completion.Request{
+						Type:     completion.CompleteAlias,
+						Resource: completionResource,
+					})
+				}
+
+			}
 		}
 
 		return []string{}, cobra.ShellCompDirectiveNoFileComp
 	},
+}
+
+func getUrl(resource resources.Resource, args []string) (string, error) {
+	resourceURL := ""
+	if resource.GetCollectionInfo == nil && resource.GetEntityInfo == nil {
+		return "", fmt.Errorf("Resource %s doesn't support GET", args[0])
+	} else if resource.GetCollectionInfo != nil && resource.GetEntityInfo == nil {
+		resourceURL = resource.GetCollectionInfo.Url
+	} else if resource.GetCollectionInfo == nil && resource.GetEntityInfo != nil {
+		resourceURL = resource.GetEntityInfo.Url
+	} else {
+		if _, ok := resources.GetPluralResources()[args[0]]; ok {
+			resourceURL = resource.GetCollectionInfo.Url
+		} else {
+			resourceURL = resource.GetEntityInfo.Url
+		}
+	}
+	return resourceURL, nil
 }
