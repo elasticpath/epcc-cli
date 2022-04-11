@@ -82,6 +82,9 @@ type CrudEntityInfo struct {
 
 	// Content type to send
 	ContentType string `yaml:"content-type"`
+
+	// A list of valid query parameters
+	QueryParameters string `yaml:"query"`
 }
 
 type CrudEntityAttribute struct {
