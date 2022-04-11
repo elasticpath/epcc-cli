@@ -4,6 +4,8 @@ import (
 	"github.com/elasticpath/epcc-cli/external/aliases"
 	"github.com/elasticpath/epcc-cli/external/resources"
 	"github.com/spf13/cobra"
+	"log"
+	"strconv"
 	"strings"
 )
 
@@ -80,26 +82,56 @@ func Complete(c Request) ([]string, cobra.ShellCompDirective) {
 
 	if c.Type&CompleteAttributeKey > 0 {
 		for k := range c.Resource.Attributes {
-			if _, ok := c.Attributes[k]; !ok {
-				results = append(results, k)
+			if strings.Contains(k, "[n]") {
+				i := strings.Index(k, "[n]")
+				prefix := k[:i+1]
+				max := -1
+				for s, _ := range c.Attributes {
+					if strings.HasPrefix(s, prefix) {
+						n := strings.TrimPrefix(s, prefix)
+						i2 := strings.Index(n, "]")
+						n = n[:i2]
+						m, _ := strconv.Atoi(n)
+						if m > max {
+							max = m
+						}
+					}
+				}
+				for j := 0; j <= max+1; j++ {
+					l := strings.Replace(k, "[n]", "["+strconv.Itoa(j)+"]", 1)
+					if _, ok := c.Attributes[l]; !ok {
+						results = append(results, l)
+					}
+				}
+			} else {
+				if _, ok := c.Attributes[k]; !ok {
+					results = append(results, k)
+				}
 			}
 		}
 	}
 
 	if c.Type&CompleteAttributeValue > 0 {
 		if c.Attribute != "" {
-			if c.Resource.Attributes[c.Attribute].Type == "BOOL" {
+			attr := c.Attribute
+			i := strings.Index(attr, "[")
+			j := strings.Index(attr, "]")
+			if i != -1 && j != -1 {
+				attr = attr[:i+1] + "n" + attr[j:]
+			}
+			log.Println("here: " + attr)
+			if c.Resource.Attributes[attr].Type == "BOOL" {
 				results = append(results, "true", "false")
-			} else if strings.HasPrefix(c.Resource.Attributes[c.Attribute].Type, "ENUM:") {
-				enums := strings.Replace(c.Resource.Attributes[c.Attribute].Type, "ENUM:", "", 1)
+			} else if strings.HasPrefix(c.Resource.Attributes[attr].Type, "ENUM:") {
+				enums := strings.Replace(c.Resource.Attributes[attr].Type, "ENUM:", "", 1)
 				for _, k := range strings.Split(enums, ",") {
 					results = append(results, k)
 				}
-			} else if c.Resource.Attributes[c.Attribute].Type == "URL" {
+			} else if c.Resource.Attributes[attr].Type == "URL" {
 				results = append(results, "https://")
 				compDir = compDir | cobra.ShellCompDirectiveNoSpace
-			} else if strings.HasPrefix(c.Resource.Attributes[c.Attribute].Type, "RESOURCE_ID:") {
-				resourceType := strings.Replace(c.Resource.Attributes[c.Attribute].Type, "RESOURCE_ID:", "", 1)
+			} else if strings.HasPrefix(c.Resource.Attributes[attr].Type, "RESOURCE_ID:") {
+				resourceType := strings.Replace(c.Resource.Attributes[attr].Type, "RESOURCE_ID:", "", 1)
 
 				if aliasType, ok := resources.GetResourceByName(resourceType); ok {
 					for alias := range aliases.GetAliasesForJsonApiType(aliasType.JsonApiType) {

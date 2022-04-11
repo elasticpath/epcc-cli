@@ -118,7 +118,7 @@ authentication-realms:
   attributes:
     name:
       type: STRING
-    redirect_uris[0]:
+    redirect_uris[n]:
       type: URL
     duplicate_email_policy:
       type: ENUM:allowed,api_only
@@ -342,15 +342,15 @@ fields:
       type: INT
     omit_null:
       type: BOOL
-    validation_rules[0].type:
+    validation_rules[n].type:
       type: ENUM:enum,email,slug,between,one-to-many,one-to-one
-    validation_rules[0].options:
+    validation_rules[n].options:
       type: STRING
-    validation_rules[0].to:
+    validation_rules[n].to:
       type: STRING
-    validation_rules[0].options.to:
+    validation_rules[n].options.to:
       type: STRING
-    validation_rules[0].options.from:
+    validation_rules[n].options.from:
       type: STRING
     relationship.flow.data.type:
       type: ENUM:flow
@@ -478,7 +478,7 @@ integrations:
       type: ENUM:us-east-2,us-east-1,us-west-1,us-west-2,eu-west-1,eu-west-2
     configuration.aws_secret_access_key:
       type: STRING
-    observes[0]:
+    observes[n]:
       type: ENUM:address.created,address.updated,address.deleted,account.created,account.updated,account.deleted,account-member.created,account-member.updated,account-member.deleted,account-membership.created,account-membership.updated,account-membership.deleted,brand.created,brand.updated,brand.deleted,cart.updated,cart.deleted,category.created,category.updated,category.deleted,collection.created,collection.updated,collection.deleted,currency.created,currency.updated,currency.deleted,customer.created,customer.updated,customer.deleted,file.created,file.deleted,integration.created,integration.updated,integration.deleted,order.created,order.updated,order.fulfilled,order.authorized,order.paid,order.refunded,payment-gateway.updated,product.created,product.updated,product.deleted,settings.created,settings.updated,stock-transaction.created,transaction.created,transaction.updated,user-authentication-info.created,user-authentication-info.updated,user-authentication-info.deleted
 merchant-realm-mappings:
   singular-name: "merchant-realm-mapping"
@@ -942,11 +942,11 @@ promotion-codes:
     url: "/v2/promotions/{promotions}/codes"
     content-type: application/json
   attributes:
-    codes[0].code:
+    codes[n].code:
       type: STRING
-    codes[0].uses:
+    codes[n].uses:
       type: INT
-    codes[0].user:
+    codes[n].user:
       type: STRING
     consume_unit:
       type: ENUM:per_item,per_cart
@@ -983,21 +983,21 @@ promotions:
       type: STRING
     end:
       type: STRING
-    max_discount_value[0].amount:
+    max_discount_value[n].amount:
       type: INT
-    max_discount_value[0].currency:
+    max_discount_value[n].currency:
       type: CURRENCY
-    min_cart_value[0].currency:
+    min_cart_value[n].currency:
       type: CURRENCY
-    min_cart_value[0].amount:
+    min_cart_value[n].amount:
       type: INT
     max_applications_per_cart:
       type: INT
-    schema.currencies[0].currency:
+    schema.currencies[n].currency:
       type: CURRENCY
-    schema.currencies[0].amount:
+    schema.currencies[n].amount:
       type: INT
-    schema.exclude.targets[0]:
+    schema.exclude.targets[n]:
       type: STRING
 settings:
   singular-name: "setting"
@@ -1018,7 +1018,7 @@ settings:
       type: STRING
     list_child_products:
       type: BOOL
-    additional_languages[0]:
+    additional_languages[n]:
       type: STRING
     calculation_method:
       type: ENUM:simple,line
@@ -1136,11 +1136,11 @@ v2-products:
       type: BOOL
     description:
       type: STRING
-    price[0].amount:
+    price[n].amount:
       type: INT
-    price[0].currency:
+    price[n].currency:
       type: CURRENCY
-    price[0].includes_tax:
+    price[n].includes_tax:
       type: BOOL
     status:
       type: ENUM:draft,live
