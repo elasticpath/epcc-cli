@@ -25,7 +25,7 @@ var logout = &cobra.Command{
 
 		var err error
 		if _, err := os.Stat(globals.CredPath); err == nil {
-			// Remove credentials after logout
+			// Remove token on logout
 			err = os.Remove(globals.CredPath)
 		}
 		if err != nil {
