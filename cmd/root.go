@@ -30,6 +30,7 @@ func init() {
 		create,
 		delete,
 		update,
+		logs,
 		resourceListCommand,
 	)
 

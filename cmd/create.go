@@ -71,7 +71,6 @@ var create = &cobra.Command{
 			json.PrintJson(string(resBody))
 			return fmt.Errorf(resp.Status)
 		}
-
 		return json.PrintJson(string(resBody))
 	},
 

@@ -534,23 +534,22 @@ orders:
     url: "/v2/orders/{orders}"
     content-type: application/json
   attributes:
-    attributes:
-      shipping_address.first_name:
-        type: STRING
-      shipping_address.last_name:
-        type: STRING
-      shipping_address.line_1:
-        type: STRING
-      shipping_address.postcode:
-        type: STRING
-      shipping_address.county:
-        type: STRING
-      shipping_address.country:
-        type: STRING
-      status:
-        type: ENUM:cancelled
-      shipping:
-        type: ENUM:fulfilled
+    shipping_address.first_name:
+      type: STRING
+    shipping_address.last_name:
+      type: STRING
+    shipping_address.line_1:
+      type: STRING
+    shipping_address.postcode:
+      type: STRING
+    shipping_address.county:
+      type: STRING
+    shipping_address.country:
+      type: STRING
+    status:
+      type: ENUM:cancelled
+    shipping:
+      type: ENUM:fulfilled
 order-items:
   singular-name: "order-item"
   json-api-type: "order_item"
@@ -559,7 +558,6 @@ order-items:
   get-collection:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/carts-and-orders/orders/order-items.html#get-get-order-items"
     url: "/v2/orders/{orders}/items"
-  attributes:
 order-transactions:
   singular-name: "order-transaction"
   json-api-type: "transaction"
@@ -624,7 +622,6 @@ payment-gateways:
   get-collection:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/gateways/get-all-gateways.html"
     url: "/v2/gateways/"
-  attributes:
 payment-gateways-manual:
   singular-name: "payment-gateway-manual"
   json-api-type: "gateway"
