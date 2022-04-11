@@ -33,6 +33,8 @@ func init() {
 		logs,
 		resourceListCommand,
 		aliasesCmd,
+		login,
+		logout,
 	)
 	logs.AddCommand(logsList, logsShow, logsClear)
 

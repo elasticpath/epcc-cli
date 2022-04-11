@@ -6,7 +6,9 @@ import (
 	"fmt"
 	"github.com/elasticpath/epcc-cli/config"
 	"github.com/elasticpath/epcc-cli/external/version"
+	"github.com/elasticpath/epcc-cli/globals"
 	log "github.com/sirupsen/logrus"
+	"os"
 
 	"net/http"
 	"net/url"
@@ -52,16 +54,40 @@ func GetAuthenticationToken() (string, error) {
 func auth() (string, error) {
 
 	reqURL, err := url.Parse(config.Envs.EPCC_API_BASE_URL)
-	if len(reqURL.String()) == 0 {
-		return "", fmt.Errorf("error: EPCC_API_BASE_URL not set")
-	}
+
 	reqURL.Path = fmt.Sprintf("/oauth/access_token")
+
 	values := url.Values{}
-	values.Set("client_id", config.Envs.EPCC_CLIENT_ID)
-	grantType := "implicit"
-	if config.Envs.EPCC_CLIENT_SECRET != "" {
-		values.Set("client_secret", config.Envs.EPCC_CLIENT_SECRET)
-		grantType = "client_credentials"
+
+	var grantType string
+
+	if globals.NewLogin {
+		// Login with new credentials
+		values.Set("client_id", globals.EpccClientId)
+		grantType = "implicit"
+
+		if globals.EpccClientSecret != "" {
+			values.Set("client_secret", globals.EpccClientSecret)
+			grantType = "client_credentials"
+		}
+	} else if _, err := os.Stat(globals.CredPath); err == nil {
+		// Use stored token after login
+		token, err := os.ReadFile(globals.CredPath)
+		if err != nil {
+			return "", err
+		}
+		return string(token), nil
+
+	} else {
+		// Autologin using env vars
+		values.Set("client_id", config.Envs.EPCC_CLIENT_ID)
+		grantType = "implicit"
+
+		if config.Envs.EPCC_CLIENT_SECRET != "" {
+			values.Set("client_secret", config.Envs.EPCC_CLIENT_SECRET)
+			grantType = "client_credentials"
+		}
+
 	}
 	values.Set("grant_type", grantType)
 
@@ -71,13 +97,16 @@ func auth() (string, error) {
 	if err != nil {
 		return "", err
 	}
+
 	req.Header.Add("Accept", "application/json")
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	req.Header.Add("User-Agent", fmt.Sprintf("epcc-cli/%s-%s", version.Version, version.Commit))
+
 	resp, err := HttpClient.Do(req)
 	if err != nil {
 		return "", err
 	}
+
 	if resp.StatusCode != 200 {
 		return "", fmt.Errorf("error: unexpected status %s", resp.Status)
 	}
