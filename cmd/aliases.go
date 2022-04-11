@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"github.com/elasticpath/epcc-cli/external/aliases"
 	"github.com/elasticpath/epcc-cli/external/completion"
+	"github.com/elasticpath/epcc-cli/external/profiles"
 	"github.com/elasticpath/epcc-cli/external/resources"
 	"github.com/spf13/cobra"
+	"os"
 	"sort"
 )
 
@@ -52,5 +54,15 @@ var aliasListCmd = &cobra.Command{
 		}
 
 		return []string{}, cobra.ShellCompDirectiveNoFileComp
+	},
+}
+
+var aliasClearCmd = &cobra.Command{
+	Use:   "clear",
+	Short: "clear all aliases",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		profileDirectory := profiles.GetProfileDataBaseURL()
+		os.RemoveAll(profileDirectory)
+		return nil
 	},
 }

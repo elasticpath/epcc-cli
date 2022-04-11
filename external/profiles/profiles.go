@@ -31,12 +31,7 @@ func GetProfileName() string {
 }
 
 func GetProfileDirectory() string {
-	homeDir, err := os.UserHomeDir()
-
-	if err != nil {
-		panic(fmt.Sprintf("Could not get user hoem directory home directory %v", err))
-	}
-	profileDir := homeDir + "/.epcc/profiles_data/" + GetProfileName()
+	profileDir := GetProfileDataBaseURL() + GetProfileName()
 
 	log.Tracef("Creating profile directory %s", profileDir)
 	if err := os.MkdirAll(profileDir, 0700); err != nil {
@@ -44,6 +39,15 @@ func GetProfileDirectory() string {
 	}
 
 	return profileDir
+}
+
+func GetProfileDataBaseURL() string {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		panic(fmt.Sprintf("Could not get user hoem directory home directory %v", err))
+	}
+
+	return homeDir + "/.epcc/profiles_data/"
 }
 
 // NewSHA256 ...
