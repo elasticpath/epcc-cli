@@ -9,12 +9,17 @@ import (
 	"github.com/elasticpath/epcc-cli/external/json"
 	"github.com/elasticpath/epcc-cli/external/version"
 	"github.com/elasticpath/epcc-cli/globals"
+	"github.com/elasticpath/epcc-cli/shared"
 	log "github.com/sirupsen/logrus"
 	"io"
+	"io/fs"
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
+	"os"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -92,6 +97,17 @@ func doRequestInternal(ctx context.Context, method string, contentType string, p
 	} else if resp.StatusCode >= 200 && resp.StatusCode <= 399 {
 		log.Infof("%s %s ==> %s %s", method, reqURL.String(), resp.Proto, resp.Status)
 	}
+	dumpReq, err := httputil.DumpRequestOut(req, true)
+	if err != nil {
+		log.Error(err)
+	}
+
+	dumpRes, err := httputil.DumpResponse(resp, true)
+	if err != nil {
+		log.Error(err)
+	}
+
+	logToDisk(method, path, dumpReq, dumpRes, resp.StatusCode)
 
 	return resp, err
 }
@@ -132,6 +148,41 @@ func AddHeaderByFlag(r *http.Request) error {
 			return fmt.Errorf("header has invalid format")
 		}
 		r.Header.Add(entries[0], entries[1])
+	}
+	return nil
+}
+
+func logToDisk(requestMethod string, requestPath string, requestBytes []byte, responseBytes []byte, responseCode int) error {
+	os.Mkdir(shared.LogDirectory, os.ModePerm)
+	var logNumber = 1
+	lastFile := getLastFile(shared.LogDirectory)
+	if lastFile != nil {
+		decodedFileNAme, err := shared.Base64DecodeStripped((*lastFile).Name())
+		if err != nil {
+			return err
+		}
+
+		fileNameParts := strings.Split(decodedFileNAme, " ")
+		logNumber, _ = strconv.Atoi(fileNameParts[0])
+		logNumber++
+	}
+
+	filename := shared.Base64EncodeStripped(fmt.Sprintf("%d %s %s ==> %d", logNumber, requestMethod, requestPath, responseCode))
+	f, err := os.Create(fmt.Sprintf("%s/%s", shared.LogDirectory, filename))
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	f.Write(requestBytes)
+	f.Write([]byte("\n"))
+	f.Write(responseBytes)
+	return nil
+}
+
+func getLastFile(logDirectory string) *fs.FileInfo {
+	all := shared.AllFilesSortedByDate(logDirectory)
+	if len(all) >= 1 {
+		return &all[len(all)-1]
 	}
 	return nil
 }

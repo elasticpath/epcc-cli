@@ -76,7 +76,6 @@ var create = &cobra.Command{
 		}
 
 		aliases.SaveAliasesForResources(string(resBody))
-
 		return json.PrintJson(string(resBody))
 	},
 

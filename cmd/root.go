@@ -30,9 +30,11 @@ func init() {
 		create,
 		delete,
 		update,
+		logs,
 		resourceListCommand,
 		aliasesCmd,
 	)
+	logs.AddCommand(logsList, logsShow, logsClear)
 
 	testJson.Flags().BoolVarP(&noWrapping, "no-wrapping", "", false, "if set, we won't wrap the output the json in a data tag")
 	testJson.Flags().BoolVarP(&compliant, "compliant", "", false, "if set, we wrap most keys in an attributes tage automatically.")

@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/elasticpath/epcc-cli/config"
+	"github.com/elasticpath/epcc-cli/shared"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"net/url"
@@ -28,7 +29,7 @@ var cmCommand = &cobra.Command{
 		if cmUrl == "" {
 			return fmt.Errorf("Don't know where Commerce Manager is for $EPCC_API_BASE_URL=%s \n", u)
 		}
-		err = OpenUrl(cmUrl)
+		err = shared.OpenUrl(cmUrl)
 		if err != nil {
 			return err
 		}
