@@ -32,6 +32,7 @@ func init() {
 		update,
 		logs,
 		resourceListCommand,
+		aliasesCmd,
 	)
 	logs.AddCommand(logsList, logsShow, logsClear)
 
@@ -44,6 +45,8 @@ func init() {
 		"sets logging level; can be 'trace', 'debug', 'info', 'warn', 'error', 'fatal', 'panic'")
 	rootCmd.PersistentFlags().BoolVarP(&json.MonochromeOutput, "monochrome-output", "M", false, "By default, epcc will output using colors if the terminal supports this. Use this option to disable it.")
 	rootCmd.PersistentFlags().StringSliceVarP(&globals.RawHeaders, "header", "H", []string{}, "Extra headers and values to include in the request when sending HTTP to a server. You may specify any number of extra headers.")
+
+	aliasesCmd.AddCommand(aliasListCmd)
 }
 
 var rootCmd = &cobra.Command{

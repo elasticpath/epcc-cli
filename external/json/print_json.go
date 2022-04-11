@@ -38,5 +38,6 @@ func printJsonToWriter(json string, w io.Writer) error {
 	e := NewEncoder(false, 2)
 
 	err = e.Marshal(v, w)
+	w.Write([]byte{byte('\n')})
 	return err
 }

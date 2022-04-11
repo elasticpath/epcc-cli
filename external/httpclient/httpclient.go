@@ -47,7 +47,10 @@ func doRequestInternal(ctx context.Context, method string, contentType string, p
 	reqURL.RawQuery = query
 
 	var bodyBuf bytes.Buffer
-	payload = io.TeeReader(payload, &bodyBuf)
+	if payload != nil {
+		payload = io.TeeReader(payload, &bodyBuf)
+	}
+
 	req, err := http.NewRequest(method, reqURL.String(), payload)
 	if err != nil {
 		return nil, err
@@ -75,14 +78,18 @@ func doRequestInternal(ctx context.Context, method string, contentType string, p
 
 	resp, err := HttpClient.Do(req)
 
-	if resp.StatusCode > 400 {
-		body, _ := ioutil.ReadAll(&bodyBuf)
-		if len(body) > 0 {
-			log.Warnf("%s %s", method, reqURL.String())
+	if resp.StatusCode >= 400 {
+		if payload != nil {
+			body, _ := ioutil.ReadAll(&bodyBuf)
+			if len(body) > 0 {
+				log.Warnf("%s %s", method, reqURL.String())
 
-			// TODO maybe check if it's json and if not do something else.
-			json.PrintJsonToStderr(string(body))
-			log.Warnf("%s %s", resp.Proto, resp.Status)
+				// TODO maybe check if it's json and if not do something else.
+				json.PrintJsonToStderr(string(body))
+				log.Warnf("%s %s", resp.Proto, resp.Status)
+			} else {
+				log.Warnf("%s %s ==> %s %s", method, reqURL.String(), resp.Proto, resp.Status)
+			}
 		} else {
 			log.Warnf("%s %s ==> %s %s", method, reqURL.String(), resp.Proto, resp.Status)
 		}

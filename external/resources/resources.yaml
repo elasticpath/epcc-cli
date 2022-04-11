@@ -141,7 +141,7 @@ carts:
     url: "/v2/carts/{carts}"
   create-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/carts-and-orders/carts/create-multi-cart.html"
-    url: "/v2/carts/"
+    url: "/v2/carts"
     content-type: application/json
   attributes:
     id:
@@ -169,8 +169,10 @@ cart-items:
       type: STRING
     quantity:
       type: INT
-cart-item:
-  singular-name: "cart-item"
+    id:
+      type: RESOURCE_ID:pcm-products
+cart-product-items:
+  singular-name: "cart-product-item"
   json-api-type: "cart_item"
   json-api-format: "legacy"
   docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/carts-and-orders/carts/cart-items/index.html"
@@ -183,8 +185,10 @@ cart-item:
       type: STRING
     quantity:
       type: INT
+    id:
+      type: RESOURCE_ID:pcm-products
 cart-checkout:
-  singular-name: "checkout"
+  singular-name: "cart-checkout"
   json-api-type: "checkout"
   json-api-format: "legacy"
   docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/carts-and-orders/checkout.html#post-with-customer-object"
@@ -256,6 +260,8 @@ currencies:
     decimal_places:
       type: INT
     default:
+      type: BOOL
+    enabled:
       type: BOOL
 customer-authentication-settings:
   singular-name: "customer-authentication-settings"
@@ -580,6 +586,7 @@ order-transaction-capture:
   create-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/paying-for-an-order/manual-payments.html#post-capture-transaction"
     url: "/v2/orders/{orders}/transactions/{order_transactions}/capture"
+
 order-transaction-refund:
   singular-name: "order-transaction-refund"
   json-api-type: "transaction"
@@ -614,6 +621,64 @@ password-profiles:
       type: ENUM:any,email
     name:
       type: STRING
+pcm-catalogs:
+  singular-name: "pcm-catalog"
+  json-api-type: "catalog"
+  json-api-format: "compliant"
+  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/catalogs/configure/get-all-catalogs.html"
+  get-collection:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/hierarchies/get-all-hierarchies.html"
+    url: "/pcm/catalogs"
+  get-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/hierarchies/get-a-hierarchy.html"
+    url: "/pcm/catalogs/{pcm_catalogs}"
+  update-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/catalogs/configure/update-a-catalog.html"
+    url: "/pcm/hierarchies/{pcm_hierarchies}"
+  delete-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/catalogs/configure/delete-a-catalog.html"
+    url: "/pcm/catalogs/{pcm_catalogs}"
+  create-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/catalogs/configure/create-a-catalog.html"
+    url: "/pcm/catalogs"
+    content-type: application/json
+  attributes:
+    name:
+      type: STRING
+    description:
+      type: STRING
+    hierarchy_ids[0]:
+      type: RESOURCE_ID:pcm-hierarchies
+    pricebook_id:
+      type: RESOURCE_ID:pcm-pricebooks
+
+pcm-catalog-releases:
+  singular-name: "pcm-catalog-releases"
+  json-api-type: "catalog-release"
+  json-api-format: "compliant"
+  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/catalogs/index.html"
+  get-collection:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/catalogs/releases/catalog-release/get-all-releases-of-a-catalog.html"
+    url: "/pcm/catalogs/{pcm_catalogs}/releases"
+  get-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/catalogs/index.html"
+    url: "/pcm/catalogs/{pcm_catalogs}/releases/{pcm_catalog_releases}"
+  delete-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/catalogs/releases/catalog-release/delete-a-published-catalog.html"
+    url: "/pcm/catalogs/{pcm_catalogs}/releases/{pcm_catalog_releases}"
+  create-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/catalogs/releases/catalog-release/publish-a-catalog.html"
+    url: "/pcm/catalogs/{pcm_catalogs}/releases"
+    content-type: application/json
+  attributes:
+    name:
+      type: STRING
+    description:
+      type: STRING
+    hierarchy_ids[0]:
+      type: RESOURCE_ID:pcm-hierarchies
+    pricebook_id:
+      type: RESOURCE_ID:pcm-pricebooks
 payment-gateways:
   singular-name: "payment-gateway"
   json-api-type: "gateway"
@@ -679,11 +744,21 @@ pcm-node-children:
 pcm-node-products:
   singular-name: "pcm-node-product"
   json-api-type: "node"
-  json-api-format: "compliant"
+  json-api-format: "legacy"
+  no-wrapping: true
   docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/hierarchies/relationships/get-node-products.html"
   get-collection:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/hierarchies/relationships/get-node-products.html"
     url: "/pcm/hierarchies/{pcm_hierarchies}/nodes/{pcm_nodes}/products"
+  #TBD figure out if this should be the same URL
+  create-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/hierarchies/relationships/create-node-product-relationships.html"
+    url: "/pcm/hierarchies/{pcm_hierarchies}/nodes/{pcm_nodes}/relationships/products"
+  attributes:
+    "data[0].id":
+      type: RESOURCE_ID:pcm-product
+    "data[0].type":
+      type: ENUM:product
 pcm-nodes:
   singular-name: "pcm-node"
   json-api-type: "node"
@@ -716,7 +791,7 @@ pcm-nodes:
     relationships.parent.data.type:
       type: ENUM:node
     relationships.parent.data.id:
-      type: STRING
+      type: RESOURCE_ID:pcm-nodes
 pcm-product-main-image:
   singular-name: "pcm-product-main-image"
   json-api-type: "file"
@@ -783,6 +858,71 @@ pcm-products:
       type: STRING
     locales.en-US.description:
       type: STRING
+pcm-pricebooks:
+  singular-name: "pcm-pricebook"
+  json-api-type: "pricebook"
+  json-api-format: "compliant"
+  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/pricebooks/index.html"
+  get-collection:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/pricebooks/index.html"
+    url: "/pcm/pricebooks"
+  get-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/pricebooks/get-a-pricebook.html"
+    url: "/pcm/pricebooks/{pcm_pricebooks}"
+  delete-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/pricebooks/delete-a-pricebook.html"
+    url: "/pcm/pricebooks/{pcm_pricebooks}"
+  create-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/pricebooks/create-a-pricebook.html"
+    url: "/pcm/pricebooks"
+    content-type: application/json
+  update-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/pricebooks/update-a-pricebook.html"
+    url: "/pcm/pricebooks/{pcm_pricebooks}"
+    content-type: application/json
+  attributes:
+    name:
+      type: STRING
+    descirption:
+      type: STRING
+pcm-product-prices:
+  singular-name: "pcm-product-price"
+  json-api-type: "product-price"
+  json-api-format: "compliant"
+  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/pricebooks/prices/get-all-prices-in-a-pricebook.html"
+  get-collection:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/pricebooks/prices/get-all-prices-in-a-pricebook.html"
+    url: "/pcm/pricebooks/{pcm_pricebooks}/prices"
+  get-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/pricebooks/prices/get-a-products-prices.html"
+    url: "/pcm/pricebooks/{pcm_pricebooks}/prices/{pcm_product_prices}"
+  delete-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/pricebooks/prices/delete-product-prices.html"
+    url: "/pcm/pricebooks/{pcm_pricebooks}/prices/{pcm_product_prices}"
+  create-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/pricebooks/prices/create-product-prices.html"
+    url: "pcm/pricebooks/{pcm_pricebooks}/prices"
+    content-type: application/json
+  update-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/pricebooks/prices/update-product-prices.html"
+    url: "/pcm/pricebooks/{pcm_pricebooks}/prices/{pcm_product_prices}"
+    content-type: application/json
+  attributes:
+    sku:
+      type: STRING
+    currencies.USD.amount:
+      type: INT
+    currencies.USD.includes_tax:
+      type: BOOL
+    currencies.GBP.amount:
+      type: INT
+    currencies.GBP.includes_tax:
+      type: BOOL
+    currencies.CAD.amount:
+      type: INT
+    currencies.CAD.includes_tax:
+      type: BOOL
+
 promotion-codes:
   singular-name: "promotion_code"
   json-api-type: "promotion_codes"

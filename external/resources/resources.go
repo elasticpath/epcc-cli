@@ -63,6 +63,9 @@ type Resource struct {
 
 	Attributes map[string]*CrudEntityAttribute `yaml:"attributes"`
 
+	// If true, don't wrap json in a data tag
+	NoWrapping bool `yaml:"no-wrapping"`
+
 	// The singular name version of the resource.
 	SingularName string `yaml:"singular-name"`
 

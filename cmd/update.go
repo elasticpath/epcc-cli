@@ -36,14 +36,14 @@ var update = &cobra.Command{
 		}
 
 		// Replace ids with args in resourceURL
-		resourceURL, err = resources.GenerateUrl(resourceURL, args[1:])
+		resourceURL, err = resources.GenerateUrl(resource, resourceURL, args[1:])
 		if err != nil {
 			return err
 		}
 
 		args = append(args, "type", resource.JsonApiType)
 		// Create the body from remaining args
-		body, err := json.ToJson(args[(idCount+1):], false, resource.JsonApiFormat == "compliant")
+		body, err := json.ToJson(args[(idCount+1):], false, resource.JsonApiFormat == "compliant", resource.Attributes)
 		if err != nil {
 			return err
 		}
@@ -82,7 +82,8 @@ var update = &cobra.Command{
 		resource, ok := resources.GetResourceByName(args[0])
 		if ok {
 			if resource.UpdateEntityInfo != nil {
-				idCount, _ := resources.GetNumberOfVariablesNeeded(resource.UpdateEntityInfo.Url)
+				resourceURL := resource.UpdateEntityInfo.Url
+				idCount, _ := resources.GetNumberOfVariablesNeeded(resourceURL)
 				if len(args)-idCount >= 1 { // Arg is after IDs
 					if (len(args)-idCount)%2 == 1 { // This is an attribute key
 						usedAttributes := make(map[string]int)
@@ -101,6 +102,23 @@ var update = &cobra.Command{
 							Resource:  resource,
 							Verb:      completion.Update,
 							Attribute: args[len(args)-1],
+						})
+					}
+				} else {
+					// Arg is in IDS
+					// Must be for a resource completion
+					types, err := resources.GetTypesOfVariablesNeeded(resourceURL)
+
+					if err != nil {
+						return []string{}, cobra.ShellCompDirectiveNoFileComp
+					}
+
+					typeIdxNeeded := len(args) - 1
+
+					if completionResource, ok := resources.GetResourceByName(types[typeIdxNeeded]); ok {
+						return completion.Complete(completion.Request{
+							Type:     completion.CompleteAlias,
+							Resource: completionResource,
 						})
 					}
 				}
