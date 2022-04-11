@@ -52,13 +52,15 @@ var login = &cobra.Command{
 			globals.EpccClientSecret = args[4]
 		}
 		globals.NewLogin = true
-		_, err := authentication.GetAuthenticationToken()
+		token, err := authentication.GetAuthenticationToken()
 
 		// Persist credentials to a file after successful login
 		if err == nil {
-			s1 := globals.EpccClientId
-			s2 := globals.EpccClientSecret
-			s := []byte(s1 + ";" + s2)
+			//s1 := globals.EpccClientId
+			//s2 := globals.EpccClientSecret
+			//s := []byte(s1 + ";" + s2)
+			//err = os.WriteFile(globals.CredPath, s, 0644)
+			s := []byte(token)
 			err = os.WriteFile(globals.CredPath, s, 0644)
 		}
 

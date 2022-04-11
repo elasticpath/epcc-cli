@@ -70,23 +70,12 @@ func auth() (string, error) {
 			grantType = "client_credentials"
 		}
 	} else if _, err := os.Stat(globals.CredPath); err == nil {
-		// Authentication for subsequent calls after login
-		credentials, err := os.ReadFile(globals.CredPath)
+		// Use stored token after login
+		token, err := os.ReadFile(globals.CredPath)
 		if err != nil {
 			return "", err
 		}
-		split := strings.Split(string(credentials), ";")
-
-		values.Set("client_id", split[0])
-		grantType = "implicit"
-
-		if len(split) > 1 {
-			if split[1] != "" {
-				values.Set("client_secret", split[1])
-				grantType = "client_credentials"
-			}
-
-		}
+		return string(token), nil
 
 	} else {
 		// Autologin using env vars
