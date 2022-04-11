@@ -86,7 +86,7 @@ func Complete(c Request) ([]string, cobra.ShellCompDirective) {
 				i := strings.Index(k, "[n]")
 				prefix := k[:i+1]
 				max := -1
-				for s, _ := range c.Attributes {
+				for s := range c.Attributes {
 					if strings.HasPrefix(s, prefix) {
 						n := strings.TrimPrefix(s, prefix)
 						i2 := strings.Index(n, "]")
