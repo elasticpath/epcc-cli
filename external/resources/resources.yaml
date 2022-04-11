@@ -41,6 +41,7 @@ account-members:
   get-collection:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/account-management/account-members/get-all-account-members.html"
     url: "/v2/account-members"
+    query: "page[limit],page[offset],filter"
   get-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/account-management/account-members/get-an-account-member.html"
     url: "/v2/account-members/{account_members}"
@@ -57,6 +58,7 @@ account-memberships:
   get-collection:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/account-management/account-memberships/get-all-account-memberships.html"
     url: "/v2/accounts/{accounts}/account-memberships"
+    query: "page[limit],page[offset],filter"
   get-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/account-management/account-memberships/get-an-account-membership.html"
     url: "/v2/accounts/{accounts}/account-memberships/{account_memberships}"
@@ -78,6 +80,7 @@ accounts:
   get-collection:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/account-management/accounts/get-all-accounts.html"
     url: "/v2/accounts"
+    query: "page[limit],page[offset],filter"
   get-entity:
     #TODO this link is wrong, but the actual page doesn't exist.
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/account-management/accounts/index.html"
@@ -109,6 +112,7 @@ authentication-realms:
   get-collection:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/authentication-realms/get-all-authentication-realms.html"
     url: "/v2/authentication-realms"
+    query: "page[limit],page[offset]"
   get-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/authentication-realms/get-an-authentication-realm.html"
     url: "/v2/authentication-realms/{authentication_realms}"
@@ -130,9 +134,11 @@ carts:
   get-collection:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/carts-and-orders/carts/associations/get-customer-carts.html"
     url: "/v2/carts"
+    query: "page[limit],page[offset]"
   get-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/carts-and-orders/carts/get-a-cart.html"
     url: "/v2/carts/{carts}"
+    query: "include"
   update-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/carts-and-orders/carts/create-multi-cart.html#put-update-a-cart"
     url: "/v2/carts/{carts}"
@@ -158,6 +164,7 @@ cart-items:
   get-collection:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/carts-and-orders/carts/cart-items/get-cart-items.html"
     url: "/v2/carts/{carts}/items"
+    query: "include"
   update-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/carts-and-orders/carts/cart-items/update-cart-item.html"
     url: "/v2/carts/{carts}/items/{cart_items}"
@@ -282,6 +289,7 @@ customers:
   get-collection:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/customers/get-all-customers.html"
     url: "/v2/customers"
+    query: "page[limit],page[offset],filter"
   get-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/customers/get-a-customer.html"
     url: "/v2/customers/{customers}"
@@ -364,6 +372,7 @@ files:
   get-collection:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/files/get-all-files.html"
     url: "/v2/files"
+    query: "page[limit],page[offset],filter"
   get-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/files/get-a-file.html"
     url: "/v2/files/{files}"
@@ -419,6 +428,7 @@ integration-jobs:
   get-collection:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/integrations/get-integration-logs.html#get-get-jobs-for-an-integration"
     url: "/v2/integrations/{integrations}/jobs"
+    query: "page[limit],page[offset]"
 integration-job-log:
   singular-name: "integration-job-log"
   json-api-type: "integration-job"
@@ -502,6 +512,7 @@ oidc-profiles:
   get-collection:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/oidc-profiles/get-all-oidc-profiles.html"
     url: "/v2/authentication-realms/{authentication_realms}/oidc-profiles"
+    query: "page[limit],page[offset]"
   get-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/oidc-profiles/get-an-oidc-profile.html"
     url: "/v2/authentication-realms/{authentication_realms}/oidc-profiles/{oidc_profiles}"
@@ -532,9 +543,11 @@ orders:
   get-collection:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/carts-and-orders/orders/get-all-orders.html"
     url: "/v2/orders"
+    query: "page[limit],page[offset],filter,include"
   get-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/carts-and-orders/orders/get-an-order.html"
     url: "/v2/orders/{orders}"
+    query: "include"
   update-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/carts-and-orders/orders/update-an-order.html"
     url: "/v2/orders/{orders}"
@@ -603,6 +616,7 @@ password-profiles:
   get-collection:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/password-profiles/get-all-password-profiles.html"
     url: "/v2/authentication-realms/{authentication_realms}/password-profiles"
+    query: "page[limit],page[offset]"
   get-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/password-profiles/get-a-password-profile.html"
     url: "/v2/authentication-realms/{authentication_realms}/password-profiles/{password_profiles}"
@@ -661,7 +675,7 @@ pcm-catalog-releases:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/catalogs/releases/catalog-release/get-all-releases-of-a-catalog.html"
     url: "/pcm/catalogs/{pcm_catalogs}/releases"
   get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/catalogs/index.html"
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/catalogs/releases/get-a-release-of-a-catalog.html"
     url: "/pcm/catalogs/{pcm_catalogs}/releases/{pcm_catalog_releases}"
   delete-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/catalogs/releases/catalog-release/delete-a-published-catalog.html"
@@ -741,6 +755,7 @@ pcm-node-children:
   get-collection:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/hierarchies/relationships/get-node-children.html"
     url: "/pcm/hierarchies/{pcm_hierarchies}/nodes/{pcm_nodes}/children"
+    query: "page[limit],page[offset]"
 pcm-node-products:
   singular-name: "pcm-node-product"
   json-api-type: "node"
@@ -750,6 +765,7 @@ pcm-node-products:
   get-collection:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/hierarchies/relationships/get-node-products.html"
     url: "/pcm/hierarchies/{pcm_hierarchies}/nodes/{pcm_nodes}/products"
+    query: "page[limit],page[offset]"
   #TBD figure out if this should be the same URL
   create-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/hierarchies/relationships/create-node-product-relationships.html"
@@ -824,6 +840,7 @@ pcm-products:
   get-collection:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/get-all-products.html"
     url: "/pcm/products"
+    query: "include"
   get-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/get-a-product.html"
     url: "/pcm/products/{pcm_products}"
@@ -866,6 +883,7 @@ pcm-pricebooks:
   get-collection:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/pricebooks/index.html"
     url: "/pcm/pricebooks"
+    #TBD figure out if this should be the same URL
   get-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/pricebooks/get-a-pricebook.html"
     url: "/pcm/pricebooks/{pcm_pricebooks}"
@@ -893,6 +911,7 @@ pcm-product-prices:
   get-collection:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/pricebooks/prices/get-all-prices-in-a-pricebook.html"
     url: "/pcm/pricebooks/{pcm_pricebooks}/prices"
+    query: "page[limit],page[offset]"
   get-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/pricebooks/prices/get-a-products-prices.html"
     url: "/pcm/pricebooks/{pcm_pricebooks}/prices/{pcm_product_prices}"
@@ -922,7 +941,6 @@ pcm-product-prices:
       type: INT
     currencies.CAD.includes_tax:
       type: BOOL
-
 promotion-codes:
   singular-name: "promotion_code"
   json-api-type: "promotion_codes"
@@ -958,6 +976,7 @@ promotions:
   get-collection:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/promotions/get-promotions.html"
     url: "/v2/promotions"
+    query: "page[limit],page[offset]"
   get-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/promotions/get-a-promotion.html"
     url: "/v2/promotions/{promotions}"
@@ -1030,6 +1049,7 @@ user-authentication-infos:
   get-collection:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/user-authentication-info/get-all-user-authentication-info.html"
     url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info"
+    query: "page[limit],page[offset],filter"
   get-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/user-authentication-info/get-a-user-authentication-info.html"
     url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info/{user_authentication_infos}"
@@ -1056,6 +1076,7 @@ user-authentication-oidc-profile-infos:
   get-collection:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/user-authentication-oidc-profile-info/get-all-user-authentication-oidc-profile-info.html"
     url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info/{user_authentication_infos}/user-authentication-oidc-profile-info"
+    query: "page[limit],page[offset]"
   get-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/user-authentication-oidc-profile-info/get-a-user-authentication-oidc-profile-info.html"
     url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info/{user_authentication_infos}/user-authentication-oidc-profile-info/{user_authentication_oidc_profile_infos}"
@@ -1084,6 +1105,7 @@ user-authentication-password-profile-infos:
   get-collection:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/user-authentication-password-profiles/get-all-user-authentication-password-profile-info.html"
     url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info/{user_authentication_infos}/user-authentication-password-profile-info"
+    query: "page[limit],page[offset]"
   get-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/user-authentication-password-profiles/get-a-user-authentication-password-profile.html"
     url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info/{user_authentication_infos}/user-authentication-password-profile-info/{user_authentication_password_profile_infos}"
@@ -1112,6 +1134,7 @@ v2-products:
   get-collection:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/products/get-all-products.html"
     url: "/v2/products"
+    query: "page[limit],page[offset],filter,sort,include"
   get-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/products/get-a-product.html"
     url: "/v2/products/{v2_products}"

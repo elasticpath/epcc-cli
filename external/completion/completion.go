@@ -24,6 +24,7 @@ const (
 	Create = 2
 	Update = 4
 	Delete = 8
+	GetAll = 16
 )
 
 type Request struct {
@@ -140,6 +141,19 @@ func Complete(c Request) ([]string, cobra.ShellCompDirective) {
 				}
 			}
 		}
+	}
+
+	if c.Type&CompleteQueryParam > 0 {
+		if c.Verb&GetAll > 0 {
+			for _, k := range strings.Split(c.Resource.GetCollectionInfo.QueryParameters, ",") {
+				results = append(results, k)
+			}
+		} else if c.Verb&Get > 0 {
+			for _, k := range strings.Split(c.Resource.GetEntityInfo.QueryParameters, ",") {
+				results = append(results, k)
+			}
+		}
+
 	}
 
 	if c.Type&CompleteAlias > 0 {

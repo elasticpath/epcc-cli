@@ -120,6 +120,22 @@ var get = &cobra.Command{
 					})
 				}
 
+			} else if len(args) >= idCount+1 { // Arg is after IDs
+				if (len(args)-idCount)%2 == 1 { // This is a query param key
+					if resource.SingularName != args[0] { // If the resource is plural/get-collection
+						return completion.Complete(completion.Request{
+							Type:     completion.CompleteQueryParam,
+							Resource: resource,
+							Verb:     completion.GetAll,
+						})
+					} else {
+						return completion.Complete(completion.Request{
+							Type:     completion.CompleteQueryParam,
+							Resource: resource,
+							Verb:     completion.Get,
+						})
+					}
+				}
 			}
 		}
 
