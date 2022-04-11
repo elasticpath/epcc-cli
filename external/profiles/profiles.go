@@ -11,9 +11,9 @@ import (
 )
 
 func GetProfileName() string {
-	if config.Envs.EPCC_PROFILE != "" {
-		log.Tracef("Using EPCC_PROFILE value for profile %s", config.Envs.EPCC_PROFILE)
-		return config.Envs.EPCC_PROFILE
+	if config.Profile != "" {
+		log.Tracef("Using EPCC_PROFILE value for profile %s", config.Profile)
+		return config.Profile
 	} else {
 		u, err := url.Parse(config.Envs.EPCC_API_BASE_URL)
 		profileName := ""

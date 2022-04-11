@@ -10,9 +10,7 @@ import (
 
 	"github.com/caarlos0/env/v6"
 	"github.com/elasticpath/epcc-cli/external/json"
-	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 func init() {
@@ -33,6 +31,7 @@ func init() {
 		logs,
 		resourceListCommand,
 		aliasesCmd,
+		configure,
 	)
 	logs.AddCommand(logsList, logsShow, logsClear)
 
@@ -45,7 +44,7 @@ func init() {
 		"sets logging level; can be 'trace', 'debug', 'info', 'warn', 'error', 'fatal', 'panic'")
 	rootCmd.PersistentFlags().BoolVarP(&json.MonochromeOutput, "monochrome-output", "M", false, "By default, epcc will output using colors if the terminal supports this. Use this option to disable it.")
 	rootCmd.PersistentFlags().StringSliceVarP(&globals.RawHeaders, "header", "H", []string{}, "Extra headers and values to include in the request when sending HTTP to a server. You may specify any number of extra headers.")
-
+	rootCmd.PersistentFlags().StringVarP(&config.Profile, "profile", "P", "", "overrides the current EPCC_PROFILE var to run the command with the chosen profile.")
 	aliasesCmd.AddCommand(aliasListCmd, aliasClearCmd)
 }
 
@@ -79,31 +78,16 @@ func Execute() {
 }
 
 func initConfig() {
-	// Don't forget to read config either from cfgFile or from home directory!
-	cfgFile := ""
-	if cfgFile != "" {
-		// Use config file from the flag.
-		viper.SetConfigFile(cfgFile)
-	} else {
-		// Find home directory.
-		home, err := homedir.Dir()
-		if err != nil {
-			log.Errorf("Error %s", err)
-			os.Exit(1)
+	if config.Profile == "" {
+		envProfile, present := os.LookupEnv("EPCC_PROFILE")
+		if !present {
+			//creates configfile is this is users first time running app
+			GetProfilePath()
+			log.Println("profile tag and EPCC_PROFILE variable are absent")
+			return
 		}
-
-		// Search config in home directory with name ".cobra" (without extension).
-		viper.AddConfigPath(home)
-		viper.SetConfigName(".epcc")
+		config.Profile = envProfile
 	}
+	config.Envs = GetProfile(config.Profile)
 
-	if err := viper.ReadInConfig(); err != nil {
-		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			// Config file not found; ignore error if desired
-		} else {
-			log.Errorf("Can't read config %s", err)
-			os.Exit(1)
-		}
-
-	}
 }
