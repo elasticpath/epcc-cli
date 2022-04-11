@@ -31,6 +31,8 @@ func init() {
 		delete,
 		update,
 		resourceListCommand,
+		login,
+		logout,
 	)
 
 	testJson.Flags().BoolVarP(&noWrapping, "no-wrapping", "", false, "if set, we won't wrap the output the json in a data tag")

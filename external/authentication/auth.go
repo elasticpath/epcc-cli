@@ -6,7 +6,9 @@ import (
 	"fmt"
 	"github.com/elasticpath/epcc-cli/config"
 	"github.com/elasticpath/epcc-cli/external/version"
+	"github.com/elasticpath/epcc-cli/globals"
 	log "github.com/sirupsen/logrus"
+	"os"
 
 	"net/http"
 	"net/url"
@@ -55,14 +57,48 @@ func auth() (string, error) {
 	reqURL.Path = fmt.Sprintf("/oauth/access_token")
 
 	values := url.Values{}
-	values.Set("client_id", config.Envs.EPCC_CLIENT_ID)
-	grantType := "implicit"
 
-	if config.Envs.EPCC_CLIENT_SECRET != "" {
-		values.Set("client_secret", config.Envs.EPCC_CLIENT_SECRET)
-		grantType = "client_credentials"
+	var grantType string
+
+	if globals.NewLogin {
+		// Login with new credentials
+		values.Set("client_id", globals.EpccClientId)
+		grantType = "implicit"
+
+		if globals.EpccClientSecret != "" {
+			values.Set("client_secret", globals.EpccClientSecret)
+			grantType = "client_credentials"
+		}
+	} else if _, err := os.Stat(globals.CredPath); err == nil {
+		// Authentication for subsequent calls after login
+		credentials, err := os.ReadFile(globals.CredPath)
+		if err != nil {
+			return "", err
+		}
+		split := strings.Split(string(credentials), ";")
+
+		values.Set("client_id", split[0])
+		grantType = "implicit"
+
+		if len(split) > 1 {
+			if split[1] != "" {
+				values.Set("client_secret", split[1])
+				grantType = "client_credentials"
+			}
+
+		}
+
+	} else {
+		// Autologin using env vars
+		values.Set("client_id", config.Envs.EPCC_CLIENT_ID)
+		grantType = "implicit"
+
+		if config.Envs.EPCC_CLIENT_SECRET != "" {
+			values.Set("client_secret", config.Envs.EPCC_CLIENT_SECRET)
+			grantType = "client_credentials"
+		}
+
 	}
-
 	values.Set("grant_type", grantType)
 
 	body := strings.NewReader(values.Encode())
