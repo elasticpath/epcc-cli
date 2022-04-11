@@ -675,7 +675,7 @@ pcm-catalog-releases:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/catalogs/releases/catalog-release/get-all-releases-of-a-catalog.html"
     url: "/pcm/catalogs/{pcm_catalogs}/releases"
   get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/catalogs/index.html"
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/catalogs/releases/get-a-release-of-a-catalog.html"
     url: "/pcm/catalogs/{pcm_catalogs}/releases/{pcm_catalog_releases}"
   delete-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/catalogs/releases/catalog-release/delete-a-published-catalog.html"
@@ -883,6 +883,7 @@ pcm-pricebooks:
   get-collection:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/pricebooks/index.html"
     url: "/pcm/pricebooks"
+    #TBD figure out if this should be the same URL
   get-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/pricebooks/get-a-pricebook.html"
     url: "/pcm/pricebooks/{pcm_pricebooks}"
