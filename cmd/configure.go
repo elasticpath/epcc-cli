@@ -34,7 +34,6 @@ var configure = &cobra.Command{
 		} else {
 			newProfile.EPCC_API_BASE_URL = "https://api.moltin.com"
 		}
-		newProfile.EPCC_API_BASE_URL = readInput(reader)
 		print("Client ID [None]:")
 		newProfile.EPCC_CLIENT_ID = readInput(reader)
 		print("Client Secret [None]:")
