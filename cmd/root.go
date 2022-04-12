@@ -34,7 +34,6 @@ func init() {
 		configure,
 		login,
 		logout,
-
 	)
 	logs.AddCommand(logsList, logsShow, logsClear)
 
