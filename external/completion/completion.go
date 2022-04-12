@@ -10,13 +10,16 @@ import (
 )
 
 const (
-	CompletePluralResource   = 1
-	CompleteSingularResource = 2
-	CompleteAttributeKey     = 4
-	CompleteAttributeValue   = 8
-	CompleteQueryParam       = 16
-	CompleteCrudAction       = 32
-	CompleteAlias            = 64
+	CompletePluralResource    = 1
+	CompleteSingularResource  = 2
+	CompleteAttributeKey      = 4
+	CompleteAttributeValue    = 8
+	CompleteQueryParam        = 16
+	CompleteCrudAction        = 32
+	CompleteAlias             = 64
+	CompleteLoginLogoutAPI    = 128
+	CompleteLoginClientID     = 256
+	CompleteLoginClientSecret = 1024
 )
 
 const (
@@ -79,6 +82,18 @@ func Complete(c Request) ([]string, cobra.ShellCompDirective) {
 
 	if c.Type&CompleteCrudAction > 0 {
 		results = append(results, "create", "update", "delete", "get")
+	}
+
+	if c.Type&CompleteLoginLogoutAPI > 0 {
+		results = append(results, "api")
+	}
+
+	if c.Type&CompleteLoginClientID > 0 {
+		results = append(results, "client_id")
+	}
+
+	if c.Type&CompleteLoginClientSecret > 0 {
+		results = append(results, "client_secret")
 	}
 
 	if c.Type&CompleteAttributeKey > 0 {
