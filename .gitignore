@@ -4,3 +4,4 @@ dist/
 epcc-cli
 epcc
 profiles
+.envrc
