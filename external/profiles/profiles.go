@@ -10,7 +10,7 @@ import (
 
 //profile name is set to config.Profile in InitConfig
 
-func getProfileDirectory() string {
+func GetProfileDirectory() string {
 	home, err := os.UserHomeDir()
 	if err != nil {
 		log.Errorf("could not get home directory")
@@ -27,7 +27,7 @@ func getProfileDirectory() string {
 }
 
 func GetProfilePath() string {
-	configPath := getProfileDirectory()
+	configPath := GetProfileDirectory()
 	configPath = filepath.FromSlash(configPath + "/config")
 	if _, err := os.Stat(configPath); err != nil {
 		log.Trace("could not find file at " + configPath)
