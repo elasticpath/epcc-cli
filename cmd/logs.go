@@ -40,7 +40,11 @@ var logsShow = &cobra.Command{
 			name, _ := shared.Base64DecodeStripped(files[i].Name())
 			segments := strings.Split(name, " ")
 			if segments[0] == args[0] {
-				fmt.Println(name)
+				content, err := os.ReadFile(shared.LogDirectory + "/" + files[i].Name())
+				if err != nil {
+					return err
+				}
+				fmt.Print(string(content))
 				break
 			}
 		}
