@@ -61,7 +61,7 @@ var aliasClearCmd = &cobra.Command{
 	Use:   "clear",
 	Short: "clear all aliases",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		profileDirectory := profiles.GetProfileDataBaseURL()
+		profileDirectory := profiles.GetProfileDirectory()
 		os.RemoveAll(profileDirectory)
 		return nil
 	},
