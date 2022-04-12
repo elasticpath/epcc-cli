@@ -19,6 +19,7 @@ import (
 	"net/http/httputil"
 	"net/url"
 	"os"
+	"runtime"
 	"strconv"
 	"strings"
 	"time"
@@ -35,6 +36,8 @@ func DoRequest(ctx context.Context, method string, path string, query string, pa
 func DoFileRequest(ctx context.Context, path string, payload io.Reader, contentType string) (response *http.Response, error error) {
 	return doRequestInternal(ctx, "POST", contentType, path, "", payload)
 }
+
+var UserAgent = fmt.Sprintf("epcc-cli/%s-%s (%s/%s)", version.Version, version.Commit, runtime.GOOS, runtime.GOARCH)
 
 // DoRequest makes a html request to the EPCC API and handles the response.
 func doRequestInternal(ctx context.Context, method string, contentType string, path string, query string, payload io.Reader) (response *http.Response, error error) {
@@ -66,7 +69,7 @@ func doRequestInternal(ctx context.Context, method string, contentType string, p
 
 	req.Header.Add("Content-Type", contentType)
 
-	req.Header.Add("User-Agent", fmt.Sprintf("epcc-cli/%s-%s", version.Version, version.Commit))
+	req.Header.Add("User-Agent", UserAgent)
 
 	if err = AddHeaderByFlag(req); err != nil {
 		return nil, err

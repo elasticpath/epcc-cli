@@ -1,8 +1,10 @@
 package cmd
 
 import (
+	"fmt"
 	"github.com/elasticpath/epcc-cli/config"
 	"github.com/elasticpath/epcc-cli/external/logger"
+	"github.com/elasticpath/epcc-cli/external/version"
 	"github.com/elasticpath/epcc-cli/globals"
 	log "github.com/sirupsen/logrus"
 	"github.com/thediveo/enumflag"
@@ -22,7 +24,7 @@ func init() {
 		panic("Could not parse environment variables")
 	}
 
-	rootCmd.AddCommand(
+	RootCmd.AddCommand(
 		cmCommand,
 		docsCommand,
 		testJson,
@@ -30,28 +32,28 @@ func init() {
 		create,
 		delete,
 		update,
-		logs,
+		Logs,
 		resourceListCommand,
 		aliasesCmd,
 		login,
 		logout,
 	)
-	logs.AddCommand(logsList, logsShow, logsClear)
+	Logs.AddCommand(LogsList, LogsShow, LogsClear)
 
 	testJson.Flags().BoolVarP(&noWrapping, "no-wrapping", "", false, "if set, we won't wrap the output the json in a data tag")
 	testJson.Flags().BoolVarP(&compliant, "compliant", "", false, "if set, we wrap most keys in an attributes tage automatically.")
 
-	rootCmd.PersistentFlags().Var(
+	RootCmd.PersistentFlags().Var(
 		enumflag.New(&logger.Loglevel, "log", logger.LoglevelIds, enumflag.EnumCaseInsensitive),
 		"log",
 		"sets logging level; can be 'trace', 'debug', 'info', 'warn', 'error', 'fatal', 'panic'")
-	rootCmd.PersistentFlags().BoolVarP(&json.MonochromeOutput, "monochrome-output", "M", false, "By default, epcc will output using colors if the terminal supports this. Use this option to disable it.")
-	rootCmd.PersistentFlags().StringSliceVarP(&globals.RawHeaders, "header", "H", []string{}, "Extra headers and values to include in the request when sending HTTP to a server. You may specify any number of extra headers.")
+	RootCmd.PersistentFlags().BoolVarP(&json.MonochromeOutput, "monochrome-output", "M", false, "By default, epcc will output using colors if the terminal supports this. Use this option to disable it.")
+	RootCmd.PersistentFlags().StringSliceVarP(&globals.RawHeaders, "header", "H", []string{}, "Extra headers and values to include in the request when sending HTTP to a server. You may specify any number of extra headers.")
 
 	aliasesCmd.AddCommand(aliasListCmd, aliasClearCmd)
 }
 
-var rootCmd = &cobra.Command{
+var RootCmd = &cobra.Command{
 	Use:   os.Args[0],
 	Short: "A command line interface for interacting with the Elastic Path Commerce Cloud API",
 	Long: `The EPCC CLI tool provides a powerful command line interface for interacting with the Elastic Path Commerce Cloud API.
@@ -71,10 +73,11 @@ Environment Variables
 		log.SetLevel(logger.Loglevel)
 	},
 	SilenceUsage: true,
+	Version:      fmt.Sprintf("EPCC CLI %s (Commit %s)", version.Version, version.Commit),
 }
 
 func Execute() {
-	if err := rootCmd.Execute(); err != nil {
+	if err := RootCmd.Execute(); err != nil {
 		log.Errorf("Error occured while processing command %s", err)
 		os.Exit(1)
 	}

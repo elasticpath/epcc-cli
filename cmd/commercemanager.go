@@ -9,6 +9,10 @@ import (
 	"net/url"
 )
 
+var ApiHostToUrlMap = map[string]string{
+	"api.moltin.com":             "https://euwest.cm.elasticpath.com/",
+	"useast.api.elasticpath.com": "https://useast.cm.elasticpath.com/",
+}
 var cmCommand = &cobra.Command{
 	Use:   "commerce-manager",
 	Short: "Open commerce manager",
@@ -18,17 +22,13 @@ var cmCommand = &cobra.Command{
 			fmt.Println(err)
 			return err
 		}
-		var cmUrl string
-		switch u.Host {
-		case "api.moltin.com":
-			cmUrl = "https://euwest.cm.elasticpath.com/"
-		case "useast.api.elasticpath.com":
-			cmUrl = "https://useast.cm.elasticpath.com/"
-		}
 
-		if cmUrl == "" {
+		cmUrl, ok := ApiHostToUrlMap[u.Host]
+
+		if !ok {
 			return fmt.Errorf("Don't know where Commerce Manager is for $EPCC_API_BASE_URL=%s \n", u)
 		}
+
 		err = shared.OpenUrl(cmUrl)
 		if err != nil {
 			return err

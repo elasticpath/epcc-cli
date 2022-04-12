@@ -8,18 +8,18 @@ import (
 	"strings"
 )
 
-var logsClear = &cobra.Command{
+var LogsClear = &cobra.Command{
 	Use:   "clear",
-	Short: "Clears all Http logs",
+	Short: "Clears all HTTP request and response logs",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		os.RemoveAll(shared.LogDirectory)
 		return nil
 	},
 }
 
-var logsList = &cobra.Command{
+var LogsList = &cobra.Command{
 	Use:   "list",
-	Short: "List All Http logs",
+	Short: "List all HTTP logs",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		files := shared.AllFilesSortedByDate(shared.LogDirectory)
 		for i := 0; i < len(files); i++ {
@@ -30,9 +30,9 @@ var logsList = &cobra.Command{
 	},
 }
 
-var logsShow = &cobra.Command{
+var LogsShow = &cobra.Command{
 	Use:   "show <NUMBER>",
-	Short: "Show Http logs for specific number",
+	Short: "Show HTTP logs for specific number",
 	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		files := shared.AllFilesSortedByDate(shared.LogDirectory)
@@ -53,4 +53,4 @@ var logsShow = &cobra.Command{
 	},
 }
 
-var logs = &cobra.Command{Use: "logs"}
+var Logs = &cobra.Command{Use: "logs"}
