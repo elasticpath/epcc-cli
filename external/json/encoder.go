@@ -7,7 +7,6 @@ import (
 	"io"
 	"math"
 	"math/big"
-	"runtime"
 	"sort"
 	"strconv"
 	"strings"
@@ -28,42 +27,24 @@ type encoder struct {
 }
 
 type colorInfo struct {
-	unix     []byte
-	win      wincolor.Color
-	winReset bool
+	unix        []byte
+	colorString string
 }
 
 func setColor(buf *bytes.Buffer, color colorInfo) {
 	if !MonochromeOutput {
-		if runtime.GOOS == "windows" {
-			if color.winReset {
-				_, err := wincolor.Reset()
-				if err != nil {
-					panic(fmt.Errorf("Could not set colors on windows, try running with -M, %w", err))
-				}
-			} else {
-				_, err := wincolor.Set(color.win)
-				if err != nil {
-					panic(fmt.Errorf("Could not set colors on windows, try running with -M, %w", err))
-				}
-			}
-
-		} else {
-			buf.Write(color.unix)
-		}
-
+		buf.Write([]byte(color.colorString))
 	}
 }
 
-func newColor(unix string, win wincolor.Color, winReset bool) colorInfo {
+func newColor(unix string, colorString string) colorInfo {
 	var colorByte = []byte(nil)
 	if unix != "" {
 		colorByte = []byte("\x1b[" + unix + "m")
 	}
 	return colorInfo{
-		unix:     colorByte,
-		win:      win,
-		winReset: winReset,
+		unix:        colorByte,
+		colorString: colorString,
 	}
 }
 
@@ -106,18 +87,18 @@ var urgentPrefixes = map[string]bool{
 }
 
 var (
-	resetColor                = newColor("0", wincolor.FgDefault, true)      // Reset
-	nullColor                 = newColor("90", wincolor.FgLightWhite, false) // Bright black
-	falseColor                = newColor("33", wincolor.FgYellow, false)     // Yellow
-	trueColor                 = newColor("33", wincolor.FgYellow, false)     // Yellow
-	numberColor               = newColor("36", wincolor.FgCyan, false)       // Cyan
-	stringColor               = newColor("32", wincolor.FgGreen, false)      // Green
-	objectKeyColor            = newColor("34;1", wincolor.FgBlue, false)     // Bold Blue
-	unimportantObjectKeyColor = newColor("34", wincolor.FgLightBlue, false)  // Blue
-	importantObjectKeyColor   = newColor("35;1", wincolor.FgMagenta, false)  // Bold Purple
-	urgentObjectKeyColor      = newColor("31;1", wincolor.FgRed, false)      // Bold Red
-	arrayColor                = newColor("", wincolor.FgDefault, false)      // No color
-	objectColor               = newColor("", wincolor.FgDefault, false)      // No color
+	resetColor                = newColor("0", "</>")                     // Reset
+	nullColor                 = newColor("90", "<gray>")                 // Bright black
+	falseColor                = newColor("33", "<yellow>")               // Yellow
+	trueColor                 = newColor("33", "<yellow>")               // Yellow
+	numberColor               = newColor("36", "<cyan>")                 // Cyan
+	stringColor               = newColor("32", "<green>")                // Green
+	objectKeyColor            = newColor("34;1", "<fg=blue;op=bold>")    // Bold Blue
+	unimportantObjectKeyColor = newColor("34", "<blue>")                 // Blue
+	importantObjectKeyColor   = newColor("35;1", "<fg=magenta;op=bold>") // Bold Purple
+	urgentObjectKeyColor      = newColor("31;1", "<fg=red;op=bold>")     // Bold Red
+	arrayColor                = newColor("", "<default>")                // No color
+	objectColor               = newColor("", "<default>")                // No color
 )
 
 func NewEncoder(tab bool, indent int) *encoder {
@@ -128,9 +109,12 @@ func NewEncoder(tab bool, indent int) *encoder {
 func (e *encoder) Marshal(v interface{}, w io.Writer) error {
 	e.out = w
 	e.encode(v)
-	_, err := w.Write(e.w.Bytes())
+
+	wincolor.Fprint(w, string(e.w.Bytes()))
+	//_, err := w.Write(e.w.Bytes())
 	e.w.Reset()
-	return err
+
+	return nil
 }
 
 func (e *encoder) encode(v interface{}) {
