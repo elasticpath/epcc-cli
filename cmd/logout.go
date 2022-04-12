@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/elasticpath/epcc-cli/external/completion"
 	"github.com/elasticpath/epcc-cli/globals"
 	"github.com/spf13/cobra"
 	"os"
@@ -32,5 +33,13 @@ var logout = &cobra.Command{
 			return fmt.Errorf("User already logged out")
 		}
 		return err
+	},
+	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		if len(args) == 0 {
+			return completion.Complete(completion.Request{
+				Type: completion.CompleteLoginLogoutAPI,
+			})
+		}
+		return []string{}, cobra.ShellCompDirectiveNoFileComp
 	},
 }

@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/elasticpath/epcc-cli/external/authentication"
+	"github.com/elasticpath/epcc-cli/external/completion"
 	"github.com/elasticpath/epcc-cli/globals"
 	"github.com/spf13/cobra"
 	"os"
@@ -61,5 +62,21 @@ var login = &cobra.Command{
 		}
 
 		return err
+	},
+	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		if len(args) == 0 {
+			return completion.Complete(completion.Request{
+				Type: completion.CompleteLoginLogoutAPI,
+			})
+		} else if len(args) == 1 {
+			return completion.Complete(completion.Request{
+				Type: completion.CompleteLoginClientID,
+			})
+		} else if len(args) == 3 {
+			return completion.Complete(completion.Request{
+				Type: completion.CompleteLoginClientSecret,
+			})
+		}
+		return []string{}, cobra.ShellCompDirectiveNoFileComp
 	},
 }
