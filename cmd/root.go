@@ -3,6 +3,7 @@ package cmd
 import (
 	"github.com/elasticpath/epcc-cli/config"
 	"github.com/elasticpath/epcc-cli/external/logger"
+	"github.com/elasticpath/epcc-cli/external/profiles"
 	"github.com/elasticpath/epcc-cli/globals"
 	log "github.com/sirupsen/logrus"
 	"github.com/thediveo/enumflag"
@@ -84,12 +85,12 @@ func initConfig() {
 		envProfile, present := os.LookupEnv("EPCC_PROFILE")
 		if !present {
 			//creates configfile is this is users first time running app
-			GetProfilePath()
+			profiles.GetProfilePath()
 			log.Println("profile tag and EPCC_PROFILE variable are absent")
 			return
 		}
 		config.Profile = envProfile
 	}
-	config.Envs = GetProfile(config.Profile)
+	config.Envs = profiles.GetProfile(config.Profile)
 
 }
