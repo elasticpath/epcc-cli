@@ -54,4 +54,3 @@ func readInput(reader *bufio.Reader) string {
 	response, _ := reader.ReadString('\n')
 	return strings.TrimSuffix(response, "\n")
 }
-
