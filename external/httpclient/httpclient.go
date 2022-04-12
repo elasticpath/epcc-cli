@@ -19,6 +19,7 @@ import (
 	"net/http/httputil"
 	"net/url"
 	"os"
+	"regexp"
 	"runtime"
 	"strconv"
 	"strings"
@@ -28,6 +29,7 @@ import (
 var HttpClient = &http.Client{
 	Timeout: time.Second * 10,
 }
+var SanitizeLogs = true
 
 func DoRequest(ctx context.Context, method string, path string, query string, payload io.Reader) (response *http.Response, error error) {
 	return doRequestInternal(ctx, method, "application/json", path, query, payload)
@@ -176,9 +178,21 @@ func logToDisk(requestMethod string, requestPath string, requestBytes []byte, re
 		return err
 	}
 	defer f.Close()
-	f.Write(requestBytes)
-	f.Write([]byte("\n"))
-	f.Write(responseBytes)
+
+	if SanitizeLogs {
+		regex1 := regexp.MustCompile(`(?i)client_id\s*[^A-Za-z0-9]\s*[A-Za-z0-9]*`)
+		redcatReq := regex1.ReplaceAllString(string(requestBytes[:]), "client_id: *****")
+		redactResp := regex1.ReplaceAllString(string(responseBytes[:]), "client_id: *****")
+
+		f.Write([]byte(redcatReq))
+		f.Write([]byte("\n"))
+		f.Write([]byte(redactResp))
+	} else {
+		f.Write(requestBytes)
+		f.Write([]byte("\n"))
+		f.Write(responseBytes)
+	}
+
 	return nil
 }
 
