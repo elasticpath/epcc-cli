@@ -56,6 +56,12 @@ func init() {
 	aliasesCmd.AddCommand(aliasListCmd, aliasClearCmd)
 }
 
+var persistentPreRunFuncs []func(cmd *cobra.Command, args []string) error
+
+func AddRootPreRunFunc(f func(cmd *cobra.Command, args []string) error) {
+	persistentPreRunFuncs = append(persistentPreRunFuncs, f)
+}
+
 var RootCmd = &cobra.Command{
 	Use:   os.Args[0],
 	Short: "A command line interface for interacting with the Elastic Path Commerce Cloud API",
@@ -72,9 +78,19 @@ Environment Variables
 - EPCC_CLIENT_SECRET - The client secret (available in Commerce Manager)
 - EPCC_BETA_API_FEATURES - Beta features in the API we want to enable.
 `,
-	PersistentPreRun: func(cmd *cobra.Command, _ []string) {
+	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		log.SetLevel(logger.Loglevel)
+
+		for _, runFunc := range persistentPreRunFuncs {
+			err := runFunc(cmd, args)
+			if err != nil {
+				return err
+			}
+		}
+
+		return nil
 	},
+
 	SilenceUsage: true,
 	Version:      fmt.Sprintf("EPCC CLI %s (Commit %s)", version.Version, version.Commit),
 }

@@ -13,6 +13,7 @@ import (
 
 var aliasesCmd = &cobra.Command{
 	Use:          "aliases",
+	Short:        "Provides information about aliases that can be used",
 	SilenceUsage: false,
 }
 

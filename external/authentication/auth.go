@@ -80,6 +80,11 @@ func auth() (string, error) {
 
 	} else {
 		// Autologin using env vars
+		if config.Envs.EPCC_CLIENT_ID == "" {
+			log.Debug("No client secret found, no authentication will be used")
+			return "", nil
+		}
+
 		values.Set("client_id", config.Envs.EPCC_CLIENT_ID)
 		grantType = "implicit"
 

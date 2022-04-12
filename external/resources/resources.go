@@ -2,6 +2,7 @@ package resources
 
 import (
 	_ "embed"
+	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
 )
 
@@ -11,27 +12,6 @@ var resourceMetaData string
 var resources map[string]Resource
 
 var resourcesSingular = map[string]Resource{}
-
-func init() {
-
-	err := yaml.Unmarshal([]byte(resourceMetaData), &resources)
-	if err != nil {
-		panic("Couldn't load the resource meta data")
-	}
-
-	for key, val := range resources {
-		// Fix the key
-		val.Type = key
-
-		val.PluralName = key
-		for attributeName, attributeVal := range val.Attributes {
-			// Fix the key
-			attributeVal.Key = attributeName
-		}
-		resourcesSingular[val.SingularName] = val
-	}
-
-}
 
 type Resource struct {
 	// The type as far as the EPCC CLI is concerned.
@@ -136,4 +116,55 @@ func GetResourceByName(name string) (Resource, bool) {
 	}
 
 	return Resource{}, false
+}
+
+func GenerateResourceMetadataFromYaml(yamlTxt string) (map[string]Resource, error) {
+	resources := make(map[string]Resource)
+
+	err := yaml.Unmarshal([]byte(yamlTxt), &resources)
+	if err != nil {
+		return nil, err
+	}
+
+	return resources, nil
+}
+
+func AppendResourceData(newResources map[string]Resource) {
+	resourceCount := len(resources)
+	for key, val := range newResources {
+		resources[key] = val
+	}
+
+	log.Infof("Loading %d new resources, total resources went from %d to %d ", len(newResources), resourceCount, len(resources))
+
+	postProcessResourceMetadata()
+}
+
+func init() {
+
+	reses, err := GenerateResourceMetadataFromYaml(resourceMetaData)
+
+	if err != nil {
+		panic("Couldn't load the resource meta data")
+	}
+
+	resources = reses
+
+	postProcessResourceMetadata()
+}
+
+func postProcessResourceMetadata() {
+	resourcesSingular = make(map[string]Resource)
+
+	for key, val := range resources {
+		// Fix the key
+		val.Type = key
+
+		val.PluralName = key
+		for attributeName, attributeVal := range val.Attributes {
+			// Fix the key
+			attributeVal.Key = attributeName
+		}
+		resourcesSingular[val.SingularName] = val
+	}
 }

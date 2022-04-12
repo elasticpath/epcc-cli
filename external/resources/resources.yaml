@@ -51,7 +51,7 @@ account-members:
     email:
       type: STRING
 account-memberships:
-  singular-name: "account_membership"
+  singular-name: "account-membership"
   json-api-type: "account_membership"
   json-api-format: "legacy"
   docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/account-management/account-memberships/index.html"
@@ -610,7 +610,7 @@ order-transaction-refund:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/transactions/refund-a-transaction.html"
     url: "/v2/orders/{orders}/transactions/{order_transactions}/refund"
 password-profiles:
-  singular-name: "password_profile"
+  singular-name: "password-profile"
   json-api-type: "password_profile"
   json-api-format: "legacy"
   docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/password-profiles/index.html"
@@ -943,7 +943,7 @@ pcm-product-prices:
     currencies.CAD.includes_tax:
       type: BOOL
 promotion-codes:
-  singular-name: "promotion_code"
+  singular-name: "promotion-code"
   json-api-type: "promotion_codes"
   json-api-format: "legacy"
   docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/promotions/get-promotion-codes.html"
@@ -1043,7 +1043,7 @@ settings:
     calculation_method:
       type: ENUM:simple,line
 user-authentication-infos:
-  singular-name: "user_authentication_info"
+  singular-name: "user-authentication-info"
   json-api-type: "user_authentication_info"
   json-api-format: "legacy"
   docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/user-authentication-info/index.html"
@@ -1070,7 +1070,7 @@ user-authentication-infos:
     email:
       type: STRING
 user-authentication-oidc-profile-infos:
-  singular-name: "user_authentication_oidc_profile_info"
+  singular-name: "user-authentication-oidc-profile-info"
   json-api-type: "user_authentication_oidc_profile_info"
   json-api-format: "legacy"
   docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/user-authentication-oidc-profile-info/index.html"

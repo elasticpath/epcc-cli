@@ -16,7 +16,7 @@ var LoglevelIds = map[log.Level][]string{
 	log.PanicLevel: {"panic"},
 }
 
-var Loglevel log.Level = log.InfoLevel
+var Loglevel = log.InfoLevel
 
 func init() {
 	log.SetOutput(os.Stderr)

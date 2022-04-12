@@ -50,7 +50,7 @@
           "properties" : {
             "docs": { "type": "string",  "pattern": "^https://"  },
             "url": { "type": "string" },
-            "content-type": { "type": "string" }
+            "min": { "type": "integer" }
           },
           "required": [ "url", "docs"]
         },
@@ -68,6 +68,10 @@
               "required": ["type"]
             }
           }
+        },
+        "singular-name": {
+          "type":"string",
+          "pattern": "^[A-Za-z-][A-Za-z0-9-]*$"
         }
       },
       "required": [ "json-api-type", "json-api-format", "docs"]
