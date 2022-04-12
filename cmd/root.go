@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/elasticpath/epcc-cli/config"
 	"github.com/elasticpath/epcc-cli/external/logger"
-  "github.com/elasticpath/epcc-cli/external/profiles"
+	"github.com/elasticpath/epcc-cli/external/profiles"
 	"github.com/elasticpath/epcc-cli/external/version"
 	"github.com/elasticpath/epcc-cli/globals"
 	log "github.com/sirupsen/logrus"
@@ -50,7 +50,7 @@ func init() {
 
 	RootCmd.PersistentFlags().BoolVarP(&json.MonochromeOutput, "monochrome-output", "M", false, "By default, epcc will output using colors if the terminal supports this. Use this option to disable it.")
 	RootCmd.PersistentFlags().StringSliceVarP(&globals.RawHeaders, "header", "H", []string{}, "Extra headers and values to include in the request when sending HTTP to a server. You may specify any number of extra headers.")
-  rootCmd.PersistentFlags().StringVarP(&config.Profile, "profile", "P", "", "overrides the current EPCC_PROFILE var to run the command with the chosen profile.")
+	RootCmd.PersistentFlags().StringVarP(&config.Profile, "profile", "P", "", "overrides the current EPCC_PROFILE var to run the command with the chosen profile.")
 
 	aliasesCmd.AddCommand(aliasListCmd, aliasClearCmd)
 }
