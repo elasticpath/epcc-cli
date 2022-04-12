@@ -109,9 +109,7 @@ func NewEncoder(tab bool, indent int) *encoder {
 func (e *encoder) Marshal(v interface{}, w io.Writer) error {
 	e.out = w
 	e.encode(v)
-
 	wincolor.Fprint(w, string(e.w.Bytes()))
-	//_, err := w.Write(e.w.Bytes())
 	e.w.Reset()
 
 	return nil
