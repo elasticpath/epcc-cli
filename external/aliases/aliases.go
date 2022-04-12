@@ -87,6 +87,17 @@ func saveAliasesForResource(profileDirectory string, jsonApiType string, aliases
 	}
 
 	for key, value := range aliases {
+		key0 := strings.Split(key, "=")[0]
+		for oldKey, oldValue := range aliasMap {
+			oldKey0 := strings.Split(oldKey, "=")[0]
+			oldKey1 := strings.Split(oldKey, "=")[1]
+			if oldValue == value && oldKey0 == key0 {
+				delete(aliasMap, oldKey0+"="+oldKey1)
+			}
+		}
+	}
+
+	for key, value := range aliases {
 		aliasMap[key] = value
 	}
 

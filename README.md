@@ -33,7 +33,7 @@ Run the following command once:
 
 To load completions for each session, execute once:
 
-`epcc completion zsh > “${fpath[1]}/_epcc`
+`epcc completion zsh > "${fpath[1]}/_epcc"`
 
 You will need to start a new shell for this setup to take effect
 
