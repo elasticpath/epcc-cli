@@ -85,6 +85,9 @@ type CrudEntityInfo struct {
 
 	// A list of valid query parameters
 	QueryParameters string `yaml:"query"`
+
+	// Minimum resources so we don't keep trying to delete in
+	MinResources int `yaml:"min"`
 }
 
 type CrudEntityAttribute struct {

@@ -10,6 +10,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"io/ioutil"
+	"net/http"
 )
 
 var delete = &cobra.Command{
@@ -17,31 +18,7 @@ var delete = &cobra.Command{
 	Short: "Deletes a single resource.",
 	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		// Find Resource
-		resource, ok := resources.GetResourceByName(args[0])
-		if !ok {
-			return fmt.Errorf("Could not find resource %s", args[0])
-		}
-
-		if resource.DeleteEntityInfo == nil {
-			return fmt.Errorf("Resource %s doesn't support DELETE", args[0])
-		}
-
-		resourceURL := resource.DeleteEntityInfo.Url
-
-		// Replace ids with args in resourceURL
-		resourceURL, err := resources.GenerateUrl(resource, resourceURL, args[1:])
-
-		if err != nil {
-			return err
-		}
-
-		// Submit request
-		resp, err := httpclient.DoRequest(context.TODO(), "DELETE", resourceURL, "", nil)
-		if err != nil {
-			return fmt.Errorf("Got error %s", err.Error())
-		}
-		defer resp.Body.Close()
+		resp, err := deleteResource(args)
 
 		// Print the body
 		body, err := ioutil.ReadAll(resp.Body)
@@ -99,4 +76,34 @@ var delete = &cobra.Command{
 
 		return []string{}, cobra.ShellCompDirectiveNoFileComp
 	},
+}
+
+func deleteResource(args []string) (*http.Response, error) {
+	// Find Resource
+	resource, ok := resources.GetResourceByName(args[0])
+	if !ok {
+		return nil, fmt.Errorf("Could not find resource %s", args[0])
+	}
+
+	if resource.DeleteEntityInfo == nil {
+		return nil, fmt.Errorf("Resource %s doesn't support DELETE", args[0])
+	}
+
+	resourceURL := resource.DeleteEntityInfo.Url
+
+	// Replace ids with args in resourceURL
+	resourceURL, err := resources.GenerateUrl(resource, resourceURL, args[1:])
+
+	if err != nil {
+		return nil, err
+	}
+
+	// Submit request
+	resp, err := httpclient.DoRequest(context.TODO(), "DELETE", resourceURL, "", nil)
+	if err != nil {
+		return nil, fmt.Errorf("Got error %s", err.Error())
+	}
+	defer resp.Body.Close()
+
+	return resp, nil
 }

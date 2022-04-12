@@ -249,6 +249,7 @@ currencies:
   delete-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/currencies/delete-a-currency.html"
     url: "/v2/currencies/{currencies}"
+    min: 1
   create-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/currencies/create-a-currency.html"
     url: "/v2/currencies"
