@@ -49,6 +49,10 @@ func Complete(c Request) ([]string, cobra.ShellCompDirective) {
 				if r.GetCollectionInfo != nil {
 					results = append(results, k)
 				}
+			} else if c.Verb&Delete > 0 {
+				if r.DeleteEntityInfo != nil {
+					results = append(results, k)
+				}
 			} else {
 				results = append(results, k)
 			}
