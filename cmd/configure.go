@@ -28,13 +28,18 @@ var configure = &cobra.Command{
 		println("Create new Profile")
 		print("Profile Name:")
 		text := readInput(reader)
-		print("Base URL:")
+		print("API Base URL [https://api.moltin.com]:")
+		if input := readInput(reader); input != "" {
+			newProfile.EPCC_API_BASE_URL = input
+		} else {
+			newProfile.EPCC_API_BASE_URL = "https://api.moltin.com"
+		}
 		newProfile.EPCC_API_BASE_URL = readInput(reader)
-		print("Client ID:")
+		print("Client ID [None]:")
 		newProfile.EPCC_CLIENT_ID = readInput(reader)
-		print("Client Secret:")
+		print("Client Secret [None]:")
 		newProfile.EPCC_CLIENT_SECRET = readInput(reader)
-		print("Beta Features:")
+		print("(https://documentation.elasticpath.com/commerce-cloud/docs/api/basics/api-contract.html#beta-apis) [None]:")
 		newProfile.EPCC_BETA_API_FEATURES = readInput(reader)
 
 		section, err := cfg.NewSection(text)
@@ -51,6 +56,11 @@ var configure = &cobra.Command{
 }
 
 func readInput(reader *bufio.Reader) string {
-	response, _ := reader.ReadString('\n')
-	return strings.TrimSuffix(response, "\n")
+	response, err := reader.ReadString('\n')
+	if err != nil {
+		log.Errorf("error reading from stdin %s", err.Error())
+		os.Exit(1)
+	}
+	response = strings.TrimSuffix(response, "\n")
+	return response
 }
