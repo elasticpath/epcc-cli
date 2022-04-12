@@ -98,6 +98,8 @@ export PATH=$PATH:($PWD)
 
 `epcc get customers`
 
+5. To add more profiles to use try the following command:
+`epcc configure`
 
 #### Simple CRUD
 
