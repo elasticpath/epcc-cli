@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"github.com/elasticpath/epcc-cli/external/aliases"
 	"github.com/elasticpath/epcc-cli/external/completion"
 	"github.com/elasticpath/epcc-cli/external/httpclient"
 	"github.com/elasticpath/epcc-cli/external/json"
@@ -110,5 +111,6 @@ func deleteResource(args []string) (*http.Response, error) {
 	}
 	defer resp.Body.Close()
 
+	aliases.DeleteAliasesById(args[len(args)-1], resource.JsonApiType)
 	return resp, nil
 }

@@ -78,6 +78,54 @@ func SaveAliasesForResources(jsonTxt string) {
 
 }
 
+func DeleteAliasesById(id string, jsonApiType string) {
+	profileDirectory := GetAliasDataDirectory()
+	filelock.Lock()
+	defer filelock.Unlock()
+
+	aliasFile := getAliasFileForJsonApiType(profileDirectory, jsonApiType)
+	data, err := ioutil.ReadFile(aliasFile)
+	if err != nil {
+		log.Debugf("Could not read %s, error %s", aliasFile, err)
+		data = []byte{}
+	} else {
+	}
+
+	aliasMap := map[string]string{}
+
+	err = yaml.Unmarshal(data, aliasMap)
+	if err != nil {
+		log.Debugf("Could not unmarshall existing file %s, error %s", data, err)
+	}
+
+	for key, value := range aliasMap {
+		if value == id {
+			delete(aliasMap, key)
+		}
+	}
+
+	// We will write to a temp file and then rename, to prevent data loss. rename's in the same folder are likely atomic in most settings.
+	// Although we should probably sync on the file as well, that might be too much overhead, and I was too lazy to rewrite this
+	// https://github.com/golang/go/issues/20599
+	tmpFileName := aliasFile + "." + uuid.New().String()
+
+	marshal, err := yaml.Marshal(aliasMap)
+
+	if err != nil {
+		log.Warnf("Could not save aliases for %s, error %v", tmpFileName, err)
+	}
+
+	err = ioutil.WriteFile(tmpFileName, marshal, 0600)
+	if err != nil {
+		log.Warnf("Could not save aliases for %s, error %v", tmpFileName, err)
+	}
+
+	err = os.Rename(tmpFileName, aliasFile)
+	if err != nil {
+		log.Warnf("Could not save aliases for %s, error %v", tmpFileName, err)
+	}
+}
+
 // This function saves all the aliases for a specific resource.
 func saveAliasesForResource(profileDirectory string, jsonApiType string, aliases map[string]string) {
 	filelock.Lock()
