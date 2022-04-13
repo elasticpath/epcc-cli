@@ -1,6 +1,8 @@
-# epcc-cli
+# Elastic Path Commerce Cloud Command Line Interface
 
-A simple project for interacting with EPCC APIs via the command line, the goal is simplicity and quickness for API and not correctness or completeness.
+This project is designed as a tool for Power Users to interact with the [Elastic Path Commerce Cloud API](https://documentation.elasticpath.com/commerce-cloud/docs/api/) via the command line, the goal is to speed up and simplify interacting with the API via the command line, but at all times you should feel as though you are interacting with the API.
+
+New users are highly encouraged to use the [Elastic Path Commerce Cloud Postman Collection](https://documentation.elasticpath.com/commerce-cloud/docs/developer/how-to/test-with-postman-collection.html) instead of this tool.
 
 ## Getting Started
 
@@ -11,12 +13,13 @@ To set the environment variables export the variable in your terminal.
 
 e.g. `export EPCC_API_BASE_URL=https://api.moltin.com`
 
-| Environment Variable   | Description                                                                                                                                                         |
-|------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| EPCC_API_BASE_URL      | This is the API base URL which can be retrieved via CM.                                                                                                             |
-| EPCC_CLIENT_ID         | This is the Client ID which can be retrieved via CM.                                                                                                                |                                            
-| EPCC_CLIENT_SECRET     | This is the Client Secret which can be retrieved via CM.                                                                                                            |
-| EPCC_BETA_API_FEATURES | This variable allows you to set [Beta Headers](https://documentation.elasticpath.com/commerce-cloud/docs/api/basics/api-contract.html#beta-apis) for all API calls. |
+| Environment Variable       | Description                                                                                                                                                                                                                                                                                |
+|----------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| EPCC_API_BASE_URL          | This is the API base URL which can be retrieved via CM.                                                                                                                                                                                                                                    |
+| EPCC_CLIENT_ID             | This is the Client ID which can be retrieved via CM.                                                                                                                                                                                                                                       |                                            
+| EPCC_CLIENT_SECRET         | This is the Client Secret which can be retrieved via CM.                                                                                                                                                                                                                                   |
+| EPCC_BETA_API_FEATURES     | This variable allows you to set [Beta Headers](https://documentation.elasticpath.com/commerce-cloud/docs/api/basics/api-contract.html#beta-apis) for all API calls.                                                                                                                        |
+| EPCC_CLI_HTTP_HEADER_**N** | Setting any environment variable with this prefix will cause it's value to be parsed and added to all HTTP headers (e.g., `EPCC_CLI_HTTP_HEADER_0=Cache-Control: no-cache` will add `Cache-Control: no-cache` as a header). FYI, the surprising syntax is due to different encoding rules. |
 
 It is recommended to set EPCC_API_BASE_URL, EPCC_CLIENT_ID, and EPCC_CLIENT_SECRET to be able to interact with most things in the cli.
 
@@ -39,7 +42,7 @@ You will need to start a new shell for this setup to take effect
 
 #### Bash
 
-You will need to have the Bash Completion package installed, and restart your bash session.
+You will need to have the [bash-completion](https://github.com/scop/bash-completion) (e.g., [Ubuntu](https://packages.ubuntu.com/search?keywords=bash-completion), [Arch](https://archlinux.org/packages/extra/any/bash-completion/), [Gentoo](https://packages.gentoo.org/packages/app-shells/bash-completion)) package installed, and restart your bash session.
 
 To load completions for each session, execute once:
 
@@ -79,6 +82,7 @@ To load completions for each session, execute once:
 
 1. If you haven't already, export the following environment variables:
 
+##### Bash
 ```shell
 export EPCC_CLIENT_ID=<CLIENT_ID>
 export EPCC_CLIENT_SECRET=<CLIENT_SECRET>
@@ -201,11 +205,13 @@ INFO[0001] PUT https://api.moltin.com/v2/customers/8f720da2-37d1-41b7-94da-3fd35
 ```
 
 7. Copying and pasting is terrible and as a result epcc-cli has a few ways of ameliorating the experience of working with ids. 
-   To update the customer without the id, you can use an alias `last_customer` (and this will auto complete). For example `epcc update customer last_customer name "Jonah Smith"`
-
-
+   To update the customer without the id, you can use an alias `email=test@test.com` (and this will auto complete). For example `epcc update customer email=test@test.com name "Jonah Smith"`
 
 ## Development Tips
+
+### Fast rebuilds
+
+For development the following command using [Reflex](https://github.com/cespare/reflex) can speed up your development time, by recreating the command line tool.
 
 ```bash
 git fetch --all --tags && reflex -v -r '(\.go$)|(resources.yaml|go.mod)$' -- sh -c "go build -ldflags=\"-X github.com/elasticpath/epcc-cli/external/version.Version=$(git describe --tags --abbrev=0)+1 -X github.com/elasticpath/epcc-cli/external/version.Commit=$(git rev-parse --short HEAD)-dirty\" -o ./epcc" 

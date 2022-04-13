@@ -17,10 +17,35 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"os"
 	"runtime"
 	"strings"
 	"time"
 )
+
+const EnvNameHttpPrefix = "EPCC_CLI_HTTP_HEADER_"
+
+var httpHeaders = map[string]string{}
+
+func init() {
+	for _, env := range os.Environ() {
+		splitEnv := strings.SplitN(env, "=", 2)
+
+		if len(splitEnv) == 2 {
+			envName := splitEnv[0]
+			envValue := splitEnv[1]
+			if strings.HasPrefix(envName, EnvNameHttpPrefix) {
+				headersSplit := strings.SplitN(envValue, ":", 2)
+
+				if len(headersSplit) != 2 {
+					log.Warnf("Found environment variable with malformed value %s => %s. Headers should be set in a Key: Value format. This value is being ignored.", envName, envValue)
+				} else {
+					httpHeaders[headersSplit[0]] = headersSplit[1]
+				}
+			}
+		}
+	}
+}
 
 var HttpClient = &http.Client{
 	Timeout: time.Second * 10,
@@ -70,12 +95,12 @@ func doRequestInternal(ctx context.Context, method string, contentType string, p
 
 	req.Header.Add("User-Agent", UserAgent)
 
-	if err = AddHeaderByFlag(req); err != nil {
-		return nil, err
-	}
-
 	if len(config.Envs.EPCC_BETA_API_FEATURES) > 0 {
 		req.Header.Add("EP-Beta-Features", config.Envs.EPCC_BETA_API_FEATURES)
+	}
+
+	if err = AddHeaderByFlag(req); err != nil {
+		return nil, err
 	}
 
 	dumpReq, err := httputil.DumpRequestOut(req, true)
@@ -154,7 +179,12 @@ func AddHeaderByFlag(r *http.Request) error {
 		if len(entries) < 2 {
 			return fmt.Errorf("header has invalid format")
 		}
-		r.Header.Add(entries[0], entries[1])
+		r.Header.Set(entries[0], entries[1])
 	}
+
+	for key, val := range httpHeaders {
+		r.Header.Set(key, val)
+	}
+
 	return nil
 }
