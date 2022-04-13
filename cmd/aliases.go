@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/elasticpath/epcc-cli/external/aliases"
 	"github.com/elasticpath/epcc-cli/external/completion"
-	"github.com/elasticpath/epcc-cli/external/profiles"
 	"github.com/elasticpath/epcc-cli/external/resources"
 	"github.com/spf13/cobra"
 	"os"
@@ -62,8 +61,7 @@ var aliasClearCmd = &cobra.Command{
 	Use:   "clear",
 	Short: "clear all aliases",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		profileDirectory := profiles.GetProfileDirectory()
-		os.RemoveAll(profileDirectory)
-		return nil
+		aliasDataDirectory := aliases.GetAliasDataDirectory()
+		return os.RemoveAll(aliasDataDirectory)
 	},
 }
