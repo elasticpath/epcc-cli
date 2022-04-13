@@ -20,8 +20,13 @@ var delete = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		resp, err := deleteResource(args)
 
+		if err != nil {
+			return err
+		}
+
 		// Print the body
 		body, err := ioutil.ReadAll(resp.Body)
+
 		if err != nil {
 			log.Fatal(err)
 		}
