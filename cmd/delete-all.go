@@ -3,11 +3,13 @@ package cmd
 import (
 	json2 "encoding/json"
 	"fmt"
+	"github.com/elasticpath/epcc-cli/external/aliases"
 	"github.com/elasticpath/epcc-cli/external/completion"
 	"github.com/elasticpath/epcc-cli/external/resources"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"io/ioutil"
+	"os"
 	"sync"
 )
 
@@ -47,6 +49,7 @@ var DeleteAll = &cobra.Command{
 				return fmt.Errorf("Problem getting page of ids for resource %s", args[0])
 			}
 		}
+		os.Remove(aliases.GetAliasFileForJsonApiType(aliases.GetAliasDataDirectory(), resource.JsonApiType))
 
 		return nil
 	},

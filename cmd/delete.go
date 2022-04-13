@@ -19,8 +19,12 @@ var delete = &cobra.Command{
 	Short: "Deletes a single resource.",
 	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		resp, err := deleteResource(args)
+		resource, ok := resources.GetResourceByName(args[0])
+		if !ok {
+			return fmt.Errorf("Could not find resource %s", args[0])
+		}
 
+		resp, err := deleteResource(args)
 		if err != nil {
 			return err
 		}
@@ -35,7 +39,7 @@ var delete = &cobra.Command{
 		if resp.StatusCode >= 400 && resp.StatusCode <= 600 {
 			log.Println(resp.Status)
 		}
-
+		aliases.DeleteAliasesById(args[len(args)-1], resource.JsonApiType)
 		return json.PrintJson(string(body))
 	},
 
@@ -111,6 +115,5 @@ func deleteResource(args []string) (*http.Response, error) {
 	}
 	defer resp.Body.Close()
 
-	aliases.DeleteAliasesById(args[len(args)-1], resource.JsonApiType)
 	return resp, nil
 }
