@@ -19,7 +19,7 @@ import (
 var filelock = sync.Mutex{}
 
 func GetAliasesForJsonApiType(jsonApiType string) map[string]string {
-	profileDirectory := profiles.GetProfileDirectory()
+	profileDirectory := profiles.GetProfileDataDirectory()
 	aliasFile := getDirectoryForJsonApiType(profileDirectory, jsonApiType)
 
 	aliasMap := map[string]string{}
@@ -59,7 +59,7 @@ func SaveAliasesForResources(jsonTxt string) {
 
 	log.Tracef("All aliases: %s", results)
 
-	profileDirectory := profiles.GetProfileDirectory()
+	profileDirectory := profiles.GetProfileDataDirectory()
 	for resourceType, aliases := range results {
 		saveAliasesForResource(profileDirectory, resourceType, aliases)
 	}

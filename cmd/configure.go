@@ -17,7 +17,7 @@ var configure = &cobra.Command{
 	Long:  "Will first prompt for a name then a series of variable specific for the user being created",
 	Run: func(cmd *cobra.Command, args []string) {
 
-		configPath := profiles.GetProfilePath()
+		configPath := profiles.GetConfigFilePath()
 		cfg, err := ini.Load(configPath)
 		if err != nil {
 			log.Errorf("error loading to file " + configPath)
@@ -49,8 +49,6 @@ var configure = &cobra.Command{
 			os.Exit(1)
 		}
 		config.Envs = &newProfile
-		config.Profile = text
-
 	},
 }
 
