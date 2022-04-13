@@ -14,7 +14,7 @@ import (
 )
 
 var delete = &cobra.Command{
-	Use:   "delete [RESOURCE] [ID_1] [ID_2]",
+	Use:   "delete [RESOURCE] [ID_1] [ID_2] ...",
 	Short: "Deletes a single resource.",
 	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {

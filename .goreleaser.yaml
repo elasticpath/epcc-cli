@@ -34,8 +34,7 @@ archives:
     name_template: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}'
 nfpms:
   # note that this is an array of nfpm configs
-  -
-    # ID of the nfpm config, must be unique.
+  - # ID of the nfpm config, must be unique.
     # Defaults to "default".
     package_name: "epcc-cli"
     replacements:
@@ -46,9 +45,9 @@ nfpms:
     maintainer: Release Engineering <rel-eng@elasticpath.com>
     license: MIT
     formats:
-    - deb
-    - apk
-    - rpm
+      - deb
+      - apk
+      - rpm
 checksum:
   name_template: '{{ .ProjectName }}_{{ .Version }}_SHA256SUMS'
   algorithm: sha256
