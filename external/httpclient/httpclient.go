@@ -67,7 +67,9 @@ func doRequestInternal(ctx context.Context, method string, contentType string, p
 		return nil, err
 	}
 
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", bearerToken))
+	if bearerToken != "" {
+		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", bearerToken))
+	}
 
 	req.Header.Add("Content-Type", contentType)
 

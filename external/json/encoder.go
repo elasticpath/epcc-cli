@@ -140,10 +140,11 @@ func (e *encoder) encode(v interface{}) {
 	default:
 		panic(fmt.Sprintf("invalid value: %v", v))
 	}
-	if e.w.Len() > 8*1024 {
+	// Original code to prevent buffering, but if we are outputting color this will break
+	/*if e.w.Len() > 8*1024 {
 		e.out.Write(e.w.Bytes())
 		e.w.Reset()
-	}
+	}*/
 }
 
 // ref: floatEncoder in encoding/json

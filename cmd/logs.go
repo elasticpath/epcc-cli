@@ -53,4 +53,4 @@ var LogsShow = &cobra.Command{
 	},
 }
 
-var Logs = &cobra.Command{Use: "logs"}
+var Logs = &cobra.Command{Use: "logs", Short: "Retrieve information about previous requests"}

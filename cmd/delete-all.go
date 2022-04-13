@@ -66,6 +66,10 @@ var DeleteAll = &cobra.Command{
 func getPage(resourceName string) ([]string, error) {
 	resp, err := getResource([]string{resourceName, "page[limit]", "25"})
 
+	if err != nil {
+		return []string{}, err
+	}
+
 	// Read the body
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
