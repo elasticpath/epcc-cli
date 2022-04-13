@@ -9,6 +9,7 @@ import (
 	"gopkg.in/yaml.v3"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"sync"
@@ -18,9 +19,20 @@ import (
 // however, we should use file locking in the OS to stop multiple concurrent invocations.
 var filelock = sync.Mutex{}
 
-func GetAliasesForJsonApiType(jsonApiType string) map[string]string {
+func GetAliasDataDirectory() string {
 	profileDirectory := profiles.GetProfileDataDirectory()
-	aliasFile := getDirectoryForJsonApiType(profileDirectory, jsonApiType)
+	profileDataDirectory := filepath.FromSlash(profileDirectory + "/aliases/")
+
+	//built in check if dir exists
+	if err := os.MkdirAll(profileDataDirectory, 0700); err != nil {
+		log.Errorf("could not make directory")
+	}
+
+	return profileDataDirectory
+}
+func GetAliasesForJsonApiType(jsonApiType string) map[string]string {
+	profileDirectory := GetAliasDataDirectory()
+	aliasFile := getAliasFileForJsonApiType(profileDirectory, jsonApiType)
 
 	aliasMap := map[string]string{}
 
@@ -59,7 +71,7 @@ func SaveAliasesForResources(jsonTxt string) {
 
 	log.Tracef("All aliases: %s", results)
 
-	profileDirectory := profiles.GetProfileDataDirectory()
+	profileDirectory := GetAliasDataDirectory()
 	for resourceType, aliases := range results {
 		saveAliasesForResource(profileDirectory, resourceType, aliases)
 	}
@@ -71,7 +83,7 @@ func saveAliasesForResource(profileDirectory string, jsonApiType string, aliases
 	filelock.Lock()
 	defer filelock.Unlock()
 
-	aliasFile := getDirectoryForJsonApiType(profileDirectory, jsonApiType)
+	aliasFile := getAliasFileForJsonApiType(profileDirectory, jsonApiType)
 	data, err := ioutil.ReadFile(aliasFile)
 	if err != nil {
 		log.Debugf("Could not read %s, error %s", aliasFile, err)
@@ -123,7 +135,7 @@ func saveAliasesForResource(profileDirectory string, jsonApiType string, aliases
 	}
 }
 
-func getDirectoryForJsonApiType(profileDirectory string, resourceType string) string {
+func getAliasFileForJsonApiType(profileDirectory string, resourceType string) string {
 	aliasFile := fmt.Sprintf("%s/aliases_%s.yml", profileDirectory, resourceType)
 	return aliasFile
 }
