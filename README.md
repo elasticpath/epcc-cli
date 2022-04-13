@@ -202,4 +202,11 @@ INFO[0001] PUT https://api.moltin.com/v2/customers/8f720da2-37d1-41b7-94da-3fd35
 
 7. Copying and pasting is terrible and as a result epcc-cli has a few ways of ameliorating the experience of working with ids. 
    To update the customer without the id, you can use an alias `last_customer` (and this will auto complete). For example `epcc update customer last_customer name "Jonah Smith"`
-STEVE WILL FIX
+
+
+
+## Development Tips
+
+```bash
+git fetch --all --tags && reflex -v -r '(\.go$)|(resources.yaml|go.mod)$' -- sh -c "go build -ldflags=\"-X github.com/elasticpath/epcc-cli/external/version.Version=$(git describe --tags --abbrev=0)+1 -X github.com/elasticpath/epcc-cli/external/version.Commit=$(git rev-parse --short HEAD)-dirty\" -o ./epcc" 
+```

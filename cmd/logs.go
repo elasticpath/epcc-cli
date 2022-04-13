@@ -2,18 +2,16 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/elasticpath/epcc-cli/shared"
+	"github.com/elasticpath/epcc-cli/external/profiles"
 	"github.com/spf13/cobra"
-	"os"
-	"strings"
+	"strconv"
 )
 
 var LogsClear = &cobra.Command{
 	Use:   "clear",
 	Short: "Clears all HTTP request and response logs",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		os.RemoveAll(shared.LogDirectory)
-		return nil
+		return profiles.ClearAllRequestLogs()
 	},
 }
 
@@ -21,10 +19,13 @@ var LogsList = &cobra.Command{
 	Use:   "list",
 	Short: "List all HTTP logs",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		files := shared.AllFilesSortedByDate(shared.LogDirectory)
-		for i := 0; i < len(files); i++ {
-			name, _ := shared.Base64DecodeStripped(files[i].Name())
-			fmt.Println(name)
+		files, err := profiles.GetAllRequestLogTitles()
+		if err != nil {
+			return err
+		}
+
+		for idx, name := range files {
+			fmt.Printf("%d %s\n", idx, name)
 		}
 		return nil
 	},
@@ -35,19 +36,20 @@ var LogsShow = &cobra.Command{
 	Short: "Show HTTP logs for specific number",
 	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		files := shared.AllFilesSortedByDate(shared.LogDirectory)
-		for i := 0; i < len(files); i++ {
-			name, _ := shared.Base64DecodeStripped(files[i].Name())
-			segments := strings.Split(name, " ")
-			if segments[0] == args[0] {
-				content, err := os.ReadFile(shared.LogDirectory + "/" + files[i].Name())
-				if err != nil {
-					return err
-				}
-				fmt.Print(string(content))
-				break
-			}
+
+		i, err := strconv.Atoi(args[0])
+
+		if err != nil {
+			return fmt.Errorf("Could not get the %s entry => %w", args[0], err)
 		}
+
+		content, err := profiles.GetNthRequestLog(i)
+
+		if err != nil {
+			return fmt.Errorf("Couldn't print logs: %v", err)
+		}
+
+		fmt.Println(content)
 
 		return nil
 	},

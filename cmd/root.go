@@ -51,7 +51,7 @@ func init() {
 
 	RootCmd.PersistentFlags().BoolVarP(&json.MonochromeOutput, "monochrome-output", "M", false, "By default, epcc will output using colors if the terminal supports this. Use this option to disable it.")
 	RootCmd.PersistentFlags().StringSliceVarP(&globals.RawHeaders, "header", "H", []string{}, "Extra headers and values to include in the request when sending HTTP to a server. You may specify any number of extra headers.")
-	RootCmd.PersistentFlags().StringVarP(&config.Profile, "profile", "P", "", "overrides the current EPCC_PROFILE var to run the command with the chosen profile.")
+	RootCmd.PersistentFlags().StringVarP(&profiles.ProfileName, "profile", "P", "default", "overrides the current EPCC_PROFILE var to run the command with the chosen profile.")
 
 	aliasesCmd.AddCommand(aliasListCmd, aliasClearCmd)
 }
@@ -92,7 +92,7 @@ Environment Variables
 	},
 
 	SilenceUsage: true,
-	Version:      fmt.Sprintf("EPCC CLI %s (Commit %s)", version.Version, version.Commit),
+	Version:      fmt.Sprintf("%s (Commit %s)", version.Version, version.Commit),
 }
 
 func Execute() {
@@ -103,16 +103,14 @@ func Execute() {
 }
 
 func initConfig() {
-	if config.Profile == "" {
-		envProfile, present := os.LookupEnv("EPCC_PROFILE")
-		if !present {
-			//creates configfile is this is users first time running app
-			profiles.GetProfilePath()
-			log.Println("profile tag and EPCC_PROFILE variable are absent")
-			return
-		}
-		config.Profile = envProfile
+	envProfileName, ok := os.LookupEnv("EPCC_PROFILE")
+	if ok {
+		profiles.ProfileName = envProfileName
 	}
-	config.Envs = profiles.GetProfile(config.Profile)
+	config.Envs = profiles.GetProfile(profiles.ProfileName)
 
+	// Override profile configuration with environment variables
+	if err := env.Parse(config.Envs); err != nil {
+		panic("Could not parse environment variables")
+	}
 }

@@ -8,4 +8,3 @@ type Env struct {
 }
 
 var Envs = &Env{}
-var Profile string

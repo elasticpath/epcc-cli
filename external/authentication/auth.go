@@ -5,9 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/elasticpath/epcc-cli/config"
+	"github.com/elasticpath/epcc-cli/external/profiles"
 	"github.com/elasticpath/epcc-cli/external/version"
 	"github.com/elasticpath/epcc-cli/globals"
 	log "github.com/sirupsen/logrus"
+	"net/http/httputil"
 	"os"
 
 	"net/http"
@@ -107,11 +109,19 @@ func auth() (string, error) {
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	req.Header.Add("User-Agent", fmt.Sprintf("epcc-cli/%s-%s", version.Version, version.Commit))
 
+	dumpReq, err := httputil.DumpRequestOut(req, true)
+	if err != nil {
+		log.Errorf("error %v", err)
+	}
+
 	resp, err := HttpClient.Do(req)
 	if err != nil {
 		return "", err
 	}
 
+	dumpRes, _ := httputil.DumpResponse(resp, true)
+
+	profiles.LogRequestToDisk("POST", req.URL.Path, dumpReq, dumpRes, resp.StatusCode)
 	if resp.StatusCode != 200 {
 		return "", fmt.Errorf("error: unexpected status %s", resp.Status)
 	}
