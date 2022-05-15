@@ -491,6 +491,18 @@ integrations:
       type: STRING
     observes[n]:
       type: ENUM:address.created,address.updated,address.deleted,account.created,account.updated,account.deleted,account-member.created,account-member.updated,account-member.deleted,account-membership.created,account-membership.updated,account-membership.deleted,brand.created,brand.updated,brand.deleted,cart.updated,cart.deleted,category.created,category.updated,category.deleted,collection.created,collection.updated,collection.deleted,currency.created,currency.updated,currency.deleted,customer.created,customer.updated,customer.deleted,file.created,file.deleted,integration.created,integration.updated,integration.deleted,order.created,order.updated,order.fulfilled,order.authorized,order.paid,order.refunded,payment-gateway.updated,product.created,product.updated,product.deleted,settings.created,settings.updated,stock-transaction.created,transaction.created,transaction.updated,user-authentication-info.created,user-authentication-info.updated,user-authentication-info.deleted
+catalog-products:
+  singular-name: "catalog-product"
+  json-api-type: "product"
+  json-api-format: "compliant"
+  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/index.html"
+  get-collection:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/catalogs/releases/products/get-all-products.html"
+    url: "/catalog/products"
+    query: "include"
+  get-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/get-a-product.html"
+    url: "/catalog/products/{catalog_products}"
 merchant-realm-mappings:
   singular-name: "merchant-realm-mapping"
   json-api-type: "merchant-realm-mappings"

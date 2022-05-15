@@ -47,9 +47,9 @@ func GetNthRequestLog(n int) (string, error) {
 	}
 
 	if n < 0 {
-		return "", fmt.Errorf("You must specify a positive integer log message to show")
+		return "", fmt.Errorf("you must specify a positive integer log message to show")
 	} else if n >= len(files) {
-		return "", fmt.Errorf("There are only %d entries to show, cannot show entry: %d", len(files), n)
+		return "", fmt.Errorf("there are only %d entries to show, cannot show entry: %d", len(files), n)
 	}
 
 	dir, err := getRequestLogDirectory()
@@ -62,7 +62,7 @@ func GetNthRequestLog(n int) (string, error) {
 
 	if err != nil {
 		//Maybe a race condition, but maybe not.
-		return "", fmt.Errorf("Could not read entry %d, file exists(ed) but failed to read", n)
+		return "", fmt.Errorf("could not read entry %d, file exists(ed) but failed to read", n)
 	}
 
 	return string(content), nil
@@ -125,7 +125,7 @@ func SaveRequest(title string, requestBytes []byte, responseBytes []byte) error 
 func getRequestLogDirectory() (string, error) {
 	dir := GetProfileDataDirectory() + "/logs"
 	if err := os.MkdirAll(dir, 0700); err != nil {
-		return "", fmt.Errorf("Could not make directory %s", dir)
+		return "", fmt.Errorf("could not make directory %s", dir)
 	}
 
 	return dir, nil

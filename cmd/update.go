@@ -22,7 +22,7 @@ var update = &cobra.Command{
 		// Find Resource
 		resource, ok := resources.GetResourceByName(args[0])
 		if !ok {
-			return fmt.Errorf("Could not find resource %s", args[0])
+			return fmt.Errorf("could not find resource %s", args[0])
 		}
 
 		if resource.UpdateEntityInfo == nil {
@@ -52,7 +52,7 @@ var update = &cobra.Command{
 		// Submit request
 		resp, err := httpclient.DoRequest(context.TODO(), "PUT", resourceURL, "", strings.NewReader(body))
 		if err != nil {
-			return fmt.Errorf("Got error %s", err.Error())
+			return fmt.Errorf("got error %s", err.Error())
 		}
 		defer resp.Body.Close()
 

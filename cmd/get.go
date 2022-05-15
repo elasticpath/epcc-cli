@@ -107,7 +107,7 @@ var get = &cobra.Command{
 func getUrl(resource resources.Resource, args []string) (string, error) {
 	resourceURL := ""
 	if resource.GetCollectionInfo == nil && resource.GetEntityInfo == nil {
-		return "", fmt.Errorf("Resource %s doesn't support GET", args[0])
+		return "", fmt.Errorf("resource %s doesn't support GET", args[0])
 	} else if resource.GetCollectionInfo != nil && resource.GetEntityInfo == nil {
 		resourceURL = resource.GetCollectionInfo.Url
 	} else if resource.GetCollectionInfo == nil && resource.GetEntityInfo != nil {
@@ -126,7 +126,7 @@ func getResource(args []string) (*http.Response, error) {
 	// Find Resource
 	resource, ok := resources.GetResourceByName(args[0])
 	if !ok {
-		return nil, fmt.Errorf("Could not find resource %s", args[0])
+		return nil, fmt.Errorf("could not find resource %s", args[0])
 	}
 
 	var resourceURL string
@@ -165,7 +165,7 @@ func getResource(args []string) (*http.Response, error) {
 	resp, err := httpclient.DoRequest(context.TODO(), "GET", resourceURL, params.Encode(), nil)
 
 	if err != nil {
-		return nil, fmt.Errorf("Got error %s", err.Error())
+		return nil, fmt.Errorf("got error %s", err.Error())
 	}
 	defer resp.Body.Close()
 

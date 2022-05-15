@@ -21,7 +21,7 @@ var delete = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		resource, ok := resources.GetResourceByName(args[0])
 		if !ok {
-			return fmt.Errorf("Could not find resource %s", args[0])
+			return fmt.Errorf("could not find resource %s", args[0])
 		}
 
 		resp, err := deleteResource(args)
@@ -92,11 +92,11 @@ func deleteResource(args []string) (*http.Response, error) {
 	// Find Resource
 	resource, ok := resources.GetResourceByName(args[0])
 	if !ok {
-		return nil, fmt.Errorf("Could not find resource %s", args[0])
+		return nil, fmt.Errorf("could not find resource %s", args[0])
 	}
 
 	if resource.DeleteEntityInfo == nil {
-		return nil, fmt.Errorf("Resource %s doesn't support DELETE", args[0])
+		return nil, fmt.Errorf("resource %s doesn't support DELETE", args[0])
 	}
 
 	resourceURL := resource.DeleteEntityInfo.Url
@@ -111,7 +111,7 @@ func deleteResource(args []string) (*http.Response, error) {
 	// Submit request
 	resp, err := httpclient.DoRequest(context.TODO(), "DELETE", resourceURL, "", nil)
 	if err != nil {
-		return nil, fmt.Errorf("Got error %s", err.Error())
+		return nil, fmt.Errorf("got error %s", err.Error())
 	}
 	defer resp.Body.Close()
 

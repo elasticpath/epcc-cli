@@ -40,13 +40,13 @@ var LogsShow = &cobra.Command{
 		i, err := strconv.Atoi(args[0])
 
 		if err != nil {
-			return fmt.Errorf("Could not get the %s entry => %w", args[0], err)
+			return fmt.Errorf("could not get the %s entry => %w", args[0], err)
 		}
 
 		content, err := profiles.GetNthRequestLog(i)
 
 		if err != nil {
-			return fmt.Errorf("Couldn't print logs: %v", err)
+			return fmt.Errorf("couldn't print logs: %v", err)
 		}
 
 		fmt.Println(content)

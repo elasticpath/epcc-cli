@@ -16,7 +16,7 @@ var segmentRegex = regexp.MustCompile("(.+?)(\\[[0-9]+])?$")
 func ToJson(args []string, noWrapping bool, compliant bool, attributes map[string]*resources.CrudEntityAttribute) (string, error) {
 
 	if len(args)%2 == 1 {
-		return "", fmt.Errorf("The number arguments %d supplied isn't even, json should be passed in key value pairs", len(args))
+		return "", fmt.Errorf("the number arguments %d supplied isn't even, json should be passed in key value pairs", len(args))
 	}
 
 	firstArrayKeyIdx := -1
@@ -31,7 +31,7 @@ func ToJson(args []string, noWrapping bool, compliant bool, attributes map[strin
 	}
 
 	if firstArrayKeyIdx >= 0 && firstFieldKeyIdx >= 0 {
-		return "", fmt.Errorf("Detected both array syntax arguments '%s' and object syntax arguments '%s'. Only one format can be used.", args[firstArrayKeyIdx], args[firstFieldKeyIdx])
+		return "", fmt.Errorf("detected both array syntax arguments '%s' and object syntax arguments '%s'. Only one format can be used", args[firstArrayKeyIdx], args[firstFieldKeyIdx])
 	}
 
 	if firstArrayKeyIdx >= 0 {
@@ -146,7 +146,7 @@ func runJQ(queryStr string, result interface{}) (interface{}, error) {
 
 	if err != nil {
 		// %w causes the error to be wrapped.
-		return nil, fmt.Errorf("Error parsing json key %s: %w", queryStr, err)
+		return nil, fmt.Errorf("error parsing json key %s: %w", queryStr, err)
 	}
 
 	iter := query.Run(result)

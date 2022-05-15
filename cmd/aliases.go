@@ -24,7 +24,7 @@ var aliasListCmd = &cobra.Command{
 		if len(args) != 0 {
 			resource, ok := resources.GetResourceByName(args[0])
 			if !ok {
-				return fmt.Errorf("Could not find resource information for resource: %s", args[0])
+				return fmt.Errorf("could not find resource information for resource: %s", args[0])
 			}
 
 			aliases := aliases.GetAliasesForJsonApiType(resource.JsonApiType)
@@ -43,7 +43,7 @@ var aliasListCmd = &cobra.Command{
 
 			return nil
 		}
-		return fmt.Errorf("You must supply a resource type to the aliases command")
+		return fmt.Errorf("you must supply a resource type to the aliases command")
 	},
 
 	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {

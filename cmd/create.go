@@ -22,7 +22,7 @@ var create = &cobra.Command{
 		// Find Resource
 		resource, ok := resources.GetResourceByName(args[0])
 		if !ok {
-			return fmt.Errorf("Could not find resource %s", args[0])
+			return fmt.Errorf("could not find resource %s", args[0])
 		}
 
 		if resource.CreateEntityInfo == nil {
@@ -59,7 +59,7 @@ var create = &cobra.Command{
 		resp, err := httpclient.DoRequest(context.TODO(), "POST", resourceURL, "", strings.NewReader(body))
 
 		if err != nil {
-			return fmt.Errorf("Got error %s", err.Error())
+			return fmt.Errorf("got error %s", err.Error())
 		}
 		defer resp.Body.Close()
 

@@ -16,7 +16,7 @@ var docsCommand = &cobra.Command{
 		if len(args) != 0 {
 			resource, ok := resources.GetResourceByName(args[0])
 			if !ok {
-				return fmt.Errorf("Could not find resource information for resource: %s", args[0])
+				return fmt.Errorf("could not find resource information for resource: %s", args[0])
 			}
 			switch len(args) {
 			case 1:
@@ -79,7 +79,7 @@ func openDoc(resourceDoc resources.Resource, verb string) error {
 		}
 		err = browser.OpenUrl(resourceDoc.CreateEntityInfo.Docs)
 	default:
-		return fmt.Errorf("Could not find verb %s", verb)
+		return fmt.Errorf("could not find verb %s", verb)
 
 	}
 	if err != nil {
