@@ -22,15 +22,15 @@ var DeleteAll = &cobra.Command{
 		// Find Resource
 		resource, ok := resources.GetResourceByName(args[0])
 		if !ok {
-			return fmt.Errorf("Could not find resource %s", args[0])
+			return fmt.Errorf("could not find resource %s", args[0])
 		}
 
 		if resource.GetCollectionInfo == nil {
-			return fmt.Errorf("Resource %s doesn't support GET collection", args[0])
+			return fmt.Errorf("resource %s doesn't support GET collection", args[0])
 		}
 
 		if resource.DeleteEntityInfo == nil {
-			return fmt.Errorf("Resource %s doesn't support DELETE", args[0])
+			return fmt.Errorf("resource %s doesn't support DELETE", args[0])
 		}
 
 		min := resource.DeleteEntityInfo.MinResources
@@ -39,14 +39,14 @@ var DeleteAll = &cobra.Command{
 
 		ids, err := getPage(args[0])
 		if err != nil {
-			return fmt.Errorf("Problem getting page of ids for resource %s", args[0])
+			return fmt.Errorf("problem getting page of ids for resource %s", args[0])
 		}
 
 		for len(ids) > min {
 			delPage(delName, ids)
 			ids, err = getPage(args[0])
 			if err != nil {
-				return fmt.Errorf("Problem getting page of ids for resource %s", args[0])
+				return fmt.Errorf("problem getting page of ids for resource %s", args[0])
 			}
 		}
 		os.Remove(aliases.GetAliasFileForJsonApiType(aliases.GetAliasDataDirectory(), resource.JsonApiType))
@@ -82,7 +82,7 @@ func getPage(resourceName string) ([]string, error) {
 	var jsonStruct = map[string]interface{}{}
 	err = json2.Unmarshal(body, &jsonStruct)
 	if err != nil {
-		return nil, fmt.Errorf("Response for get was not JSON")
+		return nil, fmt.Errorf("response for get was not JSON: %w", err)
 	}
 
 	// Collect ids from GET Collection output

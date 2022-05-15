@@ -30,7 +30,7 @@ var logout = &cobra.Command{
 			err = os.Remove(globals.CredPath)
 		}
 		if err != nil {
-			return fmt.Errorf("User already logged out")
+			return fmt.Errorf("user already logged out")
 		}
 		return err
 	},

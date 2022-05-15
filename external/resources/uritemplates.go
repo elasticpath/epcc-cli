@@ -12,7 +12,7 @@ func GenerateUrl(resource Resource, url string, args []string) (string, error) {
 	template, err := uritemplate.New(url)
 
 	if err != nil {
-		return "", fmt.Errorf("Could not generate URI template for URL: %w", err)
+		return "", fmt.Errorf("could not generate URI template for URL: %w", err)
 	}
 
 	vars := template.Varnames()
@@ -42,7 +42,7 @@ func GetNumberOfVariablesNeeded(url string) (int, error) {
 	template, err := uritemplate.New(url)
 
 	if err != nil {
-		return 0, fmt.Errorf("Could not generate URI template for URL: %w", err)
+		return 0, fmt.Errorf("could not generate URI template for URL: %w", err)
 	}
 
 	return len(template.Varnames()), nil
@@ -55,7 +55,7 @@ func GetTypesOfVariablesNeeded(url string) ([]string, error) {
 	template, err := uritemplate.New(url)
 
 	if err != nil {
-		return results, fmt.Errorf("Could not generate URI template for URL: %w", err)
+		return results, fmt.Errorf("could not generate URI template for URL: %w", err)
 	}
 
 	for _, value := range template.Varnames() {

@@ -9,7 +9,7 @@ import (
 func TestErrorMessageWhenOddNumberOfValuesPassed(t *testing.T) {
 	// Fixture Setup
 	input := []string{"[0]"}
-	expected := fmt.Errorf("The number arguments 1 supplied isn't even, json should be passed in key value pairs")
+	expected := fmt.Errorf("the number arguments 1 supplied isn't even, json should be passed in key value pairs")
 
 	// Execute SUT
 	_, actual := ToJson(input, false, true, map[string]*resources.CrudEntityAttribute{})
@@ -361,7 +361,7 @@ func TestToJsonCompliantFormatSimpleArrayWithTwoValues(t *testing.T) {
 func TestToJsonErrorsWhenArrayAndObjectKeysSpecified(t *testing.T) {
 	// Fixture Setup
 	input := []string{"[0]", "val", "key", "val2"}
-	expected := fmt.Errorf("Detected both array syntax arguments '[0]' and object syntax arguments 'key'. Only one format can be used.")
+	expected := fmt.Errorf("detected both array syntax arguments '[0]' and object syntax arguments 'key'. Only one format can be used")
 
 	// Execute SUT
 	_, actual := ToJson(input, false, true, map[string]*resources.CrudEntityAttribute{})
