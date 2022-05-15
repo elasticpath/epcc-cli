@@ -7,6 +7,7 @@ import (
 	"github.com/elasticpath/epcc-cli/config"
 	"github.com/elasticpath/epcc-cli/external/authentication"
 	"github.com/elasticpath/epcc-cli/external/json"
+	"github.com/elasticpath/epcc-cli/external/profiles"
 	"github.com/elasticpath/epcc-cli/external/version"
 	"github.com/elasticpath/epcc-cli/globals"
 	log "github.com/sirupsen/logrus"
@@ -14,10 +15,37 @@ import (
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
+	"os"
+	"runtime"
 	"strings"
 	"time"
 )
+
+const EnvNameHttpPrefix = "EPCC_CLI_HTTP_HEADER_"
+
+var httpHeaders = map[string]string{}
+
+func init() {
+	for _, env := range os.Environ() {
+		splitEnv := strings.SplitN(env, "=", 2)
+
+		if len(splitEnv) == 2 {
+			envName := splitEnv[0]
+			envValue := splitEnv[1]
+			if strings.HasPrefix(envName, EnvNameHttpPrefix) {
+				headersSplit := strings.SplitN(envValue, ":", 2)
+
+				if len(headersSplit) != 2 {
+					log.Warnf("Found environment variable with malformed value %s => %s. Headers should be set in a Key: Value format. This value is being ignored.", envName, envValue)
+				} else {
+					httpHeaders[headersSplit[0]] = headersSplit[1]
+				}
+			}
+		}
+	}
+}
 
 var HttpClient = &http.Client{
 	Timeout: time.Second * 10,
@@ -31,6 +59,8 @@ func DoFileRequest(ctx context.Context, path string, payload io.Reader, contentT
 	return doRequestInternal(ctx, "POST", contentType, path, "", payload)
 }
 
+var UserAgent = fmt.Sprintf("epcc-cli/%s-%s (%s/%s)", version.Version, version.Commit, runtime.GOOS, runtime.GOARCH)
+
 // DoRequest makes a html request to the EPCC API and handles the response.
 func doRequestInternal(ctx context.Context, method string, contentType string, path string, query string, payload io.Reader) (response *http.Response, error error) {
 	reqURL, err := url.Parse(config.Envs.EPCC_API_BASE_URL)
@@ -42,7 +72,10 @@ func doRequestInternal(ctx context.Context, method string, contentType string, p
 	reqURL.RawQuery = query
 
 	var bodyBuf bytes.Buffer
-	payload = io.TeeReader(payload, &bodyBuf)
+	if payload != nil {
+		payload = io.TeeReader(payload, &bodyBuf)
+	}
+
 	req, err := http.NewRequest(method, reqURL.String(), payload)
 	if err != nil {
 		return nil, err
@@ -54,30 +87,45 @@ func doRequestInternal(ctx context.Context, method string, contentType string, p
 		return nil, err
 	}
 
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", bearerToken))
+	if bearerToken != "" {
+		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", bearerToken))
+	}
 
 	req.Header.Add("Content-Type", contentType)
 
-	req.Header.Add("User-Agent", fmt.Sprintf("epcc-cli/%s-%s", version.Version, version.Commit))
-
-	if err = AddHeaderByFlag(req); err != nil {
-		return nil, err
-	}
+	req.Header.Add("User-Agent", UserAgent)
 
 	if len(config.Envs.EPCC_BETA_API_FEATURES) > 0 {
 		req.Header.Add("EP-Beta-Features", config.Envs.EPCC_BETA_API_FEATURES)
 	}
 
+	if err = AddHeaderByFlag(req); err != nil {
+		return nil, err
+	}
+
+	dumpReq, err := httputil.DumpRequestOut(req, true)
+	if err != nil {
+		log.Error(err)
+	}
+
 	resp, err := HttpClient.Do(req)
 
-	if resp.StatusCode > 400 {
-		body, _ := ioutil.ReadAll(&bodyBuf)
-		if len(body) > 0 {
-			log.Warnf("%s %s", method, reqURL.String())
+	if err != nil {
+		return nil, err
+	}
 
-			// TODO maybe check if it's json and if not do something else.
-			json.PrintJsonToStderr(string(body))
-			log.Warnf("%s %s", resp.Proto, resp.Status)
+	if resp.StatusCode >= 400 {
+		if payload != nil {
+			body, _ := ioutil.ReadAll(&bodyBuf)
+			if len(body) > 0 {
+				log.Warnf("%s %s", method, reqURL.String())
+
+				// TODO maybe check if it's json and if not do something else.
+				json.PrintJsonToStderr(string(body))
+				log.Warnf("%s %s", resp.Proto, resp.Status)
+			} else {
+				log.Warnf("%s %s ==> %s %s", method, reqURL.String(), resp.Proto, resp.Status)
+			}
 		} else {
 			log.Warnf("%s %s ==> %s %s", method, reqURL.String(), resp.Proto, resp.Status)
 		}
@@ -85,6 +133,13 @@ func doRequestInternal(ctx context.Context, method string, contentType string, p
 	} else if resp.StatusCode >= 200 && resp.StatusCode <= 399 {
 		log.Infof("%s %s ==> %s %s", method, reqURL.String(), resp.Proto, resp.Status)
 	}
+
+	dumpRes, err := httputil.DumpResponse(resp, true)
+	if err != nil {
+		log.Error(err)
+	}
+
+	profiles.LogRequestToDisk(method, path, dumpReq, dumpRes, resp.StatusCode)
 
 	return resp, err
 }
@@ -124,7 +179,12 @@ func AddHeaderByFlag(r *http.Request) error {
 		if len(entries) < 2 {
 			return fmt.Errorf("header has invalid format")
 		}
-		r.Header.Add(entries[0], entries[1])
+		r.Header.Set(entries[0], entries[1])
 	}
+
+	for key, val := range httpHeaders {
+		r.Header.Set(key, val)
+	}
+
 	return nil
 }

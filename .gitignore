@@ -1,5 +1,6 @@
 bin
-
+.env
 dist/
 epcc-cli
 epcc
+.envrc

@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/elasticpath/epcc-cli/external/browser"
 	"github.com/elasticpath/epcc-cli/external/completion"
 	"github.com/elasticpath/epcc-cli/external/resources"
 	"github.com/spf13/cobra"
@@ -51,32 +52,32 @@ func openDoc(resourceDoc resources.Resource, verb string) error {
 		if len(resourceDoc.Docs) < 1 {
 			err = doDefault()
 		}
-		err = OpenUrl(resourceDoc.Docs)
+		err = browser.OpenUrl(resourceDoc.Docs)
 	case "get-collection":
 		if resourceDoc.GetCollectionInfo != nil && len(resourceDoc.GetCollectionInfo.Docs) < 1 {
 			err = doDefault()
 		}
-		err = OpenUrl(resourceDoc.GetCollectionInfo.Docs)
+		err = browser.OpenUrl(resourceDoc.GetCollectionInfo.Docs)
 	case "get":
 		if resourceDoc.GetEntityInfo != nil && len(resourceDoc.GetEntityInfo.Docs) < 1 {
 			err = doDefault()
 		}
-		err = OpenUrl(resourceDoc.GetEntityInfo.Docs)
+		err = browser.OpenUrl(resourceDoc.GetEntityInfo.Docs)
 	case "update":
 		if resourceDoc.UpdateEntityInfo != nil && len(resourceDoc.UpdateEntityInfo.Docs) < 1 {
 			err = doDefault()
 		}
-		err = OpenUrl(resourceDoc.UpdateEntityInfo.Docs)
+		err = browser.OpenUrl(resourceDoc.UpdateEntityInfo.Docs)
 	case "delete":
 		if resourceDoc.DeleteEntityInfo != nil && len(resourceDoc.DeleteEntityInfo.Docs) < 1 {
 			err = doDefault()
 		}
-		err = OpenUrl(resourceDoc.DeleteEntityInfo.Docs)
+		err = browser.OpenUrl(resourceDoc.DeleteEntityInfo.Docs)
 	case "create":
 		if resourceDoc.CreateEntityInfo != nil && len(resourceDoc.CreateEntityInfo.Docs) < 1 {
 			err = doDefault()
 		}
-		err = OpenUrl(resourceDoc.CreateEntityInfo.Docs)
+		err = browser.OpenUrl(resourceDoc.CreateEntityInfo.Docs)
 	default:
 		return fmt.Errorf("Could not find verb %s", verb)
 

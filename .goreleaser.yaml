@@ -14,7 +14,7 @@ builds:
     flags:
       - -trimpath
     ldflags:
-      - '-s -w -X version.version={{.Version}} -X version.commit={{.Commit}}'
+      - '-s -w -X github.com/elasticpath/epcc-cli/external/version.Version={{.Version}} -X github.com/elasticpath/epcc-cli/external/version.Commit={{.Commit}}'
     goos:
       - freebsd
       - windows
