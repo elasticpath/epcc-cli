@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"github.com/elasticpath/epcc-cli/external/aliases"
 	"github.com/elasticpath/epcc-cli/external/completion"
 	"github.com/elasticpath/epcc-cli/external/httpclient"
 	"github.com/elasticpath/epcc-cli/external/json"
@@ -38,15 +39,17 @@ var create = &cobra.Command{
 		}
 
 		// Replace ids with args in resourceURL
-		resourceURL, err = resources.GenerateUrl(resourceURL, args[1:])
+		resourceURL, err = resources.GenerateUrl(resource, resourceURL, args[1:])
 
 		if err != nil {
 			return err
 		}
 
-		args = append(args, "type", resource.JsonApiType)
+		if !resource.NoWrapping {
+			args = append(args, "type", resource.JsonApiType)
+		}
 		// Create the body from remaining args
-		body, err := json.ToJson(args[(idCount+1):], noWrapping, resource.JsonApiFormat == "compliant")
+		body, err := json.ToJson(args[(idCount+1):], resource.NoWrapping, resource.JsonApiFormat == "compliant", resource.Attributes)
 
 		if err != nil {
 			return err
@@ -72,6 +75,7 @@ var create = &cobra.Command{
 			return fmt.Errorf(resp.Status)
 		}
 
+		aliases.SaveAliasesForResources(string(resBody))
 		return json.PrintJson(string(resBody))
 	},
 
@@ -87,7 +91,8 @@ var create = &cobra.Command{
 		resource, ok := resources.GetResourceByName(args[0])
 		if ok {
 			if resource.CreateEntityInfo != nil {
-				idCount, _ := resources.GetNumberOfVariablesNeeded(resource.CreateEntityInfo.Url)
+				resourceURL := resource.CreateEntityInfo.Url
+				idCount, _ := resources.GetNumberOfVariablesNeeded(resourceURL)
 				if len(args)-idCount >= 1 { // Arg is after IDs
 					if (len(args)-idCount)%2 == 1 { // This is an attribute key
 						usedAttributes := make(map[string]int)
@@ -106,6 +111,23 @@ var create = &cobra.Command{
 							Resource:  resource,
 							Verb:      completion.Create,
 							Attribute: args[len(args)-1],
+						})
+					}
+				} else {
+					// Arg is in IDS
+					// Must be for a resource completion
+					types, err := resources.GetTypesOfVariablesNeeded(resourceURL)
+
+					if err != nil {
+						return []string{}, cobra.ShellCompDirectiveNoFileComp
+					}
+
+					typeIdxNeeded := len(args) - 1
+
+					if completionResource, ok := resources.GetResourceByName(types[typeIdxNeeded]); ok {
+						return completion.Complete(completion.Request{
+							Type:     completion.CompleteAlias,
+							Resource: completionResource,
 						})
 					}
 				}

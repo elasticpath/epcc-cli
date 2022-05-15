@@ -1,8 +1,11 @@
 package cmd
 
 import (
+	"fmt"
 	"github.com/elasticpath/epcc-cli/config"
 	"github.com/elasticpath/epcc-cli/external/logger"
+	"github.com/elasticpath/epcc-cli/external/profiles"
+	"github.com/elasticpath/epcc-cli/external/version"
 	"github.com/elasticpath/epcc-cli/globals"
 	log "github.com/sirupsen/logrus"
 	"github.com/thediveo/enumflag"
@@ -10,9 +13,7 @@ import (
 
 	"github.com/caarlos0/env/v6"
 	"github.com/elasticpath/epcc-cli/external/json"
-	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 func init() {
@@ -22,29 +23,46 @@ func init() {
 		panic("Could not parse environment variables")
 	}
 
-	rootCmd.AddCommand(
+	RootCmd.AddCommand(
 		cmCommand,
 		docsCommand,
 		testJson,
 		get,
 		create,
-		delete,
 		update,
+		delete,
+		DeleteAll,
+		Logs,
 		resourceListCommand,
+		aliasesCmd,
+		configure,
+		login,
+		logout,
 	)
+	Logs.AddCommand(LogsList, LogsShow, LogsClear)
 
 	testJson.Flags().BoolVarP(&noWrapping, "no-wrapping", "", false, "if set, we won't wrap the output the json in a data tag")
 	testJson.Flags().BoolVarP(&compliant, "compliant", "", false, "if set, we wrap most keys in an attributes tage automatically.")
 
-	rootCmd.PersistentFlags().Var(
+	RootCmd.PersistentFlags().Var(
 		enumflag.New(&logger.Loglevel, "log", logger.LoglevelIds, enumflag.EnumCaseInsensitive),
 		"log",
 		"sets logging level; can be 'trace', 'debug', 'info', 'warn', 'error', 'fatal', 'panic'")
-	rootCmd.PersistentFlags().BoolVarP(&json.MonochromeOutput, "monochrome-output", "M", false, "By default, epcc will output using colors if the terminal supports this. Use this option to disable it.")
-	rootCmd.PersistentFlags().StringSliceVarP(&globals.RawHeaders, "header", "H", []string{}, "Extra headers and values to include in the request when sending HTTP to a server. You may specify any number of extra headers.")
+
+	RootCmd.PersistentFlags().BoolVarP(&json.MonochromeOutput, "monochrome-output", "M", false, "By default, epcc will output using colors if the terminal supports this. Use this option to disable it.")
+	RootCmd.PersistentFlags().StringSliceVarP(&globals.RawHeaders, "header", "H", []string{}, "Extra headers and values to include in the request when sending HTTP to a server. You may specify any number of extra headers.")
+	RootCmd.PersistentFlags().StringVarP(&profiles.ProfileName, "profile", "P", "default", "overrides the current EPCC_PROFILE var to run the command with the chosen profile.")
+
+	aliasesCmd.AddCommand(aliasListCmd, aliasClearCmd)
 }
 
-var rootCmd = &cobra.Command{
+var persistentPreRunFuncs []func(cmd *cobra.Command, args []string) error
+
+func AddRootPreRunFunc(f func(cmd *cobra.Command, args []string) error) {
+	persistentPreRunFuncs = append(persistentPreRunFuncs, f)
+}
+
+var RootCmd = &cobra.Command{
 	Use:   os.Args[0],
 	Short: "A command line interface for interacting with the Elastic Path Commerce Cloud API",
 	Long: `The EPCC CLI tool provides a powerful command line interface for interacting with the Elastic Path Commerce Cloud API.
@@ -60,45 +78,39 @@ Environment Variables
 - EPCC_CLIENT_SECRET - The client secret (available in Commerce Manager)
 - EPCC_BETA_API_FEATURES - Beta features in the API we want to enable.
 `,
-	PersistentPreRun: func(cmd *cobra.Command, _ []string) {
+	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		log.SetLevel(logger.Loglevel)
+
+		for _, runFunc := range persistentPreRunFuncs {
+			err := runFunc(cmd, args)
+			if err != nil {
+				return err
+			}
+		}
+
+		return nil
 	},
+
 	SilenceUsage: true,
+	Version:      fmt.Sprintf("%s (Commit %s)", version.Version, version.Commit),
 }
 
 func Execute() {
-	if err := rootCmd.Execute(); err != nil {
+	if err := RootCmd.Execute(); err != nil {
 		log.Errorf("Error occured while processing command %s", err)
 		os.Exit(1)
 	}
 }
 
 func initConfig() {
-	// Don't forget to read config either from cfgFile or from home directory!
-	cfgFile := ""
-	if cfgFile != "" {
-		// Use config file from the flag.
-		viper.SetConfigFile(cfgFile)
-	} else {
-		// Find home directory.
-		home, err := homedir.Dir()
-		if err != nil {
-			log.Errorf("Error %s", err)
-			os.Exit(1)
-		}
-
-		// Search config in home directory with name ".cobra" (without extension).
-		viper.AddConfigPath(home)
-		viper.SetConfigName(".epcc")
+	envProfileName, ok := os.LookupEnv("EPCC_PROFILE")
+	if ok {
+		profiles.ProfileName = envProfileName
 	}
+	config.Envs = profiles.GetProfile(profiles.ProfileName)
 
-	if err := viper.ReadInConfig(); err != nil {
-		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			// Config file not found; ignore error if desired
-		} else {
-			log.Errorf("Can't read config %s", err)
-			os.Exit(1)
-		}
-
+	// Override profile configuration with environment variables
+	if err := env.Parse(config.Envs); err != nil {
+		panic("Could not parse environment variables")
 	}
 }

@@ -50,12 +50,18 @@ jobs:
         run: |
           go test -v -cover ./cmd/ ./external/...
 
-      - name: Run GoReleaser
+      - name: Run GoReleaser (for Linux build and Syntax check)
         uses: goreleaser/goreleaser-action@v2
+        env:
+          GOOS: linux
+          GOARCH: amd64
         with:
           version: latest
-          args: check
-        env:
-          GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
-          # GitHub sets this automatically
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          args: build --single-target --snapshot
+
+      - name: 'Upload Artifact'
+        uses: actions/upload-artifact@v3
+        with:
+          name: distribution
+          path: dist/epcc-cli_linux_amd64
+          retention-days: 5
