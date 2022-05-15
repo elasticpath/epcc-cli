@@ -12,7 +12,7 @@ require (
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/cobra v1.4.0
 	github.com/thediveo/enumflag v0.10.1
-	github.com/yosida95/uritemplate/v3 v3.0.1
+	github.com/yosida95/uritemplate/v3 v3.0.2
 	gopkg.in/ini.v1 v1.66.2
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 )
