@@ -166,5 +166,6 @@ func postProcessResourceMetadata() {
 			attributeVal.Key = attributeName
 		}
 		resourcesSingular[val.SingularName] = val
+		resources[key] = val
 	}
 }
