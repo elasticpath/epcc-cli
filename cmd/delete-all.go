@@ -4,6 +4,7 @@ import (
 	"context"
 	json2 "encoding/json"
 	"fmt"
+	"github.com/elasticpath/epcc-cli/external/aliases"
 	"github.com/elasticpath/epcc-cli/external/completion"
 	"github.com/elasticpath/epcc-cli/external/httpclient"
 	"github.com/elasticpath/epcc-cli/external/resources"
@@ -103,7 +104,7 @@ var DeleteAll = &cobra.Command{
 
 		*/
 
-		//os.Remove(aliases.GetAliasFileForJsonApiType(aliases.GetAliasDataDirectory(), resource.JsonApiType))
+		return aliases.ClearAllAliasesForJsonApiType(resource.JsonApiType)
 
 		return nil
 	},
@@ -171,7 +172,10 @@ func getParentIds(ctx context.Context, resource resources.Resource) ([][]string,
 				params.Add("page[offset]", fmt.Sprintf("%d", i))
 
 				resp, err := httpclient.DoRequest(ctx, "GET", resourceURL, params.Encode(), nil)
-				defer resp.Body.Close()
+
+				if resp != nil && resp.Body != nil {
+					defer resp.Body.Close()
+				}
 
 				if err != nil {
 					return myEntityIds, err
@@ -219,7 +223,9 @@ func getResourceIdsFromHttpResponse(resp *http.Response) ([]string, error) {
 		if arrayType, ok := val.([]interface{}); ok {
 			for _, value := range arrayType {
 				if mapValue, ok := value.(map[string]interface{}); ok {
-					ids = append(ids, mapValue["id"].(string))
+					if id, ok := mapValue["id"].(string); ok {
+						ids = append(ids, id)
+					}
 				}
 			}
 		}

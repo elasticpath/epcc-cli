@@ -11,6 +11,7 @@ import (
 	"github.com/elasticpath/epcc-cli/external/version"
 	"github.com/elasticpath/epcc-cli/globals"
 	log "github.com/sirupsen/logrus"
+	"golang.org/x/time/rate"
 	"io"
 	"io/ioutil"
 	"mime/multipart"
@@ -47,10 +48,24 @@ func init() {
 	}
 }
 
+var Limit *rate.Limiter = nil
+
+var stats = struct {
+	totalRateLimitedTimeInMs int64
+	totalRequests            uint64
+}{}
+
 var HttpClient = &http.Client{
 	Timeout: time.Second * 10,
 }
 
+func LogStats() {
+	if stats.totalRequests > 3 {
+		log.Infof("Total requests %d, and total rate limiting time %d ms", stats.totalRequests, stats.totalRateLimitedTimeInMs)
+	} else {
+		log.Debugf("Total requests %d, and total rate limiting time %d ms", stats.totalRequests, stats.totalRateLimitedTimeInMs)
+	}
+}
 func DoRequest(ctx context.Context, method string, path string, query string, payload io.Reader) (response *http.Response, error error) {
 	return doRequestInternal(ctx, method, "application/json", path, query, payload)
 }
@@ -108,7 +123,16 @@ func doRequestInternal(ctx context.Context, method string, contentType string, p
 		log.Error(err)
 	}
 
+	start := time.Now()
+
+	if err := Limit.Wait(ctx); err != nil {
+		return nil, fmt.Errorf("Rate limiter returned error %v, %w", err, err)
+	}
+
+	elapsed := time.Since(start)
 	resp, err := HttpClient.Do(req)
+	stats.totalRequests += 1
+	stats.totalRateLimitedTimeInMs += int64(elapsed.Milliseconds())
 
 	if err != nil {
 		return nil, err

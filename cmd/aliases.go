@@ -5,8 +5,8 @@ import (
 	"github.com/elasticpath/epcc-cli/external/aliases"
 	"github.com/elasticpath/epcc-cli/external/completion"
 	"github.com/elasticpath/epcc-cli/external/resources"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"os"
 	"sort"
 )
 
@@ -61,7 +61,11 @@ var aliasClearCmd = &cobra.Command{
 	Use:   "clear",
 	Short: "clear all aliases",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		aliasDataDirectory := aliases.GetAliasDataDirectory()
-		return os.RemoveAll(aliasDataDirectory)
+		if err := aliases.ClearAllAliases(); err != nil {
+			log.Info("Could not delete all resources")
+			return err
+		}
+		log.Info("Successfully deleted all resources")
+		return nil
 	},
 }
