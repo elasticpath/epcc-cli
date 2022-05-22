@@ -2,17 +2,16 @@ package cmd
 
 import (
 	"context"
-	json2 "encoding/json"
 	"fmt"
 	"github.com/elasticpath/epcc-cli/external/aliases"
+	"github.com/elasticpath/epcc-cli/external/apihelper"
 	"github.com/elasticpath/epcc-cli/external/completion"
 	"github.com/elasticpath/epcc-cli/external/httpclient"
 	"github.com/elasticpath/epcc-cli/external/resources"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"io/ioutil"
-	"net/http"
 	"net/url"
+	"reflect"
 	"sync"
 )
 
@@ -48,8 +47,9 @@ var DeleteAll = &cobra.Command{
 			log.Infof("Resource %s is not a top level resource, need to scan %d paths to delete all resources", resource.PluralName, len(allParentEntityIds))
 		}
 
+		lastIds := make([][]string, 1)
 		for _, parentEntityIds := range allParentEntityIds {
-			for ; ; {
+			for {
 				resourceURL, err := resources.GenerateUrl(resource, resource.GetCollectionInfo.Url, parentEntityIds)
 
 				if err != nil {
@@ -65,48 +65,42 @@ var DeleteAll = &cobra.Command{
 					return err
 				}
 
-				ids, err := getResourceIdsFromHttpResponse(resp)
+				ids, err := apihelper.GetResourceIdsFromHttpResponse(resp)
 				resp.Body.Close()
-
-				min := resource.DeleteEntityInfo.MinResources
-
-				if len(ids) <= min {
-					break
-				}
 
 				allIds := make([][]string, 0)
 				for _, id := range ids {
 					allIds = append(allIds, append(parentEntityIds, id))
+				}
 
+				min := resource.DeleteEntityInfo.MinResources
+				if reflect.DeepEqual(allIds, lastIds) {
+					if min == len(lastIds) {
+						log.Infof("The minimum number of resources for %s is %d, we have tried to delete %d but couldn't delete them, so we are complete",
+							resource.PluralName, min, len(allIds))
+					} else if min <= len(lastIds) {
+						log.Warnf("The minimum number of resources for %s is %d, we have tried to delete %d currently but seem stuck, so we are done."+
+							"Please check to ensure that the resource doesn't require related resources deleted first", resource.PluralName, min, len(allIds))
+					} else if min > len(lastIds) {
+						log.Warnf("The minimum number of resources for %s is %d, we have tried to delete %d currently but seem stuck, so we are done."+
+							"Please check to ensure that the resource doesn't require related resources deleted first", resource.PluralName, min, len(allIds))
+					}
+
+					break
+				} else {
+					lastIds = allIds
+				}
+
+				if len(allIds) == 0 {
+					log.Infof("Total ids retrieved for %s is %d, we are done", resource.PluralName, len(allIds))
+					break
 				}
 
 				delPage(resource.PluralName, allIds)
 			}
 		}
 
-		/*
-			min := resource.DeleteEntityInfo.MinResources
-
-			delName := resource.SingularName
-
-			ids, err := getPageOfResourcesToDelete(args[0])
-			if err != nil {
-				return fmt.Errorf("problem getting page of ids for resource %s", args[0])
-			}
-
-			for len(ids) > min {
-				delPage(delName, ids)
-				ids, err = getPageOfResourcesToDelete(args[0])
-				if err != nil {
-					return fmt.Errorf("problem getting page of ids for resource %s", args[0])
-				}
-			}
-
-		*/
-
 		return aliases.ClearAllAliasesForJsonApiType(resource.JsonApiType)
-
-		return nil
 	},
 
 	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
@@ -123,10 +117,6 @@ var DeleteAll = &cobra.Command{
 
 //
 func getParentIds(ctx context.Context, resource resources.Resource) ([][]string, error) {
-	// TODO make this a channel based instead of array based
-	// This must be an unbuffered channel since the receiver won't get the channel until after we have sent in some cases.
-	//myEntityIds := make(chan<- []string, 1024)
-	//defer close(myEntityIds)
 
 	myEntityIds := make([][]string, 0)
 	if resource.GetCollectionInfo == nil {
@@ -151,86 +141,8 @@ func getParentIds(ctx context.Context, resource resources.Resource) ([][]string,
 			return myEntityIds, fmt.Errorf("could not find parent resource %s", immediateParentType)
 		}
 
-		myParentEntityIds, err := getParentIds(ctx, parentResource)
-
-		if err != nil {
-			return myEntityIds, err
-		}
-
-		// For each parent entity id we need to loop over the entire collection
-		for _, parentEntityIds := range myParentEntityIds {
-
-			resourceURL, err := resources.GenerateUrl(resource, parentResource.GetCollectionInfo.Url, parentEntityIds)
-
-			if err != nil {
-				return myEntityIds, err
-			}
-
-			for i := 0; i < 10000; i += 25 {
-				params := url.Values{}
-				params.Add("page[limit]", "25")
-				params.Add("page[offset]", fmt.Sprintf("%d", i))
-
-				resp, err := httpclient.DoRequest(ctx, "GET", resourceURL, params.Encode(), nil)
-
-				if resp != nil && resp.Body != nil {
-					defer resp.Body.Close()
-				}
-
-				if err != nil {
-					return myEntityIds, err
-				}
-
-				ids, err := getResourceIdsFromHttpResponse(resp)
-
-				if len(ids) == 0 {
-					break
-				}
-
-				if err != nil {
-					return myEntityIds, err
-				}
-
-				for _, parentId := range ids {
-					myEntityIds = append(myEntityIds, append(parentEntityIds, parentId))
-				}
-			}
-		}
-
-		return myEntityIds, nil
-
+		return apihelper.GetAllIds(ctx, &parentResource)
 	}
-}
-
-func getResourceIdsFromHttpResponse(resp *http.Response) ([]string, error) {
-
-	// Read the body
-	body, err := ioutil.ReadAll(resp.Body)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	var jsonStruct = map[string]interface{}{}
-	err = json2.Unmarshal(body, &jsonStruct)
-	if err != nil {
-		return nil, fmt.Errorf("response for get was not JSON: %w", err)
-	}
-
-	// Collect ids from GET Collection output
-	var ids []string
-	for _, val := range jsonStruct {
-		if arrayType, ok := val.([]interface{}); ok {
-			for _, value := range arrayType {
-				if mapValue, ok := value.(map[string]interface{}); ok {
-					if id, ok := mapValue["id"].(string); ok {
-						ids = append(ids, id)
-					}
-				}
-			}
-		}
-	}
-	return ids, nil
 }
 
 func delPage(resourceName string, ids [][]string) {
