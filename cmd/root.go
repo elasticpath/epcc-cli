@@ -3,18 +3,22 @@ package cmd
 import (
 	"fmt"
 	"github.com/elasticpath/epcc-cli/config"
+	"github.com/elasticpath/epcc-cli/external/httpclient"
 	"github.com/elasticpath/epcc-cli/external/logger"
 	"github.com/elasticpath/epcc-cli/external/profiles"
 	"github.com/elasticpath/epcc-cli/external/version"
 	"github.com/elasticpath/epcc-cli/globals"
 	log "github.com/sirupsen/logrus"
 	"github.com/thediveo/enumflag"
+	"golang.org/x/time/rate"
 	"os"
 
 	"github.com/caarlos0/env/v6"
 	"github.com/elasticpath/epcc-cli/external/json"
 	"github.com/spf13/cobra"
 )
+
+var rateLimit uint16
 
 func init() {
 	cobra.OnInitialize(initConfig)
@@ -52,6 +56,7 @@ func init() {
 	RootCmd.PersistentFlags().BoolVarP(&json.MonochromeOutput, "monochrome-output", "M", false, "By default, epcc will output using colors if the terminal supports this. Use this option to disable it.")
 	RootCmd.PersistentFlags().StringSliceVarP(&globals.RawHeaders, "header", "H", []string{}, "Extra headers and values to include in the request when sending HTTP to a server. You may specify any number of extra headers.")
 	RootCmd.PersistentFlags().StringVarP(&profiles.ProfileName, "profile", "P", "default", "overrides the current EPCC_PROFILE var to run the command with the chosen profile.")
+	RootCmd.PersistentFlags().Uint16VarP(&rateLimit, "rate-limit", "", 10, "Request limit per second")
 
 	aliasesCmd.AddCommand(aliasListCmd, aliasClearCmd)
 }
@@ -80,6 +85,12 @@ Environment Variables
 `,
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		log.SetLevel(logger.Loglevel)
+
+		if config.Envs.EPCC_RATE_LIMIT != 0 {
+			rateLimit = config.Envs.EPCC_RATE_LIMIT
+		}
+		log.Debugf("Rate limit set to %d request per second ", rateLimit)
+		httpclient.Limit = rate.NewLimiter(rate.Limit(rateLimit), 1)
 
 		for _, runFunc := range persistentPreRunFuncs {
 			err := runFunc(cmd, args)

@@ -76,6 +76,20 @@ func TestToJsonLegacyFormatSimpleKeyNumericValue(t *testing.T) {
 	}
 }
 
+func TestToJsonLegacyFormatSimpleKeyFloatNumericValue(t *testing.T) {
+	// Fixture Setup
+	input := []string{"key", "3.3"}
+	expected := `{"data":{"key":3.3}}`
+
+	// Execute SUT
+	actual, _ := ToJson(input, false, false, map[string]*resources.CrudEntityAttribute{})
+
+	// Verification
+	if actual != expected {
+		t.Fatalf("Testing json conversion of empty value %s did not match expected %s, actually: %s", input, expected, actual)
+	}
+}
+
 func TestToJsonLegacyFormatSimpleKeyBooleanTrueValue(t *testing.T) {
 	// Fixture Setup
 	input := []string{"key", "true"}

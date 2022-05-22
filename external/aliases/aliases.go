@@ -19,20 +19,29 @@ import (
 // however, we should use file locking in the OS to stop multiple concurrent invocations.
 var filelock = sync.Mutex{}
 
-func GetAliasDataDirectory() string {
-	profileDirectory := profiles.GetProfileDataDirectory()
-	profileDataDirectory := filepath.FromSlash(profileDirectory + "/aliases/")
+func ClearAllAliases() error {
+	aliasDataDirectory := getAliasDataDirectory()
 
-	//built in check if dir exists
-	if err := os.MkdirAll(profileDataDirectory, 0700); err != nil {
-		log.Errorf("could not make directory")
+	if err := os.RemoveAll(aliasDataDirectory); !os.IsNotExist(err) {
+		return err
 	}
 
-	return profileDataDirectory
+	return nil
+
 }
+
+func ClearAllAliasesForJsonApiType(jsonApiType string) error {
+	if err := os.Remove(getAliasFileForJsonApiType(getAliasDataDirectory(), jsonApiType)); !os.IsNotExist(err) {
+		return err
+	}
+
+	return nil
+
+}
+
 func GetAliasesForJsonApiType(jsonApiType string) map[string]string {
-	profileDirectory := GetAliasDataDirectory()
-	aliasFile := GetAliasFileForJsonApiType(profileDirectory, jsonApiType)
+	profileDirectory := getAliasDataDirectory()
+	aliasFile := getAliasFileForJsonApiType(profileDirectory, jsonApiType)
 
 	aliasMap := map[string]string{}
 
@@ -77,12 +86,41 @@ func SaveAliasesForResources(jsonTxt string) {
 
 }
 
+func DeleteAliasesById(id string, jsonApiType string) {
+	modifyAliases(jsonApiType, func(m map[string]string) {
+		for key, value := range m {
+			if value == id {
+				delete(m, key)
+			}
+		}
+	},
+	)
+
+}
+
+func getAliasDataDirectory() string {
+	profileDirectory := profiles.GetProfileDataDirectory()
+	profileDataDirectory := filepath.FromSlash(profileDirectory + "/aliases/")
+
+	//built in check if dir exists
+	if err := os.MkdirAll(profileDataDirectory, 0700); err != nil {
+		log.Errorf("could not make directory")
+	}
+
+	return profileDataDirectory
+}
+
+func getAliasFileForJsonApiType(profileDirectory string, resourceType string) string {
+	aliasFile := fmt.Sprintf("%s/aliases_%s.yml", profileDirectory, resourceType)
+	return aliasFile
+}
+
 func modifyAliases(jsonApiType string, fn func(map[string]string)) map[string]string {
-	profileDirectory := GetAliasDataDirectory()
+	profileDirectory := getAliasDataDirectory()
 	filelock.Lock()
 	defer filelock.Unlock()
 
-	aliasFile := GetAliasFileForJsonApiType(profileDirectory, jsonApiType)
+	aliasFile := getAliasFileForJsonApiType(profileDirectory, jsonApiType)
 	data, err := ioutil.ReadFile(aliasFile)
 	if err != nil {
 		log.Debugf("Could not read %s, error %s", aliasFile, err)
@@ -117,17 +155,6 @@ func modifyAliases(jsonApiType string, fn func(map[string]string)) map[string]st
 	}
 	return aliasMap
 }
-func DeleteAliasesById(id string, jsonApiType string) {
-	modifyAliases(jsonApiType, func(m map[string]string) {
-		for key, value := range m {
-			if value == id {
-				delete(m, key)
-			}
-		}
-	},
-	)
-
-}
 
 // This function saves all the aliases for a specific resource.
 func saveAliasesForResource(jsonApiType string, aliases map[string]string) {
@@ -147,11 +174,6 @@ func saveAliasesForResource(jsonApiType string, aliases map[string]string) {
 			aliasMap[key] = value
 		}
 	})
-}
-
-func GetAliasFileForJsonApiType(profileDirectory string, resourceType string) string {
-	aliasFile := fmt.Sprintf("%s/aliases_%s.yml", profileDirectory, resourceType)
-	return aliasFile
 }
 
 func visitResources(data map[string]interface{}, prefix string, results map[string]map[string]string) {

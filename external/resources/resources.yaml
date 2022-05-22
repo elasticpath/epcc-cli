@@ -311,6 +311,53 @@ customers:
       type: STRING
     password:
       type: STRING
+customer-addresses:
+  singular-name: "customer-address"
+  json-api-type: "address"
+  json-api-format: "legacy"
+  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/addresses/index.html"
+  get-collection:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/addresses/get-all-addresses.html#get-get-all-of-a-customers-or-account-addresses"
+    url: "/v2/customers/{customers}/addresses"
+  get-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/addresses/get-an-address.html"
+    url: "/v2/customers/{customers}/addresses/{customer_addresses}"
+  update-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/addresses/update-an-address.html"
+    url: "/v2/customers/{customers}/addresses/{customer_addresses}"
+  delete-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/addresses/delete-an-address.html"
+    url: "/v2/customers/{customers}/addresses/{customer_addresses}"
+  create-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/addresses/create-an-address.html"
+    url: "/v2/customers/{customers}/addresses"
+    content-type: application/json
+  attributes:
+    first_name:
+      type: STRING
+    last_name:
+      type: STRING
+    name:
+      type: STRING
+    phone_number:
+      type: STRING
+    instructions:
+      type: STRING
+    company_name:
+      type: STRING
+    line_1:
+      type: STRING
+    line_2:
+      type: STRING
+    city:
+      type: STRING
+    county:
+      type: STRING
+    postcode:
+      type: STRING
+    country:
+      type: STRING
+
 fields:
   singular-name: "field"
   json-api-type: "field"

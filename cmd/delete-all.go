@@ -1,23 +1,25 @@
 package cmd
 
 import (
-	json2 "encoding/json"
+	"context"
 	"fmt"
 	"github.com/elasticpath/epcc-cli/external/aliases"
+	"github.com/elasticpath/epcc-cli/external/apihelper"
 	"github.com/elasticpath/epcc-cli/external/completion"
+	"github.com/elasticpath/epcc-cli/external/httpclient"
 	"github.com/elasticpath/epcc-cli/external/resources"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"io/ioutil"
-	"os"
+	"net/url"
+	"reflect"
 	"sync"
 )
 
 var DeleteAll = &cobra.Command{
-	Use:    "delete-all [RESOURCE] [ID_1] [ID_2]",
+	Use:    "delete-all [RESOURCE]",
 	Short:  "Deletes all of a resource.",
 	Args:   cobra.MinimumNArgs(1),
-	Hidden: true,
+	Hidden: false,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		// Find Resource
 		resource, ok := resources.GetResourceByName(args[0])
@@ -33,25 +35,72 @@ var DeleteAll = &cobra.Command{
 			return fmt.Errorf("resource %s doesn't support DELETE", args[0])
 		}
 
-		min := resource.DeleteEntityInfo.MinResources
+		allParentEntityIds, err := getParentIds(context.Background(), resource)
 
-		delName := resource.SingularName
-
-		ids, err := getPage(args[0])
 		if err != nil {
-			return fmt.Errorf("problem getting page of ids for resource %s", args[0])
+			return fmt.Errorf("could not retrieve parent ids for for resource %s, error: %w", resource.PluralName, err)
 		}
 
-		for len(ids) > min {
-			delPage(delName, ids)
-			ids, err = getPage(args[0])
-			if err != nil {
-				return fmt.Errorf("problem getting page of ids for resource %s", args[0])
+		if len(allParentEntityIds) == 1 {
+			log.Infof("Resource %s is a top level resource need to scan only one path to delete all resources", resource.PluralName)
+		} else {
+			log.Infof("Resource %s is not a top level resource, need to scan %d paths to delete all resources", resource.PluralName, len(allParentEntityIds))
+		}
+
+		lastIds := make([][]string, 1)
+		for _, parentEntityIds := range allParentEntityIds {
+			for {
+				resourceURL, err := resources.GenerateUrl(resource, resource.GetCollectionInfo.Url, parentEntityIds)
+
+				if err != nil {
+					return err
+				}
+
+				params := url.Values{}
+				params.Add("page[limit]", "25")
+
+				resp, err := httpclient.DoRequest(context.Background(), "GET", resourceURL, params.Encode(), nil)
+
+				if err != nil {
+					return err
+				}
+
+				ids, err := apihelper.GetResourceIdsFromHttpResponse(resp)
+				resp.Body.Close()
+
+				allIds := make([][]string, 0)
+				for _, id := range ids {
+					allIds = append(allIds, append(parentEntityIds, id))
+				}
+
+				min := resource.DeleteEntityInfo.MinResources
+				if reflect.DeepEqual(allIds, lastIds) {
+					if min == len(lastIds) {
+						log.Infof("The minimum number of resources for %s is %d, we have tried to delete %d but couldn't delete them, so we are complete",
+							resource.PluralName, min, len(allIds))
+					} else if min <= len(lastIds) {
+						log.Warnf("The minimum number of resources for %s is %d, we have tried to delete %d currently but seem stuck, so we are done."+
+							"Please check to ensure that the resource doesn't require related resources deleted first", resource.PluralName, min, len(allIds))
+					} else if min > len(lastIds) {
+						log.Warnf("The minimum number of resources for %s is %d, we have tried to delete %d currently but seem stuck, so we are done."+
+							"Please check to ensure that the resource doesn't require related resources deleted first", resource.PluralName, min, len(allIds))
+					}
+
+					break
+				} else {
+					lastIds = allIds
+				}
+
+				if len(allIds) == 0 {
+					log.Infof("Total ids retrieved for %s is %d, we are done", resource.PluralName, len(allIds))
+					break
+				}
+
+				delPage(resource.PluralName, allIds)
 			}
 		}
-		os.Remove(aliases.GetAliasFileForJsonApiType(aliases.GetAliasDataDirectory(), resource.JsonApiType))
 
-		return nil
+		return aliases.ClearAllAliasesForJsonApiType(resource.JsonApiType)
 	},
 
 	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
@@ -66,46 +115,47 @@ var DeleteAll = &cobra.Command{
 	},
 }
 
-func getPage(resourceName string) ([]string, error) {
-	resp, err := getResource([]string{resourceName, "page[limit]", "25"})
+//
+func getParentIds(ctx context.Context, resource resources.Resource) ([][]string, error) {
 
-	if err != nil {
-		return []string{}, err
+	myEntityIds := make([][]string, 0)
+	if resource.GetCollectionInfo == nil {
+		return myEntityIds, fmt.Errorf("resource %s doesn't support GET collection", resource.PluralName)
 	}
 
-	// Read the body
-	body, err := ioutil.ReadAll(resp.Body)
+	types, err := resources.GetTypesOfVariablesNeeded(resource.GetCollectionInfo.Url)
+
 	if err != nil {
-		log.Fatal(err)
+		return myEntityIds, err
 	}
 
-	var jsonStruct = map[string]interface{}{}
-	err = json2.Unmarshal(body, &jsonStruct)
-	if err != nil {
-		return nil, fmt.Errorf("response for get was not JSON: %w", err)
-	}
+	if len(types) == 0 {
+		myEntityIds = append(myEntityIds, make([]string, 0))
+		return myEntityIds, nil
+	} else {
+		immediateParentType := types[len(types)-1]
 
-	// Collect ids from GET Collection output
-	var ids []string
-	for _, val := range jsonStruct {
-		if arrayType, ok := val.([]interface{}); ok {
-			for _, value := range arrayType {
-				if mapValue, ok := value.(map[string]interface{}); ok {
-					ids = append(ids, mapValue["id"].(string))
-				}
-			}
+		parentResource, ok := resources.GetResourceByName(immediateParentType)
+
+		if !ok {
+			return myEntityIds, fmt.Errorf("could not find parent resource %s", immediateParentType)
 		}
+
+		return apihelper.GetAllIds(ctx, &parentResource)
 	}
-	return ids, nil
 }
 
-func delPage(resourceName string, ids []string) {
+func delPage(resourceName string, ids [][]string) {
 	// Create a wait group to run DELETE in parallel
 	wg := sync.WaitGroup{}
 	for _, id := range ids {
 		wg.Add(1)
-		go func(id string) {
-			deleteResource([]string{resourceName, id})
+		go func(id []string) {
+			args := make([]string, 0)
+			args = append(args, resourceName)
+			args = append(args, id...)
+
+			deleteResource(args)
 			wg.Done()
 		}(id)
 	}
