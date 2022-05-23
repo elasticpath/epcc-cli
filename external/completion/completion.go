@@ -215,7 +215,7 @@ func Complete(c Request) ([]string, cobra.ShellCompDirective) {
 	}
 
 	// This is dead code since I hacked the aliases to never return spaces.
-	newResults := make([]string, len(results))
+	newResults := make([]string, 0, len(results))
 
 	for _, result := range results {
 		newResults = append(newResults, strings.ReplaceAll(result, " ", "\\ "))

@@ -21,6 +21,7 @@ import (
 	"os"
 	"runtime"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -50,6 +51,8 @@ func init() {
 
 var Limit *rate.Limiter = nil
 
+var statsLock = &sync.Mutex{}
+
 var stats = struct {
 	totalRateLimitedTimeInMs int64
 	totalRequests            uint64
@@ -60,6 +63,8 @@ var HttpClient = &http.Client{
 }
 
 func LogStats() {
+	statsLock.Lock()
+	defer statsLock.Unlock()
 	if stats.totalRequests > 3 {
 		log.Infof("Total requests %d, and total rate limiting time %d ms", stats.totalRequests, stats.totalRateLimitedTimeInMs)
 	} else {
@@ -131,8 +136,11 @@ func doRequestInternal(ctx context.Context, method string, contentType string, p
 
 	elapsed := time.Since(start)
 	resp, err := HttpClient.Do(req)
+
+	statsLock.Lock()
 	stats.totalRequests += 1
 	stats.totalRateLimitedTimeInMs += int64(elapsed.Milliseconds())
+	statsLock.Unlock()
 
 	if err != nil {
 		return nil, err
