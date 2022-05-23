@@ -42,6 +42,7 @@ func init() {
 		configure,
 		login,
 		logout,
+		ResetStore,
 	)
 	Logs.AddCommand(LogsList, LogsShow, LogsClear)
 
@@ -82,6 +83,8 @@ Environment Variables
 - EPCC_CLIENT_ID - The client id (available in Commerce Manager)
 - EPCC_CLIENT_SECRET - The client secret (available in Commerce Manager)
 - EPCC_BETA_API_FEATURES - Beta features in the API we want to enable.
+- EPCC_CLI_HTTP_HEADER_[0,1,...] - An additional HTTP header to set with all requests, the format should be "HeaderName: value"
+
 `,
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		log.SetLevel(logger.Loglevel)

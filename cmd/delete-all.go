@@ -47,8 +47,8 @@ var DeleteAll = &cobra.Command{
 			log.Infof("Resource %s is not a top level resource, need to scan %d paths to delete all resources", resource.PluralName, len(allParentEntityIds))
 		}
 
-		lastIds := make([][]string, 1)
 		for _, parentEntityIds := range allParentEntityIds {
+			lastIds := make([][]string, 1)
 			for {
 				resourceURL, err := resources.GenerateUrl(resource, resource.GetCollectionInfo.Url, parentEntityIds)
 

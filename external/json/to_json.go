@@ -91,7 +91,7 @@ func toJsonObject(args []string, noWrapping bool, compliant bool, attributes map
 
 		query := fmt.Sprintf(".%s=%s", arrayNotationPath, val)
 
-		result, err = runJQ(query, result)
+		result, err = RunJQ(query, result)
 		if err != nil {
 			return "{}", err
 		}
@@ -99,7 +99,7 @@ func toJsonObject(args []string, noWrapping bool, compliant bool, attributes map
 	}
 
 	if !noWrapping {
-		result, err = runJQ(`{ "data": . }`, result)
+		result, err = RunJQ(`{ "data": . }`, result)
 	}
 
 	jsonStr, err := gojson.Marshal(result)
@@ -124,7 +124,7 @@ func toJsonArray(args []string, noWrapping bool, compliant bool, attributes map[
 
 		query := fmt.Sprintf(".%s |= %s", jsonKey, val)
 
-		result, err = runJQ(query, result)
+		result, err = RunJQ(query, result)
 		if err != nil {
 			return "[]", err
 		}
@@ -132,7 +132,7 @@ func toJsonArray(args []string, noWrapping bool, compliant bool, attributes map[
 	}
 
 	if !noWrapping {
-		result, err = runJQ(`{ "data": . }`, result)
+		result, err = RunJQ(`{ "data": . }`, result)
 	}
 
 	jsonStr, err := gojson.Marshal(result)
@@ -141,7 +141,7 @@ func toJsonArray(args []string, noWrapping bool, compliant bool, attributes map[
 
 }
 
-func runJQ(queryStr string, result interface{}) (interface{}, error) {
+func RunJQ(queryStr string, result interface{}) (interface{}, error) {
 	query, err := gojq.Parse(queryStr)
 
 	if err != nil {

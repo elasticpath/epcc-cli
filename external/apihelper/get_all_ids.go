@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"github.com/elasticpath/epcc-cli/external/httpclient"
 	"github.com/elasticpath/epcc-cli/external/resources"
+	log "github.com/sirupsen/logrus"
 	"net/url"
+	"reflect"
 )
 
 //
@@ -61,6 +63,7 @@ func GetAllIds(ctx context.Context, resource *resources.Resource) ([][]string, e
 			return myEntityIds, err
 		}
 
+		lastPageIds := make([]string, 125)
 		for i := 0; i < 10000; i += 25 {
 			params := url.Values{}
 			params.Add("page[limit]", "25")
@@ -77,6 +80,13 @@ func GetAllIds(ctx context.Context, resource *resources.Resource) ([][]string, e
 			}
 
 			ids, err := GetResourceIdsFromHttpResponse(resp)
+
+			if reflect.DeepEqual(ids, lastPageIds) {
+				log.Debugf("Resource %s does not seem to support pagination as we got the exact same set of ids back as the last page... breaking. This might happen if exactly a paginated number of records is returned", resource.PluralName)
+				break
+			} else {
+				lastPageIds = ids
+			}
 
 			if len(ids) == 0 {
 				break

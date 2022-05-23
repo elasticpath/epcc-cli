@@ -50,6 +50,11 @@ type Resource struct {
 	SingularName string `yaml:"singular-name"`
 
 	PluralName string
+
+	// Use this value to silence warnings about a resource not supporting resets.
+	// This should only be used for cases where we manually fix things, or where
+	// a store reset would clear a resource another way (e.g., the resource represents a projection).
+	SuppressResetWarning bool `yaml:"suppress-reset-warning"`
 }
 
 type CrudEntityInfo struct {
@@ -79,7 +84,7 @@ type CrudEntityAttribute struct {
 }
 
 func GetPluralResourceNames() []string {
-	keys := make([]string, len(resources))
+	keys := make([]string, 0, len(resources))
 
 	for key := range resources {
 		keys = append(keys, key)
@@ -93,7 +98,7 @@ func GetPluralResources() map[string]Resource {
 }
 
 func GetSingularResourceNames() []string {
-	keys := make([]string, len(resourcesSingular))
+	keys := make([]string, 0, len(resourcesSingular))
 
 	for key := range resourcesSingular {
 		keys = append(keys, key)
