@@ -51,7 +51,7 @@ jobs:
           go test -v -cover ./cmd/ ./external/...
 
       - name: Run GoReleaser (for Linux build and Syntax check)
-        uses: goreleaser/goreleaser-action@v2
+        uses: goreleaser/goreleaser-action@v3
         env:
           GOOS: linux
           GOARCH: amd64
