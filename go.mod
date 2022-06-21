@@ -10,9 +10,10 @@ require (
 	github.com/mattn/go-isatty v0.0.14
 	github.com/santhosh-tekuri/jsonschema/v4 v4.0.0
 	github.com/sirupsen/logrus v1.8.1
-	github.com/spf13/cobra v1.4.0
+	github.com/spf13/cobra v1.5.0
 	github.com/thediveo/enumflag v0.10.1
 	github.com/yosida95/uritemplate/v3 v3.0.2
+	golang.org/x/time v0.0.0-20220411224347-583f2d630306
 	gopkg.in/ini.v1 v1.66.4
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 )
@@ -25,6 +26,5 @@ require (
 	golang.org/x/net v0.0.0-20210813160813-60bc85c4be6d // indirect
 	golang.org/x/sys v0.0.0-20220330033206-e17cdc41300f // indirect
 	golang.org/x/text v0.3.7 // indirect
-	golang.org/x/time v0.0.0-20220411224347-583f2d630306 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 )
