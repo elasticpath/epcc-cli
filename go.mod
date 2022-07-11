@@ -3,7 +3,7 @@ module github.com/elasticpath/epcc-cli
 go 1.18
 
 require (
-	github.com/caarlos0/env/v6 v6.9.2
+	github.com/caarlos0/env/v6 v6.9.3
 	github.com/google/uuid v1.3.0
 	github.com/gookit/color v1.5.1
 	github.com/itchyny/gojq v0.12.7
