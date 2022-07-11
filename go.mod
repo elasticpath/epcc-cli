@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/caarlos0/env/v6 v6.9.2
 	github.com/google/uuid v1.3.0
-	github.com/gookit/color v1.5.0
+	github.com/gookit/color v1.5.1
 	github.com/itchyny/gojq v0.12.7
 	github.com/mattn/go-isatty v0.0.14
 	github.com/santhosh-tekuri/jsonschema/v4 v4.0.0
@@ -15,7 +15,7 @@ require (
 	github.com/yosida95/uritemplate/v3 v3.0.2
 	golang.org/x/time v0.0.0-20220411224347-583f2d630306
 	gopkg.in/ini.v1 v1.66.4
-	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
+	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
