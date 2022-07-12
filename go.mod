@@ -6,7 +6,7 @@ require (
 	github.com/caarlos0/env/v6 v6.9.3
 	github.com/google/uuid v1.3.0
 	github.com/gookit/color v1.5.1
-	github.com/itchyny/gojq v0.12.7
+	github.com/itchyny/gojq v0.12.8
 	github.com/mattn/go-isatty v0.0.14
 	github.com/santhosh-tekuri/jsonschema/v4 v4.0.0
 	github.com/sirupsen/logrus v1.8.1
@@ -24,7 +24,7 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/xo/terminfo v0.0.0-20210125001918-ca9a967f8778 // indirect
 	golang.org/x/net v0.0.0-20210813160813-60bc85c4be6d // indirect
-	golang.org/x/sys v0.0.0-20220330033206-e17cdc41300f // indirect
+	golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 )
