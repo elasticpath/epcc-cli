@@ -455,10 +455,10 @@ fields:
       type: STRING
     validation_rules[n].options.from:
       type: STRING
-    relationship.flow.data.type:
+    relationships.flow.data.type:
       type: ENUM:flow
-    relationship.flow.data.id[RESOURCE_ID:flows]:
-      type: STRING
+    relationships.flow.data.id:
+      type: RESOURCE_ID:flows
 files:
   singular-name: "file"
   json-api-type: "file"
