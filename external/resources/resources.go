@@ -4,6 +4,7 @@ import (
 	_ "embed"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
+	"sort"
 )
 
 //go:embed resources.yaml
@@ -93,6 +94,7 @@ func GetPluralResourceNames() []string {
 		keys = append(keys, key)
 	}
 
+	sort.Strings(keys)
 	return keys
 }
 
@@ -107,6 +109,7 @@ func GetSingularResourceNames() []string {
 		keys = append(keys, key)
 	}
 
+	sort.Strings(keys)
 	return keys
 }
 
