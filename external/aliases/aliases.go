@@ -19,10 +19,12 @@ import (
 // however, we should use file locking in the OS to stop multiple concurrent invocations.
 var filelock = sync.Mutex{}
 
+var aliasDirectoryOverride = ""
+
 func ClearAllAliases() error {
 	aliasDataDirectory := getAliasDataDirectory()
 
-	if err := os.RemoveAll(aliasDataDirectory); !os.IsNotExist(err) {
+	if err := os.RemoveAll(aliasDataDirectory); err != nil && !os.IsNotExist(err) {
 		return err
 	}
 
@@ -31,7 +33,7 @@ func ClearAllAliases() error {
 }
 
 func ClearAllAliasesForJsonApiType(jsonApiType string) error {
-	if err := os.Remove(getAliasFileForJsonApiType(getAliasDataDirectory(), jsonApiType)); !os.IsNotExist(err) {
+	if err := os.Remove(getAliasFileForJsonApiType(getAliasDataDirectory(), jsonApiType)); err != nil && !os.IsNotExist(err) {
 		return err
 	}
 
@@ -99,15 +101,20 @@ func DeleteAliasesById(id string, jsonApiType string) {
 }
 
 func getAliasDataDirectory() string {
-	profileDirectory := profiles.GetProfileDataDirectory()
-	profileDataDirectory := filepath.FromSlash(profileDirectory + "/aliases/")
+	aliasDirectory := aliasDirectoryOverride
+
+	if aliasDirectory == "" {
+		profileDirectory := profiles.GetProfileDataDirectory()
+		profileDataDirectory := filepath.FromSlash(profileDirectory + "/aliases/")
+		aliasDirectory = profileDataDirectory
+	}
 
 	//built in check if dir exists
-	if err := os.MkdirAll(profileDataDirectory, 0700); err != nil {
+	if err := os.MkdirAll(aliasDirectory, 0700); err != nil {
 		log.Errorf("could not make directory")
 	}
 
-	return profileDataDirectory
+	return aliasDirectory
 }
 
 func getAliasFileForJsonApiType(profileDirectory string, resourceType string) string {
@@ -127,19 +134,19 @@ func modifyAliases(jsonApiType string, fn func(map[string]string)) map[string]st
 		data = []byte{}
 	}
 
-	aliasMap := map[string]string{}
+	existingAliases := map[string]string{}
 
-	err = yaml.Unmarshal(data, aliasMap)
+	err = yaml.Unmarshal(data, existingAliases)
 	if err != nil {
 		log.Debugf("Could not unmarshall existing file %s, error %s", data, err)
 	}
-	fn(aliasMap)
+	fn(existingAliases)
 	// We will write to a temp file and then rename, to prevent data loss. rename's in the same folder are likely atomic in most settings.
 	// Although we should probably sync on the file as well, that might be too much overhead, and I was too lazy to rewrite this
 	// https://github.com/golang/go/issues/20599
 	tmpFileName := aliasFile + "." + uuid.New().String()
 
-	marshal, err := yaml.Marshal(aliasMap)
+	marshal, err := yaml.Marshal(existingAliases)
 	if err != nil {
 		log.Warnf("Could not save aliases for %s, error %v", tmpFileName, err)
 	}
@@ -153,24 +160,25 @@ func modifyAliases(jsonApiType string, fn func(map[string]string)) map[string]st
 	if err != nil {
 		log.Warnf("Could not save aliases for %s, error %v", tmpFileName, err)
 	}
-	return aliasMap
+	return existingAliases
 }
 
 // This function saves all the aliases for a specific resource.
-func saveAliasesForResource(jsonApiType string, aliases map[string]string) {
+func saveAliasesForResource(jsonApiType string, newAliases map[string]string) {
 	modifyAliases(jsonApiType, func(aliasMap map[string]string) {
-		for key, value := range aliases {
-			key0 := strings.Split(key, "=")[0]
-			for oldKey, oldValue := range aliasMap {
-				oldKey0 := strings.Split(oldKey, "=")[0]
-				oldKey1 := strings.Split(oldKey, "=")[1]
-				if oldValue == value && oldKey0 == key0 {
-					delete(aliasMap, oldKey0+"="+oldKey1)
+		for newAliasName, newAliasValue := range newAliases {
+			aliasNameKey := strings.Split(newAliasName, "=")[0]
+			for oldAliasName, oldValue := range aliasMap {
+				oldAliasKeyName := strings.Split(oldAliasName, "=")[0]
+				oldAliasValue := strings.Split(oldAliasName, "=")[1]
+				if oldValue == newAliasValue && oldAliasKeyName == aliasNameKey {
+					// This essentially deletes all the old aliases.
+					delete(aliasMap, oldAliasKeyName+"="+oldAliasValue)
 				}
 			}
 		}
 
-		for key, value := range aliases {
+		for key, value := range newAliases {
 			aliasMap[key] = value
 		}
 	})
