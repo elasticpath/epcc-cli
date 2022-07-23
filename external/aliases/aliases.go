@@ -166,13 +166,19 @@ func modifyAliases(jsonApiType string, fn func(map[string]string)) map[string]st
 // This function saves all the aliases for a specific resource.
 func saveAliasesForResource(jsonApiType string, newAliases map[string]string) {
 	modifyAliases(jsonApiType, func(aliasMap map[string]string) {
-		for newAliasName, newAliasValue := range newAliases {
-			aliasNameKey := strings.Split(newAliasName, "=")[0]
-			for oldAliasName, oldValue := range aliasMap {
+
+		// Aliases have the format KEY=VALUE and this maps to an ID.
+		// This code checks for where two aliases have the same KEY and same ID, and replaces the old value, with the new one.
+		// This happens in cases where we store a name like "name=John_Smith" and then the user renames it to "name=Jane_Doe".
+		// The old alias for the same id name=John_Smith should be removed.
+		for newAliasName, newAliasReferencedId := range newAliases {
+			newAliasKeyName := strings.Split(newAliasName, "=")[0]
+			for oldAliasName, oldAliasReferencedId := range aliasMap {
 				oldAliasKeyName := strings.Split(oldAliasName, "=")[0]
 				oldAliasValue := strings.Split(oldAliasName, "=")[1]
-				if oldValue == newAliasValue && oldAliasKeyName == aliasNameKey {
-					// This essentially deletes all the old aliases.
+
+				if oldAliasKeyName == newAliasKeyName && oldAliasReferencedId == newAliasReferencedId {
+
 					delete(aliasMap, oldAliasKeyName+"="+oldAliasValue)
 				}
 			}

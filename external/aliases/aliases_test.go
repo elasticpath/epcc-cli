@@ -3,6 +3,7 @@ package aliases
 import (
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
+	"os"
 	"testing"
 )
 
@@ -48,7 +49,7 @@ func TestSavedAliasIsReturnedInAllAliasesForSingleResponse(t *testing.T) {
 	}
 }
 
-func TestSavedAliasAppendsAndPreservesPreviousAliases(t *testing.T) {
+func TestSavedAliasAppendsAndPreservesPreviousUnrelatedAliases(t *testing.T) {
 
 	// Fixture Setup
 	err := ClearAllAliases()
@@ -81,7 +82,7 @@ func TestSavedAliasAppendsAndPreservesPreviousAliases(t *testing.T) {
 	// Verification
 
 	if len(aliases) != 2 {
-		t.Errorf("There should be one alias for the type foo, not %d", len(aliases))
+		t.Errorf("There should be two aliases for the type foo, not %d", len(aliases))
 	}
 
 	if aliases["id=123"] != "123" {
@@ -90,6 +91,104 @@ func TestSavedAliasAppendsAndPreservesPreviousAliases(t *testing.T) {
 
 	if aliases["id=456"] != "456" {
 		t.Errorf("Alias should exist for id=456")
+	}
+}
+
+func TestSavedAliasIsReplacedWhenNewEntityHasTheSameAttributeValue(t *testing.T) {
+
+	// Fixture Setup
+	err := ClearAllAliases()
+	if err != nil {
+		t.Fatalf("Could not clear aliases")
+	}
+
+	// Execute SUT
+	SaveAliasesForResources(
+		// language=JSON
+		`
+{
+	"data": {
+		"id": "123",
+		"type": "foo",
+		"name": "Alpha"
+	}
+}`)
+	SaveAliasesForResources(
+		// language=JSON
+		`
+{
+	"data": {
+		"id": "456",
+		"type": "foo",
+		"name":"Alpha"
+	}
+}`)
+
+	aliases := GetAliasesForJsonApiType("foo")
+
+	// Verification
+
+	if len(aliases) != 3 {
+		t.Errorf("There should be three aliases for the type foo, not %d", len(aliases))
+	}
+
+	if aliases["id=123"] != "123" {
+		t.Errorf("Alias should exist for id=123")
+	}
+
+	if aliases["id=456"] != "456" {
+		t.Errorf("Alias should exist for id=456")
+	}
+
+	if aliases["name=Alpha"] != "456" {
+		t.Errorf("Alias should exist for id=456")
+	}
+}
+
+func TestSavedAliasIsReplacedWhenSameEntityHasANewValue(t *testing.T) {
+
+	// Fixture Setup
+	err := ClearAllAliases()
+	if err != nil {
+		t.Fatalf("Could not clear aliases")
+	}
+
+	// Execute SUT
+	SaveAliasesForResources(
+		// language=JSON
+		`
+{
+	"data": {
+		"id": "123",
+		"type": "foo",
+		"name": "Alpha"
+	}
+}`)
+	SaveAliasesForResources(
+		// language=JSON
+		`
+{
+	"data": {
+		"id": "123",
+		"type": "foo",
+		"name":"Beta"
+	}
+}`)
+
+	aliases := GetAliasesForJsonApiType("foo")
+
+	// Verification
+
+	if len(aliases) != 2 {
+		t.Errorf("There should be three aliases for the type foo, not %d", len(aliases))
+	}
+
+	if aliases["id=123"] != "123" {
+		t.Errorf("Alias should exist for id=123")
+	}
+
+	if aliases["name=Beta"] != "123" {
+		t.Errorf("Alias should exist for id=123")
 	}
 }
 
@@ -658,6 +757,96 @@ func TestClearAllAliasesForJsonTypeOnlyClearsJsonType(t *testing.T) {
 
 	if len(barAliases) != 1 {
 		t.Errorf("There should be one alias for the type bar, not %d", len(barAliases))
+	}
+
+}
+
+func TestThatCorruptAliasFileDoesntCrashProgramWhenReadingAliases(t *testing.T) {
+	// Fixture Setup
+	err := ClearAllAliases()
+	if err != nil {
+		t.Fatalf("Could not clear aliases")
+	}
+
+	SaveAliasesForResources(
+		// language=JSON
+		`
+{
+	"data": {
+		"id": "123",
+		"type": "foo"
+	}
+}`)
+
+	// Execute SUT
+	fileName := getAliasFileForJsonApiType(getAliasDataDirectory(), "foo")
+
+	if err := os.Remove(getAliasFileForJsonApiType(getAliasDataDirectory(), "foo")); err != nil && !os.IsNotExist(err) {
+		t.Errorf("Should have been able to delete the file, but got %v ", err)
+	}
+
+	err = ioutil.WriteFile(fileName, []byte("{{{"), 0600)
+	if err != nil {
+		t.Errorf("Couldn't save corrupted yaml file %v", err)
+	}
+
+	aliases := GetAliasesForJsonApiType("foo")
+
+	// Verification
+	if len(aliases) != 0 {
+		t.Errorf("There should be zero alias for the type foo, not %d", len(aliases))
+	}
+
+}
+
+func TestThatCorruptAliasFileDoesntCrashProgramWhenSavingAliases(t *testing.T) {
+	// Fixture Setup
+	err := ClearAllAliases()
+	if err != nil {
+		t.Fatalf("Could not clear aliases")
+	}
+
+	SaveAliasesForResources(
+		// language=JSON
+		`
+{
+	"data": {
+		"id": "123",
+		"type": "foo"
+	}
+}`)
+
+	// Execute SUT
+	fileName := getAliasFileForJsonApiType(getAliasDataDirectory(), "foo")
+
+	if err := os.Remove(getAliasFileForJsonApiType(getAliasDataDirectory(), "foo")); err != nil && !os.IsNotExist(err) {
+		t.Errorf("Should have been able to delete the file, but got %v ", err)
+	}
+
+	err = ioutil.WriteFile(fileName, []byte("{{{"), 0600)
+	if err != nil {
+		t.Errorf("Couldn't save corrupted yaml file %v", err)
+	}
+
+	SaveAliasesForResources(
+		// language=JSON
+		`
+{
+	"data": {
+		"id": "456",
+		"type": "foo"
+	}
+}`)
+
+	aliases := GetAliasesForJsonApiType("foo")
+
+	// Verification
+	if len(aliases) != 1 {
+		t.Errorf("There should be one alias for the type foo, not %d", len(aliases))
+	}
+
+	if aliases["id=456"] != "456" {
+		t.Errorf("Alias should exist for id=456")
 	}
 
 }
