@@ -44,7 +44,7 @@ func TestSavedAliasIsReturnedInAllAliasesForSingleResponse(t *testing.T) {
 		t.Errorf("There should be one alias for the type foo, not %d", len(aliases))
 	}
 
-	if aliases["id=123"] != "123" {
+	if aliases["id=123"] != nil && aliases["id=123"].Id != "123" {
 		t.Errorf("Alias should exist for id=123")
 	}
 }
@@ -85,11 +85,11 @@ func TestSavedAliasAppendsAndPreservesPreviousUnrelatedAliases(t *testing.T) {
 		t.Errorf("There should be two aliases for the type foo, not %d", len(aliases))
 	}
 
-	if aliases["id=123"] != "123" {
+	if aliases["id=123"] != nil && aliases["id=123"].Id != "123" {
 		t.Errorf("Alias should exist for id=123")
 	}
 
-	if aliases["id=456"] != "456" {
+	if aliases["id=456"] != nil && aliases["id=456"].Id != "456" {
 		t.Errorf("Alias should exist for id=456")
 	}
 }
@@ -132,15 +132,15 @@ func TestSavedAliasIsReplacedWhenNewEntityHasTheSameAttributeValue(t *testing.T)
 		t.Errorf("There should be three aliases for the type foo, not %d", len(aliases))
 	}
 
-	if aliases["id=123"] != "123" {
+	if aliases["id=123"] != nil && aliases["id=123"].Id != "123" {
 		t.Errorf("Alias should exist for id=123")
 	}
 
-	if aliases["id=456"] != "456" {
+	if aliases["id=456"] != nil && aliases["id=456"].Id != "456" {
 		t.Errorf("Alias should exist for id=456")
 	}
 
-	if aliases["name=Alpha"] != "456" {
+	if aliases["name=Alpha"] != nil && aliases["name=Alpha"].Id != "456" {
 		t.Errorf("Alias should exist for id=456")
 	}
 }
@@ -180,14 +180,14 @@ func TestSavedAliasIsReplacedWhenSameEntityHasANewValue(t *testing.T) {
 	// Verification
 
 	if len(aliases) != 2 {
-		t.Errorf("There should be three aliases for the type foo, not %d", len(aliases))
+		t.Errorf("There should be two aliases for the type foo, not %d", len(aliases))
 	}
 
-	if aliases["id=123"] != "123" {
+	if aliases["id=123"] != nil && aliases["id=123"].Id != "123" {
 		t.Errorf("Alias should exist for id=123")
 	}
 
-	if aliases["name=Beta"] != "123" {
+	if aliases["name=Beta"] != nil && aliases["name=Beta"].Id != "123" {
 		t.Errorf("Alias should exist for id=123")
 	}
 }
@@ -230,7 +230,7 @@ func TestDeleteAliasByIdDeletesAnAlias(t *testing.T) {
 		t.Errorf("There should be one alias for the type foo, not %d", len(aliases))
 	}
 
-	if aliases["id=456"] != "456" {
+	if aliases["id=456"] != nil && aliases["id=456"].Id != "456" {
 		t.Errorf("Alias should exist for id=456")
 	}
 }
@@ -267,11 +267,11 @@ func TestAllAliasesAreReturnedInAllAliasesForArrayResponse(t *testing.T) {
 		t.Errorf("There should be one alias for the type foo, not %d", len(aliases))
 	}
 
-	if aliases["id=123"] != "123" {
+	if aliases["id=123"] != nil && aliases["id=123"].Id != "123" {
 		t.Errorf("Alias should exist for id=123")
 	}
 
-	if aliases["id=456"] != "456" {
+	if aliases["id=456"] != nil && aliases["id=456"].Id != "456" {
 		t.Errorf("Alias should exist for id=123")
 	}
 }
@@ -304,11 +304,11 @@ func TestSavedAliasIsReturnedForAnEmailInLegacyObjectResponse(t *testing.T) {
 		t.Errorf("There should be one alias for the type foo, not %d", len(aliases))
 	}
 
-	if aliases["email=test@test.com"] != "123" {
+	if aliases["email=test@test.com"] != nil && aliases["email=test@test.com"].Id != "123" {
 		t.Errorf("Alias should exist for email=test@test.com")
 	}
 
-	if aliases["id=123"] != "123" {
+	if aliases["id=123"] != nil && aliases["id=123"].Id != "123" {
 		t.Errorf("Alias should exist for id=123")
 	}
 }
@@ -341,12 +341,20 @@ func TestSavedAliasIsReturnedForAnSkuInLegacyObjectResponse(t *testing.T) {
 		t.Errorf("There should be one alias for the type foo, not %d", len(aliases))
 	}
 
-	if aliases["sku=test"] != "123" {
+	if aliases["sku=test"] != nil && aliases["sku=test"].Id != "123" {
 		t.Errorf("Alias should exist for sku=test")
 	}
 
-	if aliases["id=123"] != "123" {
+	if aliases["sku=test"] != nil && aliases["sku=test"].Sku != "test" {
+		t.Errorf("Alias should exist for sku=test and have sku test")
+	}
+
+	if aliases["id=123"] != nil && aliases["id=123"].Id != "123" {
 		t.Errorf("Alias should exist for id=123")
+	}
+
+	if aliases["id=123"] != nil && aliases["id=123"].Sku != "test" {
+		t.Errorf("Alias should exist for id=123 and have a sku of test")
 	}
 }
 
@@ -378,12 +386,20 @@ func TestSavedAliasIsReturnedForASlugInLegacyObjectResponse(t *testing.T) {
 		t.Errorf("There should be one alias for the type foo, not %d", len(aliases))
 	}
 
-	if aliases["slug=test"] != "123" {
-		t.Errorf("Alias should exist for sku=test")
+	if aliases["slug=test"] != nil && aliases["slug=test"].Id != "123" {
+		t.Errorf("Alias should exist for slug=test")
 	}
 
-	if aliases["id=123"] != "123" {
+	if aliases["slug=test"] != nil && aliases["slug=test"].Slug != "test" {
+		t.Errorf("Alias should exist for slug=test and have slug value of test")
+	}
+
+	if aliases["id=123"] != nil && aliases["id=123"].Id != "123" {
 		t.Errorf("Alias should exist for id=123")
+	}
+
+	if aliases["id=123"] != nil && aliases["id=123"].Slug != "test" {
+		t.Errorf("Alias should exist for id=123 and have a slug of test")
 	}
 }
 
@@ -415,11 +431,11 @@ func TestSavedAliasIsReturnedForANameInLegacyObjectResponse(t *testing.T) {
 		t.Errorf("There should be one alias for the type foo, not %d", len(aliases))
 	}
 
-	if aliases["name=Test_Testerson"] != "123" {
+	if aliases["name=Test_Testerson"] != nil && aliases["name=Test_Testerson"].Id != "123" {
 		t.Errorf("Alias should exist for name=Test_Testerson")
 	}
 
-	if aliases["id=123"] != "123" {
+	if aliases["id=123"] != nil && aliases["id=123"].Id != "123" {
 		t.Errorf("Alias should exist for id=123")
 	}
 }
@@ -454,11 +470,11 @@ func TestSavedAliasIsReturnedForAnEmailInComplaintObjectResponse(t *testing.T) {
 		t.Errorf("There should be one alias for the type foo, not %d", len(aliases))
 	}
 
-	if aliases["email=test@test.com"] != "123" {
+	if aliases["email=test@test.com"] != nil && aliases["email=test@test.com"].Id != "123" {
 		t.Errorf("Alias should exist for email=test@test.com")
 	}
 
-	if aliases["id=123"] != "123" {
+	if aliases["id=123"] != nil && aliases["id=123"].Id != "123" {
 		t.Errorf("Alias should exist for id=123")
 	}
 }
@@ -493,12 +509,20 @@ func TestSavedAliasIsReturnedForAnSkuInComplaintObjectResponse(t *testing.T) {
 		t.Errorf("There should be one alias for the type foo, not %d", len(aliases))
 	}
 
-	if aliases["sku=test"] != "123" {
+	if aliases["sku=test"] != nil && aliases["sku=test"].Id != "123" {
 		t.Errorf("Alias should exist for sku=test")
 	}
 
-	if aliases["id=123"] != "123" {
+	if aliases["sku=test"] != nil && aliases["sku=test"].Sku != "test" {
+		t.Errorf("Alias should exist for sku=test and have a sku of test")
+	}
+
+	if aliases["id=123"] != nil && aliases["id=123"].Id != "123" {
 		t.Errorf("Alias should exist for id=123")
+	}
+
+	if aliases["id=123"] != nil && aliases["id=123"].Sku != "test" {
+		t.Errorf("Alias should exist for id=123 and have a sku of test")
 	}
 }
 
@@ -532,12 +556,20 @@ func TestSavedAliasIsReturnedForASlugInComplaintObjectResponse(t *testing.T) {
 		t.Errorf("There should be one alias for the type foo, not %d", len(aliases))
 	}
 
-	if aliases["slug=test"] != "123" {
-		t.Errorf("Alias should exist for sku=test")
+	if aliases["slug=test"] != nil && aliases["slug=test"].Id != "123" {
+		t.Errorf("Alias should exist for slug=test")
 	}
 
-	if aliases["id=123"] != "123" {
+	if aliases["slug=test"] != nil && aliases["slug=test"].Slug != "test" {
+		t.Errorf("Alias should exist for slug=test and have a slug of test")
+	}
+
+	if aliases["id=123"] != nil && aliases["id=123"].Id != "123" {
 		t.Errorf("Alias should exist for id=123")
+	}
+
+	if aliases["id=123"] != nil && aliases["id=123"].Slug != "test" {
+		t.Errorf("Alias should exist for id=123 and have a slug of test")
 	}
 }
 
@@ -571,11 +603,11 @@ func TestSavedAliasIsReturnedForANameInComplaintObjectResponse(t *testing.T) {
 		t.Errorf("There should be one alias for the type foo, not %d", len(aliases))
 	}
 
-	if aliases["name=Test_Testerson"] != "123" {
+	if aliases["name=Test_Testerson"] != nil && aliases["name=Test_Testerson"].Id != "123" {
 		t.Errorf("Alias should exist for name=Test_Testerson")
 	}
 
-	if aliases["id=123"] != "123" {
+	if aliases["id=123"] != nil && aliases["id=123"].Id != "123" {
 		t.Errorf("Alias should exist for id=123")
 	}
 }
@@ -845,7 +877,7 @@ func TestThatCorruptAliasFileDoesntCrashProgramWhenSavingAliases(t *testing.T) {
 		t.Errorf("There should be one alias for the type foo, not %d", len(aliases))
 	}
 
-	if aliases["id=456"] != "456" {
+	if aliases["id=456"] != nil && aliases["id=456"].Id != "456" {
 		t.Errorf("Alias should exist for id=456")
 	}
 

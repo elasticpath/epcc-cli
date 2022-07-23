@@ -60,6 +60,7 @@ func init() {
 	RootCmd.PersistentFlags().Uint16VarP(&rateLimit, "rate-limit", "", 10, "Request limit per second")
 
 	aliasesCmd.AddCommand(aliasListCmd, aliasClearCmd)
+
 }
 
 var persistentPreRunFuncs []func(cmd *cobra.Command, args []string) error
