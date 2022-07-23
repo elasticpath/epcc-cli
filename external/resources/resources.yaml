@@ -1541,6 +1541,19 @@ user-authentication-password-profile-infos:
       type: STRING
     password_profile_id:
       type: RESOURCE_ID:password-profiles
+inventories:
+  singular-name: "inventory"
+  json-api-type: "stock"
+  json-api-format: "legacy"
+  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/inventory/index.html"
+  get-collection:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/inventory/get-all-inventory.html"
+    url: "/v2/inventories"
+    query: "page[limit],page[offset]"
+  attributes:
+    quantity:
+      type: INT
+# TODO implement aliases and add stock.
 v2-products:
   singular-name: "v2-product"
   json-api-type: "product"
