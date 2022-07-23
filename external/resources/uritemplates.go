@@ -8,8 +8,8 @@ import (
 	"strings"
 )
 
-func GenerateUrl(resource Resource, url string, args []string) (string, error) {
-	template, err := uritemplate.New(url)
+func GenerateUrl(resource Resource, urlInfo *CrudEntityInfo, args []string) (string, error) {
+	template, err := uritemplate.New(urlInfo.Url)
 
 	if err != nil {
 		return "", fmt.Errorf("could not generate URI template for URL: %w", err)
