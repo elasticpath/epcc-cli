@@ -5,6 +5,10 @@ import (
 	"testing"
 )
 
+func init() {
+	aliases.InitializeAliasDirectoryForTesting()
+}
+
 func TestGetNumberOfVariablesReturnsErrorOnTemplate(t *testing.T) {
 
 	// Fixture Setup
@@ -176,8 +180,14 @@ func TestUriTemplatesTypeConversionConvertsUnderscoresToDashes(t *testing.T) {
 
 }
 
-func TestGenerateUrlHappyPath(t *testing.T) {
+func TestGenerateUrlHappyPathWithSlugParentResourceValueOverride(t *testing.T) {
 	// Fixture Setup
+
+	err := aliases.ClearAllAliases()
+	if err != nil {
+		t.Errorf("Couldn't create test fixtures, error while cleaning aliases, %v", err)
+	}
+
 	crudEntityInfo := getValidCrudEntityInfo()
 	crudEntityInfo.Url = "/v2/flows/{flows}"
 	crudEntityInfo.ParentResourceValueOverrides = map[string]string{
@@ -187,15 +197,11 @@ func TestGenerateUrlHappyPath(t *testing.T) {
 	flowExample := `{
 	"data": {
 		"id": "123",
-		"type": "flows"
+		"type": "flow",
 		"slug": "test"
 	}
 }`
 
-	err := aliases.ClearAllAliases()
-	if err != nil {
-		t.Errorf("Couldn't create test fixtures, error while cleaning aliases, %v", err)
-	}
 	aliases.SaveAliasesForResources(flowExample)
 
 	expectedUrlWithSlugNotId := "/v2/flows/test"
@@ -212,6 +218,45 @@ func TestGenerateUrlHappyPath(t *testing.T) {
 
 	if actualUrl != expectedUrlWithSlugNotId {
 		t.Errorf("Url should have been %s but got %s", expectedUrlWithSlugNotId, actualUrl)
+	}
+}
+
+func TestGenerateUrlHappyPathWithNoParentResourceValueOverride(t *testing.T) {
+	// Fixture Setup
+
+	err := aliases.ClearAllAliases()
+	if err != nil {
+		t.Errorf("Couldn't create test fixtures, error while cleaning aliases, %v", err)
+	}
+
+	crudEntityInfo := getValidCrudEntityInfo()
+	crudEntityInfo.Url = "/v2/customers/{customers}"
+	crudEntityInfo.ParentResourceValueOverrides = map[string]string{}
+
+	flowExample := `{
+	"data": {
+		"id": "123",
+		"type": "customer",
+		"name": "Ron Swanson"
+	}
+}`
+
+	aliases.SaveAliasesForResources(flowExample)
+
+	expectedUrlWithId := "/v2/customers/123"
+
+	// Execute SUT
+
+	actualUrl, err := GenerateUrl(&crudEntityInfo, []string{"name=Ron_Swanson"})
+
+	// Verification
+
+	if err != nil {
+		t.Errorf("Should not have gotten error when generating URL.")
+	}
+
+	if actualUrl != expectedUrlWithId {
+		t.Errorf("Url should have been %s but got %s", expectedUrlWithId, actualUrl)
 	}
 }
 

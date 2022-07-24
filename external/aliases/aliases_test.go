@@ -1,20 +1,13 @@
 package aliases
 
 import (
-	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"os"
 	"testing"
 )
 
 func init() {
-	dir, err := ioutil.TempDir("", "epcc-cli-aliases-testing")
-	if err != nil {
-		log.Panic("Could not create directory", err)
-	}
-
-	aliasDirectoryOverride = dir
-	log.Infof("Alias directory for tests is %s", dir)
+	InitializeAliasDirectoryForTesting()
 }
 
 func TestSavedAliasIsReturnedInAllAliasesForSingleResponse(t *testing.T) {

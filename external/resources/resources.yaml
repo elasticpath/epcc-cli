@@ -569,9 +569,9 @@ entries-relationship:
       flows: slug
       fields: slug
   attributes:
-    "data[n].id":
-      type: string
-    "data[n].type":
+    data[n].id:
+      type: STRING
+    data[n].type:
       type: SINGULAR_RESOURCE_TYPE
 integration-jobs:
   singular-name: "integration-job"

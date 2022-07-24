@@ -312,3 +312,13 @@ func getAttributeValueForKey(key string, data map[string]interface{}) string {
 	}
 
 }
+
+func InitializeAliasDirectoryForTesting() {
+	dir, err := ioutil.TempDir("", "epcc-cli-aliases-testing")
+	if err != nil {
+		log.Panic("Could not create directory", err)
+	}
+
+	aliasDirectoryOverride = dir
+	log.Infof("Alias directory for tests is %s", dir)
+}
