@@ -57,7 +57,7 @@ func GetAllIds(ctx context.Context, resource *resources.Resource) ([][]string, e
 	// For each parent entity id we need to loop over the entire collection
 	for _, parentEntityIds := range myParentEntityIds {
 
-		resourceURL, err := resources.GenerateUrl(*resource, resource.GetCollectionInfo.Url, parentEntityIds)
+		resourceURL, err := resources.GenerateUrl(*resource, resource.GetCollectionInfo, parentEntityIds)
 
 		if err != nil {
 			return myEntityIds, err

@@ -28,7 +28,7 @@ var ResetStore = &cobra.Command{
 			return fmt.Errorf("could not find resource %s, we need it to determine the store id.", args[0])
 		}
 
-		resourceURL, err := resources.GenerateUrl(resource, resource.GetCollectionInfo.Url, make([]string, 0))
+		resourceURL, err := resources.GenerateUrl(resource, resource.GetCollectionInfo, make([]string, 0))
 
 		if err != nil {
 			return err

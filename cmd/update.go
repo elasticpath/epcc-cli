@@ -30,14 +30,14 @@ var update = &cobra.Command{
 		}
 
 		// Count ids in UpdateEntity
-		resourceURL := resource.UpdateEntityInfo.Url
-		idCount, err := resources.GetNumberOfVariablesNeeded(resourceURL)
+		resourceUrlInfo := resource.UpdateEntityInfo
+		idCount, err := resources.GetNumberOfVariablesNeeded(resourceUrlInfo.Url)
 		if err != nil {
 			return err
 		}
 
 		// Replace ids with args in resourceURL
-		resourceURL, err = resources.GenerateUrl(resource, resourceURL, args[1:])
+		resourceURL, err := resources.GenerateUrl(resource, resourceUrlInfo, args[1:])
 		if err != nil {
 			return err
 		}

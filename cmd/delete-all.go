@@ -50,7 +50,7 @@ var DeleteAll = &cobra.Command{
 		for _, parentEntityIds := range allParentEntityIds {
 			lastIds := make([][]string, 1)
 			for {
-				resourceURL, err := resources.GenerateUrl(resource, resource.GetCollectionInfo.Url, parentEntityIds)
+				resourceURL, err := resources.GenerateUrl(resource, resource.GetCollectionInfo, parentEntityIds)
 
 				if err != nil {
 					return err
