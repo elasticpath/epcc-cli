@@ -73,6 +73,9 @@ type CrudEntityInfo struct {
 
 	// Minimum resources so we don't keep trying to delete in
 	MinResources int `yaml:"min"`
+
+	// Override the attribute we use in the URL for a specific key
+	ParentResourceValueOverrides map[string]string `yaml:"parent_resource_value_overrides"`
 }
 
 type CrudEntityAttribute struct {

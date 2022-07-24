@@ -3,6 +3,7 @@ package aliases
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/elasticpath/epcc-cli/external/id"
 	"github.com/elasticpath/epcc-cli/external/profiles"
 	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
@@ -20,12 +21,6 @@ import (
 var filelock = sync.Mutex{}
 
 var aliasDirectoryOverride = ""
-
-type AliasAttributes struct {
-	Id   string `yaml:"id"`
-	Slug string `yaml:"slug"`
-	Sku  string `yaml:"sku"`
-}
 
 func ClearAllAliases() error {
 	aliasDataDirectory := getAliasDataDirectory()
@@ -47,11 +42,11 @@ func ClearAllAliasesForJsonApiType(jsonApiType string) error {
 
 }
 
-func GetAliasesForJsonApiType(jsonApiType string) map[string]*AliasAttributes {
+func GetAliasesForJsonApiType(jsonApiType string) map[string]*id.IdableAttributes {
 	profileDirectory := getAliasDataDirectory()
 	aliasFile := getAliasFileForJsonApiType(profileDirectory, jsonApiType)
 
-	aliasMap := map[string]*AliasAttributes{}
+	aliasMap := map[string]*id.IdableAttributes{}
 
 	data, err := ioutil.ReadFile(aliasFile)
 	if err != nil {
@@ -68,9 +63,20 @@ func GetAliasesForJsonApiType(jsonApiType string) map[string]*AliasAttributes {
 	return aliasMap
 }
 
-func ResolveAliasValuesOrReturnIdentity(jsonApiType string, value string) string {
+func ResolveAliasValuesOrReturnIdentity(jsonApiType string, value string, attribute string) string {
 	if result, ok := GetAliasesForJsonApiType(jsonApiType)[value]; ok {
-		return result.Id
+
+		if attribute == "id" {
+			return result.Id
+		}
+		if attribute == "slug" {
+			return result.Slug
+		}
+
+		if attribute == "sku" {
+			return result.Sku
+		}
+
 	}
 	return value
 }
@@ -83,7 +89,7 @@ func SaveAliasesForResources(jsonTxt string) {
 		return
 	}
 
-	results := map[string]map[string]*AliasAttributes{}
+	results := map[string]map[string]*id.IdableAttributes{}
 	visitResources(jsonStruct, "", results)
 
 	log.Tracef("All aliases: %v", results)
@@ -94,16 +100,15 @@ func SaveAliasesForResources(jsonTxt string) {
 
 }
 
-func DeleteAliasesById(id string, jsonApiType string) {
-	modifyAliases(jsonApiType, func(m map[string]*AliasAttributes) {
+func DeleteAliasesById(idStr string, jsonApiType string) {
+	modifyAliases(jsonApiType, func(m map[string]*id.IdableAttributes) {
 		for key, value := range m {
-			if value.Id == id {
+			if value.Id == idStr {
 				delete(m, key)
 			}
 		}
 	},
 	)
-
 }
 
 func getAliasDataDirectory() string {
@@ -128,7 +133,7 @@ func getAliasFileForJsonApiType(profileDirectory string, resourceType string) st
 	return aliasFile
 }
 
-func modifyAliases(jsonApiType string, fn func(map[string]*AliasAttributes)) map[string]*AliasAttributes {
+func modifyAliases(jsonApiType string, fn func(map[string]*id.IdableAttributes)) map[string]*id.IdableAttributes {
 	profileDirectory := getAliasDataDirectory()
 	filelock.Lock()
 	defer filelock.Unlock()
@@ -140,7 +145,7 @@ func modifyAliases(jsonApiType string, fn func(map[string]*AliasAttributes)) map
 		data = []byte{}
 	}
 
-	existingAliases := map[string]*AliasAttributes{}
+	existingAliases := map[string]*id.IdableAttributes{}
 
 	err = yaml.Unmarshal(data, existingAliases)
 	if err != nil {
@@ -170,8 +175,8 @@ func modifyAliases(jsonApiType string, fn func(map[string]*AliasAttributes)) map
 }
 
 // This function saves all the aliases for a specific resource.
-func saveAliasesForResource(jsonApiType string, newAliases map[string]*AliasAttributes) {
-	modifyAliases(jsonApiType, func(aliasMap map[string]*AliasAttributes) {
+func saveAliasesForResource(jsonApiType string, newAliases map[string]*id.IdableAttributes) {
+	modifyAliases(jsonApiType, func(aliasMap map[string]*id.IdableAttributes) {
 
 		// Aliases have the format KEY=VALUE and this maps to an ID.
 		// This code checks for where two aliases have the same KEY and same ID, and replaces the old value, with the new one.
@@ -196,7 +201,7 @@ func saveAliasesForResource(jsonApiType string, newAliases map[string]*AliasAttr
 	})
 }
 
-func visitResources(data map[string]interface{}, prefix string, results map[string]map[string]*AliasAttributes) {
+func visitResources(data map[string]interface{}, prefix string, results map[string]map[string]*id.IdableAttributes) {
 	if typeObj, typeKeyExists := data["type"]; typeKeyExists {
 		if idObj, idKeyExists := data["id"]; idKeyExists {
 			if typeKeyValue, typeKeyIsString := typeObj.(string); typeKeyIsString {
@@ -206,7 +211,7 @@ func visitResources(data map[string]interface{}, prefix string, results map[stri
 					log.Tracef("Found a type and id pair %s => %s under prefix %s, aliases %v", typeKeyValue, idKeyValue, prefix, aliases)
 
 					if _, ok := results[typeKeyValue]; !ok {
-						results[typeKeyValue] = make(map[string]*AliasAttributes)
+						results[typeKeyValue] = make(map[string]*id.IdableAttributes)
 					}
 
 					for aliasKey, aliasValue := range aliases {
@@ -237,12 +242,12 @@ func visitResources(data map[string]interface{}, prefix string, results map[stri
 	return
 }
 
-func generateAliasesForStruct(typeKey string, idKey string, data map[string]interface{}) map[string]*AliasAttributes {
-	result := AliasAttributes{
+func generateAliasesForStruct(typeKey string, idKey string, data map[string]interface{}) map[string]*id.IdableAttributes {
+	result := id.IdableAttributes{
 		Id: idKey,
 	}
 
-	results := map[string]*AliasAttributes{
+	results := map[string]*id.IdableAttributes{
 		// Identity, objects should be an alias of themselves.
 		"id=" + idKey: &result,
 	}

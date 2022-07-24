@@ -630,7 +630,7 @@ func TestResolveAliasValuesReturnsAliasForMatchingValue(t *testing.T) {
 		"type": "foo"
 	}
 }`)
-	value := ResolveAliasValuesOrReturnIdentity("foo", "id=123")
+	value := ResolveAliasValuesOrReturnIdentity("foo", "id=123", "id")
 
 	// Verification
 
@@ -658,7 +658,7 @@ func TestResolveAliasValuesReturnsRequestForUnMatchingValue(t *testing.T) {
 	}
 }`)
 
-	value := ResolveAliasValuesOrReturnIdentity("foo", "id=ABC")
+	value := ResolveAliasValuesOrReturnIdentity("foo", "id=ABC", "id")
 
 	// Verification
 
@@ -687,7 +687,7 @@ func TestResolveAliasValuesReturnsRequestForUnMatchingValueAndType(t *testing.T)
 	}
 }`)
 
-	value := ResolveAliasValuesOrReturnIdentity("bar", "id=XYZ")
+	value := ResolveAliasValuesOrReturnIdentity("bar", "id=XYZ", "id")
 
 	// Verification
 

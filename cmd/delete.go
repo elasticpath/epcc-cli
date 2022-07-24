@@ -100,7 +100,7 @@ func deleteResource(args []string) (*http.Response, error) {
 	}
 
 	// Replace ids with args in resourceURL
-	resourceURL, err := resources.GenerateUrl(resource, resource.DeleteEntityInfo, args[1:])
+	resourceURL, err := resources.GenerateUrl(resource.DeleteEntityInfo, args[1:])
 
 	if err != nil {
 		return nil, err

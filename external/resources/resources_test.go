@@ -21,77 +21,38 @@ func TestUriTemplatesAllReferenceValidResource(t *testing.T) {
 	for key, val := range resources {
 
 		if val.CreateEntityInfo != nil {
-			template, err := uritemplate.New(val.CreateEntityInfo.Url)
-
-			if err != nil {
-				errors += fmt.Sprintf("Could not process CREATE uri for resource %s, error:%s\n", key, err)
-			} else {
-				for _, variable := range template.Varnames() {
-					resourceName := strings.ReplaceAll(variable, "_", "-")
-					if _, ok := resources[resourceName]; !ok {
-						errors += fmt.Sprintf("Error processing CREATE uri for resource %s, the URI template references a resource %s, but could not find it\n", key, resourceName)
-					}
-				}
+			err := validateCrudEntityInfo(*val.CreateEntityInfo)
+			if err != "" {
+				errors += fmt.Sprintf("Could not process CREATE uri for resource `%s`, error:\n%s\n", key, err)
 			}
 		}
 
 		if val.UpdateEntityInfo != nil {
-			template, err := uritemplate.New(val.UpdateEntityInfo.Url)
-
-			if err != nil {
-				errors += fmt.Sprintf("Could not process UPDATE uri for resource %s, error:%s\n", key, err)
-			} else {
-				for _, variable := range template.Varnames() {
-					resourceName := strings.ReplaceAll(variable, "_", "-")
-					if _, ok := resources[resourceName]; !ok {
-						errors += fmt.Sprintf("Error processing UPDATE uri for resource %s, the URI template references a resource %s, but could not find it\n", key, resourceName)
-					}
-				}
+			err := validateCrudEntityInfo(*val.UpdateEntityInfo)
+			if err != "" {
+				errors += fmt.Sprintf("Could not process UPDATE uri for resource `%s`, error:\n%s\n", key, err)
 			}
 		}
 
 		if val.DeleteEntityInfo != nil {
-			template, err := uritemplate.New(val.DeleteEntityInfo.Url)
 
-			if err != nil {
-				errors += fmt.Sprintf("Could not process DELETE uri for resource %s, error:%s\n", key, err)
-			} else {
-				for _, variable := range template.Varnames() {
-					resourceName := strings.ReplaceAll(variable, "_", "-")
-					if _, ok := resources[resourceName]; !ok {
-						errors += fmt.Sprintf("Error processing DELETE uri for resource %s, the URI template references a resource %s, but could not find it\n", key, resourceName)
-					}
-				}
+			err := validateCrudEntityInfo(*val.DeleteEntityInfo)
+			if err != "" {
+				errors += fmt.Sprintf("Could not process DELETE uri for resource `%s`, error:\n%s\n", key, err)
 			}
 		}
 
 		if val.GetEntityInfo != nil {
-			template, err := uritemplate.New(val.GetEntityInfo.Url)
-
-			if err != nil {
-				errors += fmt.Sprintf("Could not process GET entity uri for resource %s, error:%s\n", key, err)
-			} else {
-				for _, variable := range template.Varnames() {
-					resourceName := strings.ReplaceAll(variable, "_", "-")
-					if _, ok := resources[resourceName]; !ok {
-						errors += fmt.Sprintf("Error processing GET entity uri for resource %s, the URI template references a resource %s, but could not find it\n", key, resourceName)
-					}
-				}
+			err := validateCrudEntityInfo(*val.GetEntityInfo)
+			if err != "" {
+				errors += fmt.Sprintf("Could not process GET entity uri for resource `%s`, error:\n%s\n", key, err)
 			}
 		}
 
 		if val.GetCollectionInfo != nil {
-			template, err := uritemplate.New(val.GetCollectionInfo.Url)
-
-			if err != nil {
-				errors += fmt.Sprintf("Could not process GET collection uri for resource %s, error:%s\n", key, err)
-			} else {
-				for _, variable := range template.Varnames() {
-					resourceName := strings.ReplaceAll(variable, "_", "-")
-					if _, ok := resources[resourceName]; !ok {
-						errors += fmt.Sprintf("Error processing GET collection uri for resource %s, the URI template references a resource %s, but could not find it\n", key, resourceName)
-					}
-				}
+			err := validateCrudEntityInfo(*val.GetCollectionInfo)
+			if err != "" {
+				errors += fmt.Sprintf("Could not process GET collection uri for resource `%s`, error:\n%s\n", key, err)
 			}
 		}
 	}
@@ -101,6 +62,37 @@ func TestUriTemplatesAllReferenceValidResource(t *testing.T) {
 	if len(errors) > 0 {
 		t.Fatalf("Errors occurred while validating URI Templates:\n%s", errors)
 	}
+}
+
+func validateCrudEntityInfo(info CrudEntityInfo) string {
+	errors := ""
+
+	template, err := uritemplate.New(info.Url)
+	if err != nil {
+		errors += fmt.Sprintf("\tCould not process Uri %s for templates error:%s\n", info.Url, err)
+	} else {
+		variables := map[string]bool{}
+		for _, variable := range template.Varnames() {
+			variables[variable] = true
+			resourceName := strings.ReplaceAll(variable, "_", "-")
+			if _, ok := resources[resourceName]; !ok {
+				errors += fmt.Sprintf("\tError processing Uri %s, the URI template references a resource %s, but could not find it\n", info.Url, resourceName)
+			}
+		}
+
+		for key, value := range info.ParentResourceValueOverrides {
+			if value != "slug" && value != "sku" && value != "id" {
+				errors += fmt.Sprintf("\tUrl %s has an invalid override for %s => %s\n", info.Url, key, value)
+			}
+
+			if _, ok := variables[key]; !ok {
+				errors += fmt.Sprintf("\tUrl %s has an invalid override for %s, this key doesn't exist in the URL", info.Url, key)
+			}
+		}
+
+	}
+
+	return errors
 }
 
 func TestJsonSchemaValidate(t *testing.T) {

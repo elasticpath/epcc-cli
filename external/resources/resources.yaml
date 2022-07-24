@@ -524,6 +524,55 @@ entries:
     url: "/v2/flows/{flows}/entries"
     parent_resource_value_overrides:
       flows: slug
+  get-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/entries/get-an-entry.html"
+    url: "/v2/flows/{flows}/entries/{entries}"
+    parent_resource_value_overrides:
+      flows: slug
+  update-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/entries/update-an-entry.html"
+    url: "/v2/flows/{flows}/entries/{entries}"
+    parent_resource_value_overrides:
+      flows: slug
+  create-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/entries/create-an-entry.html"
+    url: "/v2/flows/{flows}/entries"
+    parent_resource_value_overrides:
+      flows: slug
+  delete-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/entries/delete-an-entry.html"
+    url: "/v2/flows/{flows}/entries/{entries}"
+    parent_resource_value_overrides:
+      flows: slug
+entries-relationship:
+  singular-name: entry-relationship
+  json-api-type: entry-relationship
+  json-api-format: "legacy"
+  no-wrapping: true
+  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/entry-relationships/index.html"
+  update-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/entry-relationships/update-entry-relationships.html"
+    url: "/v2/flows/{flows}/entries/{entries}/relationships/{fields}"
+    parent_resource_value_overrides:
+      flows: slug
+      fields: slug
+  create-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/entry-relationships/create-an-entry-relationship.html"
+    url: "/v2/flows/{flows}/entries/{entries}/relationships/{fields}"
+    parent_resource_value_overrides:
+      flows: slug
+      fields: slug
+  delete-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/entry-relationships/delete-entry-relationships.html"
+    url: "/v2/flows/{flows}/entries/{entries}/relationships/{fields}"
+    parent_resource_value_overrides:
+      flows: slug
+      fields: slug
+  attributes:
+    "data[n].id":
+      type: string
+    "data[n].type":
+      type: SINGULAR_RESOURCE_TYPE
 integration-jobs:
   singular-name: "integration-job"
   json-api-type: "integration-job"
@@ -1139,9 +1188,9 @@ pcm-node-products:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/hierarchies/relationships/create-node-product-relationships.html"
     url: "/pcm/hierarchies/{pcm_hierarchies}/nodes/{pcm_nodes}/relationships/products"
   attributes:
-    "data[0].id":
+    "data[n].id":
       type: RESOURCE_ID:pcm-product
-    "data[0].type":
+    "data[n].type":
       type: ENUM:product
 pcm-nodes:
   singular-name: "pcm-node"
