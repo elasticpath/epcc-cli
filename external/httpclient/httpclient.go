@@ -162,6 +162,19 @@ func doRequestInternal(ctx context.Context, method string, contentType string, p
 			log.Warnf("%s %s ==> %s %s", method, reqURL.String(), resp.Proto, resp.Status)
 		}
 
+	} else if log.IsLevelEnabled(log.DebugLevel) {
+		if payload != nil {
+			body, _ := ioutil.ReadAll(&bodyBuf)
+			if len(body) > 0 {
+				log.Debugf("%s %s", method, reqURL.String())
+
+				// TODO maybe check if it's json and if not do something else.
+				json.PrintJson(string(body))
+				log.Debugf("%s %s", resp.Proto, resp.Status)
+			} else {
+				log.Debugf("%s %s ==> %s %s", method, reqURL.String(), resp.Proto, resp.Status)
+			}
+		}
 	} else if resp.StatusCode >= 200 && resp.StatusCode <= 399 {
 		log.Infof("%s %s ==> %s %s", method, reqURL.String(), resp.Proto, resp.Status)
 	}
