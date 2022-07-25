@@ -58,7 +58,7 @@ var get = &cobra.Command{
 				return []string{}, cobra.ShellCompDirectiveNoFileComp
 			}
 
-			idCount, err := resources.GetNumberOfVariablesNeeded(resourceURL)
+			idCount, err := resources.GetNumberOfVariablesNeeded(resourceURL.Url)
 
 			if err != nil {
 				return []string{}, cobra.ShellCompDirectiveNoFileComp
@@ -66,7 +66,7 @@ var get = &cobra.Command{
 
 			if len(args) > 0 && len(args) < 1+idCount {
 				// Must be for a resource completion
-				types, err := resources.GetTypesOfVariablesNeeded(resourceURL)
+				types, err := resources.GetTypesOfVariablesNeeded(resourceURL.Url)
 
 				if err != nil {
 					return []string{}, cobra.ShellCompDirectiveNoFileComp
@@ -104,22 +104,21 @@ var get = &cobra.Command{
 	},
 }
 
-func getUrl(resource resources.Resource, args []string) (string, error) {
-	resourceURL := ""
+func getUrl(resource resources.Resource, args []string) (*resources.CrudEntityInfo, error) {
+
 	if resource.GetCollectionInfo == nil && resource.GetEntityInfo == nil {
-		return "", fmt.Errorf("resource %s doesn't support GET", args[0])
+		return nil, fmt.Errorf("resource %s doesn't support GET", args[0])
 	} else if resource.GetCollectionInfo != nil && resource.GetEntityInfo == nil {
-		resourceURL = resource.GetCollectionInfo.Url
+		return resource.GetCollectionInfo, nil
 	} else if resource.GetCollectionInfo == nil && resource.GetEntityInfo != nil {
-		resourceURL = resource.GetEntityInfo.Url
+		return resource.GetEntityInfo, nil
 	} else {
 		if _, ok := resources.GetPluralResources()[args[0]]; ok {
-			resourceURL = resource.GetCollectionInfo.Url
+			return resource.GetCollectionInfo, nil
 		} else {
-			resourceURL = resource.GetEntityInfo.Url
+			return resource.GetEntityInfo, nil
 		}
 	}
-	return resourceURL, nil
 }
 
 func getResource(args []string) (*http.Response, error) {
@@ -129,22 +128,21 @@ func getResource(args []string) (*http.Response, error) {
 		return nil, fmt.Errorf("could not find resource %s", args[0])
 	}
 
-	var resourceURL string
 	var idCount int
 
-	resourceURL, err2 := getUrl(resource, args)
+	resourceUrlInfo, err2 := getUrl(resource, args)
 	if err2 != nil {
 		return nil, err2
 	}
 
-	idCount, err := resources.GetNumberOfVariablesNeeded(resourceURL)
+	idCount, err := resources.GetNumberOfVariablesNeeded(resourceUrlInfo.Url)
 
 	if err != nil {
 		return nil, err
 	}
 
 	// Replace ids with args in resourceURL
-	resourceURL, err = resources.GenerateUrl(resource, resourceURL, args[1:])
+	resourceURL, err := resources.GenerateUrl(resourceUrlInfo, args[1:])
 
 	if err != nil {
 		return nil, err

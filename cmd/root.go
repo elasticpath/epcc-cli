@@ -60,6 +60,7 @@ func init() {
 	RootCmd.PersistentFlags().Uint16VarP(&rateLimit, "rate-limit", "", 10, "Request limit per second")
 
 	aliasesCmd.AddCommand(aliasListCmd, aliasClearCmd)
+
 }
 
 var persistentPreRunFuncs []func(cmd *cobra.Command, args []string) error
@@ -84,6 +85,7 @@ Environment Variables
 - EPCC_CLIENT_SECRET - The client secret (available in Commerce Manager)
 - EPCC_BETA_API_FEATURES - Beta features in the API we want to enable.
 - EPCC_CLI_HTTP_HEADER_[0,1,...] - An additional HTTP header to set with all requests, the format should be "HeaderName: value"
+- EPCC_PROFILE - The name of the profile we will use (isolates namespace, credentials, etc...)
 
 `,
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {

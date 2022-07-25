@@ -7,6 +7,7 @@ import (
 	"github.com/elasticpath/epcc-cli/external/apihelper"
 	"github.com/elasticpath/epcc-cli/external/completion"
 	"github.com/elasticpath/epcc-cli/external/httpclient"
+	"github.com/elasticpath/epcc-cli/external/id"
 	"github.com/elasticpath/epcc-cli/external/resources"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -48,9 +49,9 @@ var DeleteAll = &cobra.Command{
 		}
 
 		for _, parentEntityIds := range allParentEntityIds {
-			lastIds := make([][]string, 1)
+			lastIds := make([][]id.IdableAttributes, 1)
 			for {
-				resourceURL, err := resources.GenerateUrl(resource, resource.GetCollectionInfo.Url, parentEntityIds)
+				resourceURL, err := resources.GenerateUrlViaIdableAttributes(resource.GetCollectionInfo, parentEntityIds)
 
 				if err != nil {
 					return err
@@ -68,7 +69,7 @@ var DeleteAll = &cobra.Command{
 				ids, err := apihelper.GetResourceIdsFromHttpResponse(resp)
 				resp.Body.Close()
 
-				allIds := make([][]string, 0)
+				allIds := make([][]id.IdableAttributes, 0)
 				for _, id := range ids {
 					allIds = append(allIds, append(parentEntityIds, id))
 				}
@@ -96,7 +97,7 @@ var DeleteAll = &cobra.Command{
 					break
 				}
 
-				delPage(resource.PluralName, allIds)
+				delPage(resource.DeleteEntityInfo, allIds)
 			}
 		}
 
@@ -116,9 +117,9 @@ var DeleteAll = &cobra.Command{
 }
 
 //
-func getParentIds(ctx context.Context, resource resources.Resource) ([][]string, error) {
+func getParentIds(ctx context.Context, resource resources.Resource) ([][]id.IdableAttributes, error) {
 
-	myEntityIds := make([][]string, 0)
+	myEntityIds := make([][]id.IdableAttributes, 0)
 	if resource.GetCollectionInfo == nil {
 		return myEntityIds, fmt.Errorf("resource %s doesn't support GET collection", resource.PluralName)
 	}
@@ -130,7 +131,7 @@ func getParentIds(ctx context.Context, resource resources.Resource) ([][]string,
 	}
 
 	if len(types) == 0 {
-		myEntityIds = append(myEntityIds, make([]string, 0))
+		myEntityIds = append(myEntityIds, make([]id.IdableAttributes, 0))
 		return myEntityIds, nil
 	} else {
 		immediateParentType := types[len(types)-1]
@@ -145,19 +146,30 @@ func getParentIds(ctx context.Context, resource resources.Resource) ([][]string,
 	}
 }
 
-func delPage(resourceName string, ids [][]string) {
+func delPage(urlInfo *resources.CrudEntityInfo, ids [][]id.IdableAttributes) {
 	// Create a wait group to run DELETE in parallel
 	wg := sync.WaitGroup{}
-	for _, id := range ids {
+	for _, idAttr := range ids {
 		wg.Add(1)
-		go func(id []string) {
-			args := make([]string, 0)
-			args = append(args, resourceName)
-			args = append(args, id...)
+		go func(idAttr []id.IdableAttributes) {
 
-			deleteResource(args)
-			wg.Done()
-		}(id)
+			defer wg.Done()
+			// Find Resource
+			// Replace ids with args in resourceURL
+			resourceURL, err := resources.GenerateUrlViaIdableAttributes(urlInfo, idAttr)
+
+			if err != nil {
+				return
+			}
+
+			// Submit request
+			resp, err := httpclient.DoRequest(context.TODO(), "DELETE", resourceURL, "", nil)
+			if err != nil {
+				return
+			}
+			defer resp.Body.Close()
+
+		}(idAttr)
 	}
 	wg.Wait()
 }

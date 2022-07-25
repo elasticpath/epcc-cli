@@ -404,61 +404,6 @@ customer-addresses:
       type: STRING
     country:
       type: STRING
-
-fields:
-  singular-name: "field"
-  json-api-type: "field"
-  json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/fields/index.html"
-  get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/fields/get-all-fields.html"
-    url: "/v2/fields"
-  get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/fields/get-a-field.html"
-    url: "/v2/fields/{fields}"
-  update-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/fields/update-a-field.html"
-    url: "/v2/fields/{fields}"
-  delete-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/fields/delete-a-field.html"
-    url: "/v2/fields/{fields}"
-  create-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/fields/create-a-field.html"
-    url: "/v2/fields"
-    content-type: application/json
-  attributes:
-    name:
-      type: STRING
-    slug:
-      type: STRING
-    field_type:
-      type: ENUM:string,integer,boolean,float,date,relationship
-    description:
-      type: STRING
-    required:
-      type: BOOL
-    default:
-      type: STRING
-    enabled:
-      type: BOOL
-    order:
-      type: INT
-    omit_null:
-      type: BOOL
-    validation_rules[n].type:
-      type: ENUM:enum,email,slug,between,one-to-many,one-to-one
-    validation_rules[n].options:
-      type: STRING
-    validation_rules[n].to:
-      type: STRING
-    validation_rules[n].options.to:
-      type: STRING
-    validation_rules[n].options.from:
-      type: STRING
-    relationships.flow.data.type:
-      type: ENUM:flow
-    relationships.flow.data.id:
-      type: RESOURCE_ID:flows
 files:
   singular-name: "file"
   json-api-type: "file"
@@ -515,6 +460,119 @@ flows:
       type: STRING
     name:
       type: STRING
+fields:
+  singular-name: "field"
+  json-api-type: "field"
+  json-api-format: "legacy"
+  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/fields/index.html"
+  get-collection:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/fields/get-all-fields.html"
+    url: "/v2/fields"
+  get-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/fields/get-a-field.html"
+    url: "/v2/fields/{fields}"
+  update-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/fields/update-a-field.html"
+    url: "/v2/fields/{fields}"
+  delete-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/fields/delete-a-field.html"
+    url: "/v2/fields/{fields}"
+  create-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/fields/create-a-field.html"
+    url: "/v2/fields"
+    content-type: application/json
+  attributes:
+    name:
+      type: STRING
+    slug:
+      type: STRING
+    field_type:
+      type: ENUM:string,integer,boolean,float,date,relationship
+    description:
+      type: STRING
+    required:
+      type: BOOL
+    default:
+      type: STRING
+    enabled:
+      type: BOOL
+    order:
+      type: INT
+    omit_null:
+      type: BOOL
+    validation_rules[n].type:
+      type: ENUM:enum,email,slug,between,one-to-many,one-to-one
+    validation_rules[n].options:
+      type: STRING
+    validation_rules[n].to:
+      type: STRING
+    validation_rules[n].options.to:
+      type: STRING
+    validation_rules[n].options.from:
+      type: STRING
+    relationships.flow.data.type:
+      type: ENUM:flow
+    relationships.flow.data.id:
+      type: RESOURCE_ID:flows
+entries:
+  singular-name: entry
+  json-api-type: entry
+  json-api-format: "legacy"
+  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/entries/index.html"
+  get-collection:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/entries/get-all-entries.html"
+    url: "/v2/flows/{flows}/entries"
+    parent_resource_value_overrides:
+      flows: slug
+  get-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/entries/get-an-entry.html"
+    url: "/v2/flows/{flows}/entries/{entries}"
+    parent_resource_value_overrides:
+      flows: slug
+  update-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/entries/update-an-entry.html"
+    url: "/v2/flows/{flows}/entries/{entries}"
+    parent_resource_value_overrides:
+      flows: slug
+  create-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/entries/create-an-entry.html"
+    url: "/v2/flows/{flows}/entries"
+    parent_resource_value_overrides:
+      flows: slug
+  delete-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/entries/delete-an-entry.html"
+    url: "/v2/flows/{flows}/entries/{entries}"
+    parent_resource_value_overrides:
+      flows: slug
+entries-relationship:
+  singular-name: entry-relationship
+  json-api-type: entry-relationship
+  json-api-format: "legacy"
+  no-wrapping: true
+  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/entry-relationships/index.html"
+  update-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/entry-relationships/update-entry-relationships.html"
+    url: "/v2/flows/{flows}/entries/{entries}/relationships/{fields}"
+    parent_resource_value_overrides:
+      flows: slug
+      fields: slug
+  create-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/entry-relationships/create-an-entry-relationship.html"
+    url: "/v2/flows/{flows}/entries/{entries}/relationships/{fields}"
+    parent_resource_value_overrides:
+      flows: slug
+      fields: slug
+  delete-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/entry-relationships/delete-entry-relationships.html"
+    url: "/v2/flows/{flows}/entries/{entries}/relationships/{fields}"
+    parent_resource_value_overrides:
+      flows: slug
+      fields: slug
+  attributes:
+    data[n].id:
+      type: STRING
+    data[n].type:
+      type: SINGULAR_RESOURCE_TYPE
 integration-jobs:
   singular-name: "integration-job"
   json-api-type: "integration-job"
@@ -1130,9 +1188,9 @@ pcm-node-products:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/hierarchies/relationships/create-node-product-relationships.html"
     url: "/pcm/hierarchies/{pcm_hierarchies}/nodes/{pcm_nodes}/relationships/products"
   attributes:
-    "data[0].id":
+    "data[n].id":
       type: RESOURCE_ID:pcm-product
-    "data[0].type":
+    "data[n].type":
       type: ENUM:product
 pcm-nodes:
   singular-name: "pcm-node"

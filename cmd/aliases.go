@@ -37,8 +37,19 @@ var aliasListCmd = &cobra.Command{
 
 			sort.Strings(sortedAliasNames)
 
+			fmt.Printf("%40s || Values\n", "Alias Name")
+
 			for _, alias := range sortedAliasNames {
-				fmt.Printf("%40s => %s\n", alias, aliases[alias])
+				fmt.Printf("%40s => ID: %s", alias, aliases[alias].Id)
+				if aliases[alias].Sku != "" {
+					fmt.Printf(" Sku: %10s", aliases[alias].Sku)
+				}
+
+				if aliases[alias].Slug != "" {
+					fmt.Printf(" Slug: %10s", aliases[alias].Slug)
+				}
+
+				fmt.Println()
 			}
 
 			return nil

@@ -39,7 +39,7 @@ var create = &cobra.Command{
 		}
 
 		// Replace ids with args in resourceURL
-		resourceURL, err = resources.GenerateUrl(resource, resourceURL, args[1:])
+		resourceURL, err = resources.GenerateUrl(resource.CreateEntityInfo, args[1:])
 
 		if err != nil {
 			return err

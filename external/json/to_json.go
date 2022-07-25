@@ -74,7 +74,7 @@ func toJsonObject(args []string, noWrapping bool, compliant bool, attributes map
 				resourceType := strings.Replace(attributeInfo.Type, "RESOURCE_ID:", "", 1)
 
 				if aliasType, ok := resources.GetResourceByName(resourceType); ok {
-					val = aliases.ResolveAliasValuesOrReturnIdentity(aliasType.JsonApiType, val)
+					val = aliases.ResolveAliasValuesOrReturnIdentity(aliasType.JsonApiType, val, "id")
 				} else {
 					log.Warnf("Could not find a resource for %s, this is a bug.", resourceType)
 				}
@@ -157,7 +157,9 @@ func RunJQ(queryStr string, result interface{}) (interface{}, error) {
 			break
 		}
 		if err, ok := v.(error); ok {
-			log.Fatalln(err)
+			partialResult, _ := gojson.Marshal(result)
+
+			return nil, fmt.Errorf("error %w when running query %s on json %s", err, queryStr, partialResult)
 		}
 
 		result = v

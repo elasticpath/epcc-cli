@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/elasticpath/epcc-cli/external/httpclient"
+	"github.com/elasticpath/epcc-cli/external/id"
 	"github.com/elasticpath/epcc-cli/external/resources"
 	log "github.com/sirupsen/logrus"
 	"net/url"
@@ -11,16 +12,16 @@ import (
 )
 
 //
-func GetAllIds(ctx context.Context, resource *resources.Resource) ([][]string, error) {
+func GetAllIds(ctx context.Context, resource *resources.Resource) ([][]id.IdableAttributes, error) {
 	// TODO make this a channel based instead of array based
 	// This must be an unbuffered channel since the receiver won't get the channel until after we have sent in some cases.
 	//myEntityIds := make(chan<- []string, 1024)
 	//defer close(myEntityIds)
 
-	myEntityIds := make([][]string, 0)
+	myEntityIds := make([][]id.IdableAttributes, 0)
 
 	if resource == nil {
-		myEntityIds = append(myEntityIds, make([]string, 0))
+		myEntityIds = append(myEntityIds, make([]id.IdableAttributes, 0))
 		return myEntityIds, nil
 	}
 
@@ -57,13 +58,13 @@ func GetAllIds(ctx context.Context, resource *resources.Resource) ([][]string, e
 	// For each parent entity id we need to loop over the entire collection
 	for _, parentEntityIds := range myParentEntityIds {
 
-		resourceURL, err := resources.GenerateUrl(*resource, resource.GetCollectionInfo.Url, parentEntityIds)
+		resourceURL, err := resources.GenerateUrlViaIdableAttributes(resource.GetCollectionInfo, parentEntityIds)
 
 		if err != nil {
 			return myEntityIds, err
 		}
 
-		lastPageIds := make([]string, 125)
+		lastPageIds := make([]id.IdableAttributes, 125)
 		for i := 0; i < 10000; i += 25 {
 			params := url.Values{}
 			params.Add("page[limit]", "25")

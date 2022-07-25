@@ -7,14 +7,36 @@
   "patternProperties": {
     "(.*?)": {
       "type" : "object",
+      "additionalProperties": false,
       "properties": {
+        "singular-name": {
+          "type":"string",
+          "pattern": "^[A-Za-z-][A-Za-z0-9-]*$"
+        },
+        "json-api-type": {
+          "type":"string",
+          "pattern": "^[A-Za-z-_]+$"
+        },
+        "json-api-format": {
+          "type":"string",
+          "enum": ["compliant", "legacy"]
+        },
+        "no-wrapping": {
+          "type": "boolean"
+        },
+        "suppress-reset-warning": {
+          "type": "boolean"
+        },
         "docs": { "type": "string", "pattern": "^https://"  },
         "get-collection": {
           "type": "object",
+          "additionalProperties": false,
           "properties" : {
             "docs": { "type": "string", "pattern": "^https://"  },
             "url": { "type": "string" },
-            "content-type": { "type": "string" }
+            "content-type": { "type": "string" },
+            "parent_resource_value_overrides": { "type":  "object" },
+            "query": { "type":  "string" }
           },
           "required": [ "url", "docs"]
         },
@@ -23,7 +45,9 @@
           "properties" : {
             "docs": { "type": "string", "pattern": "^https://" },
             "url": { "type": "string" },
-            "content-type": { "type": "string" }
+            "content-type": { "type": "string" },
+            "parent_resource_value_overrides": { "type":  "object" },
+            "query": { "type":  "string" }
           },
           "required": [ "url", "docs"]
         },
@@ -32,7 +56,8 @@
           "properties" : {
             "docs": { "type": "string", "pattern": "^https://"  },
             "url": { "type": "string" },
-            "content-type": { "type": "string" }
+            "content-type": { "type": "string" },
+            "parent_resource_value_overrides": { "type":  "object" }
           },
           "required": [ "url", "docs"]
         },
@@ -41,7 +66,8 @@
           "properties" : {
             "docs": { "type": "string", "pattern": "^https://"  },
             "url": { "type": "string" },
-            "content-type": { "type": "string" }
+            "content-type": { "type": "string" },
+            "parent_resource_value_overrides": { "type":  "object" }
           },
           "required": [ "url", "docs"]
         },
@@ -62,19 +88,15 @@
               "properties": {
                 "type": {
                   "type": "string",
-                  "pattern": "(^STRING$|^URL$|^INT$|^ENUM|^FLOAT$|^BOOL$|^FILE$|^CURRENCY$|^RESOURCE_ID)"
+                  "pattern": "^(STRING|URL|INT|ENUM:[a-z0-9A-Z._,-]+|FLOAT|BOOL|FILE|CURRENCY|SINGULAR_RESOURCE_TYPE|RESOURCE_ID:[a-z-]+)$"
                 }
               },
               "required": ["type"]
             }
           }
-        },
-        "singular-name": {
-          "type":"string",
-          "pattern": "^[A-Za-z-][A-Za-z0-9-]*$"
         }
       },
-      "required": [ "json-api-type", "json-api-format", "docs"]
+      "required": [ "json-api-type", "json-api-format", "docs", "singular-name"]
     }
   }
 }

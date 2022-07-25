@@ -4,7 +4,6 @@ import (
 	"github.com/elasticpath/epcc-cli/external/aliases"
 	"github.com/elasticpath/epcc-cli/external/resources"
 	"github.com/spf13/cobra"
-	"log"
 	"strconv"
 	"strings"
 )
@@ -139,54 +138,59 @@ func Complete(c Request) ([]string, cobra.ShellCompDirective) {
 			if i != -1 && j != -1 {
 				attr = attr[:i+1] + "n" + attr[j:]
 			}
-			log.Println("here: " + attr)
-			if c.Resource.Attributes[attr].Type == "BOOL" {
-				results = append(results, "true", "false")
-			} else if strings.HasPrefix(c.Resource.Attributes[attr].Type, "ENUM:") {
-				enums := strings.Replace(c.Resource.Attributes[attr].Type, "ENUM:", "", 1)
-				for _, k := range strings.Split(enums, ",") {
-					results = append(results, k)
-				}
-			} else if c.Resource.Attributes[attr].Type == "URL" {
-				results = append(results, "https://")
-				compDir = compDir | cobra.ShellCompDirectiveNoSpace
-			} else if strings.HasPrefix(c.Resource.Attributes[attr].Type, "RESOURCE_ID:") {
-				resourceType := strings.Replace(c.Resource.Attributes[attr].Type, "RESOURCE_ID:", "", 1)
+			if attribute := c.Resource.Attributes[attr]; attribute != nil {
 
-				if aliasType, ok := resources.GetResourceByName(resourceType); ok {
-					for alias := range aliases.GetAliasesForJsonApiType(aliasType.JsonApiType) {
-						results = append(results, alias)
+				if attribute.Type == "BOOL" {
+					results = append(results, "true", "false")
+				} else if strings.HasPrefix(attribute.Type, "ENUM:") {
+					enums := strings.Replace(attribute.Type, "ENUM:", "", 1)
+					for _, k := range strings.Split(enums, ",") {
+						results = append(results, k)
 					}
-				}
-			} else if c.Resource.Attributes[c.Attribute].Type == "CURRENCY" {
-				currencies := []string{"AED", "AFN", "ALL", "AMD", "ANG", "AOA", "ARS", "AUD", "AWG", "AZN",
-					"BAM", "BBD", "BDT", "BGN", "BHD", "BIF", "BMD", "BND", "BOB", "BRL", "BSD", "BTN", "BWP", "BYN", "BZD",
-					"CAD", "CDF", "CHF", "CLP", "CNY", "COP", "CRC", "CUC", "CUP", "CVE", "CZK",
-					"DJF", "DKK", "DOP", "DZD",
-					"EGP", "ERN", "ETB", "EUR",
-					"FJD", "FKP",
-					"GBP", "GEL", "GGP", "GHS", "GIP", "GMD", "GNF", "GTQ", "GYD",
-					"HKD", "HNL", "HRK", "HTG", "HUF",
-					"IDR", "ILS", "IMP", "INR", "IQD", "IRR", "ISK",
-					"JEP", "JMD", "JOD", "JPY",
-					"KES", "KGS", "KHR", "KMF", "KPW", "KRW", "KWD", "KYD", "KZT",
-					"LAK", "LBP", "LKR", "LRD", "LSL", "LYD",
-					"MAD", "MDL", "MGA", "MKD", "MMK", "MNT", "MOP", "MRU", "MUR", "MVR", "MWK", "MXN", "MYR", "MZN",
-					"NAD", "NGN", "NIO", "NOK", "NPR", "NZD",
-					"OMR",
-					"PAB", "PEN", "PGK", "PHP", "PKR", "PLN", "PYG",
-					"QAR",
-					"RON", "RSD", "RUB", "RWF",
-					"SAR", "SBD", "SCR", "SDG", "SEK", "SGD", "SHP", "SLL", "SOS", "SPL", "SRD", "STN", "SVC", "SYP", "SZL",
-					"THB", "TJS", "TMT", "TND", "TOP", "TRY", "TTD", "TVD", "TWD", "TZS",
-					"UAH", "UGX", "USD", "UYU", "UZS",
-					"VEF", "VND", "VUV",
-					"WST",
-					"XAF", "XCD", "XDR", "XOF", "XPF",
-					"YER",
-					"ZAR", "ZMW", "ZWD"}
-				for _, currency := range currencies {
-					results = append(results, currency)
+				} else if attribute.Type == "URL" {
+					results = append(results, "https://")
+					compDir = compDir | cobra.ShellCompDirectiveNoSpace
+				} else if strings.HasPrefix(attribute.Type, "RESOURCE_ID:") {
+					resourceType := strings.Replace(attribute.Type, "RESOURCE_ID:", "", 1)
+
+					if aliasType, ok := resources.GetResourceByName(resourceType); ok {
+						for alias := range aliases.GetAliasesForJsonApiType(aliasType.JsonApiType) {
+							results = append(results, alias)
+						}
+					}
+				} else if attribute.Type == "SINGULAR_RESOURCE_TYPE" {
+					results = append(results, resources.GetSingularResourceNames()...)
+
+				} else if attribute.Type == "CURRENCY" {
+					currencies := []string{"AED", "AFN", "ALL", "AMD", "ANG", "AOA", "ARS", "AUD", "AWG", "AZN",
+						"BAM", "BBD", "BDT", "BGN", "BHD", "BIF", "BMD", "BND", "BOB", "BRL", "BSD", "BTN", "BWP", "BYN", "BZD",
+						"CAD", "CDF", "CHF", "CLP", "CNY", "COP", "CRC", "CUC", "CUP", "CVE", "CZK",
+						"DJF", "DKK", "DOP", "DZD",
+						"EGP", "ERN", "ETB", "EUR",
+						"FJD", "FKP",
+						"GBP", "GEL", "GGP", "GHS", "GIP", "GMD", "GNF", "GTQ", "GYD",
+						"HKD", "HNL", "HRK", "HTG", "HUF",
+						"IDR", "ILS", "IMP", "INR", "IQD", "IRR", "ISK",
+						"JEP", "JMD", "JOD", "JPY",
+						"KES", "KGS", "KHR", "KMF", "KPW", "KRW", "KWD", "KYD", "KZT",
+						"LAK", "LBP", "LKR", "LRD", "LSL", "LYD",
+						"MAD", "MDL", "MGA", "MKD", "MMK", "MNT", "MOP", "MRU", "MUR", "MVR", "MWK", "MXN", "MYR", "MZN",
+						"NAD", "NGN", "NIO", "NOK", "NPR", "NZD",
+						"OMR",
+						"PAB", "PEN", "PGK", "PHP", "PKR", "PLN", "PYG",
+						"QAR",
+						"RON", "RSD", "RUB", "RWF",
+						"SAR", "SBD", "SCR", "SDG", "SEK", "SGD", "SHP", "SLL", "SOS", "SPL", "SRD", "STN", "SVC", "SYP", "SZL",
+						"THB", "TJS", "TMT", "TND", "TOP", "TRY", "TTD", "TVD", "TWD", "TZS",
+						"UAH", "UGX", "USD", "UYU", "UZS",
+						"VEF", "VND", "VUV",
+						"WST",
+						"XAF", "XCD", "XDR", "XOF", "XPF",
+						"YER",
+						"ZAR", "ZMW", "ZWD"}
+					for _, currency := range currencies {
+						results = append(results, currency)
+					}
 				}
 			}
 		}

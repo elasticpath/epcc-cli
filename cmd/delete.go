@@ -59,7 +59,7 @@ var delete = &cobra.Command{
 				return []string{}, cobra.ShellCompDirectiveNoFileComp
 			}
 
-			idCount, err := resources.GetNumberOfVariablesNeeded(resourceURL)
+			idCount, err := resources.GetNumberOfVariablesNeeded(resourceURL.Url)
 
 			if err != nil {
 				return []string{}, cobra.ShellCompDirectiveNoFileComp
@@ -67,7 +67,7 @@ var delete = &cobra.Command{
 
 			if len(args) > 0 && len(args) < 1+idCount {
 				// Must be for a resource completion
-				types, err := resources.GetTypesOfVariablesNeeded(resourceURL)
+				types, err := resources.GetTypesOfVariablesNeeded(resourceURL.Url)
 
 				if err != nil {
 					return []string{}, cobra.ShellCompDirectiveNoFileComp
@@ -99,10 +99,8 @@ func deleteResource(args []string) (*http.Response, error) {
 		return nil, fmt.Errorf("resource %s doesn't support DELETE", args[0])
 	}
 
-	resourceURL := resource.DeleteEntityInfo.Url
-
 	// Replace ids with args in resourceURL
-	resourceURL, err := resources.GenerateUrl(resource, resourceURL, args[1:])
+	resourceURL, err := resources.GenerateUrl(resource.DeleteEntityInfo, args[1:])
 
 	if err != nil {
 		return nil, err
