@@ -4,3 +4,9 @@
 	[ $status -eq 0 ]
 }
 
+@test "user-authentication-oidc-profile-infos delete-all support" {
+	run epcc delete-all user-authentication-oidc-profile-infos
+	[ $status -eq 0 ]
+}
+
+

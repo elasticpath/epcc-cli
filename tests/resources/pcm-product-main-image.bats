@@ -4,3 +4,9 @@
 	[ $status -eq 0 ]
 }
 
+@test "pcm-product-main-image delete-all support" {
+	run epcc delete-all pcm-product-main-image
+	[ $status -eq 0 ]
+}
+
+

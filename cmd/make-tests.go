@@ -10,12 +10,19 @@ import (
 )
 
 const testTemplate = `#!/usr/bin/env bats
-{{if .GetCollectionInfo -}}
-@test "{{ .PluralName }} empty get collection" {
-	run epcc get {{ .PluralName }}
+{{if .resource.GetCollectionInfo -}}
+@test "{{ .resource.PluralName }} empty get collection" {
+	run epcc get {{ .resource.PluralName }}
 	[ $status -eq 0 ]
 }
 {{end}}
+{{if and .resource.GetCollectionInfo .resource.DeleteEntityInfo -}}
+@test "{{ .resource.PluralName }} delete-all support" {
+	run epcc delete-all {{ .resource.PluralName }}
+	[ $status -eq 0 ]
+}
+{{end}}
+
 `
 
 var MakeTests = &cobra.Command{
@@ -24,9 +31,40 @@ var MakeTests = &cobra.Command{
 	Hidden: true,
 
 	RunE: func(cmd *cobra.Command, args []string) error {
+
 		err := os.MkdirAll("tests/resources", 0755)
 		if err != nil {
 			return err
+		}
+
+		createResourceString := map[string]string{}
+
+		for resourceName, resource := range resources.GetPluralResources() {
+
+			createString := fmt.Sprintf("epcc create %s ", resource.PluralName)
+
+			if resource.CreateEntityInfo != nil {
+				for attrName, attrVal := range resource.Attributes {
+
+					createString += attrName + " "
+
+					switch attrVal.Type {
+					case "FILE":
+					case "BOOLEAN":
+						createString += "true"
+					case "INT":
+						createString += "%(date +%s)"
+					case "STRING":
+						createString += "string"
+					default:
+						createString += "unsupported"
+					}
+
+				}
+
+				createResourceString[resourceName] = createString
+			}
+
 		}
 
 		for _, resourceName := range resources.GetPluralResourceNames() {
@@ -37,6 +75,7 @@ var MakeTests = &cobra.Command{
 				log.Infof("Tests for %s do not exist", testFilename)
 			} else {
 				log.Infof("Tests for %s exist already", testFilename)
+
 			}
 
 			tmpl, err := template.New("test").Parse(testTemplate)
@@ -58,7 +97,10 @@ var MakeTests = &cobra.Command{
 				return err
 			}
 
-			err = tmpl.Execute(f, resource)
+			err = tmpl.Execute(f, map[string]interface{}{
+				"resource":   resource,
+				"create_map": createResourceString,
+			})
 
 			if err != nil {
 				return err

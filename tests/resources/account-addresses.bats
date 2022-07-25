@@ -4,3 +4,9 @@
 	[ $status -eq 0 ]
 }
 
+@test "account-addresses delete-all support" {
+	run epcc delete-all account-addresses
+	[ $status -eq 0 ]
+}
+
+

@@ -4,3 +4,9 @@
 	[ $status -eq 0 ]
 }
 
+@test "cart-items delete-all support" {
+	run epcc delete-all cart-items
+	[ $status -eq 0 ]
+}
+
+

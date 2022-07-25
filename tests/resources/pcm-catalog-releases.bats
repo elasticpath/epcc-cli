@@ -4,3 +4,9 @@
 	[ $status -eq 0 ]
 }
 
+@test "pcm-catalog-releases delete-all support" {
+	run epcc delete-all pcm-catalog-releases
+	[ $status -eq 0 ]
+}
+
+

@@ -4,3 +4,9 @@
 	[ $status -eq 0 ]
 }
 
+@test "oidc-profiles delete-all support" {
+	run epcc delete-all oidc-profiles
+	[ $status -eq 0 ]
+}
+
+

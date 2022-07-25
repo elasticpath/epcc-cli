@@ -4,3 +4,9 @@
 	[ $status -eq 0 ]
 }
 
+@test "pcm-variation-options delete-all support" {
+	run epcc delete-all pcm-variation-options
+	[ $status -eq 0 ]
+}
+
+

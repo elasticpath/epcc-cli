@@ -4,3 +4,9 @@
 	[ $status -eq 0 ]
 }
 
+@test "files delete-all support" {
+	run epcc delete-all files
+	[ $status -eq 0 ]
+}
+
+

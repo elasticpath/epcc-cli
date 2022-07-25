@@ -4,3 +4,9 @@
 	[ $status -eq 0 ]
 }
 
+@test "promotions delete-all support" {
+	run epcc delete-all promotions
+	[ $status -eq 0 ]
+}
+
+

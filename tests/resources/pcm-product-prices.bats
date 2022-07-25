@@ -4,3 +4,9 @@
 	[ $status -eq 0 ]
 }
 
+@test "pcm-product-prices delete-all support" {
+	run epcc delete-all pcm-product-prices
+	[ $status -eq 0 ]
+}
+
+

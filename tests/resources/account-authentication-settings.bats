@@ -3,4 +3,3 @@
 	run epcc get account-authentication-settings
 	[ $status -eq 0 ]
 }
-

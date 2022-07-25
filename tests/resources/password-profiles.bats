@@ -4,3 +4,9 @@
 	[ $status -eq 0 ]
 }
 
+@test "password-profiles delete-all support" {
+	run epcc delete-all password-profiles
+	[ $status -eq 0 ]
+}
+
+

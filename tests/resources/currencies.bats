@@ -4,3 +4,9 @@
 	[ $status -eq 0 ]
 }
 
+@test "currencies delete-all support" {
+	run epcc delete-all currencies
+	[ $status -eq 0 ]
+}
+
+
