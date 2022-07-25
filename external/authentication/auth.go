@@ -83,7 +83,7 @@ func auth() (string, error) {
 	} else {
 		// Autologin using env vars
 		if config.Envs.EPCC_CLIENT_ID == "" {
-			log.Debug("No client secret found, no authentication will be used")
+			log.Info("No client id set in profile or env var, no authentication will be used for API request. To get started, set the EPCC_CLIENT_ID and (optionally) EPCC_CLIENT_SECRET environment variables")
 			return "", nil
 		}
 

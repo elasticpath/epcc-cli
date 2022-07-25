@@ -53,6 +53,8 @@ var Limit *rate.Limiter = nil
 
 var statsLock = &sync.Mutex{}
 
+const defaultUrl = "https://api.moltin.com"
+
 var stats = struct {
 	totalRateLimitedTimeInMs int64
 	totalRequests            uint64
@@ -88,6 +90,13 @@ func doRequestInternal(ctx context.Context, method string, contentType string, p
 		return nil, err
 	}
 
+	if reqURL.Host == "" {
+		log.Infof("No API endpoint set in profile or environment variables, defaulting to \"%s\". To change this set the EPCC_API_BASE_URL environment variable.", defaultUrl)
+		reqURL, err = url.Parse(defaultUrl)
+		if err != nil {
+			log.Fatalf("Error when parsing default host, this is a bug, %s", defaultUrl)
+		}
+	}
 	reqURL.Path = path
 	reqURL.RawQuery = query
 
