@@ -43,6 +43,7 @@ func init() {
 		login,
 		logout,
 		ResetStore,
+		MakeTests,
 	)
 	Logs.AddCommand(LogsList, LogsShow, LogsClear)
 

@@ -178,7 +178,8 @@ func doRequestInternal(ctx context.Context, method string, contentType string, p
 				log.Debugf("%s %s", method, reqURL.String())
 
 				// TODO maybe check if it's json and if not do something else.
-				json.PrintJson(string(body))
+				// Log to standard error because the body should always be jqable
+				json.PrintJsonToStderr(string(body))
 				log.Debugf("%s %s", resp.Proto, resp.Status)
 			} else {
 				log.Debugf("%s %s ==> %s %s", method, reqURL.String(), resp.Proto, resp.Status)
