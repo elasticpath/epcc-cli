@@ -514,6 +514,16 @@ fields:
       type: ENUM:flow
     relationships.flow.data.id:
       type: RESOURCE_ID:flows
+flow-fields:
+  singular-name: "flow-field"
+  json-api-type: "field"
+  json-api-format: "legacy"
+  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/fields/get-all-fields.html#get-get-all-fields-by-flow"
+  get-collection:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/fields/get-all-fields.html"
+    url: "/v2/flows/{flows}/fields"
+    parent_resource_value_overrides:
+      flows: slug
 entries:
   singular-name: entry
   json-api-type: entry

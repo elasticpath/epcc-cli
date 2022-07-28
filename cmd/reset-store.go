@@ -102,7 +102,10 @@ var ResetStore = &cobra.Command{
 
 		// TODO core flows hack
 		// TODO reset
-		log.Warnf("The following errors occurred while deleting all data: \n\t%s", strings.Join(errors, "\n\t"))
+		if len(errors) > 0 {
+			log.Warnf("The following errors occurred while deleting all data: \n\t%s", strings.Join(errors, "\n\t"))
+		}
+
 		return nil
 
 	},

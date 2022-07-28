@@ -44,7 +44,7 @@ var update = &cobra.Command{
 
 		args = append(args, "type", resource.JsonApiType)
 		// Create the body from remaining args
-		body, err := json.ToJson(args[(idCount+1):], false, resource.JsonApiFormat == "compliant", resource.Attributes)
+		body, err := json.ToJson(args[(idCount+1):], resource.NoWrapping, resource.JsonApiFormat == "compliant", resource.Attributes)
 		if err != nil {
 			return err
 		}

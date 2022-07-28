@@ -4,6 +4,7 @@ import (
 	_ "embed"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
+	"regexp"
 )
 
 //go:embed resources.yaml
@@ -12,6 +13,10 @@ var resourceMetaData string
 var resources map[string]Resource
 
 var resourcesSingular = map[string]Resource{}
+
+// This will match a /v2/<FOO>/{BAR} with an optional slash at the end.
+
+var topLevelResourceRegexp = regexp.MustCompile("^/v2/[^/]+/\\{[^}]+}/?$")
 
 type Resource struct {
 	// The type as far as the EPCC CLI is concerned.
@@ -158,6 +163,7 @@ func init() {
 
 	resources = reses
 
+	createFlowEntityRelationships()
 	postProcessResourceMetadata()
 }
 
@@ -176,4 +182,103 @@ func postProcessResourceMetadata() {
 		resourcesSingular[val.SingularName] = val
 		resources[key] = val
 	}
+
+}
+
+func createFlowEntityRelationships() {
+	// Warning when this function runs the resources are in a "half"
+	// initialized state (e.g., some fields like type might be null)
+	resourcesAdded := make([]string, 0)
+	for key, val := range resources {
+
+		// This check isn't perfect, these resources exist no matter what.
+		// However this seems like a good first attempt.
+		// A slightly better attempt
+		if val.GetEntityInfo == nil || !topLevelResourceRegexp.MatchString(val.GetEntityInfo.Url) {
+			continue
+		}
+
+		newResource := Resource{
+			Type:              key + "-entity-relationships",
+			Docs:              "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/entry-relationships/index.html",
+			JsonApiType:       key + "-entity-relationships",
+			JsonApiFormat:     "legacy",
+			GetCollectionInfo: nil,
+			GetEntityInfo: &CrudEntityInfo{
+				Docs:            "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/entry-relationships/index.html",
+				Url:             val.GetEntityInfo.Url + "/relationships/{fields}",
+				ContentType:     "",
+				QueryParameters: "",
+				MinResources:    0,
+				ParentResourceValueOverrides: map[string]string{
+					"fields": "slug",
+				},
+			},
+			CreateEntityInfo: &CrudEntityInfo{
+				Docs:            "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/entry-relationships/create-an-entry-relationship.html",
+				Url:             val.GetEntityInfo.Url + "/relationships/{fields}",
+				ContentType:     "",
+				QueryParameters: "",
+				MinResources:    0,
+				ParentResourceValueOverrides: map[string]string{
+					"fields": "slug",
+				},
+			},
+			UpdateEntityInfo: &CrudEntityInfo{
+				Docs:            "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/entry-relationships/update-entry-relationships.html",
+				Url:             val.GetEntityInfo.Url + "/relationships/{fields}",
+				ContentType:     "",
+				QueryParameters: "",
+				MinResources:    0,
+				ParentResourceValueOverrides: map[string]string{
+					"fields": "slug",
+				},
+			},
+			DeleteEntityInfo: &CrudEntityInfo{
+				Docs:            "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/entry-relationships/delete-entry-relationships.html",
+				Url:             val.GetEntityInfo.Url + "/relationships/{fields}",
+				ContentType:     "",
+				QueryParameters: "",
+				MinResources:    0,
+				ParentResourceValueOverrides: map[string]string{
+					"fields": "slug",
+				},
+			},
+			Attributes: map[string]*CrudEntityAttribute{
+				"data[n].id": {
+					Key:  "data[n].id",
+					Type: "STRING",
+				},
+				"data[n].type": {
+					Key:  "data[n].type",
+					Type: "SINGULAR_RESOURCE_TYPE",
+				},
+				"data.id": {
+					Key:  "data.id",
+					Type: "STRING",
+				},
+				"data.type": {
+					Key:  "data.type",
+					Type: "SINGULAR_RESOURCE_TYPE",
+				}},
+			NoWrapping:           true,
+			SingularName:         val.SingularName + "-entity-relationship",
+			PluralName:           key + "-entity-relationships",
+			SuppressResetWarning: true,
+		}
+
+		_, ok := resources[newResource.Type]
+
+		if ok {
+			log.Warnf("Can not create dynamic resource as one already exists for %s", newResource.Type)
+		} else {
+			resources[newResource.Type] = newResource
+			log.Tracef("Adding new dynamically generated resource %s", newResource.Type)
+			resourcesAdded = append(resourcesAdded, newResource.Type)
+		}
+
+	}
+
+	log.Debugf("The following resources have been generated dynamically %v", resourcesAdded)
+
 }
