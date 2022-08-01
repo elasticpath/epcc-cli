@@ -14,7 +14,6 @@ import (
 	"golang.org/x/time/rate"
 	"io"
 	"io/ioutil"
-	"mime/multipart"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -155,34 +154,56 @@ func doRequestInternal(ctx context.Context, method string, contentType string, p
 		return nil, err
 	}
 
-	if resp.StatusCode >= 400 {
-		if payload != nil {
-			body, _ := ioutil.ReadAll(&bodyBuf)
-			if len(body) > 0 {
-				log.Warnf("%s %s", method, reqURL.String())
+	var logf func(string, ...interface{})
 
-				// TODO maybe check if it's json and if not do something else.
-				json.PrintJsonToStderr(string(body))
-				log.Warnf("%s %s", resp.Proto, resp.Status)
-			} else {
-				log.Warnf("%s %s ==> %s %s", method, reqURL.String(), resp.Proto, resp.Status)
-			}
-		} else {
-			log.Warnf("%s %s ==> %s %s", method, reqURL.String(), resp.Proto, resp.Status)
+	if resp.StatusCode >= 400 {
+		logf = func(a string, b ...interface{}) {
+			log.Warnf(a, b...)
+		}
+	} else if log.IsLevelEnabled(log.DebugLevel) {
+		logf = func(a string, b ...interface{}) {
+			log.Debugf(a, b...)
+		}
+	} else {
+		logf = func(a string, b ...interface{}) {
+			// Do nothing
+		}
+	}
+
+	requestHeaders := ""
+	responseHeaders := ""
+	if log.IsLevelEnabled(log.DebugLevel) {
+		for k, v := range req.Header {
+			requestHeaders += "\n" + k + ":" + strings.Join(v, ", ")
 		}
 
-	} else if log.IsLevelEnabled(log.DebugLevel) {
+		requestHeaders += "\n"
+	}
+
+	if log.IsLevelEnabled(log.DebugLevel) {
+		for k, v := range resp.Header {
+			responseHeaders += "\n" + k + ":" + strings.Join(v, ", ")
+		}
+		requestHeaders += "\n\n"
+	}
+
+	if resp.StatusCode >= 400 || log.IsLevelEnabled(log.DebugLevel) {
 		if payload != nil {
 			body, _ := ioutil.ReadAll(&bodyBuf)
 			if len(body) > 0 {
-				log.Debugf("%s %s", method, reqURL.String())
+				logf("%s %s%s", method, reqURL.String(), requestHeaders)
+				if contentType == "application/json" {
+					json.PrintJsonToStderr(string(body))
+				} else {
+					logf("%s", body)
+				}
 
-				// TODO maybe check if it's json and if not do something else.
-				json.PrintJson(string(body))
-				log.Debugf("%s %s", resp.Proto, resp.Status)
+				logf("%s %s%s", resp.Proto, resp.Status, responseHeaders)
 			} else {
-				log.Debugf("%s %s ==> %s %s", method, reqURL.String(), resp.Proto, resp.Status)
+				logf("%s %s%s ==> %s %s%s", method, reqURL.String(), requestHeaders, resp.Proto, resp.Status, responseHeaders)
 			}
+		} else {
+			logf("%s %s%s ==> %s %s%s", method, reqURL.String(), requestHeaders, resp.Proto, resp.Status, responseHeaders)
 		}
 	} else if resp.StatusCode >= 200 && resp.StatusCode <= 399 {
 		log.Infof("%s %s ==> %s %s", method, reqURL.String(), resp.Proto, resp.Status)
@@ -196,34 +217,6 @@ func doRequestInternal(ctx context.Context, method string, contentType string, p
 	profiles.LogRequestToDisk(method, path, dumpReq, dumpRes, resp.StatusCode)
 
 	return resp, err
-}
-
-// https://stackoverflow.com/questions/20205796/post-data-using-the-content-type-multipart-form-data
-func EncodeForm(values map[string]string, filename string, paramName string, fileContents []byte) (byteBuf *bytes.Buffer, contentType string, err error) {
-
-	body := new(bytes.Buffer)
-	writer := multipart.NewWriter(body)
-
-	for key, val := range values {
-		_ = writer.WriteField(key, val)
-	}
-
-	if len(paramName) > 0 {
-		part, err := writer.CreateFormFile(paramName, filename)
-
-		if err != nil {
-			return nil, "", err
-		}
-
-		part.Write(fileContents)
-	}
-
-	err = writer.Close()
-	if err != nil {
-		return nil, "", err
-	}
-
-	return body, writer.FormDataContentType(), nil
 }
 
 func AddHeaderByFlag(r *http.Request) error {

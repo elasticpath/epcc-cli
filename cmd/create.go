@@ -5,12 +5,14 @@ import (
 	"fmt"
 	"github.com/elasticpath/epcc-cli/external/aliases"
 	"github.com/elasticpath/epcc-cli/external/completion"
+	"github.com/elasticpath/epcc-cli/external/encoding"
 	"github.com/elasticpath/epcc-cli/external/httpclient"
 	"github.com/elasticpath/epcc-cli/external/json"
 	"github.com/elasticpath/epcc-cli/external/resources"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"io/ioutil"
+	"net/http"
 	"strings"
 )
 
@@ -45,18 +47,36 @@ var create = &cobra.Command{
 			return err
 		}
 
-		if !resource.NoWrapping {
-			args = append(args, "type", resource.JsonApiType)
-		}
-		// Create the body from remaining args
-		body, err := json.ToJson(args[(idCount+1):], resource.NoWrapping, resource.JsonApiFormat == "compliant", resource.Attributes)
+		var resp *http.Response = nil
+		var resBody []byte
 
-		if err != nil {
-			return err
-		}
+		if resource.CreateEntityInfo.ContentType == "multipart/form-data" {
 
-		// Submit request
-		resp, err := httpclient.DoRequest(context.TODO(), "POST", resourceURL, "", strings.NewReader(body))
+			byteBuf, contentType, err := encoding.ToMultiPartEncoding(args[(idCount+1):], resource.NoWrapping, resource.JsonApiFormat == "complaint", resource.Attributes)
+			if err != nil {
+				return err
+			}
+
+			// Submit request
+			resp, err = httpclient.DoFileRequest(context.TODO(), resourceURL, byteBuf, contentType)
+
+		} else {
+			// Assume it's application/json
+
+			if !resource.NoWrapping {
+				args = append(args, "type", resource.JsonApiType)
+			}
+			// Create the body from remaining args
+			body, err := json.ToJson(args[(idCount+1):], resource.NoWrapping, resource.JsonApiFormat == "compliant", resource.Attributes)
+
+			if err != nil {
+				return err
+			}
+
+			// Submit request
+			resp, err = httpclient.DoRequest(context.TODO(), "POST", resourceURL, "", strings.NewReader(body))
+
+		}
 
 		if err != nil {
 			return fmt.Errorf("got error %s", err.Error())
@@ -64,7 +84,7 @@ var create = &cobra.Command{
 		defer resp.Body.Close()
 
 		// Print the body
-		resBody, err := ioutil.ReadAll(resp.Body)
+		resBody, err = ioutil.ReadAll(resp.Body)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -74,7 +94,6 @@ var create = &cobra.Command{
 			json.PrintJson(string(resBody))
 			return fmt.Errorf(resp.Status)
 		}
-
 		aliases.SaveAliasesForResources(string(resBody))
 		return json.PrintJson(string(resBody))
 	},
