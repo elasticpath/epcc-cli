@@ -188,9 +188,32 @@ func Complete(c Request) ([]string, cobra.ShellCompDirective) {
 						"XAF", "XCD", "XDR", "XOF", "XPF",
 						"YER",
 						"ZAR", "ZMW", "ZWD"}
-					for _, currency := range currencies {
-						results = append(results, currency)
+
+					results = append(results, currencies...)
+				} else if attribute.Type == "FILE" {
+					compDir = cobra.ShellCompDirectiveFilterFileExt
+
+					// https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/files/create-a-file.html#post-create-a-file
+					supportedFileTypes := []string{
+						"gif",
+						"jpg", "jpeg",
+						"png",
+						"webp",
+						"mp4",
+						"mov",
+						"pdf",
+						"svg",
+						"usdz",
+						"glb",
+						"jp2",
+						"jxr",
+						"aac",
+						"vrml",
+						"doc", "docx",
+						"ppt", "pptx",
+						"xls", "xlsx",
 					}
+					results = append(results, supportedFileTypes...)
 				}
 			}
 		}
