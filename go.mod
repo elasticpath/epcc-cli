@@ -14,7 +14,7 @@ require (
 	github.com/thediveo/enumflag v0.10.1
 	github.com/yosida95/uritemplate/v3 v3.0.2
 	golang.org/x/time v0.0.0-20220411224347-583f2d630306
-	gopkg.in/ini.v1 v1.66.6
+	gopkg.in/ini.v1 v1.67.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
