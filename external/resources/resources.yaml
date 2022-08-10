@@ -1024,52 +1024,6 @@ payment-gateways-paypal-express-checkout:
     test:
       type: BOOL
   suppress-reset-warning: true
-payment-gateways-paypal-payflow-pro:
-  singular-name: "payment-gateway-paypal-payflow-pro"
-  json-api-type: "gateway"
-  json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/gateways/configure-payflow-express.html"
-  get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/gateways/get-a-gateway.html#get-get-a-gateway-by-slug"
-    url: "/v2/gateways/payflow_express"
-  update-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/gateways/configure-payflow-express.html"
-    url: "/v2/gateways/payflow_express"
-  attributes:
-    partner:
-      type: STRING
-    login:
-      type: STRING
-    password:
-      type: STRING
-    enabled:
-      type: BOOL
-    test:
-      type: BOOL
-  suppress-reset-warning: true
-payment-gateways-paypal-express:
-  singular-name: "payment-gateway-paypal-express"
-  json-api-type: "gateway"
-  json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/gateways/configure-paypal-express.html"
-  get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/gateways/get-a-gateway.html#get-get-a-gateway-by-slug"
-    url: "/v2/gateways/paypal_express"
-  update-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/gateways/configure-paypal-express.html"
-    url: "/v2/gateways/paypal_express"
-  attributes:
-    login:
-      type: STRING
-    password:
-      type: STRING
-    signature:
-      type: STRING
-    enabled:
-      type: BOOL
-    test:
-      type: BOOL
-  suppress-reset-warning: true
 payment-gateways-stripe:
   singular-name: "payment-gateway-stripe"
   json-api-type: "gateway"

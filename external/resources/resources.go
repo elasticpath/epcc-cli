@@ -197,7 +197,6 @@ func createFlowEntityRelationships() {
 		if val.GetEntityInfo == nil || !topLevelResourceRegexp.MatchString(val.GetEntityInfo.Url) {
 			continue
 		}
-
 		newResource := Resource{
 			Type:              key + "-entity-relationships",
 			Docs:              "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/entry-relationships/index.html",
