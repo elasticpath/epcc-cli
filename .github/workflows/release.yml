@@ -37,6 +37,10 @@ jobs:
           # These secrets will need to be configured for the repository:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.GPG_PASSPHRASE }}
+
+      - name: Weird GPG hack
+          run: |
+            export GPG_TTY=$(tty)
       -
         name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v3
