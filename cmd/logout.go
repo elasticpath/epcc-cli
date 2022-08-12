@@ -1,45 +1,33 @@
 package cmd
 
 import (
-	"fmt"
-	"github.com/elasticpath/epcc-cli/external/completion"
-	"github.com/elasticpath/epcc-cli/globals"
+	"github.com/elasticpath/epcc-cli/external/authentication"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"os"
 )
 
-var logout = &cobra.Command{
-	Use:   "logout",
-	Short: "Logout user",
-	Args: func(cmd *cobra.Command, args []string) error {
-		if len(args) < 1 {
-			return fmt.Errorf("requires at least one arg")
-		}
-		apiArgName := args[0]
-		// Can be extended for other user personas
-		if apiArgName != API {
-			return fmt.Errorf("argument is incorrect")
-		}
-		return nil
-	},
-	RunE: func(cmd *cobra.Command, args []string) error {
+var logoutCmd = &cobra.Command{
+	Use:          "logout",
+	Short:        "Logout (Clears locally saved tokens)",
+	SilenceUsage: false,
+}
 
-		var err error
-		if _, err := os.Stat(globals.CredPath); err == nil {
-			// Remove token on logout
-			err = os.Remove(globals.CredPath)
-		}
+var logoutBearer = &cobra.Command{
+	Use:     "api",
+	Short:   "Logout (Clears locally saved tokens _and_ prevents automatic login)",
+	Aliases: []string{"bearer", "client_credentials", "implicit"},
+	RunE: func(cmd *cobra.Command, args []string) error {
+		err := authentication.ClearApiToken()
 		if err != nil {
-			return fmt.Errorf("user already logged out")
+			return err
 		}
-		return err
-	},
-	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		if len(args) == 0 {
-			return completion.Complete(completion.Request{
-				Type: completion.CompleteLoginLogoutAPI,
-			})
+
+		authentication.DisableAutoLogin()
+		if err != nil {
+			return err
 		}
-		return []string{}, cobra.ShellCompDirectiveNoFileComp
+
+		log.Info("Successfully logged out of the API, automatic login disabled")
+		return nil
 	},
 }

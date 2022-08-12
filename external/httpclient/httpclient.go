@@ -9,7 +9,6 @@ import (
 	"github.com/elasticpath/epcc-cli/external/json"
 	"github.com/elasticpath/epcc-cli/external/profiles"
 	"github.com/elasticpath/epcc-cli/external/version"
-	"github.com/elasticpath/epcc-cli/globals"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/time/rate"
 	"io"
@@ -23,6 +22,8 @@ import (
 	"sync"
 	"time"
 )
+
+var RawHeaders []string
 
 const EnvNameHttpPrefix = "EPCC_CLI_HTTP_HEADER_"
 
@@ -109,14 +110,14 @@ func doRequestInternal(ctx context.Context, method string, contentType string, p
 		return nil, err
 	}
 
-	bearerToken, err := authentication.GetAuthenticationToken()
+	bearerToken, err := authentication.GetAuthenticationToken(true, nil)
 
 	if err != nil {
 		return nil, err
 	}
 
-	if bearerToken != "" {
-		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", bearerToken))
+	if bearerToken != nil {
+		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", bearerToken.AccessToken))
 	}
 
 	req.Header.Add("Content-Type", contentType)
@@ -200,10 +201,10 @@ func doRequestInternal(ctx context.Context, method string, contentType string, p
 
 				logf("%s %s%s", resp.Proto, resp.Status, responseHeaders)
 			} else {
-				logf("%s %s%s ==> %s %s%s", method, reqURL.String(), requestHeaders, resp.Proto, resp.Status, responseHeaders)
+				logf("%s %s%s ==> %s %s%s", req.Method, reqURL.String(), requestHeaders, resp.Proto, resp.Status, responseHeaders)
 			}
 		} else {
-			logf("%s %s%s ==> %s %s%s", method, reqURL.String(), requestHeaders, resp.Proto, resp.Status, responseHeaders)
+			logf("%s %s%s ==> %s %s%s", req.Method, reqURL.String(), requestHeaders, resp.Proto, resp.Status, responseHeaders)
 		}
 	} else if resp.StatusCode >= 200 && resp.StatusCode <= 399 {
 		log.Infof("%s %s ==> %s %s", method, reqURL.String(), resp.Proto, resp.Status)
@@ -220,7 +221,7 @@ func doRequestInternal(ctx context.Context, method string, contentType string, p
 }
 
 func AddHeaderByFlag(r *http.Request) error {
-	for _, header := range globals.RawHeaders {
+	for _, header := range RawHeaders {
 		// Validation and formatting logic for headers could be improved
 		entries := strings.Split(header, ":")
 		if len(entries) < 2 {

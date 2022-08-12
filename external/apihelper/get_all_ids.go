@@ -11,7 +11,6 @@ import (
 	"reflect"
 )
 
-//
 func GetAllIds(ctx context.Context, resource *resources.Resource) ([][]id.IdableAttributes, error) {
 	// TODO make this a channel based instead of array based
 	// This must be an unbuffered channel since the receiver won't get the channel until after we have sent in some cases.
