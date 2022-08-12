@@ -25,12 +25,12 @@ func GetProfileDirectory() string {
 		log.Errorf("could not make directory")
 	}
 
-	return profileDirectory
+	return filepath.Clean(profileDirectory)
 }
 
 func GetProfileDataDirectory() string {
 	profileDirectory := GetProfileDirectory()
-	profileDataDirectory := filepath.FromSlash(profileDirectory + "/" + ProfileName + "/data")
+	profileDataDirectory := filepath.Clean(filepath.FromSlash(profileDirectory + "/" + ProfileName + "/data"))
 	//built in check if dir exists
 	if err := os.MkdirAll(profileDataDirectory, 0700); err != nil {
 		log.Errorf("could not make directory")

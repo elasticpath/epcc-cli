@@ -116,7 +116,6 @@ var DeleteAll = &cobra.Command{
 	},
 }
 
-//
 func getParentIds(ctx context.Context, resource resources.Resource) ([][]id.IdableAttributes, error) {
 
 	myEntityIds := make([][]id.IdableAttributes, 0)
