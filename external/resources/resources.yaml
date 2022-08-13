@@ -323,7 +323,7 @@ currencies:
     enabled:
       type: BOOL
 customer-authentication-settings:
-  singular-name: "customer-authentication-settings"
+  singular-name: "customer-authentication-setting"
   json-api-type: "customer-authentication-settings"
   json-api-format: "legacy"
   docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/settings/customer-authentication-settings/index.html"
@@ -332,7 +332,7 @@ customer-authentication-settings:
     url: "/v2/settings/customer-authentication"
   get-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/settings/customer-authentication-settings/get-customer-authentication-settings.html"
-    url: "/v2/settings/customer-authentication"
+    url: "/v2/settings/customer-authentication/{customer_authentication_settings}"
 customers:
   singular-name: "customer"
   json-api-type: "customer"

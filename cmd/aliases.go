@@ -17,12 +17,25 @@ var aliasesCmd = &cobra.Command{
 }
 
 var aliasListCmd = &cobra.Command{
-	Use:   "list <resource>",
+	Use:   "list <resource>...",
 	Short: "Lists all aliases for a resource",
-	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		if len(args) != 0 {
-			resource, ok := resources.GetResourceByName(args[0])
+
+		resourcesToPrint := args
+
+		if len(resourcesToPrint) == 0 {
+			resourcesToPrint = resources.GetSingularResourceNames()
+		}
+
+		sort.Strings(resourcesToPrint)
+		if len(resourcesToPrint) != 1 {
+			fmt.Printf("%45s || %100s || Values\n", "Resource Type", "Alias Name")
+		} else {
+			fmt.Printf("%45s || Values\n", "Alias Name")
+		}
+
+		for _, resourceName := range resourcesToPrint {
+			resource, ok := resources.GetResourceByName(resourceName)
 			if !ok {
 				return fmt.Errorf("could not find resource information for resource: %s", args[0])
 			}
@@ -37,10 +50,14 @@ var aliasListCmd = &cobra.Command{
 
 			sort.Strings(sortedAliasNames)
 
-			fmt.Printf("%40s || Values\n", "Alias Name")
-
 			for _, alias := range sortedAliasNames {
-				fmt.Printf("%40s => ID: %s", alias, aliases[alias].Id)
+
+				if len(resourcesToPrint) != 1 {
+					fmt.Printf("%45s %100s => ID: %s", resourceName, alias, aliases[alias].Id)
+				} else {
+					fmt.Printf("%45s => ID: %s", alias, aliases[alias].Id)
+				}
+
 				if aliases[alias].Sku != "" {
 					fmt.Printf(" Sku: %10s", aliases[alias].Sku)
 				}
@@ -51,10 +68,10 @@ var aliasListCmd = &cobra.Command{
 
 				fmt.Println()
 			}
-
-			return nil
 		}
-		return fmt.Errorf("you must supply a resource type to the aliases command")
+
+		return nil
+
 	},
 
 	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {

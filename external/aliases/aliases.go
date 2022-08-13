@@ -11,6 +11,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 	"sync"
@@ -41,6 +42,12 @@ func ClearAllAliasesForJsonApiType(jsonApiType string) error {
 	return nil
 
 }
+
+// Used to determine index of element in array.
+var arrayPathPattern = regexp.MustCompile("^\\.data\\[([0-9]+)]$")
+
+// Used to determine name of relationship
+var relationshipPattern = regexp.MustCompile("^\\.data(?:\\[[0-9]+])?\\.relationships\\.([^.]+)\\.data")
 
 func GetAliasesForJsonApiType(jsonApiType string) map[string]*id.IdableAttributes {
 	profileDirectory := getAliasDataDirectory()
@@ -90,7 +97,7 @@ func SaveAliasesForResources(jsonTxt string) {
 	}
 
 	results := map[string]map[string]*id.IdableAttributes{}
-	visitResources(jsonStruct, "", results)
+	visitResources(jsonStruct, "", "", map[string]*id.IdableAttributes{}, results)
 
 	log.Tracef("All aliases: %v", results)
 
@@ -201,12 +208,16 @@ func saveAliasesForResource(jsonApiType string, newAliases map[string]*id.Idable
 	})
 }
 
-func visitResources(data map[string]interface{}, prefix string, results map[string]map[string]*id.IdableAttributes) {
+func visitResources(data map[string]interface{}, prefix string, parentAliasType string, parentAliases map[string]*id.IdableAttributes, results map[string]map[string]*id.IdableAttributes) {
+	aliases := map[string]*id.IdableAttributes{}
+	myType := ""
 	if typeObj, typeKeyExists := data["type"]; typeKeyExists {
 		if idObj, idKeyExists := data["id"]; idKeyExists {
 			if typeKeyValue, typeKeyIsString := typeObj.(string); typeKeyIsString {
 				if idKeyValue, idKeyIsString := idObj.(string); idKeyIsString {
-					aliases := generateAliasesForStruct(typeKeyValue, idKeyValue, data)
+
+					myType = typeKeyValue
+					aliases = generateAliasesForStruct(prefix, parentAliasType, parentAliases, typeKeyValue, idKeyValue, data)
 
 					log.Tracef("Found a type and id pair %s => %s under prefix %s, aliases %v", typeKeyValue, idKeyValue, prefix, aliases)
 
@@ -222,16 +233,26 @@ func visitResources(data map[string]interface{}, prefix string, results map[stri
 		}
 	}
 
+	parentAliasesToUse := parentAliases
+
+	if len(aliases) > 0 {
+		parentAliasesToUse = aliases
+	}
+
+	parentAliasTypeToUse := parentAliasType
+	if myType != "" {
+		parentAliasTypeToUse = myType
+	}
 	// Recursively descend over each element
 	for key, val := range data {
 		if mapType, ok := val.(map[string]interface{}); ok {
-			visitResources(mapType, prefix+"."+key, results)
+			visitResources(mapType, prefix+"."+key, parentAliasTypeToUse, parentAliasesToUse, results)
 		}
 
 		if arrayType, ok := val.([]interface{}); ok {
 			for idx, value := range arrayType {
 				if mapValue, ok := value.(map[string]interface{}); ok {
-					visitResources(mapValue, prefix+"."+key+"["+strconv.Itoa(idx)+"]", results)
+					visitResources(mapValue, prefix+"."+key+"["+strconv.Itoa(idx)+"]", parentAliasTypeToUse, parentAliasesToUse, results)
 				}
 
 			}
@@ -242,7 +263,7 @@ func visitResources(data map[string]interface{}, prefix string, results map[stri
 	return
 }
 
-func generateAliasesForStruct(typeKey string, idKey string, data map[string]interface{}) map[string]*id.IdableAttributes {
+func generateAliasesForStruct(prefix string, parentAliasType string, parentAliases map[string]*id.IdableAttributes, typeKey string, idKey string, data map[string]interface{}) map[string]*id.IdableAttributes {
 	result := id.IdableAttributes{
 		Id: idKey,
 	}
@@ -250,6 +271,26 @@ func generateAliasesForStruct(typeKey string, idKey string, data map[string]inte
 	results := map[string]*id.IdableAttributes{
 		// Identity, objects should be an alias of themselves.
 		"id=" + idKey: &result,
+	}
+
+	if prefix == ".data" {
+		results["last_read=entity"] = &result
+	}
+
+	if arrayPathPattern.MatchString(prefix) {
+		matches := arrayPathPattern.FindStringSubmatch(prefix)
+		results["last_read=array["+matches[1]+"]"] = &result
+	}
+
+	if relationshipPattern.MatchString(prefix) {
+		matches := relationshipPattern.FindStringSubmatch(prefix)
+		//related_buz_for_foo_id_123
+		keyPrefix := "related_" + matches[1] + "_for_" + parentAliasType + "_"
+
+		for k := range parentAliases {
+			results[keyPrefix+k] = &result
+		}
+
 	}
 
 	jsonObjectsToInspect := make([]map[string]interface{}, 0)
