@@ -20,26 +20,12 @@ var get = &cobra.Command{
 	Short: "Retrieves a single resource.",
 	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		resp, err := getResource(args)
-
+		err, body := getInternal(args)
 		if err != nil {
 			return err
 		}
 
-		// Print the body
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		// Check if error response
-		if resp.StatusCode >= 400 && resp.StatusCode <= 600 {
-			json.PrintJson(string(body))
-			return fmt.Errorf(resp.Status)
-		}
-
-		aliases.SaveAliasesForResources(string(body))
-		return json.PrintJson(string(body))
+		return json.PrintJson(body)
 	},
 
 	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
@@ -102,6 +88,29 @@ var get = &cobra.Command{
 
 		return []string{}, cobra.ShellCompDirectiveNoFileComp
 	},
+}
+
+func getInternal(args []string) (error, string) {
+	resp, err := getResource(args)
+
+	if err != nil {
+		return err, ""
+	}
+
+	// Print the body
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Check if error response
+	if resp.StatusCode >= 400 && resp.StatusCode <= 600 {
+		json.PrintJson(string(body))
+		return fmt.Errorf(resp.Status), ""
+	}
+
+	aliases.SaveAliasesForResources(string(body))
+	return nil, string(body)
 }
 
 func getUrl(resource resources.Resource, args []string) (*resources.CrudEntityInfo, error) {

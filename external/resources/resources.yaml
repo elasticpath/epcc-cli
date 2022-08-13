@@ -255,6 +255,10 @@ cart-checkout:
       type: STRING
     customer.name:
       type: STRING
+    contact.name:
+      type: STRING
+    contact.email:
+      type: STRING
     billing_address.first_name:
       type: STRING
     billing_address.last_name:
@@ -404,6 +408,28 @@ customer-addresses:
       type: STRING
     country:
       type: STRING
+customer-tokens:
+  singular-name: "customer-token"
+  json-api-type: "token"
+  json-api-format: "legacy"
+  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/customers/customer-tokens.html"
+  create-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/customers/customer-tokens.html#post-generate-a-token"
+    url: "/v2/customers/tokens"
+  attributes:
+    password:
+      type: STRING
+    email:
+      type: STRING
+    authentication_mechanism:
+      type: ENUM:password,oidc
+    oauth_authorization_code:
+      type: STRING
+    oauth_redirect_uri:
+      type: STRING
+    oauth_code_verifier:
+      type: STRING
+  suppress-reset-warning: true
 files:
   singular-name: "file"
   json-api-type: "file"
@@ -1606,3 +1632,5 @@ v2-products:
       type: ENUM:draft,live
     commodity_type:
       type: ENUM:physical,digital
+    id:
+      type: RESOURCE_ID:v2-products

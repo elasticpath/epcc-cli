@@ -120,6 +120,12 @@ func doRequestInternal(ctx context.Context, method string, contentType string, p
 		req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", bearerToken.AccessToken))
 	}
 
+	customerToken := authentication.GetCustomerToken()
+
+	if customerToken != nil {
+		req.Header.Add("X-Moltin-Customer-Token", customerToken.Data.Token)
+	}
+
 	req.Header.Add("Content-Type", contentType)
 
 	req.Header.Add("User-Agent", UserAgent)
@@ -128,7 +134,7 @@ func doRequestInternal(ctx context.Context, method string, contentType string, p
 		req.Header.Add("EP-Beta-Features", config.Envs.EPCC_BETA_API_FEATURES)
 	}
 
-	if err = AddHeaderByFlag(req); err != nil {
+	if err = AddAdditionalHeadersSpecifiedByFlag(req); err != nil {
 		return nil, err
 	}
 
@@ -220,7 +226,7 @@ func doRequestInternal(ctx context.Context, method string, contentType string, p
 	return resp, err
 }
 
-func AddHeaderByFlag(r *http.Request) error {
+func AddAdditionalHeadersSpecifiedByFlag(r *http.Request) error {
 	for _, header := range RawHeaders {
 		// Validation and formatting logic for headers could be improved
 		entries := strings.Split(header, ":")

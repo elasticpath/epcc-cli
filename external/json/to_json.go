@@ -141,6 +141,19 @@ func toJsonArray(args []string, noWrapping bool, compliant bool, attributes map[
 
 }
 
+func RunJQOnString(queryStr string, json string) (interface{}, error) {
+
+	var obj interface{}
+
+	err := gojson.Unmarshal([]byte(json), &obj)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return RunJQ(queryStr, obj)
+}
+
 func RunJQ(queryStr string, result interface{}) (interface{}, error) {
 	query, err := gojq.Parse(queryStr)
 

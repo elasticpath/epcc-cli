@@ -217,3 +217,18 @@ For development the following command using [Reflex](https://github.com/cespare/
 ```bash
 git fetch --all --tags && reflex -v -r '(\.go$)|(resources.yaml|go.mod)$' -- sh -c "go build -ldflags=\"-X github.com/elasticpath/epcc-cli/external/version.Version=$(git describe --tags --abbrev=0)+1 -X github.com/elasticpath/epcc-cli/external/version.Commit=$(git rev-parse --short HEAD)-dirty\" -o ./epcc" 
 ```
+
+
+### Git Hooks
+
+The following git pre-commit hook will run go fmt before committing anything
+
+```bash
+#!/bin/bash
+
+echo "Running go fmt"
+go fmt "./..."
+
+echo "Adding changed files back to git"
+git diff --cached --name-only --diff-filter=ACM | grep -E "\.(go)$" | xargs  git add
+```

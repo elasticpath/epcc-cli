@@ -11,7 +11,6 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
-	"os"
 	"strings"
 	"time"
 )
@@ -32,28 +31,8 @@ var bearerToken *ApiTokenResponse = nil
 
 func GetAuthenticationToken(useTokenFromProfileDir bool, valuesOverride *url.Values) (*ApiTokenResponse, error) {
 
-	apiTokenPath := getApiTokenPath()
-
 	if useTokenFromProfileDir {
-
-		data, err := os.ReadFile(apiTokenPath)
-		if err != nil {
-			if !os.IsNotExist(err) {
-				log.Warnf("Could not read %s, error %s", apiTokenPath, err)
-			} else {
-				log.Debugf("No saved api token %s, logging in again", apiTokenPath)
-			}
-			data = []byte{}
-		} else {
-			savedApiToken := ApiTokenResponse{}
-			err = json.Unmarshal(data, &savedApiToken)
-			if err != nil {
-				log.Debugf("Could not unmarshall existing file %s, error %s", data, err)
-			} else {
-				bearerToken = &savedApiToken
-			}
-		}
-
+		bearerToken = GetApiToken()
 	}
 
 	if bearerToken != nil {
@@ -113,19 +92,7 @@ func GetAuthenticationToken(useTokenFromProfileDir bool, valuesOverride *url.Val
 
 	bearerToken = token
 
-	jsonToken, err := json.Marshal(bearerToken)
-
-	if err != nil {
-		log.Warnf("Could not convert token to JSON  %v", err)
-	} else {
-		err = os.WriteFile(apiTokenPath, jsonToken, 0600)
-
-		if err != nil {
-			log.Warnf("Could not save token %s, error: %v", apiTokenPath, err)
-		} else {
-			log.Debugf("Saved token to %s", apiTokenPath)
-		}
-	}
+	SaveApiToken(bearerToken)
 	return bearerToken, nil
 }
 

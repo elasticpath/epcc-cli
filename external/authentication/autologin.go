@@ -18,7 +18,7 @@ func IsAutoLoginEnabled() bool {
 	return false
 }
 func getDisableAutoLoginFile() string {
-	return getAuthenticationCacheDirectory() + "/disable_auto_login"
+	return GetAuthenticationCacheDirectory() + "/disable_auto_login"
 }
 
 func DisableAutoLogin() error {
