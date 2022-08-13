@@ -14,7 +14,7 @@ var logoutCmd = &cobra.Command{
 
 var logoutBearer = &cobra.Command{
 	Use:     "api",
-	Short:   "Logout (Clears locally saved tokens _and_ prevents automatic login)",
+	Short:   "Logout of the API (Clears locally saved tokens _and_ prevents automatic login)",
 	Aliases: []string{"bearer", "client_credentials", "implicit"},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		err := authentication.ClearApiToken()
@@ -22,12 +22,33 @@ var logoutBearer = &cobra.Command{
 			return err
 		}
 
-		authentication.DisableAutoLogin()
+		err = authentication.DisableAutoLogin()
 		if err != nil {
 			return err
 		}
 
 		log.Info("Successfully logged out of the API, automatic login disabled")
+		return nil
+	},
+}
+
+var logoutCustomer = &cobra.Command{
+	Use:   "customer",
+	Short: "Destroys the customer token reverting to API only login",
+
+	RunE: func(cmd *cobra.Command, args []string) error {
+
+		if authentication.IsCustomerTokenSet() {
+			err := authentication.ClearCustomerToken()
+			if err != nil {
+				return err
+			}
+			log.Info("Successfully destroyed the customer token")
+			return nil
+		} else {
+			log.Info("No customer token found, you were already logged out.")
+		}
+
 		return nil
 	},
 }

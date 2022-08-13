@@ -21,81 +21,13 @@ var create = &cobra.Command{
 	Short: "Creates an entity of a resource.",
 	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		// Find Resource
-		resource, ok := resources.GetResourceByName(args[0])
-		if !ok {
-			return fmt.Errorf("could not find resource %s", args[0])
-		}
-
-		if resource.CreateEntityInfo == nil {
-			return fmt.Errorf("resource %s doesn't support CREATE", args[0])
-		}
-
-		// Count ids in CreateEntity
-		resourceURL := resource.CreateEntityInfo.Url
-
-		idCount, err := resources.GetNumberOfVariablesNeeded(resourceURL)
+		body, err := createInternal(args)
 
 		if err != nil {
 			return err
 		}
 
-		// Replace ids with args in resourceURL
-		resourceURL, err = resources.GenerateUrl(resource.CreateEntityInfo, args[1:])
-
-		if err != nil {
-			return err
-		}
-
-		var resp *http.Response = nil
-		var resBody []byte
-
-		if resource.CreateEntityInfo.ContentType == "multipart/form-data" {
-
-			byteBuf, contentType, err := encoding.ToMultiPartEncoding(args[(idCount+1):], resource.NoWrapping, resource.JsonApiFormat == "complaint", resource.Attributes)
-			if err != nil {
-				return err
-			}
-
-			// Submit request
-			resp, err = httpclient.DoFileRequest(context.TODO(), resourceURL, byteBuf, contentType)
-
-		} else {
-			// Assume it's application/json
-
-			if !resource.NoWrapping {
-				args = append(args, "type", resource.JsonApiType)
-			}
-			// Create the body from remaining args
-			body, err := json.ToJson(args[(idCount+1):], resource.NoWrapping, resource.JsonApiFormat == "compliant", resource.Attributes)
-
-			if err != nil {
-				return err
-			}
-
-			// Submit request
-			resp, err = httpclient.DoRequest(context.TODO(), "POST", resourceURL, "", strings.NewReader(body))
-
-		}
-
-		if err != nil {
-			return fmt.Errorf("got error %s", err.Error())
-		}
-		defer resp.Body.Close()
-
-		// Print the body
-		resBody, err = ioutil.ReadAll(resp.Body)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		// Check if error response
-		if resp.StatusCode >= 400 && resp.StatusCode <= 600 {
-			json.PrintJson(string(resBody))
-			return fmt.Errorf(resp.Status)
-		}
-		aliases.SaveAliasesForResources(string(resBody))
-		return json.PrintJson(string(resBody))
+		return json.PrintJson(body)
 	},
 
 	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
@@ -155,4 +87,82 @@ var create = &cobra.Command{
 
 		return []string{}, cobra.ShellCompDirectiveNoFileComp
 	},
+}
+
+func createInternal(args []string) (string, error) {
+	// Find Resource
+	resource, ok := resources.GetResourceByName(args[0])
+	if !ok {
+		return "", fmt.Errorf("could not find resource %s", args[0])
+	}
+
+	if resource.CreateEntityInfo == nil {
+		return "", fmt.Errorf("resource %s doesn't support CREATE", args[0])
+	}
+
+	// Count ids in CreateEntity
+	resourceURL := resource.CreateEntityInfo.Url
+
+	idCount, err := resources.GetNumberOfVariablesNeeded(resourceURL)
+
+	if err != nil {
+		return "", err
+	}
+
+	// Replace ids with args in resourceURL
+	resourceURL, err = resources.GenerateUrl(resource.CreateEntityInfo, args[1:])
+
+	if err != nil {
+		return "", err
+	}
+
+	var resp *http.Response = nil
+	var resBody []byte
+
+	if resource.CreateEntityInfo.ContentType == "multipart/form-data" {
+
+		byteBuf, contentType, err := encoding.ToMultiPartEncoding(args[(idCount+1):], resource.NoWrapping, resource.JsonApiFormat == "complaint", resource.Attributes)
+		if err != nil {
+			return "", err
+		}
+
+		// Submit request
+		resp, err = httpclient.DoFileRequest(context.TODO(), resourceURL, byteBuf, contentType)
+
+	} else {
+		// Assume it's application/json
+
+		if !resource.NoWrapping {
+			args = append(args, "type", resource.JsonApiType)
+		}
+		// Create the body from remaining args
+		body, err := json.ToJson(args[(idCount+1):], resource.NoWrapping, resource.JsonApiFormat == "compliant", resource.Attributes)
+
+		if err != nil {
+			return "", err
+		}
+
+		// Submit request
+		resp, err = httpclient.DoRequest(context.TODO(), "POST", resourceURL, "", strings.NewReader(body))
+
+	}
+
+	if err != nil {
+		return "", fmt.Errorf("got error %s", err.Error())
+	}
+	defer resp.Body.Close()
+
+	// Print the body
+	resBody, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Check if error response
+	if resp.StatusCode >= 400 && resp.StatusCode <= 600 {
+		json.PrintJson(string(resBody))
+		return "", fmt.Errorf(resp.Status)
+	}
+	aliases.SaveAliasesForResources(string(resBody))
+	return string(resBody), nil
 }

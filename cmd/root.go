@@ -62,9 +62,12 @@ func init() {
 
 	loginCmd.AddCommand(loginClientCredentials)
 	loginCmd.AddCommand(loginImplicit)
+	loginCmd.AddCommand(loginInfo)
 	loginCmd.AddCommand(loginDocs)
+	loginCmd.AddCommand(loginCustomer)
 
 	logoutCmd.AddCommand(logoutBearer)
+	logoutCmd.AddCommand(logoutCustomer)
 }
 
 var persistentPreRunFuncs []func(cmd *cobra.Command, args []string) error

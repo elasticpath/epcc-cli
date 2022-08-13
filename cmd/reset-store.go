@@ -121,8 +121,6 @@ func resetResources() (error, []string) {
 		{"payment-gateway-cybersource", "login", "", "password", "", "enabled", "false", "test", "false"},
 		{"payment-gateway-paypal-express-checkout", "payer_id", "", "enabled", "false", "test", "false"},
 		{"payment-gateway-manual", "enabled", "false"},
-		{"payment-gateway-paypal-payflow-pro", "partner", "", "login", "", "password", "", "enabled", "false", "test", "false"},
-		{"payment-gateway-paypal-express", "signature", "", "login", "", "password", "", "enabled", "false", "test", "false"},
 		{"payment-gateway-stripe", "login", "", "enabled", "false"},
 		{"payment-gateway-stripe-connect", "stripe_account", "", "enabled", "false", "test", "false"},
 		{"payment-gateway-stripe-payment-intents", "login", "", "enabled", "false"},
