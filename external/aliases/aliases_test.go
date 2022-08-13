@@ -1,6 +1,7 @@
 package aliases
 
 import (
+	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"os"
 	"testing"
@@ -32,14 +33,15 @@ func TestSavedAliasIsReturnedInAllAliasesForSingleResponse(t *testing.T) {
 	aliases := GetAliasesForJsonApiType("foo")
 
 	// Verification
-
-	if len(aliases) != 1 {
+	if len(aliases) != 2 {
 		t.Errorf("There should be one alias for the type foo, not %d", len(aliases))
 	}
 
-	if aliases["id=123"] != nil && aliases["id=123"].Id != "123" {
-		t.Errorf("Alias should exist for id=123")
-	}
+	assert.Contains(t, aliases, "id=123")
+	assert.Equal(t, "123", aliases["id=123"].Id)
+
+	assert.Contains(t, aliases, "last_read=entity")
+	assert.Equal(t, "123", aliases["last_read=entity"].Id)
 }
 
 func TestSavedAliasAppendsAndPreservesPreviousUnrelatedAliases(t *testing.T) {
@@ -74,17 +76,18 @@ func TestSavedAliasAppendsAndPreservesPreviousUnrelatedAliases(t *testing.T) {
 
 	// Verification
 
-	if len(aliases) != 2 {
+	if len(aliases) != 3 {
 		t.Errorf("There should be two aliases for the type foo, not %d", len(aliases))
 	}
 
-	if aliases["id=123"] != nil && aliases["id=123"].Id != "123" {
-		t.Errorf("Alias should exist for id=123")
-	}
+	assert.Contains(t, aliases, "id=123")
+	assert.Equal(t, "123", aliases["id=123"].Id)
 
-	if aliases["id=456"] != nil && aliases["id=456"].Id != "456" {
-		t.Errorf("Alias should exist for id=456")
-	}
+	assert.Contains(t, aliases, "id=456")
+	assert.Equal(t, "456", aliases["id=456"].Id)
+
+	assert.Contains(t, aliases, "last_read=entity")
+	assert.Equal(t, "456", aliases["last_read=entity"].Id)
 }
 
 func TestSavedAliasIsReplacedWhenNewEntityHasTheSameAttributeValue(t *testing.T) {
@@ -121,21 +124,21 @@ func TestSavedAliasIsReplacedWhenNewEntityHasTheSameAttributeValue(t *testing.T)
 
 	// Verification
 
-	if len(aliases) != 3 {
+	if len(aliases) != 4 {
 		t.Errorf("There should be three aliases for the type foo, not %d", len(aliases))
 	}
 
-	if aliases["id=123"] != nil && aliases["id=123"].Id != "123" {
-		t.Errorf("Alias should exist for id=123")
-	}
+	assert.Contains(t, aliases, "id=123")
+	assert.Equal(t, "123", aliases["id=123"].Id)
 
-	if aliases["id=456"] != nil && aliases["id=456"].Id != "456" {
-		t.Errorf("Alias should exist for id=456")
-	}
+	assert.Contains(t, aliases, "id=456")
+	assert.Equal(t, "456", aliases["id=456"].Id)
 
-	if aliases["name=Alpha"] != nil && aliases["name=Alpha"].Id != "456" {
-		t.Errorf("Alias should exist for id=456")
-	}
+	assert.Contains(t, aliases, "name=Alpha")
+	assert.Equal(t, "456", aliases["name=Alpha"].Id)
+
+	assert.Contains(t, aliases, "last_read=entity")
+	assert.Equal(t, "456", aliases["last_read=entity"].Id)
 }
 
 func TestSavedAliasIsReplacedWhenSameEntityHasANewValue(t *testing.T) {
@@ -172,17 +175,17 @@ func TestSavedAliasIsReplacedWhenSameEntityHasANewValue(t *testing.T) {
 
 	// Verification
 
-	if len(aliases) != 2 {
-		t.Errorf("There should be two aliases for the type foo, not %d", len(aliases))
+	if len(aliases) != 3 {
+		t.Errorf("There should be three aliases for the type foo, not %d", len(aliases))
 	}
 
-	if aliases["id=123"] != nil && aliases["id=123"].Id != "123" {
-		t.Errorf("Alias should exist for id=123")
-	}
+	assert.Contains(t, aliases, "id=123")
+	assert.Equal(t, "123", aliases["id=123"].Id)
 
-	if aliases["name=Beta"] != nil && aliases["name=Beta"].Id != "123" {
-		t.Errorf("Alias should exist for id=123")
-	}
+	assert.Contains(t, aliases, "name=Beta")
+	assert.Equal(t, "123", aliases["name=Beta"].Id)
+	assert.Contains(t, aliases, "last_read=entity")
+	assert.Equal(t, "123", aliases["last_read=entity"].Id)
 }
 
 func TestDeleteAliasByIdDeletesAnAlias(t *testing.T) {
@@ -219,13 +222,15 @@ func TestDeleteAliasByIdDeletesAnAlias(t *testing.T) {
 
 	// Verification
 
-	if len(aliases) != 1 {
-		t.Errorf("There should be one alias for the type foo, not %d", len(aliases))
+	if len(aliases) != 2 {
+		t.Errorf("There should be two alias for the type foo, not %d", len(aliases))
 	}
 
-	if aliases["id=456"] != nil && aliases["id=456"].Id != "456" {
-		t.Errorf("Alias should exist for id=456")
-	}
+	assert.Contains(t, aliases, "id=456")
+	assert.Equal(t, "456", aliases["id=456"].Id)
+
+	assert.Contains(t, aliases, "last_read=entity")
+	assert.Equal(t, "456", aliases["last_read=entity"].Id)
 }
 
 func TestAllAliasesAreReturnedInAllAliasesForArrayResponse(t *testing.T) {
@@ -256,17 +261,21 @@ func TestAllAliasesAreReturnedInAllAliasesForArrayResponse(t *testing.T) {
 
 	// Verification
 
-	if len(aliases) != 2 {
-		t.Errorf("There should be one alias for the type foo, not %d", len(aliases))
+	if len(aliases) != 4 {
+		t.Errorf("There should be four aliases for the type foo, not %d", len(aliases))
 	}
 
-	if aliases["id=123"] != nil && aliases["id=123"].Id != "123" {
-		t.Errorf("Alias should exist for id=123")
-	}
+	assert.Contains(t, aliases, "id=123")
+	assert.Equal(t, "123", aliases["id=123"].Id)
 
-	if aliases["id=456"] != nil && aliases["id=456"].Id != "456" {
-		t.Errorf("Alias should exist for id=123")
-	}
+	assert.Contains(t, aliases, "id=456")
+	assert.Equal(t, "456", aliases["id=456"].Id)
+
+	assert.Contains(t, aliases, "last_read=array[0]")
+	assert.Equal(t, "123", aliases["last_read=array[0]"].Id)
+
+	assert.Contains(t, aliases, "last_read=array[1]")
+	assert.Equal(t, "456", aliases["last_read=array[1]"].Id)
 }
 
 func TestSavedAliasIsReturnedForAnEmailInLegacyObjectResponse(t *testing.T) {
@@ -293,17 +302,18 @@ func TestSavedAliasIsReturnedForAnEmailInLegacyObjectResponse(t *testing.T) {
 
 	// Verification
 
-	if len(aliases) != 2 {
-		t.Errorf("There should be one alias for the type foo, not %d", len(aliases))
+	if len(aliases) != 3 {
+		t.Errorf("There should be three alias for the type foo, not %d", len(aliases))
 	}
 
-	if aliases["email=test@test.com"] != nil && aliases["email=test@test.com"].Id != "123" {
-		t.Errorf("Alias should exist for email=test@test.com")
-	}
+	assert.Contains(t, aliases, "email=test@test.com")
+	assert.Equal(t, "123", aliases["email=test@test.com"].Id)
 
-	if aliases["id=123"] != nil && aliases["id=123"].Id != "123" {
-		t.Errorf("Alias should exist for id=123")
-	}
+	assert.Contains(t, aliases, "id=123")
+	assert.Equal(t, "123", aliases["id=123"].Id)
+
+	assert.Contains(t, aliases, "last_read=entity")
+	assert.Equal(t, "123", aliases["last_read=entity"].Id)
 }
 
 func TestSavedAliasIsReturnedForAnSkuInLegacyObjectResponse(t *testing.T) {
@@ -330,25 +340,27 @@ func TestSavedAliasIsReturnedForAnSkuInLegacyObjectResponse(t *testing.T) {
 
 	// Verification
 
-	if len(aliases) != 2 {
-		t.Errorf("There should be one alias for the type foo, not %d", len(aliases))
+	if len(aliases) != 3 {
+		t.Errorf("There should be three aliases for the type foo, not %d", len(aliases))
 	}
 
-	if aliases["sku=test"] != nil && aliases["sku=test"].Id != "123" {
-		t.Errorf("Alias should exist for sku=test")
-	}
+	assert.Contains(t, aliases, "sku=test")
+	assert.Equal(t, "123", aliases["sku=test"].Id)
 
-	if aliases["sku=test"] != nil && aliases["sku=test"].Sku != "test" {
-		t.Errorf("Alias should exist for sku=test and have sku test")
-	}
+	assert.Contains(t, aliases, "sku=test")
+	assert.Equal(t, "test", aliases["sku=test"].Sku)
 
-	if aliases["id=123"] != nil && aliases["id=123"].Id != "123" {
-		t.Errorf("Alias should exist for id=123")
-	}
+	assert.Contains(t, aliases, "id=123")
+	assert.Equal(t, "123", aliases["id=123"].Id)
 
-	if aliases["id=123"] != nil && aliases["id=123"].Sku != "test" {
-		t.Errorf("Alias should exist for id=123 and have a sku of test")
-	}
+	assert.Contains(t, aliases, "id=123")
+	assert.Equal(t, "test", aliases["id=123"].Sku)
+
+	assert.Contains(t, aliases, "last_read=entity")
+	assert.Equal(t, "123", aliases["last_read=entity"].Id)
+
+	assert.Contains(t, aliases, "last_read=entity")
+	assert.Equal(t, "test", aliases["last_read=entity"].Sku)
 }
 
 func TestSavedAliasIsReturnedForASlugInLegacyObjectResponse(t *testing.T) {
@@ -375,25 +387,27 @@ func TestSavedAliasIsReturnedForASlugInLegacyObjectResponse(t *testing.T) {
 
 	// Verification
 
-	if len(aliases) != 2 {
-		t.Errorf("There should be one alias for the type foo, not %d", len(aliases))
+	if len(aliases) != 3 {
+		t.Errorf("There should be three aliases for the type foo, not %d", len(aliases))
 	}
 
-	if aliases["slug=test"] != nil && aliases["slug=test"].Id != "123" {
-		t.Errorf("Alias should exist for slug=test")
-	}
+	assert.Contains(t, aliases, "slug=test")
+	assert.Equal(t, "123", aliases["slug=test"].Id)
 
-	if aliases["slug=test"] != nil && aliases["slug=test"].Slug != "test" {
-		t.Errorf("Alias should exist for slug=test and have slug value of test")
-	}
+	assert.Contains(t, aliases, "slug=test")
+	assert.Equal(t, "test", aliases["slug=test"].Slug)
 
-	if aliases["id=123"] != nil && aliases["id=123"].Id != "123" {
-		t.Errorf("Alias should exist for id=123")
-	}
+	assert.Contains(t, aliases, "id=123")
+	assert.Equal(t, "123", aliases["id=123"].Id)
 
-	if aliases["id=123"] != nil && aliases["id=123"].Slug != "test" {
-		t.Errorf("Alias should exist for id=123 and have a slug of test")
-	}
+	assert.Contains(t, aliases, "id=123")
+	assert.Equal(t, "test", aliases["id=123"].Slug)
+
+	assert.Contains(t, aliases, "last_read=entity")
+	assert.Equal(t, "123", aliases["last_read=entity"].Id)
+
+	assert.Contains(t, aliases, "last_read=entity")
+	assert.Equal(t, "test", aliases["last_read=entity"].Slug)
 }
 
 func TestSavedAliasIsReturnedForANameInLegacyObjectResponse(t *testing.T) {
@@ -420,17 +434,19 @@ func TestSavedAliasIsReturnedForANameInLegacyObjectResponse(t *testing.T) {
 
 	// Verification
 
-	if len(aliases) != 2 {
-		t.Errorf("There should be one alias for the type foo, not %d", len(aliases))
+	if len(aliases) != 3 {
+		t.Errorf("There should be three aliases for the type foo, not %d", len(aliases))
 	}
 
-	if aliases["name=Test_Testerson"] != nil && aliases["name=Test_Testerson"].Id != "123" {
-		t.Errorf("Alias should exist for name=Test_Testerson")
-	}
+	assert.Contains(t, aliases, "name=Test_Testerson")
+	assert.Equal(t, "123", aliases["name=Test_Testerson"].Id)
 
-	if aliases["id=123"] != nil && aliases["id=123"].Id != "123" {
-		t.Errorf("Alias should exist for id=123")
-	}
+	assert.Contains(t, aliases, "id=123")
+	assert.Equal(t, "123", aliases["id=123"].Id)
+
+	assert.Contains(t, aliases, "last_read=entity")
+	assert.Equal(t, "123", aliases["last_read=entity"].Id)
+
 }
 
 func TestSavedAliasIsReturnedForAnEmailInComplaintObjectResponse(t *testing.T) {
@@ -459,17 +475,19 @@ func TestSavedAliasIsReturnedForAnEmailInComplaintObjectResponse(t *testing.T) {
 
 	// Verification
 
-	if len(aliases) != 2 {
-		t.Errorf("There should be one alias for the type foo, not %d", len(aliases))
+	if len(aliases) != 3 {
+		t.Errorf("There should be three aliases for the type foo, not %d", len(aliases))
 	}
 
-	if aliases["email=test@test.com"] != nil && aliases["email=test@test.com"].Id != "123" {
-		t.Errorf("Alias should exist for email=test@test.com")
-	}
+	assert.Contains(t, aliases, "email=test@test.com")
+	assert.Equal(t, "123", aliases["email=test@test.com"].Id)
 
-	if aliases["id=123"] != nil && aliases["id=123"].Id != "123" {
-		t.Errorf("Alias should exist for id=123")
-	}
+	assert.Contains(t, aliases, "id=123")
+	assert.Equal(t, "123", aliases["id=123"].Id)
+
+	assert.Contains(t, aliases, "last_read=entity")
+	assert.Equal(t, "123", aliases["last_read=entity"].Id)
+
 }
 
 func TestSavedAliasIsReturnedForAnSkuInComplaintObjectResponse(t *testing.T) {
@@ -498,25 +516,27 @@ func TestSavedAliasIsReturnedForAnSkuInComplaintObjectResponse(t *testing.T) {
 
 	// Verification
 
-	if len(aliases) != 2 {
-		t.Errorf("There should be one alias for the type foo, not %d", len(aliases))
+	if len(aliases) != 3 {
+		t.Errorf("There should be three alias for the type foo, not %d", len(aliases))
 	}
 
-	if aliases["sku=test"] != nil && aliases["sku=test"].Id != "123" {
-		t.Errorf("Alias should exist for sku=test")
-	}
+	assert.Contains(t, aliases, "sku=test")
+	assert.Equal(t, "123", aliases["sku=test"].Id)
 
-	if aliases["sku=test"] != nil && aliases["sku=test"].Sku != "test" {
-		t.Errorf("Alias should exist for sku=test and have a sku of test")
-	}
+	assert.Contains(t, aliases, "sku=test")
+	assert.Equal(t, "test", aliases["sku=test"].Sku)
 
-	if aliases["id=123"] != nil && aliases["id=123"].Id != "123" {
-		t.Errorf("Alias should exist for id=123")
-	}
+	assert.Contains(t, aliases, "id=123")
+	assert.Equal(t, "123", aliases["id=123"].Id)
 
-	if aliases["id=123"] != nil && aliases["id=123"].Sku != "test" {
-		t.Errorf("Alias should exist for id=123 and have a sku of test")
-	}
+	assert.Contains(t, aliases, "id=123")
+	assert.Equal(t, "test", aliases["id=123"].Sku)
+
+	assert.Contains(t, aliases, "last_read=entity")
+	assert.Equal(t, "123", aliases["last_read=entity"].Id)
+
+	assert.Contains(t, aliases, "last_read=entity")
+	assert.Equal(t, "test", aliases["last_read=entity"].Sku)
 }
 
 func TestSavedAliasIsReturnedForASlugInComplaintObjectResponse(t *testing.T) {
@@ -545,25 +565,27 @@ func TestSavedAliasIsReturnedForASlugInComplaintObjectResponse(t *testing.T) {
 
 	// Verification
 
-	if len(aliases) != 2 {
-		t.Errorf("There should be one alias for the type foo, not %d", len(aliases))
+	if len(aliases) != 3 {
+		t.Errorf("There should be three aliases for the type foo, not %d", len(aliases))
 	}
 
-	if aliases["slug=test"] != nil && aliases["slug=test"].Id != "123" {
-		t.Errorf("Alias should exist for slug=test")
-	}
+	assert.Contains(t, aliases, "slug=test")
+	assert.Equal(t, "123", aliases["slug=test"].Id)
 
-	if aliases["slug=test"] != nil && aliases["slug=test"].Slug != "test" {
-		t.Errorf("Alias should exist for slug=test and have a slug of test")
-	}
+	assert.Contains(t, aliases, "slug=test")
+	assert.Equal(t, "test", aliases["slug=test"].Slug)
 
-	if aliases["id=123"] != nil && aliases["id=123"].Id != "123" {
-		t.Errorf("Alias should exist for id=123")
-	}
+	assert.Contains(t, aliases, "id=123")
+	assert.Equal(t, "123", aliases["id=123"].Id)
 
-	if aliases["id=123"] != nil && aliases["id=123"].Slug != "test" {
-		t.Errorf("Alias should exist for id=123 and have a slug of test")
-	}
+	assert.Contains(t, aliases, "id=123")
+	assert.Equal(t, "test", aliases["id=123"].Slug)
+
+	assert.Contains(t, aliases, "last_read=entity")
+	assert.Equal(t, "123", aliases["last_read=entity"].Id)
+
+	assert.Contains(t, aliases, "last_read=entity")
+	assert.Equal(t, "test", aliases["last_read=entity"].Slug)
 }
 
 func TestSavedAliasIsReturnedForANameInComplaintObjectResponse(t *testing.T) {
@@ -592,17 +614,135 @@ func TestSavedAliasIsReturnedForANameInComplaintObjectResponse(t *testing.T) {
 
 	// Verification
 
-	if len(aliases) != 2 {
-		t.Errorf("There should be one alias for the type foo, not %d", len(aliases))
+	if len(aliases) != 3 {
+		t.Errorf("There should be three alias for the type foo, not %d", len(aliases))
 	}
 
-	if aliases["name=Test_Testerson"] != nil && aliases["name=Test_Testerson"].Id != "123" {
-		t.Errorf("Alias should exist for name=Test_Testerson")
+	assert.Contains(t, aliases, "name=Test_Testerson")
+	assert.Equal(t, "123", aliases["name=Test_Testerson"].Id)
+
+	assert.Contains(t, aliases, "id=123")
+	assert.Equal(t, "123", aliases["id=123"].Id)
+
+	assert.Contains(t, aliases, "last_read=entity")
+	assert.Equal(t, "123", aliases["last_read=entity"].Id)
+
+}
+
+func TestSavedAliasIsReturnedForARelationshipObjectInArrayResponse(t *testing.T) {
+	err := ClearAllAliases()
+	if err != nil {
+		t.Fatalf("Could not clear aliases")
 	}
 
-	if aliases["id=123"] != nil && aliases["id=123"].Id != "123" {
-		t.Errorf("Alias should exist for id=123")
+	// Execute SUT
+	SaveAliasesForResources(
+		// language=JSON
+		`
+{
+	"data":	[{
+		"id": "123",
+		"type": "foo",
+		"name": "Test Testerson",
+		"relationships": {
+			"buz": {
+				"data": {
+					"type": "bar",
+					"id": "abc"
+				}
+			}
+		}
+	},{
+		"id": "456",
+		"type": "foo",
+		"name": "Bob Robertson",
+		"relationships": {
+			"buz": {
+				"data": {
+					"type": "bar",
+					"id": "def"
+				}
+			}
+		}
+	}]
+	
+}`)
+
+	aliases := GetAliasesForJsonApiType("bar")
+
+	if len(aliases) != 8 {
+		t.Errorf("There should be eight aliases for the type bar, not %d", len(aliases))
 	}
+
+	assert.Contains(t, aliases, "id=abc")
+	assert.Equal(t, "abc", aliases["id=abc"].Id)
+
+	assert.Contains(t, aliases, "related_buz_for_foo_id=123")
+	assert.Equal(t, "abc", aliases["related_buz_for_foo_id=123"].Id)
+
+	assert.Contains(t, aliases, "related_buz_for_foo_last_read=array[0]")
+	assert.Equal(t, "abc", aliases["related_buz_for_foo_last_read=array[0]"].Id)
+
+	assert.Contains(t, aliases, "related_buz_for_foo_name=Test_Testerson")
+	assert.Equal(t, "abc", aliases["related_buz_for_foo_name=Test_Testerson"].Id)
+
+	assert.Contains(t, aliases, "id=def")
+	assert.Equal(t, "def", aliases["id=def"].Id)
+
+	assert.Contains(t, aliases, "related_buz_for_foo_id=456")
+	assert.Equal(t, "def", aliases["related_buz_for_foo_id=456"].Id)
+
+	assert.Contains(t, aliases, "related_buz_for_foo_last_read=array[1]")
+	assert.Equal(t, "def", aliases["related_buz_for_foo_last_read=array[1]"].Id)
+
+	assert.Contains(t, aliases, "related_buz_for_foo_name=Bob_Robertson")
+	assert.Equal(t, "def", aliases["related_buz_for_foo_name=Bob_Robertson"].Id)
+}
+
+func TestSavedAliasIsReturnedForARelationshipObjectInSingleResponse(t *testing.T) {
+	err := ClearAllAliases()
+	if err != nil {
+		t.Fatalf("Could not clear aliases")
+	}
+
+	// Execute SUT
+	SaveAliasesForResources(
+		// language=JSON
+		`
+{
+	"data": {
+		"id": "123",
+		"type": "foo",
+		"name": "Test Testerson",
+		"relationships": {
+			"buz": {
+				"data": {
+					"type": "bar",
+					"id": "456"
+				}
+			}
+		}
+	}
+	
+}`)
+
+	aliases := GetAliasesForJsonApiType("bar")
+
+	if len(aliases) != 4 {
+		t.Errorf("There should be four aliases for the type bar, not %d", len(aliases))
+	}
+
+	assert.Contains(t, aliases, "id=456")
+	assert.Equal(t, "456", aliases["id=456"].Id)
+
+	assert.Contains(t, aliases, "related_buz_for_foo_id=123")
+	assert.Equal(t, "456", aliases["related_buz_for_foo_id=123"].Id)
+
+	assert.Contains(t, aliases, "related_buz_for_foo_last_read=entity")
+	assert.Equal(t, "456", aliases["related_buz_for_foo_last_read=entity"].Id)
+
+	assert.Contains(t, aliases, "related_buz_for_foo_name=Test_Testerson")
+	assert.Equal(t, "456", aliases["related_buz_for_foo_name=Test_Testerson"].Id)
 }
 
 func TestResolveAliasValuesReturnsAliasForMatchingValue(t *testing.T) {
@@ -780,8 +920,8 @@ func TestClearAllAliasesForJsonTypeOnlyClearsJsonType(t *testing.T) {
 		t.Errorf("There should be zero alias for the type foo, not %d", len(fooAliases))
 	}
 
-	if len(barAliases) != 1 {
-		t.Errorf("There should be one alias for the type bar, not %d", len(barAliases))
+	if len(barAliases) != 2 {
+		t.Errorf("There should be two alias for the type bar, not %d", len(barAliases))
 	}
 
 }
@@ -866,12 +1006,11 @@ func TestThatCorruptAliasFileDoesntCrashProgramWhenSavingAliases(t *testing.T) {
 	aliases := GetAliasesForJsonApiType("foo")
 
 	// Verification
-	if len(aliases) != 1 {
-		t.Errorf("There should be one alias for the type foo, not %d", len(aliases))
+	if len(aliases) != 2 {
+		t.Errorf("There should be two aliases for the type foo, not %d", len(aliases))
 	}
 
-	if aliases["id=456"] != nil && aliases["id=456"].Id != "456" {
-		t.Errorf("Alias should exist for id=456")
-	}
+	assert.Contains(t, aliases, "id=456")
+	assert.Equal(t, "456", aliases["id=456"].Id)
 
 }
