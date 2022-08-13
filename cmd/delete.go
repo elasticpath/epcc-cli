@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/elasticpath/epcc-cli/external/aliases"
 	"github.com/elasticpath/epcc-cli/external/completion"
+	"github.com/elasticpath/epcc-cli/external/crud"
 	"github.com/elasticpath/epcc-cli/external/httpclient"
 	"github.com/elasticpath/epcc-cli/external/json"
 	"github.com/elasticpath/epcc-cli/external/resources"
@@ -104,6 +105,11 @@ func deleteResource(args []string) (*http.Response, error) {
 
 	if err != nil {
 		return nil, err
+	}
+
+	if crud.OverrideUrlPath != "" {
+		log.Warnf("Overriding URL Path from %s to %s", resourceURL, crud.OverrideUrlPath)
+		resourceURL = crud.OverrideUrlPath
 	}
 
 	// Submit request

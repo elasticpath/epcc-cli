@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/elasticpath/epcc-cli/external/aliases"
 	"github.com/elasticpath/epcc-cli/external/completion"
+	"github.com/elasticpath/epcc-cli/external/crud"
 	"github.com/elasticpath/epcc-cli/external/encoding"
 	"github.com/elasticpath/epcc-cli/external/httpclient"
 	"github.com/elasticpath/epcc-cli/external/json"
@@ -111,6 +112,11 @@ func createInternal(args []string) (string, error) {
 
 	// Replace ids with args in resourceURL
 	resourceURL, err = resources.GenerateUrl(resource.CreateEntityInfo, args[1:])
+
+	if crud.OverrideUrlPath != "" {
+		log.Warnf("Overriding URL Path from %s to %s", resourceURL, crud.OverrideUrlPath)
+		resourceURL = crud.OverrideUrlPath
+	}
 
 	if err != nil {
 		return "", err
