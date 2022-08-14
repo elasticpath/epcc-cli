@@ -117,6 +117,8 @@ Environment Variables
 			}
 		}
 
+		version.CheckVersionChangeAndLogWarning()
+
 		return nil
 	},
 
