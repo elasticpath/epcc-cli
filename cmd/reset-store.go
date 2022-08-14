@@ -83,13 +83,32 @@ var ResetStore = &cobra.Command{
 		// In theory we could topo-sort all the resources and determine dependencies.
 		// We would also need locking to go faster.
 
-		err, paymentGatewayErrors := resetResources()
+		// Get customer and account authentication settings to populate the aliases
+		err, _ = getInternal([]string{"customer-authentication-settings"})
+
+		if err != nil {
+			errors = append(errors, err.Error())
+		}
+
+		err, _ = getInternal([]string{"account-authentication-settings"})
+
+		if err != nil {
+			errors = append(errors, err.Error())
+		}
+
+		err, _ = getInternal([]string{"authentication-realms"})
+
+		if err != nil {
+			errors = append(errors, err.Error())
+		}
+
+		err, resetUndeletableResourcesErrors := resetResourcesUndeletableResources()
 
 		if err != nil {
 			return err
 		}
 
-		errors = append(errors, paymentGatewayErrors...)
+		errors = append(errors, resetUndeletableResourcesErrors...)
 
 		resourceNames := resources.GetPluralResourceNames()
 		sort.Strings(resourceNames)
@@ -101,7 +120,7 @@ var ResetStore = &cobra.Command{
 		errors = append(errors, deleteAllResourceDataErrors...)
 
 		// TODO core flows hack
-		// TODO reset
+
 		if len(errors) > 0 {
 			log.Warnf("The following errors occurred while deleting all data: \n\t%s", strings.Join(errors, "\n\t"))
 		}
@@ -111,7 +130,7 @@ var ResetStore = &cobra.Command{
 	},
 }
 
-func resetResources() (error, []string) {
+func resetResourcesUndeletableResources() (error, []string) {
 
 	resetCmds := [][]string{
 		{"payment-gateway-adyen", "merchant_account", "", "username", "", "password", "", "enabled", "false", "test", "false"},
@@ -126,6 +145,11 @@ func resetResources() (error, []string) {
 		{"payment-gateway-stripe-payment-intents", "login", "", "enabled", "false"},
 		{"payment-gateway-elastic-path-payments-stripe", "stripe_account", "", "enabled", "false", "test", "false"},
 		{"settings", "page_length", "25", "list_child_products", "true", "additional_languages", "[]", "calculation_method", "line"},
+		// We can only use an alias for the customer authentication settings, MRM doesn't use a relationship, and Account management uses the wrong type.
+		{"authentication-realm", "last_read=array[0]", "redirect_uris", "[]", "duplicate_email_policy", "allowed"},
+		{"authentication-realm", "last_read=array[1]", "redirect_uris", "[]", "duplicate_email_policy", "allowed"},
+		{"authentication-realm", "last_read=array[2]", "redirect_uris", "[]", "duplicate_email_policy", "allowed"},
+		{"authentication-realm", "related_authentication-realm_for_customer-authentication-settings_last_read=entity", "name", "Buyer Organization"},
 	}
 
 	errors := make([]string, 0)
