@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/caarlos0/env/v6 v6.10.0
 	github.com/google/uuid v1.3.0
-	github.com/gookit/color v1.5.1
+	github.com/gookit/color v1.5.2
 	github.com/itchyny/gojq v0.12.8
 	github.com/mattn/go-isatty v0.0.16
 	github.com/santhosh-tekuri/jsonschema/v4 v4.0.0
