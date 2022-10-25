@@ -60,9 +60,7 @@ var stats = struct {
 	totalRequests            uint64
 }{}
 
-var HttpClient = &http.Client{
-	Timeout: time.Second * 10,
-}
+var HttpClient = &http.Client{}
 
 func LogStats() {
 	statsLock.Lock()

@@ -12,6 +12,7 @@ import (
 	"github.com/thediveo/enumflag"
 	"golang.org/x/time/rate"
 	"os"
+	"time"
 
 	"github.com/caarlos0/env/v6"
 	"github.com/elasticpath/epcc-cli/external/json"
@@ -19,6 +20,8 @@ import (
 )
 
 var rateLimit uint16
+
+var requestTimeout float32
 
 func init() {
 	cobra.OnInitialize(initConfig)
@@ -58,6 +61,7 @@ func init() {
 	RootCmd.PersistentFlags().StringSliceVarP(&httpclient.RawHeaders, "header", "H", []string{}, "Extra headers and values to include in the request when sending HTTP to a server. You may specify any number of extra headers.")
 	RootCmd.PersistentFlags().StringVarP(&profiles.ProfileName, "profile", "P", "default", "overrides the current EPCC_PROFILE var to run the command with the chosen profile.")
 	RootCmd.PersistentFlags().Uint16VarP(&rateLimit, "rate-limit", "", 10, "Request limit per second")
+	RootCmd.PersistentFlags().Float32VarP(&requestTimeout, "timeout", "", 10, "Request timeout in seconds (fractional values allowed)")
 
 	create.Flags().StringVar(&crud.OverrideUrlPath, "override-url-path", "", "Override the URL that will be used for the Request")
 	delete.Flags().StringVar(&crud.OverrideUrlPath, "override-url-path", "", "Override the URL that will be used for the Request")
@@ -109,6 +113,7 @@ Environment Variables
 		}
 		log.Debugf("Rate limit set to %d request per second ", rateLimit)
 		httpclient.Limit = rate.NewLimiter(rate.Limit(rateLimit), 1)
+		httpclient.HttpClient.Timeout = time.Duration(int64(requestTimeout*1000) * int64(time.Millisecond))
 
 		for _, runFunc := range persistentPreRunFuncs {
 			err := runFunc(cmd, args)
