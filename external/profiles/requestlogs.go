@@ -46,10 +46,10 @@ func GetNthRequestLog(n int) (string, error) {
 		return "", err
 	}
 
-	if n < 0 {
-		return "", fmt.Errorf("you must specify a positive integer log message to show")
-	} else if n >= len(files) {
+	if n >= len(files) || n < -len(files) {
 		return "", fmt.Errorf("there are only %d entries to show, cannot show entry: %d", len(files), n)
+	} else if n < 0 {
+		n += len(files)
 	}
 
 	dir, err := getRequestLogDirectory()
