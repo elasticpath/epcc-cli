@@ -33,8 +33,11 @@ var LogsList = &cobra.Command{
 
 var LogsShow = &cobra.Command{
 	Use:   "show <NUMBER>",
-	Short: "Show HTTP logs for specific number",
+	Short: "Show HTTP logs for specific number, negative values are from the last value",
 	Args:  cobra.MinimumNArgs(1),
+
+	// Hopefully this allows you to run `epcc logs show -1` without error
+	DisableFlagParsing: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
 
 		i, err := strconv.Atoi(args[0])
