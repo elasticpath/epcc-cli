@@ -132,9 +132,15 @@ Environment Variables
 }
 
 func Execute() {
-	if err := RootCmd.Execute(); err != nil {
+	err := RootCmd.Execute()
+
+	httpclient.LogStats()
+
+	if err != nil {
 		log.Errorf("Error occured while processing command %s", err)
 		os.Exit(1)
+	} else {
+		os.Exit(0)
 	}
 }
 
