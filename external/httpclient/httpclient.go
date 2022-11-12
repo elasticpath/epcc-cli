@@ -12,7 +12,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/time/rate"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -194,7 +193,7 @@ func doRequestInternal(ctx context.Context, method string, contentType string, p
 
 	if resp.StatusCode >= 400 || log.IsLevelEnabled(log.DebugLevel) {
 		if payload != nil {
-			body, _ := ioutil.ReadAll(&bodyBuf)
+			body, _ := io.ReadAll(&bodyBuf)
 			if len(body) > 0 {
 				logf("%s %s%s", method, reqURL.String(), requestHeaders)
 				if contentType == "application/json" {

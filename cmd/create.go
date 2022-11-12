@@ -12,7 +12,7 @@ import (
 	"github.com/elasticpath/epcc-cli/external/resources"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 )
@@ -159,7 +159,7 @@ func createInternal(args []string) (string, error) {
 	defer resp.Body.Close()
 
 	// Print the body
-	resBody, err = ioutil.ReadAll(resp.Body)
+	resBody, err = io.ReadAll(resp.Body)
 	if err != nil {
 		log.Fatal(err)
 	}

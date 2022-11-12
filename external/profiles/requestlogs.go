@@ -4,7 +4,6 @@ import (
 	b64 "encoding/base64"
 	"fmt"
 	"io/fs"
-	"io/ioutil"
 	"os"
 	"regexp"
 	"sort"
@@ -138,16 +137,24 @@ func allFilesSortedByDate() ([]fs.FileInfo, error) {
 		return nil, err
 	}
 
-	files, err := ioutil.ReadDir(dir)
-
+	entries, err := os.ReadDir(dir)
 	if err != nil {
 		return nil, err
 	}
-	sort.Slice(files, func(i, j int) bool {
-		return files[i].ModTime().Before(files[j].ModTime())
+	infos := make([]fs.FileInfo, 0, len(entries))
+	for _, entry := range entries {
+		info, err := entry.Info()
+		if err != nil {
+			return nil, err
+		}
+		infos = append(infos, info)
+	}
+
+	sort.Slice(infos, func(i, j int) bool {
+		return infos[i].ModTime().Before(infos[j].ModTime())
 	})
 
-	return files, nil
+	return infos, nil
 }
 
 func base64EncodeStripped(s string) string {

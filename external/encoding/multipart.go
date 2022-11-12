@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/elasticpath/epcc-cli/external/resources"
-	"io/ioutil"
 	"mime/multipart"
+	"os"
 )
 
 func ToMultiPartEncoding(args []string, noWrapping bool, compliant bool, attributes map[string]*resources.CrudEntityAttribute) (*bytes.Buffer, string, error) {
@@ -24,7 +24,7 @@ func ToMultiPartEncoding(args []string, noWrapping bool, compliant bool, attribu
 		if attribute, ok := attributes[k]; ok {
 			if attribute.Type == "FILE" {
 
-				fileContents, err := ioutil.ReadFile(v)
+				fileContents, err := os.ReadFile(v)
 
 				if err != nil {
 					return nil, "", err

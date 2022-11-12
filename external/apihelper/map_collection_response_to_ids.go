@@ -5,14 +5,13 @@ import (
 	"fmt"
 	"github.com/elasticpath/epcc-cli/external/id"
 	log "github.com/sirupsen/logrus"
-	"io/ioutil"
+	"io"
 	"net/http"
 )
 
 func GetResourceIdsFromHttpResponse(resp *http.Response) ([]id.IdableAttributes, error) {
-
 	// Read the body
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 
 	if err != nil {
 		log.Fatal(err)
