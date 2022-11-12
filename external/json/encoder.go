@@ -268,16 +268,25 @@ func (e *encoder) encodeMap(vs map[string]interface{}) {
 	}
 	sort.Slice(kvs, func(i, j int) bool {
 
+		// Force type to be first
 		if kvs[i].key == "type" {
 			return true
 		} else if kvs[j].key == "type" {
 			return false
 		}
 
+		// id will be always be second
 		if kvs[i].key == "id" {
 			return true
 		} else if kvs[j].key == "id" {
 			return false
+		}
+
+		// Force meta to be last
+		if kvs[i].key == "meta" {
+			return false
+		} else if kvs[j].key == "meta" {
+			return true
 		}
 
 		return kvs[i].key < kvs[j].key
@@ -349,7 +358,7 @@ func (e *encoder) writeIndent() {
 }
 
 func (e *encoder) writeByte(b byte, color *colorInfo) {
-	if color == nil {
+	if color == nil || color.colorString == "<default>" {
 		e.w.WriteByte(b)
 	} else {
 		setColor(e.w, *color)
@@ -359,7 +368,7 @@ func (e *encoder) writeByte(b byte, color *colorInfo) {
 }
 
 func (e *encoder) write(bs []byte, color *colorInfo) {
-	if color == nil {
+	if color == nil || color.colorString == "<default>" {
 		e.w.Write(bs)
 	} else {
 		setColor(e.w, *color)

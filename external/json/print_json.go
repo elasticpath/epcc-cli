@@ -3,8 +3,10 @@ package json
 import (
 	gojson "encoding/json"
 	"github.com/mattn/go-isatty"
+	log "github.com/sirupsen/logrus"
 	"io"
 	"os"
+	"time"
 )
 
 var MonochromeOutput = false
@@ -37,7 +39,21 @@ func printJsonToWriter(json string, w io.Writer) error {
 
 	e := NewEncoder(false, 2)
 
+	done := make(chan bool, 1)
+
+	if !MonochromeOutput {
+		go func() {
+			select {
+			case <-done:
+				break
+			case <-time.After(5 * time.Second):
+				log.Warnf("Output of JSON has taken more than 5 seconds, you may want to use -M to supress coloring of output ")
+			}
+		}()
+	}
+
 	err = e.Marshal(v, w)
+	done <- true
 
 	w.Write([]byte{byte('\n')})
 	return err
