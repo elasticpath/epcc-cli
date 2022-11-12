@@ -61,6 +61,7 @@ func GetAuthenticationToken(useTokenFromProfileDir bool, valuesOverride *url.Val
 			// Autologin using env vars
 			if config.Envs.EPCC_CLIENT_ID == "" {
 				noTokenWarningMutex.RLock()
+				// Double check lock, read once with read lock, then once again with write lock
 				if noTokenWarningMessageLogged == false {
 					noTokenWarningMutex.RUnlock()
 					noTokenWarningMutex.Lock()
@@ -94,6 +95,7 @@ func GetAuthenticationToken(useTokenFromProfileDir bool, valuesOverride *url.Val
 
 			noTokenWarningMutex.RLock()
 			if noTokenWarningMessageLogged == false {
+				// Double check lock, read once with read lock, then once again with write lock
 				noTokenWarningMutex.RUnlock()
 				noTokenWarningMutex.Lock()
 				defer noTokenWarningMutex.Unlock()

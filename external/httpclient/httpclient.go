@@ -78,6 +78,10 @@ func DoFileRequest(ctx context.Context, path string, payload io.Reader, contentT
 
 var UserAgent = fmt.Sprintf("epcc-cli/%s-%s (%s/%s)", version.Version, version.Commit, runtime.GOOS, runtime.GOARCH)
 
+var noApiEndpointUrlWarningMessageMutex = sync.RWMutex{}
+
+var noApiEndpointUrlWarningMessageLogged = false
+
 // DoRequest makes a html request to the EPCC API and handles the response.
 func doRequestInternal(ctx context.Context, method string, contentType string, path string, query string, payload io.Reader) (response *http.Response, error error) {
 	reqURL, err := url.Parse(config.Envs.EPCC_API_BASE_URL)
@@ -86,7 +90,20 @@ func doRequestInternal(ctx context.Context, method string, contentType string, p
 	}
 
 	if reqURL.Host == "" {
-		log.Infof("No API endpoint set in profile or environment variables, defaulting to \"%s\". To change this set the EPCC_API_BASE_URL environment variable.", config.DefaultUrl)
+		noApiEndpointUrlWarningMessageMutex.RLock()
+		// Double check lock, read once with read lock, then once again with write lock
+		if !noApiEndpointUrlWarningMessageLogged {
+			noApiEndpointUrlWarningMessageMutex.RUnlock()
+			noApiEndpointUrlWarningMessageMutex.Lock()
+			if !noApiEndpointUrlWarningMessageLogged {
+				log.Infof("No API endpoint set in profile or environment variables, defaulting to \"%s\". To change this set the EPCC_API_BASE_URL environment variable.", config.DefaultUrl)
+				noApiEndpointUrlWarningMessageLogged = true
+			}
+			noApiEndpointUrlWarningMessageMutex.Unlock()
+		} else {
+			noApiEndpointUrlWarningMessageMutex.RUnlock()
+		}
+
 		reqURL, err = url.Parse(config.DefaultUrl)
 		if err != nil {
 			log.Fatalf("Error when parsing default host, this is a bug, %s", config.DefaultUrl)
