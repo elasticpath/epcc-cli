@@ -7,6 +7,7 @@ import (
 	"github.com/yosida95/uritemplate/v3"
 	"gopkg.in/yaml.v3"
 	"os"
+	"regexp"
 	"strings"
 	"testing"
 )
@@ -55,6 +56,13 @@ func TestUriTemplatesAllReferenceValidResource(t *testing.T) {
 				errors += fmt.Sprintf("Could not process GET collection uri for resource `%s`, error:\n%s\n", key, err)
 			}
 		}
+
+		for attributeKey, attributeInfo := range val.Attributes {
+			err := validateAttributeInfo(attributeInfo)
+			if err != "" {
+				errors += fmt.Sprintf("Couldn't process attributes for resource `%s` attribute `%s`, error:\n%s\n", key, attributeKey, err)
+			}
+		}
 	}
 
 	// Verification
@@ -64,6 +72,26 @@ func TestUriTemplatesAllReferenceValidResource(t *testing.T) {
 	}
 }
 
+var arrayLiteralIndex = regexp.MustCompile("\\[[0-9]+]")
+
+func validateAttributeInfo(info *CrudEntityAttribute) string {
+	match := arrayLiteralIndex.Match([]byte(info.Key))
+	errors := ""
+	if match {
+		errors += fmt.Sprintf("\t attribute `%s` has array index (e.g., [4] instead of [n], this is almost certainly a bug)\n", info.Key)
+	}
+
+	if strings.HasPrefix(info.Type, "RESOURCE_ID:") {
+		resourceType := info.Type[len("RESOURCE_ID:"):]
+		if _, ok := resources[resourceType]; !ok {
+			if _, ok := resourcesSingular[resourceType]; !ok {
+				errors += fmt.Sprintf("\t attribute `%s` references a resource type that doesn't exist: %s\n", info.Key, resourceType)
+			}
+		}
+	}
+
+	return errors
+}
 func validateCrudEntityInfo(info CrudEntityInfo) string {
 	errors := ""
 

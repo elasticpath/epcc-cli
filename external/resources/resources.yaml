@@ -42,7 +42,7 @@ account-members:
   get-collection:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/account-management/account-members/get-all-account-members.html"
     url: "/v2/account-members"
-    query: "page[limit],page[offset],filter"
+    query: "page[limit],page[offset],filter,sort"
   get-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/account-management/account-members/get-an-account-member.html"
     url: "/v2/account-members/{account_members}"
@@ -150,6 +150,23 @@ account-addresses:
     postcode:
       type: STRING
     country:
+      type: STRING
+application-keys:
+  singular-name: "application-key"
+  json-api-type: "application_key"
+  json-api-format: "legacy"
+  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/application-keys/index.html"
+  get-collection:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/application-keys/get-all-application-keys.html"
+    url: "/v2/application-keys"
+  create-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/application-keys/create-an-application-key.html"
+    url: "/v2/application-keys"
+  delete-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/application-keys/delete-an-application-key.html"
+    url: "/v2/application-keys/{application_keys}"
+  attributes:
+    name:
       type: STRING
 authentication-realms:
   singular-name: "authentication-realm"
@@ -580,6 +597,40 @@ entries:
     url: "/v2/flows/{flows}/entries/{entries}"
     parent_resource_value_overrides:
       flows: slug
+# This is basically the same as an entry except we allow an id.
+pcm-entries:
+  singular-name: pcm-entry
+  json-api-type: entry
+  json-api-format: "legacy"
+  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/entries/index.html"
+  get-collection:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/entries/get-all-entries.html"
+    url: "/v2/flows/{flows}/entries"
+    parent_resource_value_overrides:
+      flows: slug
+  get-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/entries/get-an-entry.html"
+    url: "/v2/flows/{flows}/entries/{entries}"
+    parent_resource_value_overrides:
+      flows: slug
+  update-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/entries/update-an-entry.html"
+    url: "/v2/flows/{flows}/entries/{entries}"
+    parent_resource_value_overrides:
+      flows: slug
+  create-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/entries/create-an-entry.html"
+    url: "/v2/flows/{flows}/entries"
+    parent_resource_value_overrides:
+      flows: slug
+  delete-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/entries/delete-an-entry.html"
+    url: "/v2/flows/{flows}/entries/{entries}"
+    parent_resource_value_overrides:
+      flows: slug
+  attributes:
+    id:
+      type: RESOURCE_ID:pcm-products
 entries-relationship:
   singular-name: entry-relationship
   json-api-type: entry-relationship
@@ -736,6 +787,20 @@ oidc-profiles:
       type: STRING
     client_secret:
       type: STRING
+log-ttl-settings:
+  singular-name: "log-ttl-setting"
+  json-api-type: "time_to_live"
+  json-api-format: "legacy"
+  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/settings/logs-ttl-settings/index.html"
+  get-collection:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/settings/logs-ttl-settings/get-logs-ttl-settings.html"
+    url: "/v2/settings/logs-ttl/"
+  update-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/settings/logs-ttl-settings/update-logs-ttl-settings.html"
+    url: "/v2/settings/logs-ttl/"
+  attributes:
+    days:
+      type: INT
 orders:
   singular-name: "order"
   json-api-type: "order"
@@ -800,7 +865,6 @@ order-transaction-capture:
   create-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/paying-for-an-order/manual-payments.html#post-capture-transaction"
     url: "/v2/orders/{orders}/transactions/{order_transactions}/capture"
-
 order-transaction-refund:
   singular-name: "order-transaction-refund"
   json-api-type: "transaction"
@@ -862,7 +926,7 @@ pcm-catalogs:
       type: STRING
     description:
       type: STRING
-    hierarchy_ids[0]:
+    hierarchy_ids[n]:
       type: RESOURCE_ID:pcm-hierarchies
     pricebook_id:
       type: RESOURCE_ID:pcm-pricebooks
@@ -889,10 +953,50 @@ pcm-catalog-releases:
       type: STRING
     description:
       type: STRING
-    hierarchy_ids[0]:
+    hierarchy_ids[n]:
       type: RESOURCE_ID:pcm-hierarchies
     pricebook_id:
       type: RESOURCE_ID:pcm-pricebooks
+pcm-catalog-rules:
+  singular-name: "pcm-catalog-rule"
+  json-api-type: "catalog_rule"
+  json-api-format: "compliant"
+  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/dashboard/pcm-catalogs/catalog-rules.html#__docusaurus"
+  get-collection:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/catalogs/rules/get-all-catalog-rules.html"
+    url: "/pcm/catalogs/rules"
+  get-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/catalogs/rules/get-a-catalog-rule.html"
+    url: "/pcm/catalogs/rules/{pcm_catalog_rules}"
+  create-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/catalogs/rules/create-a-catalog-rule.html"
+    url: "/pcm/catalogs/rules"
+  update-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/catalogs/rules/update-a-catalog-rule.html"
+    url: "/pcm/catalogs/rules/{pcm_catalog_rules}"
+  delete-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/catalogs/rules/delete-a-catalog-rule.html"
+    url: "/pcm/catalogs/rules/{pcm_catalog_rules}"
+  attributes:
+    name:
+      type: STRING
+    description:
+      type: STRING
+    catalog_id:
+      type: RESOURCE_ID:pcm-catalogs
+    customer_ids[n]:
+      type: RESOURCE_ID:customers
+    account_ids[n]:
+      type: RESOURCE_ID:accounts
+    channels[n]:
+      type: STRING
+    tags[n]:
+      type: STRING
+    schedules[n].from:
+      type: STRING
+    schedules[n].to:
+      type: STRING
+
 payment-gateways:
   singular-name: "payment-gateway"
   json-api-type: "gateway"
@@ -1282,6 +1386,23 @@ pcm-products:
       type: STRING
     locales.en-US.description:
       type: STRING
+pcm-product-templates:
+  singular-name: "pcm-product-template"
+  json-api-type: "template"
+  json-api-format: "legacy"
+  no-wrapping: true
+  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/hierarchies/relationships/get-node-products.html"
+  get-collection:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/relationships/get-product-template-relationships.html"
+    url: "/pcm/products/{pcm_products}/relationships/templates"
+  create-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/relationships/create-product-template-relationships.html"
+    url: "/pcm/products/{pcm_products}/relationships/templates"
+  attributes:
+    "data[n].id":
+      type: RESOURCE_ID:flow
+    "data[n].type":
+      type: ENUM:template
 pcm-pricebooks:
   singular-name: "pcm-pricebook"
   json-api-type: "pricebook"
@@ -1400,8 +1521,54 @@ pcm-variation-options:
       type: STRING
     id:
       type: RESOURCE_ID:pcm-variation-options
+personal-data-log-entries:
+  singular-name: "personal-data-log-entry"
+  json-api-type: "personal_data_log_entry"
+  json-api-format: "legacy"
+  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/personal-data/personal-data-logs/index.html"
+  get-collection:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/personal-data/personal-data-logs/get-personal-data-logs.html"
+    url: "/v2/personal-data/logs"
+    query: "filter"
+  attributes:
+    resource_type:
+      type: JSON_API_TYPE
+    resource_id:
+      type: STRING
+personal-data-related-data-entries:
+  singular-name: "personal-data-related-data-entry"
+  json-api-type: "related_data_entry"
+  json-api-format: "legacy"
+  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/personal-data/personal-data-related-data-entries/index.html"
+  get-collection:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/personal-data/personal-data-related-data-entries/get-personal-data-related-data-entries.html"
+    url: "/v2/personal-data/related-data-entries"
+    query: "filter"
+  attributes:
+    resource_type:
+      type: JSON_API_TYPE
+    resource_id:
+      type: STRING
 
-
+personal-data-erasure-requests:
+  singular-name:  "personal-data-erasure-request"
+  json-api-type: "erasure_request"
+  json-api-format: "legacy"
+  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/personal-data/personal-data-erasure-requests/index.html"
+  get-collection:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/personal-data/personal-data-erasure-requests/get-personal-data-erasure-requests.html"
+    url: "/v2/personal-data/erasure-requests"
+  get-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/personal-data/personal-data-erasure-requests/get-personal-data-erasure-request.html"
+    url: "/v2/personal-data/erasure-requests/{personal_data_erasure_requests}"
+  create-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/personal-data/personal-data-erasure-requests/create-personal-data-erasure-request.html"
+    url: "/v2/personal-data/erasure-requests/"
+  attributes:
+    resource_type:
+      type: JSON_API_TYPE
+    resource_id:
+      type: STRING
 
 promotion-codes:
   singular-name: "promotion-code"
@@ -1512,7 +1679,7 @@ user-authentication-infos:
   get-collection:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/user-authentication-info/get-all-user-authentication-info.html"
     url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info"
-    query: "page[limit],page[offset],filter"
+    query: "page[limit],page[offset],filter,sort"
   get-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/user-authentication-info/get-a-user-authentication-info.html"
     url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info/{user_authentication_infos}"
@@ -1589,6 +1756,106 @@ user-authentication-password-profile-infos:
       type: STRING
     password_profile_id:
       type: RESOURCE_ID:password-profiles
+v2-brands:
+  singular-name: "v2-brand"
+  json-api-type: "brand"
+  json-api-format: "legacy"
+  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/brands/index.html"
+  get-collection:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/brands/get-all-brands.html"
+    url: "/v2/brands"
+    query: "filter,include,sort"
+  get-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/brands/get-a-brand.html"
+    url: "/v2/brands/{v2_brands}"
+  create-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/brands/create-a-brand.html"
+    url: "/v2/brands"
+  update-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/brands/update-a-brand.html"
+    url: "/v2/brands/{v2_brands}"
+  delete-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/brands/delete-a-brand.html"
+    url: "/v2/brands/{v2_brands}"
+  attributes:
+    name:
+      type: STRING
+    slug:
+      type: STRING
+    description:
+      type: STRING
+    status:
+      type: ENUM:live,draft
+    id:
+      type: RESOURCE_ID:v2-brand
+v2-categories:
+  singular-name: "v2-category"
+  json-api-type: "category"
+  json-api-format: "legacy"
+  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/categories/index.html"
+  get-collection:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/categories/get-all-categories.html"
+    url: "/v2/categories"
+    query: "page[limit],page[offset],filter,sort,include"
+  get-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/categories/get-a-category.html"
+    url: "/v2/categories/{v2_categories}"
+  update-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/categories/update-a-category.html"
+    url: "/v2/categories/{v2_categories}"
+  delete-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/categories/delete-a-category.html"
+    url: "/v2/categories/{v2_categories}"
+  create-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/categories/create-a-category.html"
+    url: "/v2/categories"
+    content-type: application/json
+  attributes:
+    name:
+      type: STRING
+    slug:
+      type: STRING
+    description:
+      type: STRING
+    status:
+      type: ENUM:live,draft
+    id:
+      type: RESOURCE_ID:v2-categories
+v2-collections:
+  singular-name: "v2-collection"
+  json-api-type: "collection"
+  json-api-format: "legacy"
+  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/collections/index.html"
+  get-collection:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/collections/get-all-collections.html"
+    url: "/v2/collections"
+    query: "page[limit],page[offset],filter,sort,include"
+  get-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/collections/get-a-collection.html"
+    url: "/v2/collections/{v2_collections}"
+  update-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/collections/update-a-collection.html"
+    url: "/v2/collections/{v2_collections}"
+  delete-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/collections/delete-a-collection.html"
+    url: "/v2/collections/{v2_collections}"
+  create-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/collections/create-a-collection.html"
+    url: "/v2/collections"
+    content-type: application/json
+  attributes:
+    name:
+      type: STRING
+    slug:
+      type: STRING
+    description:
+      type: STRING
+    status:
+      type: ENUM:live,draft
+    id:
+      type: RESOURCE_ID:v2-collections
+
+
 v2-products:
   singular-name: "v2-product"
   json-api-type: "product"
@@ -1634,3 +1901,99 @@ v2-products:
       type: ENUM:physical,digital
     id:
       type: RESOURCE_ID:v2-products
+v2-variations:
+  singular-name: "v2-variation"
+  json-api-type: "product-variation"
+  json-api-format: "legacy"
+  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/product-variations/index.html"
+  get-collection:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/product-variations/get-all-product-variations.html"
+    url: "/v2/variations"
+    query: "page[limit],page[offset],filter,sort,include"
+  get-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/product-variations/get-a-product-variation.html"
+    url: "/v2/variations/{v2_variations}"
+  update-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/product-variations/update-a-product-variation.html"
+    url: "/v2/variations/{v2_variations}"
+  delete-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/product-variations/delete-a-product-variation.html"
+    url: "/v2/variations/{v2_variations}"
+  create-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/product-variations/create-a-product-variation.html"
+    url: "/v2/variations"
+    content-type: application/json
+  attributes:
+    name:
+      type: STRING
+    id:
+      type: RESOURCE_ID:v2-variations
+
+v2-variation-options:
+  singular-name: "v2-variation-option"
+  json-api-type: "option"
+  json-api-format: "legacy"
+  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/product-variations/options/index.html"
+  get-collection:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/product-variations/options/get-all-product-variation-options.html"
+    url: "/v2/variations/{v2_variations}/options"
+    query: "page[limit],page[offset],filter,sort,include"
+  get-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/product-variations/options/get-a-product-variation-option.html"
+    url: "/v2/variations/{v2_variations}/options/{v2_variation_options}"
+  update-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/product-variations/options/update-product-variation-option.html"
+    url: "/v2/variations/{v2_variations}/options/{v2_variation_options}"
+  delete-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/product-variations/delete-a-product-variation.html"
+    url: "/v2/variations/{v2_variations}/options/{v2_variation_options}"
+  create-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/product-variations/options/delete-product-variation-option.html"
+    url: "/v2/variations/{v2_variations}/options"
+    content-type: application/json
+  attributes:
+    name:
+      type: STRING
+    description:
+      type: STRING
+    id:
+      type: RESOURCE_ID:v2-variation-option
+v2-modifiers:
+  singular-name: "v2-modifier"
+  json-api-type: "modifier"
+  json-api-format: "legacy"
+  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/product-variations/modifiers/index.html"
+  get-collection:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/product-variations/modifiers/get-all-product-modifiers.html"
+    url: "/v2/variations/{v2_variations}/options/{v2_variation_options}/modifiers"
+    query: "page[limit],page[offset],filter,sort,include"
+  get-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/product-variations/modifiers/get-a-product-modifier.html"
+    url: "/v2/variations/{v2_variations}/options/{v2_variation_options}/modifiers/{v2_modifiers}"
+  update-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/product-variations/modifiers/update-a-product-modifier.html"
+    url: "/v2/variations/{v2_variations}/options/{v2_variation_options}/modifiers/{v2_modifiers}"
+  delete-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/product-variations/modifiers/delete-a-product-modifier.html"
+    url: "/v2/variations/{v2_variations}/options/{v2_variation_options}/modifiers/{v2_modifiers}"
+  create-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/product-variations/modifiers/create-a-product-modifier.html"
+    url: "/v2/variations/{v2_variations}/options/{v2_variation_options}/modifiers"
+    content-type: application/json
+  attributes:
+    modifier_type:
+      type: ENUM:price_increment,price_decrement,price_equals,sku_builder,slug_builder,description_equals,description_prepend,description_append,commodity_type,name_equals,name_prepend,name_append,slug_equals,slug_append,sku_equals,sku_prepend,sku_append,status
+    value:
+      type: STRING
+    value[n].amount:
+      type: INT
+    value[n].currency:
+      type: CURRENCY
+    value[n].includes_tax:
+      type: BOOL
+    value[n].seek:
+      type: STRING
+    value[n].set:
+      type: STRING
+    id:
+      type: RESOURCE_ID:v2-variation-option
