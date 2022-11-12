@@ -6,6 +6,7 @@ import (
 	"github.com/elasticpath/epcc-cli/external/id"
 	log "github.com/sirupsen/logrus"
 	"github.com/yosida95/uritemplate/v3"
+	"net/url"
 	"strings"
 )
 
@@ -98,7 +99,15 @@ func GenerateUrl(urlInfo *CrudEntityInfo, args []string) (string, error) {
 
 	}
 
-	return template.Expand(values)
+	encodedUrl, err := template.Expand(values)
+	if err != nil {
+		return "", err
+	}
+
+	decodedUrlBytes, err := url.PathUnescape(encodedUrl)
+
+	return decodedUrlBytes, err
+
 }
 
 func GetNumberOfVariablesNeeded(url string) (int, error) {

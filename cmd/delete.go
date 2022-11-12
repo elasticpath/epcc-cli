@@ -55,12 +55,12 @@ var delete = &cobra.Command{
 			// len(args) == 1 means first id
 			// lens(args) == 2 means second id.
 
-			resourceURL, err := getUrl(resource, args)
-			if err != nil {
+			// Replace ids with args in resourceURL
+			if resource.DeleteEntityInfo == nil {
 				return []string{}, cobra.ShellCompDirectiveNoFileComp
 			}
 
-			idCount, err := resources.GetNumberOfVariablesNeeded(resourceURL.Url)
+			idCount, err := resources.GetNumberOfVariablesNeeded(resource.DeleteEntityInfo.Url)
 
 			if err != nil {
 				return []string{}, cobra.ShellCompDirectiveNoFileComp
@@ -68,7 +68,7 @@ var delete = &cobra.Command{
 
 			if len(args) > 0 && len(args) < 1+idCount {
 				// Must be for a resource completion
-				types, err := resources.GetTypesOfVariablesNeeded(resourceURL.Url)
+				types, err := resources.GetTypesOfVariablesNeeded(resource.DeleteEntityInfo.Url)
 
 				if err != nil {
 					return []string{}, cobra.ShellCompDirectiveNoFileComp

@@ -161,6 +161,11 @@ func Complete(c Request) ([]string, cobra.ShellCompDirective) {
 				} else if attribute.Type == "SINGULAR_RESOURCE_TYPE" {
 					results = append(results, resources.GetSingularResourceNames()...)
 
+				} else if attribute.Type == "JSON_API_TYPE" {
+					for _, v := range resources.GetPluralResources() {
+						results = append(results, v.JsonApiType)
+					}
+
 				} else if attribute.Type == "CURRENCY" {
 					currencies := []string{"AED", "AFN", "ALL", "AMD", "ANG", "AOA", "ARS", "AUD", "AWG", "AZN",
 						"BAM", "BBD", "BDT", "BGN", "BHD", "BIF", "BMD", "BND", "BOB", "BRL", "BSD", "BTN", "BWP", "BYN", "BZD",
