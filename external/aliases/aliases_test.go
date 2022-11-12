@@ -1,7 +1,7 @@
 package aliases
 
 import (
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"os"
 	"testing"
 )
@@ -32,15 +32,13 @@ func TestSavedAliasIsReturnedInAllAliasesForSingleResponse(t *testing.T) {
 	aliases := GetAliasesForJsonApiType("foo")
 
 	// Verification
-	if len(aliases) != 2 {
-		t.Errorf("There should be one alias for the type foo, not %d", len(aliases))
-	}
+	require.Len(t, aliases, 2, "There should be %d aliases in map not %d", 2, len(aliases))
 
-	assert.Contains(t, aliases, "id=123")
-	assert.Equal(t, "123", aliases["id=123"].Id)
+	require.Contains(t, aliases, "id=123")
+	require.Equal(t, "123", aliases["id=123"].Id)
 
-	assert.Contains(t, aliases, "last_read=entity")
-	assert.Equal(t, "123", aliases["last_read=entity"].Id)
+	require.Contains(t, aliases, "last_read=entity")
+	require.Equal(t, "123", aliases["last_read=entity"].Id)
 }
 
 func TestSavedAliasAppendsAndPreservesPreviousUnrelatedAliases(t *testing.T) {
@@ -75,18 +73,16 @@ func TestSavedAliasAppendsAndPreservesPreviousUnrelatedAliases(t *testing.T) {
 
 	// Verification
 
-	if len(aliases) != 3 {
-		t.Errorf("There should be two aliases for the type foo, not %d", len(aliases))
-	}
+	require.Len(t, aliases, 3, "There should be %d aliases in map not %d", 3, len(aliases))
 
-	assert.Contains(t, aliases, "id=123")
-	assert.Equal(t, "123", aliases["id=123"].Id)
+	require.Contains(t, aliases, "id=123")
+	require.Equal(t, "123", aliases["id=123"].Id)
 
-	assert.Contains(t, aliases, "id=456")
-	assert.Equal(t, "456", aliases["id=456"].Id)
+	require.Contains(t, aliases, "id=456")
+	require.Equal(t, "456", aliases["id=456"].Id)
 
-	assert.Contains(t, aliases, "last_read=entity")
-	assert.Equal(t, "456", aliases["last_read=entity"].Id)
+	require.Contains(t, aliases, "last_read=entity")
+	require.Equal(t, "456", aliases["last_read=entity"].Id)
 }
 
 func TestSavedAliasIsReplacedWhenNewEntityHasTheSameAttributeValue(t *testing.T) {
@@ -123,21 +119,19 @@ func TestSavedAliasIsReplacedWhenNewEntityHasTheSameAttributeValue(t *testing.T)
 
 	// Verification
 
-	if len(aliases) != 4 {
-		t.Errorf("There should be three aliases for the type foo, not %d", len(aliases))
-	}
+	require.Len(t, aliases, 4, "There should be %d aliases in map not %d", 4, len(aliases))
 
-	assert.Contains(t, aliases, "id=123")
-	assert.Equal(t, "123", aliases["id=123"].Id)
+	require.Contains(t, aliases, "id=123")
+	require.Equal(t, "123", aliases["id=123"].Id)
 
-	assert.Contains(t, aliases, "id=456")
-	assert.Equal(t, "456", aliases["id=456"].Id)
+	require.Contains(t, aliases, "id=456")
+	require.Equal(t, "456", aliases["id=456"].Id)
 
-	assert.Contains(t, aliases, "name=Alpha")
-	assert.Equal(t, "456", aliases["name=Alpha"].Id)
+	require.Contains(t, aliases, "name=Alpha")
+	require.Equal(t, "456", aliases["name=Alpha"].Id)
 
-	assert.Contains(t, aliases, "last_read=entity")
-	assert.Equal(t, "456", aliases["last_read=entity"].Id)
+	require.Contains(t, aliases, "last_read=entity")
+	require.Equal(t, "456", aliases["last_read=entity"].Id)
 }
 
 func TestSavedAliasIsReplacedWhenSameEntityHasANewValue(t *testing.T) {
@@ -174,17 +168,15 @@ func TestSavedAliasIsReplacedWhenSameEntityHasANewValue(t *testing.T) {
 
 	// Verification
 
-	if len(aliases) != 3 {
-		t.Errorf("There should be three aliases for the type foo, not %d", len(aliases))
-	}
+	require.Len(t, aliases, 3, "There should be %d aliases in map not %d", 3, len(aliases))
 
-	assert.Contains(t, aliases, "id=123")
-	assert.Equal(t, "123", aliases["id=123"].Id)
+	require.Contains(t, aliases, "id=123")
+	require.Equal(t, "123", aliases["id=123"].Id)
 
-	assert.Contains(t, aliases, "name=Beta")
-	assert.Equal(t, "123", aliases["name=Beta"].Id)
-	assert.Contains(t, aliases, "last_read=entity")
-	assert.Equal(t, "123", aliases["last_read=entity"].Id)
+	require.Contains(t, aliases, "name=Beta")
+	require.Equal(t, "123", aliases["name=Beta"].Id)
+	require.Contains(t, aliases, "last_read=entity")
+	require.Equal(t, "123", aliases["last_read=entity"].Id)
 }
 
 func TestDeleteAliasByIdDeletesAnAlias(t *testing.T) {
@@ -221,15 +213,13 @@ func TestDeleteAliasByIdDeletesAnAlias(t *testing.T) {
 
 	// Verification
 
-	if len(aliases) != 2 {
-		t.Errorf("There should be two alias for the type foo, not %d", len(aliases))
-	}
+	require.Len(t, aliases, 2, "There should be %d aliases in map not %d", 2, len(aliases))
 
-	assert.Contains(t, aliases, "id=456")
-	assert.Equal(t, "456", aliases["id=456"].Id)
+	require.Contains(t, aliases, "id=456")
+	require.Equal(t, "456", aliases["id=456"].Id)
 
-	assert.Contains(t, aliases, "last_read=entity")
-	assert.Equal(t, "456", aliases["last_read=entity"].Id)
+	require.Contains(t, aliases, "last_read=entity")
+	require.Equal(t, "456", aliases["last_read=entity"].Id)
 }
 
 func TestAllAliasesAreReturnedInAllAliasesForArrayResponse(t *testing.T) {
@@ -260,21 +250,19 @@ func TestAllAliasesAreReturnedInAllAliasesForArrayResponse(t *testing.T) {
 
 	// Verification
 
-	if len(aliases) != 4 {
-		t.Errorf("There should be four aliases for the type foo, not %d", len(aliases))
-	}
+	require.Len(t, aliases, 4, "There should be %d aliases in map not %d", 4, len(aliases))
 
-	assert.Contains(t, aliases, "id=123")
-	assert.Equal(t, "123", aliases["id=123"].Id)
+	require.Contains(t, aliases, "id=123")
+	require.Equal(t, "123", aliases["id=123"].Id)
 
-	assert.Contains(t, aliases, "id=456")
-	assert.Equal(t, "456", aliases["id=456"].Id)
+	require.Contains(t, aliases, "id=456")
+	require.Equal(t, "456", aliases["id=456"].Id)
 
-	assert.Contains(t, aliases, "last_read=array[0]")
-	assert.Equal(t, "123", aliases["last_read=array[0]"].Id)
+	require.Contains(t, aliases, "last_read=array[0]")
+	require.Equal(t, "123", aliases["last_read=array[0]"].Id)
 
-	assert.Contains(t, aliases, "last_read=array[1]")
-	assert.Equal(t, "456", aliases["last_read=array[1]"].Id)
+	require.Contains(t, aliases, "last_read=array[1]")
+	require.Equal(t, "456", aliases["last_read=array[1]"].Id)
 }
 
 func TestSavedAliasIsReturnedForAnEmailInLegacyObjectResponse(t *testing.T) {
@@ -301,18 +289,16 @@ func TestSavedAliasIsReturnedForAnEmailInLegacyObjectResponse(t *testing.T) {
 
 	// Verification
 
-	if len(aliases) != 3 {
-		t.Errorf("There should be three alias for the type foo, not %d", len(aliases))
-	}
+	require.Len(t, aliases, 3, "There should be %d aliases in map not %d", 3, len(aliases))
 
-	assert.Contains(t, aliases, "email=test@test.com")
-	assert.Equal(t, "123", aliases["email=test@test.com"].Id)
+	require.Contains(t, aliases, "email=test@test.com")
+	require.Equal(t, "123", aliases["email=test@test.com"].Id)
 
-	assert.Contains(t, aliases, "id=123")
-	assert.Equal(t, "123", aliases["id=123"].Id)
+	require.Contains(t, aliases, "id=123")
+	require.Equal(t, "123", aliases["id=123"].Id)
 
-	assert.Contains(t, aliases, "last_read=entity")
-	assert.Equal(t, "123", aliases["last_read=entity"].Id)
+	require.Contains(t, aliases, "last_read=entity")
+	require.Equal(t, "123", aliases["last_read=entity"].Id)
 }
 
 func TestSavedAliasIsReturnedForAnSkuInLegacyObjectResponse(t *testing.T) {
@@ -339,27 +325,25 @@ func TestSavedAliasIsReturnedForAnSkuInLegacyObjectResponse(t *testing.T) {
 
 	// Verification
 
-	if len(aliases) != 3 {
-		t.Errorf("There should be three aliases for the type foo, not %d", len(aliases))
-	}
+	require.Len(t, aliases, 3, "There should be %d aliases in map not %d", 3, len(aliases))
 
-	assert.Contains(t, aliases, "sku=test")
-	assert.Equal(t, "123", aliases["sku=test"].Id)
+	require.Contains(t, aliases, "sku=test")
+	require.Equal(t, "123", aliases["sku=test"].Id)
 
-	assert.Contains(t, aliases, "sku=test")
-	assert.Equal(t, "test", aliases["sku=test"].Sku)
+	require.Contains(t, aliases, "sku=test")
+	require.Equal(t, "test", aliases["sku=test"].Sku)
 
-	assert.Contains(t, aliases, "id=123")
-	assert.Equal(t, "123", aliases["id=123"].Id)
+	require.Contains(t, aliases, "id=123")
+	require.Equal(t, "123", aliases["id=123"].Id)
 
-	assert.Contains(t, aliases, "id=123")
-	assert.Equal(t, "test", aliases["id=123"].Sku)
+	require.Contains(t, aliases, "id=123")
+	require.Equal(t, "test", aliases["id=123"].Sku)
 
-	assert.Contains(t, aliases, "last_read=entity")
-	assert.Equal(t, "123", aliases["last_read=entity"].Id)
+	require.Contains(t, aliases, "last_read=entity")
+	require.Equal(t, "123", aliases["last_read=entity"].Id)
 
-	assert.Contains(t, aliases, "last_read=entity")
-	assert.Equal(t, "test", aliases["last_read=entity"].Sku)
+	require.Contains(t, aliases, "last_read=entity")
+	require.Equal(t, "test", aliases["last_read=entity"].Sku)
 }
 
 func TestSavedAliasIsReturnedForASlugInLegacyObjectResponse(t *testing.T) {
@@ -386,27 +370,25 @@ func TestSavedAliasIsReturnedForASlugInLegacyObjectResponse(t *testing.T) {
 
 	// Verification
 
-	if len(aliases) != 3 {
-		t.Errorf("There should be three aliases for the type foo, not %d", len(aliases))
-	}
+	require.Len(t, aliases, 3, "There should be %d aliases in map not %d", 3, len(aliases))
 
-	assert.Contains(t, aliases, "slug=test")
-	assert.Equal(t, "123", aliases["slug=test"].Id)
+	require.Contains(t, aliases, "slug=test")
+	require.Equal(t, "123", aliases["slug=test"].Id)
 
-	assert.Contains(t, aliases, "slug=test")
-	assert.Equal(t, "test", aliases["slug=test"].Slug)
+	require.Contains(t, aliases, "slug=test")
+	require.Equal(t, "test", aliases["slug=test"].Slug)
 
-	assert.Contains(t, aliases, "id=123")
-	assert.Equal(t, "123", aliases["id=123"].Id)
+	require.Contains(t, aliases, "id=123")
+	require.Equal(t, "123", aliases["id=123"].Id)
 
-	assert.Contains(t, aliases, "id=123")
-	assert.Equal(t, "test", aliases["id=123"].Slug)
+	require.Contains(t, aliases, "id=123")
+	require.Equal(t, "test", aliases["id=123"].Slug)
 
-	assert.Contains(t, aliases, "last_read=entity")
-	assert.Equal(t, "123", aliases["last_read=entity"].Id)
+	require.Contains(t, aliases, "last_read=entity")
+	require.Equal(t, "123", aliases["last_read=entity"].Id)
 
-	assert.Contains(t, aliases, "last_read=entity")
-	assert.Equal(t, "test", aliases["last_read=entity"].Slug)
+	require.Contains(t, aliases, "last_read=entity")
+	require.Equal(t, "test", aliases["last_read=entity"].Slug)
 }
 
 func TestSavedAliasIsReturnedForANameInLegacyObjectResponse(t *testing.T) {
@@ -433,18 +415,16 @@ func TestSavedAliasIsReturnedForANameInLegacyObjectResponse(t *testing.T) {
 
 	// Verification
 
-	if len(aliases) != 3 {
-		t.Errorf("There should be three aliases for the type foo, not %d", len(aliases))
-	}
+	require.Len(t, aliases, 3, "There should be %d aliases in map not %d", 3, len(aliases))
 
-	assert.Contains(t, aliases, "name=Test_Testerson")
-	assert.Equal(t, "123", aliases["name=Test_Testerson"].Id)
+	require.Contains(t, aliases, "name=Test_Testerson")
+	require.Equal(t, "123", aliases["name=Test_Testerson"].Id)
 
-	assert.Contains(t, aliases, "id=123")
-	assert.Equal(t, "123", aliases["id=123"].Id)
+	require.Contains(t, aliases, "id=123")
+	require.Equal(t, "123", aliases["id=123"].Id)
 
-	assert.Contains(t, aliases, "last_read=entity")
-	assert.Equal(t, "123", aliases["last_read=entity"].Id)
+	require.Contains(t, aliases, "last_read=entity")
+	require.Equal(t, "123", aliases["last_read=entity"].Id)
 
 }
 
@@ -474,18 +454,16 @@ func TestSavedAliasIsReturnedForAnEmailInComplaintObjectResponse(t *testing.T) {
 
 	// Verification
 
-	if len(aliases) != 3 {
-		t.Errorf("There should be three aliases for the type foo, not %d", len(aliases))
-	}
+	require.Len(t, aliases, 3, "There should be %d aliases in map not %d", 3, len(aliases))
 
-	assert.Contains(t, aliases, "email=test@test.com")
-	assert.Equal(t, "123", aliases["email=test@test.com"].Id)
+	require.Contains(t, aliases, "email=test@test.com")
+	require.Equal(t, "123", aliases["email=test@test.com"].Id)
 
-	assert.Contains(t, aliases, "id=123")
-	assert.Equal(t, "123", aliases["id=123"].Id)
+	require.Contains(t, aliases, "id=123")
+	require.Equal(t, "123", aliases["id=123"].Id)
 
-	assert.Contains(t, aliases, "last_read=entity")
-	assert.Equal(t, "123", aliases["last_read=entity"].Id)
+	require.Contains(t, aliases, "last_read=entity")
+	require.Equal(t, "123", aliases["last_read=entity"].Id)
 
 }
 
@@ -515,27 +493,25 @@ func TestSavedAliasIsReturnedForAnSkuInComplaintObjectResponse(t *testing.T) {
 
 	// Verification
 
-	if len(aliases) != 3 {
-		t.Errorf("There should be three alias for the type foo, not %d", len(aliases))
-	}
+	require.Len(t, aliases, 3, "There should be %d aliases in map not %d", 3, len(aliases))
 
-	assert.Contains(t, aliases, "sku=test")
-	assert.Equal(t, "123", aliases["sku=test"].Id)
+	require.Contains(t, aliases, "sku=test")
+	require.Equal(t, "123", aliases["sku=test"].Id)
 
-	assert.Contains(t, aliases, "sku=test")
-	assert.Equal(t, "test", aliases["sku=test"].Sku)
+	require.Contains(t, aliases, "sku=test")
+	require.Equal(t, "test", aliases["sku=test"].Sku)
 
-	assert.Contains(t, aliases, "id=123")
-	assert.Equal(t, "123", aliases["id=123"].Id)
+	require.Contains(t, aliases, "id=123")
+	require.Equal(t, "123", aliases["id=123"].Id)
 
-	assert.Contains(t, aliases, "id=123")
-	assert.Equal(t, "test", aliases["id=123"].Sku)
+	require.Contains(t, aliases, "id=123")
+	require.Equal(t, "test", aliases["id=123"].Sku)
 
-	assert.Contains(t, aliases, "last_read=entity")
-	assert.Equal(t, "123", aliases["last_read=entity"].Id)
+	require.Contains(t, aliases, "last_read=entity")
+	require.Equal(t, "123", aliases["last_read=entity"].Id)
 
-	assert.Contains(t, aliases, "last_read=entity")
-	assert.Equal(t, "test", aliases["last_read=entity"].Sku)
+	require.Contains(t, aliases, "last_read=entity")
+	require.Equal(t, "test", aliases["last_read=entity"].Sku)
 }
 
 func TestSavedAliasIsReturnedForASlugInComplaintObjectResponse(t *testing.T) {
@@ -564,27 +540,25 @@ func TestSavedAliasIsReturnedForASlugInComplaintObjectResponse(t *testing.T) {
 
 	// Verification
 
-	if len(aliases) != 3 {
-		t.Errorf("There should be three aliases for the type foo, not %d", len(aliases))
-	}
+	require.Len(t, aliases, 3, "There should be %d aliases in map not %d", 3, len(aliases))
 
-	assert.Contains(t, aliases, "slug=test")
-	assert.Equal(t, "123", aliases["slug=test"].Id)
+	require.Contains(t, aliases, "slug=test")
+	require.Equal(t, "123", aliases["slug=test"].Id)
 
-	assert.Contains(t, aliases, "slug=test")
-	assert.Equal(t, "test", aliases["slug=test"].Slug)
+	require.Contains(t, aliases, "slug=test")
+	require.Equal(t, "test", aliases["slug=test"].Slug)
 
-	assert.Contains(t, aliases, "id=123")
-	assert.Equal(t, "123", aliases["id=123"].Id)
+	require.Contains(t, aliases, "id=123")
+	require.Equal(t, "123", aliases["id=123"].Id)
 
-	assert.Contains(t, aliases, "id=123")
-	assert.Equal(t, "test", aliases["id=123"].Slug)
+	require.Contains(t, aliases, "id=123")
+	require.Equal(t, "test", aliases["id=123"].Slug)
 
-	assert.Contains(t, aliases, "last_read=entity")
-	assert.Equal(t, "123", aliases["last_read=entity"].Id)
+	require.Contains(t, aliases, "last_read=entity")
+	require.Equal(t, "123", aliases["last_read=entity"].Id)
 
-	assert.Contains(t, aliases, "last_read=entity")
-	assert.Equal(t, "test", aliases["last_read=entity"].Slug)
+	require.Contains(t, aliases, "last_read=entity")
+	require.Equal(t, "test", aliases["last_read=entity"].Slug)
 }
 
 func TestSavedAliasIsReturnedForANameInComplaintObjectResponse(t *testing.T) {
@@ -613,18 +587,16 @@ func TestSavedAliasIsReturnedForANameInComplaintObjectResponse(t *testing.T) {
 
 	// Verification
 
-	if len(aliases) != 3 {
-		t.Errorf("There should be three alias for the type foo, not %d", len(aliases))
-	}
+	require.Len(t, aliases, 3, "There should be %d aliases in map not %d", 3, len(aliases))
 
-	assert.Contains(t, aliases, "name=Test_Testerson")
-	assert.Equal(t, "123", aliases["name=Test_Testerson"].Id)
+	require.Contains(t, aliases, "name=Test_Testerson")
+	require.Equal(t, "123", aliases["name=Test_Testerson"].Id)
 
-	assert.Contains(t, aliases, "id=123")
-	assert.Equal(t, "123", aliases["id=123"].Id)
+	require.Contains(t, aliases, "id=123")
+	require.Equal(t, "123", aliases["id=123"].Id)
 
-	assert.Contains(t, aliases, "last_read=entity")
-	assert.Equal(t, "123", aliases["last_read=entity"].Id)
+	require.Contains(t, aliases, "last_read=entity")
+	require.Equal(t, "123", aliases["last_read=entity"].Id)
 
 }
 
@@ -669,33 +641,31 @@ func TestSavedAliasIsReturnedForARelationshipObjectInArrayResponse(t *testing.T)
 
 	aliases := GetAliasesForJsonApiType("bar")
 
-	if len(aliases) != 8 {
-		t.Errorf("There should be eight aliases for the type bar, not %d", len(aliases))
-	}
+	require.Len(t, aliases, 8, "There should be %d aliases in map not %d", 8, len(aliases))
 
-	assert.Contains(t, aliases, "id=abc")
-	assert.Equal(t, "abc", aliases["id=abc"].Id)
+	require.Contains(t, aliases, "id=abc")
+	require.Equal(t, "abc", aliases["id=abc"].Id)
 
-	assert.Contains(t, aliases, "related_buz_for_foo_id=123")
-	assert.Equal(t, "abc", aliases["related_buz_for_foo_id=123"].Id)
+	require.Contains(t, aliases, "related_buz_for_foo_id=123")
+	require.Equal(t, "abc", aliases["related_buz_for_foo_id=123"].Id)
 
-	assert.Contains(t, aliases, "related_buz_for_foo_last_read=array[0]")
-	assert.Equal(t, "abc", aliases["related_buz_for_foo_last_read=array[0]"].Id)
+	require.Contains(t, aliases, "related_buz_for_foo_last_read=array[0]")
+	require.Equal(t, "abc", aliases["related_buz_for_foo_last_read=array[0]"].Id)
 
-	assert.Contains(t, aliases, "related_buz_for_foo_name=Test_Testerson")
-	assert.Equal(t, "abc", aliases["related_buz_for_foo_name=Test_Testerson"].Id)
+	require.Contains(t, aliases, "related_buz_for_foo_name=Test_Testerson")
+	require.Equal(t, "abc", aliases["related_buz_for_foo_name=Test_Testerson"].Id)
 
-	assert.Contains(t, aliases, "id=def")
-	assert.Equal(t, "def", aliases["id=def"].Id)
+	require.Contains(t, aliases, "id=def")
+	require.Equal(t, "def", aliases["id=def"].Id)
 
-	assert.Contains(t, aliases, "related_buz_for_foo_id=456")
-	assert.Equal(t, "def", aliases["related_buz_for_foo_id=456"].Id)
+	require.Contains(t, aliases, "related_buz_for_foo_id=456")
+	require.Equal(t, "def", aliases["related_buz_for_foo_id=456"].Id)
 
-	assert.Contains(t, aliases, "related_buz_for_foo_last_read=array[1]")
-	assert.Equal(t, "def", aliases["related_buz_for_foo_last_read=array[1]"].Id)
+	require.Contains(t, aliases, "related_buz_for_foo_last_read=array[1]")
+	require.Equal(t, "def", aliases["related_buz_for_foo_last_read=array[1]"].Id)
 
-	assert.Contains(t, aliases, "related_buz_for_foo_name=Bob_Robertson")
-	assert.Equal(t, "def", aliases["related_buz_for_foo_name=Bob_Robertson"].Id)
+	require.Contains(t, aliases, "related_buz_for_foo_name=Bob_Robertson")
+	require.Equal(t, "def", aliases["related_buz_for_foo_name=Bob_Robertson"].Id)
 }
 
 func TestSavedAliasIsReturnedForARelationshipObjectInSingleResponse(t *testing.T) {
@@ -727,21 +697,19 @@ func TestSavedAliasIsReturnedForARelationshipObjectInSingleResponse(t *testing.T
 
 	aliases := GetAliasesForJsonApiType("bar")
 
-	if len(aliases) != 4 {
-		t.Errorf("There should be four aliases for the type bar, not %d", len(aliases))
-	}
+	require.Len(t, aliases, 4, "There should be %d aliases in map not %d", 4, len(aliases))
 
-	assert.Contains(t, aliases, "id=456")
-	assert.Equal(t, "456", aliases["id=456"].Id)
+	require.Contains(t, aliases, "id=456")
+	require.Equal(t, "456", aliases["id=456"].Id)
 
-	assert.Contains(t, aliases, "related_buz_for_foo_id=123")
-	assert.Equal(t, "456", aliases["related_buz_for_foo_id=123"].Id)
+	require.Contains(t, aliases, "related_buz_for_foo_id=123")
+	require.Equal(t, "456", aliases["related_buz_for_foo_id=123"].Id)
 
-	assert.Contains(t, aliases, "related_buz_for_foo_last_read=entity")
-	assert.Equal(t, "456", aliases["related_buz_for_foo_last_read=entity"].Id)
+	require.Contains(t, aliases, "related_buz_for_foo_last_read=entity")
+	require.Equal(t, "456", aliases["related_buz_for_foo_last_read=entity"].Id)
 
-	assert.Contains(t, aliases, "related_buz_for_foo_name=Test_Testerson")
-	assert.Equal(t, "456", aliases["related_buz_for_foo_name=Test_Testerson"].Id)
+	require.Contains(t, aliases, "related_buz_for_foo_name=Test_Testerson")
+	require.Equal(t, "456", aliases["related_buz_for_foo_name=Test_Testerson"].Id)
 }
 
 func TestResolveAliasValuesReturnsAliasForMatchingValue(t *testing.T) {
@@ -768,6 +736,7 @@ func TestResolveAliasValuesReturnsAliasForMatchingValue(t *testing.T) {
 
 	if value != "123" {
 		t.Errorf("Alias value of 123 should have been returned, but got %s", value)
+		return
 	}
 }
 
@@ -796,6 +765,7 @@ func TestResolveAliasValuesReturnsRequestForUnMatchingValue(t *testing.T) {
 
 	if value != "id=ABC" {
 		t.Errorf("Alias value of id=ABC should have been returned, but got %s", value)
+		return
 	}
 }
 
@@ -825,6 +795,7 @@ func TestResolveAliasValuesReturnsRequestForUnMatchingValueAndType(t *testing.T)
 
 	if value != "id=XYZ" {
 		t.Errorf("Alias value of id=XYZ should have been returned, but got %s", value)
+		return
 	}
 }
 
@@ -860,6 +831,7 @@ func TestClearAllAliasesClearsAllAliases(t *testing.T) {
 	err = ClearAllAliases()
 	if err != nil {
 		t.Errorf("Couldn't clear aliases %v", err)
+		return
 	}
 
 	fooAliases := GetAliasesForJsonApiType("foo")
@@ -868,10 +840,12 @@ func TestClearAllAliasesClearsAllAliases(t *testing.T) {
 	// Verification
 	if len(fooAliases) != 0 {
 		t.Errorf("There should be zero alias for the type foo, not %d", len(fooAliases))
+		return
 	}
 
 	if len(barAliases) != 0 {
 		t.Errorf("There should be zero alias for the type bar, not %d", len(barAliases))
+		return
 	}
 
 }
@@ -909,6 +883,7 @@ func TestClearAllAliasesForJsonTypeOnlyClearsJsonType(t *testing.T) {
 
 	if err != nil {
 		t.Errorf("Couldn't clear aliases %v", err)
+		return
 	}
 
 	fooAliases := GetAliasesForJsonApiType("foo")
@@ -917,10 +892,12 @@ func TestClearAllAliasesForJsonTypeOnlyClearsJsonType(t *testing.T) {
 	// Verification
 	if len(fooAliases) != 0 {
 		t.Errorf("There should be zero alias for the type foo, not %d", len(fooAliases))
+		return
 	}
 
 	if len(barAliases) != 2 {
 		t.Errorf("There should be two alias for the type bar, not %d", len(barAliases))
+		return
 	}
 
 }
@@ -943,23 +920,25 @@ func TestThatCorruptAliasFileDoesntCrashProgramWhenReadingAliases(t *testing.T) 
 }`)
 
 	// Execute SUT
+	require.Equal(t, 1, FlushAliases(), "Should have written 1 type to disk")
+
 	fileName := getAliasFileForJsonApiType(getAliasDataDirectory(), "foo")
 
 	if err := os.Remove(getAliasFileForJsonApiType(getAliasDataDirectory(), "foo")); err != nil && !os.IsNotExist(err) {
 		t.Errorf("Should have been able to delete the file, but got %v ", err)
+		return
 	}
 
 	err = os.WriteFile(fileName, []byte("{{{"), 0600)
 	if err != nil {
 		t.Errorf("Couldn't save corrupted yaml file %v", err)
+		return
 	}
 
 	aliases := GetAliasesForJsonApiType("foo")
 
 	// Verification
-	if len(aliases) != 0 {
-		t.Errorf("There should be zero alias for the type foo, not %d", len(aliases))
-	}
+	require.Len(t, aliases, 0, "There should be %d aliases in map not %d", 0, len(aliases))
 
 }
 
@@ -981,15 +960,18 @@ func TestThatCorruptAliasFileDoesntCrashProgramWhenSavingAliases(t *testing.T) {
 }`)
 
 	// Execute SUT
+	require.Equal(t, 1, FlushAliases(), "Should have written 1 type to disk")
 	fileName := getAliasFileForJsonApiType(getAliasDataDirectory(), "foo")
 
 	if err := os.Remove(getAliasFileForJsonApiType(getAliasDataDirectory(), "foo")); err != nil && !os.IsNotExist(err) {
 		t.Errorf("Should have been able to delete the file, but got %v ", err)
+		return
 	}
 
 	err = os.WriteFile(fileName, []byte("{{{"), 0600)
 	if err != nil {
 		t.Errorf("Couldn't save corrupted yaml file %v", err)
+		return
 	}
 
 	SaveAliasesForResources(
@@ -1005,11 +987,9 @@ func TestThatCorruptAliasFileDoesntCrashProgramWhenSavingAliases(t *testing.T) {
 	aliases := GetAliasesForJsonApiType("foo")
 
 	// Verification
-	if len(aliases) != 2 {
-		t.Errorf("There should be two aliases for the type foo, not %d", len(aliases))
-	}
+	require.Len(t, aliases, 2, "There should be %d aliases in map not %d", 2, len(aliases))
 
-	assert.Contains(t, aliases, "id=456")
-	assert.Equal(t, "456", aliases["id=456"].Id)
+	require.Contains(t, aliases, "id=456")
+	require.Equal(t, "456", aliases["id=456"].Id)
 
 }

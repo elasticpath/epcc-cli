@@ -9,6 +9,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
 	"os"
+	"path"
 	"path/filepath"
 	"regexp"
 	"strconv"
@@ -16,30 +17,23 @@ import (
 	"sync"
 )
 
-// We will serialize our access for aliases to prevent parallel operations in the same process from losing data
-// however, we should use file locking in the OS to stop multiple concurrent invocations.
-var filelock = sync.Mutex{}
+var mutex = &sync.RWMutex{}
 
 var aliasDirectoryOverride = ""
+var aliases = map[string]map[string]*id.IdableAttributes{}
 
-func ClearAllAliases() error {
-	aliasDataDirectory := getAliasDataDirectory()
+var dirtyAliases = map[string]bool{}
 
-	if err := os.RemoveAll(aliasDataDirectory); err != nil && !os.IsNotExist(err) {
-		return err
-	}
-
-	return nil
-
-}
+var SkipAliasProcessing = false
 
 func ClearAllAliasesForJsonApiType(jsonApiType string) error {
+	ClearCache(jsonApiType)
+
 	if err := os.Remove(getAliasFileForJsonApiType(getAliasDataDirectory(), jsonApiType)); err != nil && !os.IsNotExist(err) {
 		return err
 	}
 
 	return nil
-
 }
 
 // Used to determine index of element in array.
@@ -49,21 +43,36 @@ var arrayPathPattern = regexp.MustCompile("^\\.data\\[([0-9]+)]$")
 var relationshipPattern = regexp.MustCompile("^\\.data(?:\\[[0-9]+])?\\.relationships\\.([^.]+)\\.data")
 
 func GetAliasesForJsonApiType(jsonApiType string) map[string]*id.IdableAttributes {
-	profileDirectory := getAliasDataDirectory()
-	aliasFile := getAliasFileForJsonApiType(profileDirectory, jsonApiType)
 
-	aliasMap := map[string]*id.IdableAttributes{}
+	mutex.RLock()
 
-	data, err := os.ReadFile(aliasFile)
-	if err != nil {
-		log.Debugf("Could not read %s, error %s", aliasFile, err)
-		data = []byte{}
+	aliasMap, ok := aliases[jsonApiType]
+
+	if !ok {
+		mutex.RUnlock()
+		mutex.Lock()
+		defer mutex.Unlock()
+		aliasFile := getAliasFileForJsonApiType(getAliasDataDirectory(), jsonApiType)
+
+		aliasMap = map[string]*id.IdableAttributes{}
+
+		data, err := os.ReadFile(aliasFile)
+		if err != nil {
+			log.Debugf("Could not read %s, error %s", aliasFile, err)
+			data = []byte{}
+		} else {
+		}
+
+		err = yaml.Unmarshal(data, aliasMap)
+		aliases[jsonApiType] = aliasMap
+		if err != nil {
+			log.Debugf("Could not unmarshall existing file %s, error %s", data, err)
+		} else {
+			log.Debugf("Aliases for type [%s] loaded, with %d aliases", jsonApiType, len(aliasMap))
+		}
+
 	} else {
-	}
-
-	err = yaml.Unmarshal(data, aliasMap)
-	if err != nil {
-		log.Debugf("Could not unmarshall existing file %s, error %s", data, err)
+		mutex.RUnlock()
 	}
 
 	return aliasMap
@@ -83,11 +92,18 @@ func ResolveAliasValuesOrReturnIdentity(jsonApiType string, value string, attrib
 			return result.Sku
 		}
 
+		if attribute == "code" {
+			return result.Code
+		}
+
 	}
 	return value
 }
 
 func SaveAliasesForResources(jsonTxt string) {
+	if SkipAliasProcessing {
+		return
+	}
 	var jsonStruct = map[string]interface{}{}
 	err := json.Unmarshal([]byte(jsonTxt), &jsonStruct)
 	if err != nil {
@@ -98,10 +114,11 @@ func SaveAliasesForResources(jsonTxt string) {
 	results := map[string]map[string]*id.IdableAttributes{}
 	visitResources(jsonStruct, "", "", map[string]*id.IdableAttributes{}, results)
 
-	log.Tracef("All aliases: %v", results)
+	log.Tracef("All aliases found in JSON: %v", results)
 
-	for resourceType, aliases := range results {
-		saveAliasesForResource(resourceType, aliases)
+	for resourceType, foundAliases := range results {
+		saveAliasesForResource(resourceType, foundAliases)
+		log.Tracef("Number of resources for type [%s] is now %d and value is %v", resourceType, len(aliases[resourceType]), aliases[resourceType])
 	}
 
 }
@@ -139,49 +156,20 @@ func getAliasFileForJsonApiType(profileDirectory string, resourceType string) st
 	return aliasFile
 }
 
-func modifyAliases(jsonApiType string, fn func(map[string]*id.IdableAttributes)) map[string]*id.IdableAttributes {
-	profileDirectory := getAliasDataDirectory()
-	filelock.Lock()
-	defer filelock.Unlock()
+func modifyAliases(jsonApiType string, fn func(map[string]*id.IdableAttributes)) {
+	aliasMap := GetAliasesForJsonApiType(jsonApiType)
 
-	aliasFile := getAliasFileForJsonApiType(profileDirectory, jsonApiType)
-	data, err := os.ReadFile(aliasFile)
-	if err != nil {
-		log.Debugf("Could not read %s, error %s", aliasFile, err)
-		data = []byte{}
-	}
+	mutex.Lock()
+	defer mutex.Unlock()
 
-	existingAliases := map[string]*id.IdableAttributes{}
+	fn(aliasMap)
+	dirtyAliases[jsonApiType] = true
 
-	err = yaml.Unmarshal(data, existingAliases)
-	if err != nil {
-		log.Debugf("Could not unmarshall existing file %s, error %s", data, err)
-	}
-	fn(existingAliases)
-	// We will write to a temp file and then rename, to prevent data loss. rename's in the same folder are likely atomic in most settings.
-	// Although we should probably sync on the file as well, that might be too much overhead, and I was too lazy to rewrite this
-	// https://github.com/golang/go/issues/20599
-	tmpFileName := aliasFile + "." + uuid.New().String()
-
-	marshal, err := yaml.Marshal(existingAliases)
-	if err != nil {
-		log.Warnf("Could not save aliases for %s, error %v", tmpFileName, err)
-	}
-
-	err = os.WriteFile(tmpFileName, marshal, 0600)
-	if err != nil {
-		log.Warnf("Could not save aliases for %s, error %v", tmpFileName, err)
-	}
-
-	err = os.Rename(tmpFileName, aliasFile)
-	if err != nil {
-		log.Warnf("Could not save aliases for %s, error %v", tmpFileName, err)
-	}
-	return existingAliases
 }
 
 // This function saves all the aliases for a specific resource.
 func saveAliasesForResource(jsonApiType string, newAliases map[string]*id.IdableAttributes) {
+
 	modifyAliases(jsonApiType, func(aliasMap map[string]*id.IdableAttributes) {
 
 		// Aliases have the format KEY=VALUE and this maps to an ID.
@@ -317,6 +305,11 @@ func generateAliasesForStruct(prefix string, parentAliasType string, parentAlias
 			result.Slug = getAttributeValueForKey("slug", jsonObjectToInspect)
 		}
 
+		if alias := getAliasForKey("code", jsonObjectToInspect); alias != "" {
+			results[alias] = &result
+			result.Code = getAttributeValueForKey("code", jsonObjectToInspect)
+		}
+
 		if alias := getAliasForKey("email", jsonObjectToInspect); alias != "" {
 			results[alias] = &result
 		}
@@ -361,4 +354,87 @@ func InitializeAliasDirectoryForTesting() {
 
 	aliasDirectoryOverride = dir
 	log.Infof("Alias directory for tests is %s", dir)
+}
+
+func ClearAllCaches() {
+	mutex.Lock()
+	aliases = map[string]map[string]*id.IdableAttributes{}
+	dirtyAliases = map[string]bool{}
+	mutex.Unlock()
+}
+
+func ClearCache(jsonApiType string) {
+	mutex.Lock()
+	delete(aliases, jsonApiType)
+	delete(dirtyAliases, jsonApiType)
+	mutex.Unlock()
+}
+
+func ClearAllAliases() error {
+	aliasDataDirectory := getAliasDataDirectory()
+
+	if err := os.RemoveAll(aliasDataDirectory); err != nil && !os.IsNotExist(err) {
+		return err
+	}
+
+	ClearAllCaches()
+	return nil
+
+}
+
+func FlushAliases() int {
+	changed := SyncAliases()
+	ClearAllCaches()
+
+	return changed
+}
+
+func SyncAliases() int {
+
+	syncedFiles := 0
+	mutex.RLock()
+	defer mutex.RUnlock()
+
+	for jsonApiType, val := range dirtyAliases {
+		if val == false {
+			log.Errorf("Not expecting a dirty alias to be false, should either exist or not, this is a bug, for type %s", jsonApiType)
+			continue
+		}
+
+		aliasFile := path.Clean(getAliasFileForJsonApiType(getAliasDataDirectory(), jsonApiType))
+
+		aliasesForType := aliases[jsonApiType]
+
+		// We will write to a temp file and then rename, to prevent data loss. rename's in the same folder are likely atomic in most settings.
+		// Although we should probably sync on the file as well, that might be too much overhead, and I was too lazy to rewrite this
+		// https://github.com/golang/go/issues/20599
+		tmpFileName := aliasFile + "." + uuid.New().String()
+
+		marshal, err := yaml.Marshal(aliasesForType)
+
+		if err != nil {
+			log.Warnf("Could not save aliases for %s, error %v", tmpFileName, err)
+			continue
+		}
+
+		err = os.WriteFile(tmpFileName, marshal, 0600)
+		if err != nil {
+			log.Warnf("Could not save aliases for %s, error %v", tmpFileName, err)
+			continue
+		}
+
+		err = os.Rename(tmpFileName, aliasFile)
+		if err != nil {
+			log.Warnf("Could not save aliases for %s, error %v", tmpFileName, err)
+			continue
+		}
+
+		syncedFiles++
+		delete(dirtyAliases, jsonApiType)
+		log.Tracef("Successfully wrote aliases to disk for file %s in %s", jsonApiType, aliasFile)
+	}
+
+	log.Debugf("Syncing aliases to disk, %d files changed", syncedFiles)
+	return syncedFiles
+
 }

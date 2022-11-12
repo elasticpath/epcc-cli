@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/elasticpath/epcc-cli/config"
+	"github.com/elasticpath/epcc-cli/external/aliases"
 	"github.com/elasticpath/epcc-cli/external/crud"
 	"github.com/elasticpath/epcc-cli/external/httpclient"
 	"github.com/elasticpath/epcc-cli/external/logger"
@@ -62,6 +63,8 @@ func init() {
 	RootCmd.PersistentFlags().StringVarP(&profiles.ProfileName, "profile", "P", "default", "overrides the current EPCC_PROFILE var to run the command with the chosen profile.")
 	RootCmd.PersistentFlags().Uint16VarP(&rateLimit, "rate-limit", "", 10, "Request limit per second")
 	RootCmd.PersistentFlags().Float32VarP(&requestTimeout, "timeout", "", 10, "Request timeout in seconds (fractional values allowed)")
+
+	RootCmd.PersistentFlags().BoolVarP(&aliases.SkipAliasProcessing, "skip-alias-processing", "", false, "if set, we don't process the response for aliases")
 
 	create.Flags().StringVar(&crud.OverrideUrlPath, "override-url-path", "", "Override the URL that will be used for the Request")
 	delete.Flags().StringVar(&crud.OverrideUrlPath, "override-url-path", "", "Override the URL that will be used for the Request")
@@ -132,9 +135,28 @@ Environment Variables
 }
 
 func Execute() {
-	err := RootCmd.Execute()
 
-	httpclient.LogStats()
+	sigs := make(chan os.Signal, 1)
+	normalShutdown := make(chan bool, 1)
+	shutdownHandlerDone := make(chan bool, 1)
+	go func() {
+		select {
+		case <-sigs:
+		case <-normalShutdown:
+		}
+
+		defer func() {
+			shutdownHandlerDone <- true
+		}()
+
+		httpclient.LogStats()
+		aliases.FlushAliases()
+	}()
+
+	err := RootCmd.Execute()
+	normalShutdown <- true
+
+	<-shutdownHandlerDone
 
 	if err != nil {
 		log.Errorf("Error occured while processing command %s", err)
