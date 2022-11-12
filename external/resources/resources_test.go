@@ -6,7 +6,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/yosida95/uritemplate/v3"
 	"gopkg.in/yaml.v3"
-	"io/ioutil"
+	"os"
 	"strings"
 	"testing"
 )
@@ -101,7 +101,7 @@ func TestJsonSchemaValidate(t *testing.T) {
 		log.Fatalf("%#v", err)
 	}
 
-	data, err := ioutil.ReadFile("resources.yaml")
+	data, err := os.ReadFile("resources.yaml")
 	if err != nil {
 		log.Fatal(err)
 	}

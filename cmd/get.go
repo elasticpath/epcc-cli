@@ -11,7 +11,7 @@ import (
 	"github.com/elasticpath/epcc-cli/external/resources"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 )
@@ -99,7 +99,7 @@ func getInternal(args []string) (error, string) {
 	}
 
 	// Print the body
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Fatal(err)
 	}

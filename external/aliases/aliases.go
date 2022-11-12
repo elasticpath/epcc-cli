@@ -8,7 +8,6 @@ import (
 	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -55,7 +54,7 @@ func GetAliasesForJsonApiType(jsonApiType string) map[string]*id.IdableAttribute
 
 	aliasMap := map[string]*id.IdableAttributes{}
 
-	data, err := ioutil.ReadFile(aliasFile)
+	data, err := os.ReadFile(aliasFile)
 	if err != nil {
 		log.Debugf("Could not read %s, error %s", aliasFile, err)
 		data = []byte{}
@@ -146,7 +145,7 @@ func modifyAliases(jsonApiType string, fn func(map[string]*id.IdableAttributes))
 	defer filelock.Unlock()
 
 	aliasFile := getAliasFileForJsonApiType(profileDirectory, jsonApiType)
-	data, err := ioutil.ReadFile(aliasFile)
+	data, err := os.ReadFile(aliasFile)
 	if err != nil {
 		log.Debugf("Could not read %s, error %s", aliasFile, err)
 		data = []byte{}
@@ -169,7 +168,7 @@ func modifyAliases(jsonApiType string, fn func(map[string]*id.IdableAttributes))
 		log.Warnf("Could not save aliases for %s, error %v", tmpFileName, err)
 	}
 
-	err = ioutil.WriteFile(tmpFileName, marshal, 0600)
+	err = os.WriteFile(tmpFileName, marshal, 0600)
 	if err != nil {
 		log.Warnf("Could not save aliases for %s, error %v", tmpFileName, err)
 	}
@@ -355,7 +354,7 @@ func getAttributeValueForKey(key string, data map[string]interface{}) string {
 }
 
 func InitializeAliasDirectoryForTesting() {
-	dir, err := ioutil.TempDir("", "epcc-cli-aliases-testing")
+	dir, err := os.MkdirTemp("", "epcc-cli-aliases-testing")
 	if err != nil {
 		log.Panic("Could not create directory", err)
 	}

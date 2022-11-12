@@ -2,7 +2,6 @@ package aliases
 
 import (
 	"github.com/stretchr/testify/assert"
-	"io/ioutil"
 	"os"
 	"testing"
 )
@@ -950,7 +949,7 @@ func TestThatCorruptAliasFileDoesntCrashProgramWhenReadingAliases(t *testing.T) 
 		t.Errorf("Should have been able to delete the file, but got %v ", err)
 	}
 
-	err = ioutil.WriteFile(fileName, []byte("{{{"), 0600)
+	err = os.WriteFile(fileName, []byte("{{{"), 0600)
 	if err != nil {
 		t.Errorf("Couldn't save corrupted yaml file %v", err)
 	}
@@ -988,7 +987,7 @@ func TestThatCorruptAliasFileDoesntCrashProgramWhenSavingAliases(t *testing.T) {
 		t.Errorf("Should have been able to delete the file, but got %v ", err)
 	}
 
-	err = ioutil.WriteFile(fileName, []byte("{{{"), 0600)
+	err = os.WriteFile(fileName, []byte("{{{"), 0600)
 	if err != nil {
 		t.Errorf("Couldn't save corrupted yaml file %v", err)
 	}
