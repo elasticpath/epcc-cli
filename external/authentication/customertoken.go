@@ -51,7 +51,7 @@ func GetCustomerToken() *CustomerTokenResponse {
 		if !os.IsNotExist(err) {
 			log.Warnf("Could not read %s, error %s", customerTokenPath, err)
 		} else {
-			log.Debugf("No saved api token %s, logging in again", customerTokenPath)
+			log.Tracef("No saved api token %s", customerTokenPath)
 		}
 		data = []byte{}
 	} else {

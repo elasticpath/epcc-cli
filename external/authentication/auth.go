@@ -12,6 +12,7 @@ import (
 	"net/http/httputil"
 	"net/url"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -29,6 +30,10 @@ var HttpClient = &http.Client{
 
 var bearerToken *ApiTokenResponse = nil
 
+var noTokenWarningMutex = sync.RWMutex{}
+
+var noTokenWarningMessageLogged = false
+
 func GetAuthenticationToken(useTokenFromProfileDir bool, valuesOverride *url.Values) (*ApiTokenResponse, error) {
 
 	if useTokenFromProfileDir {
@@ -41,6 +46,7 @@ func GetAuthenticationToken(useTokenFromProfileDir bool, valuesOverride *url.Val
 			bearerCopy := *bearerToken
 			return &bearerCopy, nil
 		} else {
+			// TODO This will also happen a bunch of times in concurrent goroutines
 			log.Infof("Existing token has expired (or will very soon), refreshing. Token expiry is at %s", time.Unix(bearerToken.Expires, 0).Format(time.RFC1123Z))
 		}
 
@@ -54,7 +60,22 @@ func GetAuthenticationToken(useTokenFromProfileDir bool, valuesOverride *url.Val
 
 			// Autologin using env vars
 			if config.Envs.EPCC_CLIENT_ID == "" {
-				log.Warn("No client id set in profile or env var, no authentication will be used for API request. To get started, set the EPCC_CLIENT_ID and (optionally) EPCC_CLIENT_SECRET environment variables")
+				noTokenWarningMutex.RLock()
+				if noTokenWarningMessageLogged == false {
+					noTokenWarningMutex.RUnlock()
+					noTokenWarningMutex.Lock()
+					defer noTokenWarningMutex.Unlock()
+					if noTokenWarningMessageLogged == false {
+						noTokenWarningMessageLogged = true
+						if !config.Envs.EPCC_CLI_SUPPRESS_NO_AUTH_MESSAGES {
+							log.Warn("No client id set in profile or env var, no authentication will be used for API request. To get started, set the EPCC_CLIENT_ID and (optionally) EPCC_CLIENT_SECRET environment variables")
+						}
+
+					}
+				} else {
+					noTokenWarningMutex.RUnlock()
+				}
+
 				return nil, nil
 			}
 
@@ -70,7 +91,22 @@ func GetAuthenticationToken(useTokenFromProfileDir bool, valuesOverride *url.Val
 
 			requestValues = &values
 		} else {
-			log.Infof("Automatic login is disabled, re-enable by using `epcc login client_credentials`")
+
+			noTokenWarningMutex.RLock()
+			if noTokenWarningMessageLogged == false {
+				noTokenWarningMutex.RUnlock()
+				noTokenWarningMutex.Lock()
+				defer noTokenWarningMutex.Unlock()
+				if noTokenWarningMessageLogged == false {
+					noTokenWarningMessageLogged = true
+					if !config.Envs.EPCC_CLI_SUPPRESS_NO_AUTH_MESSAGES {
+						log.Infof("Automatic login is disabled, re-enable by using `epcc login client_credentials`")
+					}
+				}
+			} else {
+				noTokenWarningMutex.RUnlock()
+			}
+
 			return nil, nil
 		}
 	} else {
@@ -100,6 +136,17 @@ func GetAuthenticationToken(useTokenFromProfileDir bool, valuesOverride *url.Val
 func fetchNewAuthenticationToken(values url.Values) (*ApiTokenResponse, error) {
 
 	reqURL, err := url.Parse(config.Envs.EPCC_API_BASE_URL)
+	if err != nil {
+		return nil, err
+	}
+
+	if reqURL.Host == "" {
+		log.Infof("No API endpoint set in profile or environment variables, defaulting to \"%s\". To change this set the EPCC_API_BASE_URL environment variable.", config.DefaultUrl)
+		reqURL, err = url.Parse(config.DefaultUrl)
+		if err != nil {
+			log.Fatalf("Error when parsing default host, this is a bug, %s", config.DefaultUrl)
+		}
+	}
 
 	reqURL.Path = fmt.Sprintf("/oauth/access_token")
 
