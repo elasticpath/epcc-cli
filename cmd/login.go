@@ -302,7 +302,7 @@ var loginCustomer = &cobra.Command{
 		if customerTokenResponse != nil {
 
 			// Get the customer so we have aliases where we need the id.
-			err, getCustomerBody := getInternal([]string{"customer", customerTokenResponse.Data.CustomerId})
+			getCustomerBody, err := getInternal([]string{"customer", customerTokenResponse.Data.CustomerId})
 
 			if err != nil {
 				log.Warnf("Could not retrieve customer")

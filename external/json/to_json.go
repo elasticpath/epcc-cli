@@ -13,6 +13,8 @@ import (
 
 var segmentRegex = regexp.MustCompile("(.+?)(\\[[0-9]+])?$")
 
+var attributeWithArrayIndex = regexp.MustCompile("\\[[0-9]+]")
+
 func ToJson(args []string, noWrapping bool, compliant bool, attributes map[string]*resources.CrudEntityAttribute) (string, error) {
 
 	if len(args)%2 == 1 {
@@ -66,8 +68,10 @@ func toJsonObject(args []string, noWrapping bool, compliant bool, attributes map
 		attributeName := key
 		if strings.HasPrefix(key, "attributes.") {
 			attributeName = strings.Replace(key, "attributes.", "", 1)
-
 		}
+
+		// Look for a match of attribute names with [n] instead of [0] or [1] whatever the user supplied
+		attributeName = attributeWithArrayIndex.ReplaceAllString(attributeName, "[n]")
 
 		if attributeInfo, ok := attributes[attributeName]; ok {
 			if strings.HasPrefix(attributeInfo.Type, "RESOURCE_ID:") {

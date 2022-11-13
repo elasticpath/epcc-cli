@@ -155,20 +155,29 @@ func createInternal(args []string) (string, error) {
 
 	if err != nil {
 		return "", fmt.Errorf("got error %s", err.Error())
-	}
-	defer resp.Body.Close()
-
-	// Print the body
-	resBody, err = io.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatal(err)
+	} else if resp == nil {
+		return "", fmt.Errorf("got nil response")
 	}
 
-	// Check if error response
-	if resp.StatusCode >= 400 && resp.StatusCode <= 600 {
-		json.PrintJson(string(resBody))
-		return "", fmt.Errorf(resp.Status)
+	if resp.Body != nil {
+		defer resp.Body.Close()
+
+		// Print the body
+		resBody, err = io.ReadAll(resp.Body)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		// Check if error response
+		if resp.StatusCode >= 400 && resp.StatusCode <= 600 {
+			json.PrintJson(string(resBody))
+			return "", fmt.Errorf(resp.Status)
+		}
+
+		aliases.SaveAliasesForResources(string(resBody))
+		return string(resBody), nil
+	} else {
+		return "", nil
 	}
-	aliases.SaveAliasesForResources(string(resBody))
-	return string(resBody), nil
+
 }
