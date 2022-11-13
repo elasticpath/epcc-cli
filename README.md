@@ -209,6 +209,22 @@ INFO[0001] PUT https://api.moltin.com/v2/customers/8f720da2-37d1-41b7-94da-3fd35
 7. Copying and pasting is terrible and as a result epcc-cli has a few ways of ameliorating the experience of working with ids. 
    To update the customer without the id, you can use an alias `email=test@test.com` (and this will auto complete). For example `epcc update customer email=test@test.com name "Jonah Smith"`
 
+## Tips
+
+### Sorting in Descending Order
+
+The EPCC CLI supports sorting in descending order however you may get an error:
+```bash
+$ epcc get customers sort -updated_at
+Error: unknown short flag: 'u' in -updated_at
+```
+
+You will need to use a bare double dash "--" before the argument, this signals that flag processing is complete and is a convention in many shells.
+
+```bash
+$ epcc get customers -- sort -updated_at
+```
+
 ## Development Tips
 
 ### Fast rebuilds
