@@ -174,7 +174,10 @@ func createInternal(args []string) (string, error) {
 			return "", fmt.Errorf(resp.Status)
 		}
 
-		aliases.SaveAliasesForResources(string(resBody))
+		// 204 is no content, so we will skip it.
+		if resp.StatusCode != 204 {
+			aliases.SaveAliasesForResources(string(resBody))
+		}
 		return string(resBody), nil
 	} else {
 		return "", nil

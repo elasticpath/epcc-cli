@@ -1,5 +1,5 @@
 {
-  "$id": "https://example.com/product.schema.json",
+  "$id": "https://github.com/elasticpath/epcc-cli/blob/main/external/resources/resources_schema.json",
   "type": "object",
   "propertyNames": {
     "pattern": "^[A-Za-z-][A-Za-z0-9-]*$"

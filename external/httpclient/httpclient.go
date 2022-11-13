@@ -17,6 +17,7 @@ import (
 	"net/url"
 	"os"
 	"runtime"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -28,7 +29,16 @@ const EnvNameHttpPrefix = "EPCC_CLI_HTTP_HEADER_"
 
 var httpHeaders = map[string]string{}
 
+var stats = struct {
+	totalRateLimitedTimeInMs       int64
+	totalHttpRequestProcessingTime int64
+	totalRequests                  uint64
+
+	respCodes map[int]int
+}{}
+
 func init() {
+	stats.respCodes = make(map[int]int)
 	for _, env := range os.Environ() {
 		splitEnv := strings.SplitN(env, "=", 2)
 
@@ -52,20 +62,29 @@ var Limit *rate.Limiter = nil
 
 var statsLock = &sync.Mutex{}
 
-var stats = struct {
-	totalRateLimitedTimeInMs int64
-	totalRequests            uint64
-}{}
-
 var HttpClient = &http.Client{}
 
 func LogStats() {
 	statsLock.Lock()
 	defer statsLock.Unlock()
+	keys := make([]int, 0, len(stats.respCodes))
+
+	for k := range stats.respCodes {
+		keys = append(keys, k)
+	}
+
+	sort.Ints(keys)
+
+	counts := ""
+
+	for _, k := range keys {
+		counts += fmt.Sprintf("%d:%d, ", k, stats.respCodes[k])
+	}
+
 	if stats.totalRequests > 3 {
-		log.Infof("Total requests %d, and total rate limiting time %d ms", stats.totalRequests, stats.totalRateLimitedTimeInMs)
+		log.Infof("Total requests %d, and total rate limiting time %d ms, and total processing time %d ms. Response Code Count: %s", stats.totalRequests, stats.totalRateLimitedTimeInMs, stats.totalHttpRequestProcessingTime, counts)
 	} else {
-		log.Debugf("Total requests %d, and total rate limiting time %d ms", stats.totalRequests, stats.totalRateLimitedTimeInMs)
+		log.Debugf("Total requests %d, and total rate limiting time %d ms and total processing time %d ms. Response Code Count: %s", stats.totalRequests, stats.totalRateLimitedTimeInMs, stats.totalHttpRequestProcessingTime, counts)
 	}
 }
 func DoRequest(ctx context.Context, method string, path string, query string, payload io.Reader) (response *http.Response, error error) {
@@ -161,12 +180,24 @@ func doRequestInternal(ctx context.Context, method string, contentType string, p
 		return nil, fmt.Errorf("Rate limiter returned error %v, %w", err, err)
 	}
 
-	elapsed := time.Since(start)
+	rateLimitTime := time.Since(start)
 	resp, err := HttpClient.Do(req)
+	requestTime := time.Since(start)
 
 	statsLock.Lock()
 	stats.totalRequests += 1
-	stats.totalRateLimitedTimeInMs += int64(elapsed.Milliseconds())
+	if rateLimitTime.Milliseconds() > 50 {
+		// Only count rate limit time if it took us longer than 50 ms to get here.
+		stats.totalRateLimitedTimeInMs += int64(rateLimitTime.Milliseconds())
+	}
+
+	stats.totalHttpRequestProcessingTime += int64(requestTime.Milliseconds()) - int64(rateLimitTime.Milliseconds())
+
+	if resp != nil {
+		stats.respCodes[resp.StatusCode] = stats.respCodes[resp.StatusCode] + 1
+	}
+
+	requestNumber := stats.totalRequests
 	statsLock.Unlock()
 
 	if err != nil {
@@ -210,7 +241,7 @@ func doRequestInternal(ctx context.Context, method string, contentType string, p
 		if payload != nil {
 			body, _ := io.ReadAll(&bodyBuf)
 			if len(body) > 0 {
-				logf("%s %s%s", method, reqURL.String(), requestHeaders)
+				logf("(%0.4d) %s %s%s", requestNumber, method, reqURL.String(), requestHeaders)
 				if contentType == "application/json" {
 					json.PrintJsonToStderr(string(body))
 				} else {
@@ -219,13 +250,13 @@ func doRequestInternal(ctx context.Context, method string, contentType string, p
 
 				logf("%s %s%s", resp.Proto, resp.Status, responseHeaders)
 			} else {
-				logf("%s %s%s ==> %s %s%s", req.Method, reqURL.String(), requestHeaders, resp.Proto, resp.Status, responseHeaders)
+				logf("(%0.4d) %s %s%s ==> %s %s%s", requestNumber, req.Method, getUrl(reqURL), requestHeaders, resp.Proto, resp.Status, responseHeaders)
 			}
 		} else {
-			logf("%s %s%s ==> %s %s%s", req.Method, reqURL.String(), requestHeaders, resp.Proto, resp.Status, responseHeaders)
+			logf("(%0.4d) %s %s%s ==> %s %s%s", requestNumber, req.Method, getUrl(reqURL), requestHeaders, resp.Proto, resp.Status, responseHeaders)
 		}
 	} else if resp.StatusCode >= 200 && resp.StatusCode <= 399 {
-		log.Infof("%s %s ==> %s %s", method, reqURL.String(), resp.Proto, resp.Status)
+		log.Infof("(%0.4d) %s %s ==> %s %s", requestNumber, method, getUrl(reqURL), resp.Proto, resp.Status)
 	}
 
 	dumpRes, err := httputil.DumpResponse(resp, true)
@@ -238,6 +269,12 @@ func doRequestInternal(ctx context.Context, method string, contentType string, p
 	return resp, err
 }
 
+func getUrl(u *url.URL) string {
+	query, _ := url.PathUnescape(u.String())
+	return query
+	//query, _ := url.PathUnescape(u.RawQuery)
+	//return fmt.Sprintf("%s://%s/%s?%s", u.Scheme, u.Host, u.Path, query)
+}
 func AddAdditionalHeadersSpecifiedByFlag(r *http.Request) error {
 	for _, header := range RawHeaders {
 		// Validation and formatting logic for headers could be improved

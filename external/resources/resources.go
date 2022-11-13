@@ -148,20 +148,20 @@ func AppendResourceData(newResources map[string]Resource) {
 		resources[key] = val
 	}
 
-	log.Infof("Loading %d new resources, total resources went from %d to %d ", len(newResources), resourceCount, len(resources))
+	log.Tracef("Loading %d new resources, total resources went from %d to %d ", len(newResources), resourceCount, len(resources))
 
 	postProcessResourceMetadata()
 }
 
 func init() {
 
-	reses, err := GenerateResourceMetadataFromYaml(resourceMetaData)
+	resourceData, err := GenerateResourceMetadataFromYaml(resourceMetaData)
 
 	if err != nil {
 		panic("Couldn't load the resource meta data")
 	}
 
-	resources = reses
+	resources = resourceData
 
 	createFlowEntityRelationships()
 	postProcessResourceMetadata()

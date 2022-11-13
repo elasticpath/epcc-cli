@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/elasticpath/epcc-cli/blob/main/external/runbooks/runbook_schema.json",
+  "title": "EPCC CLI Runbook Schema",
+  "description": "A schema that describes the how runbooks are structured",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["name", "actions"],
+  "properties":{
+    "name": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9-]+$"
+    },
+    "description": {
+      "additionalProperties": false,
+      "type": "object",
+      "properties": {
+        "long": {
+          "type": "string",
+          "description": "Long description used on help screen when displaying runbook (i.e., epcc runbooks <runbook_name>)"
+        },
+        "short": {
+          "type": "string",
+          "description": "Short description used on help screen when displaying all runbooks (i.e., epcc runbooks run) "
+        }
+      }
+    },
+    "actions": {
+      "propertyNames": {
+        "pattern": "^[A-Za-z0-9-]+$"
+      },
+      "patternProperties": {
+        "(.*?)": {
+          "additionalProperties": false,
+          "type": "object",
+          "required": ["commands"],
+          "properties": {
+            "description": {
+              "additionalProperties": false,
+              "type": "object",
+              "properties": {
+                "short": {
+                  "type": "string"
+                }
+              }
+            },
+            "commands": {
+              "type": "array",
+              "minItems": 1
+            },
+            "ignore_errors":{
+              "type": "boolean",
+              "description": "If true, we will continue processing commands if an error occurs."
+            },
+            "variables": {
+              "propertyNames": {
+                "pattern": "^[A-Za-z0-9_]+$"
+              },
+              "type:": "object",
+              "patternProperties": {
+                "(.*?)": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "pattern": "^(STRING|URL|INT|ENUM:[a-z0-9A-Z._,-]+|FLOAT|BOOL|FILE|CURRENCY|SINGULAR_RESOURCE_TYPE|JSON_API_TYPE|RESOURCE_ID:[a-z0-9-]+)$"
+                    },
+                    "default": {
+                      "type": ["integer", "string"],
+                      "description": "A default value, which must result in a syntactically correct template, even if it isn't semantically correct."
+                    },
+                    "description": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "short": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

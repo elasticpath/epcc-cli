@@ -1,0 +1,66 @@
+# The name of the runbook is used in command lines for the 4th argument (e.g., epcc runbooks run hello-world)
+name: "hello-world"
+description:
+  short: "A hello world runbook"
+  long: "A Hello world runbook"
+actions:
+  # The action name is used in command lines for the 4th argument (e.g., epcc runbook run hello-world create-customer)
+  create-customer:
+    commands:
+      # Commands use a shell like syntax with word splitting
+      - epcc create customer name "Hello World" email "hello@world.example"
+      - epcc update customer name=Hello_World name "Goodbye"
+  create-10-customers:
+    commands:
+      - |
+        epcc create customer name "Stephen Sloan" email "stephen.sloan@test.example"
+        epcc create customer name "Antwan Griffin" email "antwan.griffin@test.example"
+        epcc create customer name "Yurem Thornton" email "yurem.thornton@test.example"
+        epcc create customer name "Lydia Rice" email "lydia.rice@test.example"
+        epcc create customer name "Jenny Lopez" email "jenny.lopez@test.example"
+        epcc create customer name "Javier Green" email "javier.green@test.example"
+        epcc create customer name "Lennon Mills" email "lennon.mills@test.example"
+        epcc create customer name "Kelly Burns" email "kelly.burns@test.example"
+        epcc create customer name "Mohamed Love" email "mohamed.love@test.example"
+        epcc create customer name "Lindsey Sexton" email "lindsey.sexton@test.example"
+  create-some-customer-addresses:
+    variables:
+      customer_id:
+        type: RESOURCE_ID:customer
+        default: 123
+        description:
+          short: "Customer with which to create the address"
+      country:
+        type: STRING
+        default: "US"
+        description:
+          short: "The country the address should be in"
+      number_of_addresses:
+        type: INT
+        default: 10
+        description:
+          short: "The number of addresses"
+    description:
+      short: "Create some addresses"
+    commands:
+      - |
+        {{- range untilStep 0 .number_of_addresses 1 }}
+        epcc create customer-address "{{$.customer_id}}" name "address_{{.}}" first_name "John" last_name "Smith" line_1 "1234 Main Street" county "XX" "postcode" "H0H 0H0" country "{{$.country}}"
+        {{- end -}}
+  reset:
+    ignore_errors: true
+    commands:
+      - epcc delete customer email=hello@world.example
+      - |
+        epcc delete customer email=stephen.sloan@test.example
+        epcc delete customer email=antwan.griffin@test.example
+        epcc delete customer email=yurem.thornton@test.example
+        epcc delete customer email=lydia.rice@test.example
+        epcc delete customer email=jenny.lopez@test.example
+        epcc delete customer email=javier.green@test.example
+        epcc delete customer email=lennon.mills@test.example
+        epcc delete customer email=kelly.burns@test.example
+        epcc delete customer email=mohamed.love@test.example
+        epcc delete customer email=lindsey.sexton@test.example
+      
+        

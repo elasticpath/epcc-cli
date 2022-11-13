@@ -79,7 +79,7 @@ func GetAllIds(ctx context.Context, resource *resources.Resource) ([][]id.Idable
 				return myEntityIds, err
 			}
 
-			ids, err := GetResourceIdsFromHttpResponse(resp)
+			ids, _, err := GetResourceIdsFromHttpResponse(resp)
 
 			if reflect.DeepEqual(ids, lastPageIds) {
 				log.Debugf("Resource %s does not seem to support pagination as we got the exact same set of ids back as the last page... breaking. This might happen if exactly a paginated number of records is returned", resource.PluralName)

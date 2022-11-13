@@ -1,0 +1,34 @@
+name: "extend-customer-resources-how-to"
+description:
+  long: "Sample commands that will follow the Extend Customer Resources tutorial (https://documentation.elasticpath.com/commerce-cloud/docs/developer/how-to/extend-customer-resources.html)."
+  short: "Create flows on the customer resources"
+actions:
+  create-flow-and-field:
+    description:
+      short: "Create a delivery_details field on all customer resources"
+    commands:
+      - epcc create flow name Customers slug customers description "Extends the default customer object" enabled true
+      - epcc create field name "Delivery Details" slug "delivery_details" field_type "string" description "customers delivery details" required false default 0 enabled true order 1 relationships.flow.data.type flow relationships.flow.data.id slug=customers
+  create-example-customer:
+    description:
+      short: "Create an example customer with the delivery_details field"
+    commands:
+      - epcc create customer name "Ron Swanson" email "ron.swanson@gmail.com" delivery_details "Do NOT leave in a government building"
+      - epcc get customer name=Ron_Swanson
+  update-example-customer:
+    description:
+      short: "Update the example customer's delivery_details field"
+    commands:
+      - epcc update customer name=Ron_Swanson delivery_details "Leave in Leslie Knope's office"
+      - epcc get customer name=Ron_Swanson
+  reset:
+    description:
+      short: "Reset the store to the original configuration"
+    commands:
+      - epcc delete customer name=Ron_Swanson
+      - epcc delete field slug=delivery_details
+      # Core flows cannot be deleted, so we will rename it first
+      - epcc update flow name=Customers slug old-Customers
+      - epcc delete flow name=Customers
+
+

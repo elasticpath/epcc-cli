@@ -144,7 +144,7 @@ func resetResourcesUndeletableResources() (error, []string) {
 		{"payment-gateway-stripe-connect", "stripe_account", "", "enabled", "false", "test", "false"},
 		{"payment-gateway-stripe-payment-intents", "login", "", "enabled", "false"},
 		{"payment-gateway-elastic-path-payments-stripe", "stripe_account", "", "enabled", "false", "test", "false"},
-		{"settings", "page_length", "25", "list_child_products", "true", "additional_languages", "[]", "calculation_method", "line"},
+		{"settings", "page_length", "25", "list_child_products", "true", "additional_languages", "[]", "calculation_method", "line", "address_mandatory_fields[0]", "first_name", "address_mandatory_fields[1]", "last_name", "address_mandatory_fields[2]", "line_1", "address_mandatory_fields[3]", "county", "address_mandatory_fields[4]", "postcode", "address_mandatory_fields[5]", "country"},
 		// We can only use an alias for the customer authentication settings, MRM doesn't use a relationship, and Account management uses the wrong type.
 		{"authentication-realm", "last_read=array[0]", "redirect_uris", "[]", "duplicate_email_policy", "allowed"},
 		{"authentication-realm", "last_read=array[1]", "redirect_uris", "[]", "duplicate_email_policy", "allowed"},
