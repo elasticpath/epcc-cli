@@ -21,7 +21,7 @@ var get = &cobra.Command{
 	Short: "Retrieves a single resource.",
 	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		err, body := getInternal(args)
+		body, err := getInternal(args)
 		if err != nil {
 			return err
 		}
@@ -108,27 +108,36 @@ var get = &cobra.Command{
 	},
 }
 
-func getInternal(args []string) (error, string) {
+func getInternal(args []string) (string, error) {
 	resp, err := getResource(args)
 
 	if err != nil {
-		return err, ""
+		return "", err
+	} else if resp == nil {
+		return "", fmt.Errorf("got nil response")
 	}
 
-	// Print the body
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
+	if resp.Body != nil {
+		defer resp.Body.Close()
 
-	// Check if error response
-	if resp.StatusCode >= 400 && resp.StatusCode <= 600 {
-		json.PrintJson(string(body))
-		return fmt.Errorf(resp.Status), ""
-	}
+		// Print the body
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			log.Fatal(err)
+		}
 
-	aliases.SaveAliasesForResources(string(body))
-	return nil, string(body)
+		// Check if error response
+		if resp.StatusCode >= 400 && resp.StatusCode <= 600 {
+			json.PrintJson(string(body))
+			return "", fmt.Errorf(resp.Status)
+		}
+
+		aliases.SaveAliasesForResources(string(body))
+
+		return string(body), nil
+	} else {
+		return "", nil
+	}
 }
 
 func getUrl(resource resources.Resource, args []string) (*resources.CrudEntityInfo, error) {
@@ -197,7 +206,6 @@ func getResource(args []string) (*http.Response, error) {
 	if err != nil {
 		return nil, fmt.Errorf("got error %s", err.Error())
 	}
-	defer resp.Body.Close()
 
 	return resp, nil
 }

@@ -20,28 +20,13 @@ var delete = &cobra.Command{
 	Short: "Deletes a single resource.",
 	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		resource, ok := resources.GetResourceByName(args[0])
-		if !ok {
-			return fmt.Errorf("could not find resource %s", args[0])
-		}
 
-		resp, err := deleteResource(args)
+		body, err := deleteInternal(args)
 		if err != nil {
 			return err
 		}
 
-		// Print the body
-		body, err := io.ReadAll(resp.Body)
-
-		if err != nil {
-			log.Fatal(err)
-		}
-		// Check if error response
-		if resp.StatusCode >= 400 && resp.StatusCode <= 600 {
-			log.Println(resp.Status)
-		}
-		aliases.DeleteAliasesById(args[len(args)-1], resource.JsonApiType)
-		return json.PrintJson(string(body))
+		return json.PrintJson(body)
 	},
 
 	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
@@ -89,6 +74,41 @@ var delete = &cobra.Command{
 	},
 }
 
+func deleteInternal(args []string) (string, error) {
+	resource, ok := resources.GetResourceByName(args[0])
+	if !ok {
+		return "", fmt.Errorf("could not find resource %s", args[0])
+	}
+
+	resp, err := deleteResource(args)
+	if err != nil {
+		return "", err
+	}
+
+	if resp == nil {
+		return "", fmt.Errorf("got nil response")
+	}
+
+	aliases.DeleteAliasesById(args[len(args)-1], resource.JsonApiType)
+
+	if resp.Body != nil {
+
+		defer resp.Body.Close()
+
+		// Print the body
+		body, err := io.ReadAll(resp.Body)
+
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		return string(body), nil
+	} else {
+		return "", nil
+	}
+
+}
+
 func deleteResource(args []string) (*http.Response, error) {
 	// Find Resource
 	resource, ok := resources.GetResourceByName(args[0])
@@ -117,7 +137,6 @@ func deleteResource(args []string) (*http.Response, error) {
 	if err != nil {
 		return nil, fmt.Errorf("got error %s", err.Error())
 	}
-	defer resp.Body.Close()
 
 	return resp, nil
 }

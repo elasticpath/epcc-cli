@@ -84,19 +84,19 @@ var ResetStore = &cobra.Command{
 		// We would also need locking to go faster.
 
 		// Get customer and account authentication settings to populate the aliases
-		err, _ = getInternal([]string{"customer-authentication-settings"})
+		_, err = getInternal([]string{"customer-authentication-settings"})
 
 		if err != nil {
 			errors = append(errors, err.Error())
 		}
 
-		err, _ = getInternal([]string{"account-authentication-settings"})
+		_, err = getInternal([]string{"account-authentication-settings"})
 
 		if err != nil {
 			errors = append(errors, err.Error())
 		}
 
-		err, _ = getInternal([]string{"authentication-realms"})
+		_, err = getInternal([]string{"authentication-realms"})
 
 		if err != nil {
 			errors = append(errors, err.Error())

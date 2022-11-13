@@ -23,11 +23,12 @@ const (
 )
 
 const (
-	Get    = 1
-	Create = 2
-	Update = 4
-	Delete = 8
-	GetAll = 16
+	Get       = 1
+	Create    = 2
+	Update    = 4
+	Delete    = 8
+	GetAll    = 16
+	DeleteAll = 32
 )
 
 type Request struct {
@@ -53,6 +54,10 @@ func Complete(c Request) ([]string, cobra.ShellCompDirective) {
 				}
 			} else if c.Verb&Delete > 0 {
 				if r.DeleteEntityInfo != nil {
+					results = append(results, k)
+				}
+			} else if c.Verb&DeleteAll > 0 {
+				if r.DeleteEntityInfo != nil && r.GetCollectionInfo != nil {
 					results = append(results, k)
 				}
 			} else {
