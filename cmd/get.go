@@ -72,15 +72,32 @@ var get = &cobra.Command{
 				if (len(args)-idCount)%2 == 1 { // This is a query param key
 					if resource.SingularName != args[0] { // If the resource is plural/get-collection
 						return completion.Complete(completion.Request{
-							Type:     completion.CompleteQueryParam,
+							Type:     completion.CompleteQueryParamKey,
 							Resource: resource,
 							Verb:     completion.GetAll,
 						})
 					} else {
 						return completion.Complete(completion.Request{
-							Type:     completion.CompleteQueryParam,
+							Type:     completion.CompleteQueryParamKey,
 							Resource: resource,
 							Verb:     completion.Get,
+						})
+					}
+				} else {
+					// This is a query param value
+					if resource.SingularName != args[0] { // If the resource is plural/get-collection
+						return completion.Complete(completion.Request{
+							Type:       completion.CompleteQueryParamValue,
+							Resource:   resource,
+							Verb:       completion.GetAll,
+							QueryParam: args[len(args)-1],
+						})
+					} else {
+						return completion.Complete(completion.Request{
+							Type:       completion.CompleteQueryParamValue,
+							Resource:   resource,
+							Verb:       completion.Get,
+							QueryParam: args[len(args)-1],
 						})
 					}
 				}

@@ -13,11 +13,12 @@ const (
 	CompleteSingularResource  = 2
 	CompleteAttributeKey      = 4
 	CompleteAttributeValue    = 8
-	CompleteQueryParam        = 16
-	CompleteCrudAction        = 32
-	CompleteAlias             = 64
-	CompleteLoginLogoutAPI    = 128
-	CompleteLoginClientID     = 256
+	CompleteQueryParamKey     = 16
+	CompleteQueryParamValue   = 32
+	CompleteCrudAction        = 64
+	CompleteAlias             = 128
+	CompleteLoginLogoutAPI    = 256
+	CompleteLoginClientID     = 512
 	CompleteLoginClientSecret = 1024
 )
 
@@ -30,11 +31,13 @@ const (
 )
 
 type Request struct {
-	Type       int
-	Resource   resources.Resource
+	Type     int
+	Resource resources.Resource
+	// These are consumed attributes
 	Attributes map[string]int
 	Verb       int
 	Attribute  string
+	QueryParam string
 }
 
 func Complete(c Request) ([]string, cobra.ShellCompDirective) {
@@ -224,15 +227,20 @@ func Complete(c Request) ([]string, cobra.ShellCompDirective) {
 		}
 	}
 
-	if c.Type&CompleteQueryParam > 0 {
+	if c.Type&CompleteQueryParamKey > 0 {
 		if c.Verb&GetAll > 0 {
 			for _, k := range strings.Split(c.Resource.GetCollectionInfo.QueryParameters, ",") {
 				results = append(results, k)
 			}
+
+			// Static shared list
+			results = append(results, "sort", "filter", "include", "page[limit]", "page[offset]")
 		} else if c.Verb&Get > 0 {
 			for _, k := range strings.Split(c.Resource.GetEntityInfo.QueryParameters, ",") {
 				results = append(results, k)
 			}
+
+			results = append(results, "include")
 		}
 
 	}
@@ -243,6 +251,18 @@ func Complete(c Request) ([]string, cobra.ShellCompDirective) {
 
 		for alias := range aliasesForJsonApiType {
 			results = append(results, alias)
+		}
+	}
+
+	if c.Type&CompleteQueryParamValue > 0 {
+		if c.Verb&GetAll > 0 {
+			if c.QueryParam == "sort" {
+				for key := range c.Resource.Attributes {
+					results = append(results, key, "-"+key)
+				}
+
+				results = append(results, "updated_at", "-updated_at", "created_at", "-created_at")
+			}
 		}
 	}
 
