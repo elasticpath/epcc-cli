@@ -13,6 +13,8 @@ import (
 	"github.com/spf13/cobra"
 	"net/url"
 	"reflect"
+	"regexp"
+	"strings"
 	"sync"
 )
 
@@ -82,7 +84,7 @@ func deleteAllInternal(args []string) error {
 				return err
 			}
 
-			ids, err := apihelper.GetResourceIdsFromHttpResponse(resp)
+			ids, totalCount, err := apihelper.GetResourceIdsFromHttpResponse(resp)
 			resp.Body.Close()
 
 			allIds := make([][]id.IdableAttributes, 0)
@@ -109,8 +111,15 @@ func deleteAllInternal(args []string) error {
 			}
 
 			if len(allIds) == 0 {
-				log.Infof("Total ids retrieved for %s is %d, we are done", resource.PluralName, len(allIds))
+				log.Infof("Total ids retrieved for %s in %s is %d, we are done", resource.PluralName, resourceURL, len(allIds))
 				break
+			} else {
+				if totalCount >= 0 {
+					log.Infof("Total number of %s in %s is %d", resource.PluralName, resourceURL, totalCount)
+				} else {
+					log.Infof("Total number %s in %s is unknown", resource.PluralName, resourceURL)
+				}
+
 			}
 
 			delPage(resource.DeleteEntityInfo, allIds)
@@ -149,6 +158,8 @@ func getParentIds(ctx context.Context, resource resources.Resource) ([][]id.Idab
 	}
 }
 
+var flowsUrlRegex = regexp.MustCompile("^/v2/flows/([^/]+)$")
+
 func delPage(urlInfo *resources.CrudEntityInfo, ids [][]id.IdableAttributes) {
 	// Create a wait group to run DELETE in parallel
 	wg := sync.WaitGroup{}
@@ -178,6 +189,44 @@ func delPage(urlInfo *resources.CrudEntityInfo, ids [][]id.IdableAttributes) {
 			if resp.Body != nil {
 				defer resp.Body.Close()
 			}
+
+			if resp.StatusCode == 405 && flowsUrlRegex.MatchString(resourceURL) {
+				log.Warnf("Could not delete %s, likely core flow, trying to rename and then try again", resourceURL)
+				matches := flowsUrlRegex.FindStringSubmatch(resourceURL)
+
+				if len(matches) != 2 {
+					log.Errorf("Couldn't get capture group for string [%s], matches %v", resourceURL, matches)
+				}
+
+				id := matches[1]
+				jsonBody := fmt.Sprintf(`{ "data": { "id":"%s", "type": "flow", "slug": "delete-%s" }}`, id, id)
+				resp2, err := httpclient.DoRequest(context.TODO(), "PUT", resourceURL, "", strings.NewReader(jsonBody))
+
+				if err != nil {
+					return
+				}
+
+				if resp2 != nil {
+					if resp.Body != nil {
+						defer resp.Body.Close()
+					}
+				}
+
+				resp3, err := httpclient.DoRequest(context.TODO(), "DELETE", resourceURL, "", nil)
+				if err != nil {
+					return
+				}
+
+				if resp3 == nil {
+					return
+				}
+
+				if resp3.Body != nil {
+					defer resp3.Body.Close()
+				}
+
+			}
+
 		}(idAttr)
 	}
 	wg.Wait()

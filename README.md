@@ -22,6 +22,7 @@ e.g. `export EPCC_API_BASE_URL=https://api.moltin.com`
 | EPCC_CLIENT_ID                     | This is the Client ID which can be retrieved via CM.                                                                                                                                                                                                                                       |                                            
 | EPCC_CLIENT_SECRET                 | This is the Client Secret which can be retrieved via CM.                                                                                                                                                                                                                                   |
 | EPCC_PROFILE                       | A profile name that allows for an independent session and isolation (e.g., distinct histories)                                                                                                                                                                                             |
+| EPCC_RUNBOOK_DIRECTORY             | A directory that will be scanned for runbook, a runbook ends with `.epcc.yml`                                                                                                                                                                                                              |
 
 It is recommended to set EPCC_API_BASE_URL, EPCC_CLIENT_ID, and EPCC_CLIENT_SECRET to be able to interact with most things in the cli.
 
@@ -232,7 +233,7 @@ $ epcc get customers -- sort -updated_at
 For development the following command using [Reflex](https://github.com/cespare/reflex) can speed up your development time, by recreating the command line tool.
 
 ```bash
-git fetch --all --tags && reflex -v -r '(\.go$)|(resources.yaml|go.mod)$' -- sh -c "go build -ldflags=\"-X github.com/elasticpath/epcc-cli/external/version.Version=$(git describe --tags --abbrev=0)+1 -X github.com/elasticpath/epcc-cli/external/version.Commit=$(git rev-parse --short HEAD)-dirty\" -o ./epcc" 
+git fetch --all --tags && reflex -v -r '(\.go$)|(resources.yaml|go.mod)|(runbooks/.+\.ya?ml)$' -- sh -c "go build -ldflags=\"-X github.com/elasticpath/epcc-cli/external/version.Version=$(git describe --tags --abbrev=0)+1 -X github.com/elasticpath/epcc-cli/external/version.Commit=$(git rev-parse --short HEAD)-dirty\" -o ./epcc" 
 ```
 
 

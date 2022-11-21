@@ -48,6 +48,12 @@ func newColor(unix string, colorString string) colorInfo {
 	}
 }
 
+var unimportantKeys = map[string]bool{
+	"data":  true,
+	"links": true,
+	"self":  true,
+	"owner": true,
+}
 var unimportantPrefixes = map[string]bool{
 	"data":            true,
 	"data.attributes": true,
@@ -307,6 +313,10 @@ func (e *encoder) encodeMap(vs map[string]interface{}) {
 		keyColorToUse := objectKeyColor
 
 		if _, ok := unimportantPrefixes[prefix]; ok {
+			keyColorToUse = unimportantObjectKeyColor
+		}
+
+		if _, ok := unimportantKeys[kv.key]; ok {
 			keyColorToUse = unimportantObjectKeyColor
 		}
 

@@ -31,6 +31,7 @@ func init() {
 		panic("Could not parse environment variables")
 	}
 
+	initRunbookCommands()
 	RootCmd.AddCommand(
 		cmCommand,
 		docsCommand,
@@ -47,7 +48,9 @@ func init() {
 		loginCmd,
 		logoutCmd,
 		ResetStore,
+		runbookGlobalCmd,
 	)
+
 	Logs.AddCommand(LogsList, LogsShow, LogsClear)
 
 	testJson.Flags().BoolVarP(&noWrapping, "no-wrapping", "", false, "if set, we won't wrap the output the json in a data tag")

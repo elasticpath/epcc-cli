@@ -9,7 +9,7 @@ import (
 	"net/http"
 )
 
-func GetResourceIdsFromHttpResponse(resp *http.Response) ([]id.IdableAttributes, error) {
+func GetResourceIdsFromHttpResponse(resp *http.Response) ([]id.IdableAttributes, int, error) {
 	// Read the body
 	body, err := io.ReadAll(resp.Body)
 
@@ -20,11 +20,21 @@ func GetResourceIdsFromHttpResponse(resp *http.Response) ([]id.IdableAttributes,
 	var jsonStruct = map[string]interface{}{}
 	err = json2.Unmarshal(body, &jsonStruct)
 	if err != nil {
-		return nil, fmt.Errorf("response for get was not JSON: %w", err)
+		return nil, 0, fmt.Errorf("response for get was not JSON: %w", err)
 	}
 
 	// Collect ids from GET Collection output
 	var ids []id.IdableAttributes
+
+	totalResources := -1
+	if meta, ok := jsonStruct["meta"].(map[string]interface{}); ok {
+		if result, ok := meta["results"].(map[string]interface{}); ok {
+			if total, ok := result["total"].(float64); ok {
+				totalResources = int(total)
+			}
+		}
+	}
+
 	for _, val := range jsonStruct {
 		if arrayType, ok := val.([]interface{}); ok {
 			for _, value := range arrayType {
@@ -57,5 +67,5 @@ func GetResourceIdsFromHttpResponse(resp *http.Response) ([]id.IdableAttributes,
 			}
 		}
 	}
-	return ids, nil
+	return ids, totalResources, nil
 }

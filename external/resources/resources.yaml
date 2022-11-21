@@ -152,15 +152,15 @@ application-keys:
   singular-name: "application-key"
   json-api-type: "application_key"
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/application-keys/index.html"
+  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/basics/authentication/application-keys/index.html"
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/application-keys/get-all-application-keys.html"
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/basics/authentication/application-keys/get-all-application-keys.html"
     url: "/v2/application-keys"
   create-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/application-keys/create-an-application-key.html"
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/basics/authentication/application-keys/create-an-application-key.html"
     url: "/v2/application-keys"
   delete-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/application-keys/delete-an-application-key.html"
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/basics/authentication/application-keys/delete-an-application-key.html"
     url: "/v2/application-keys/{application_keys}"
   attributes:
     name:
@@ -830,6 +830,55 @@ order-items:
   get-collection:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/carts-and-orders/orders/order-items.html#get-get-order-items"
     url: "/v2/orders/{orders}/items"
+order-payments:
+  singular-name: "order-payment"
+  json-api-type: "order_payment"
+  json-api-format: legacy
+  # TODO change this to not send a type
+  #no-wrapping: true
+  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/paying-for-an-order/index.html"
+  create-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/paying-for-an-order/index.html"
+    url: "/v2/orders/{orders}/payments"
+  attributes:
+    payment:
+      type: STRING
+    gateway:
+      type: ENUM:adyen,authorize_net,braintree,card_connect,cyber_source,paypal_express_checkout,stripe,stripe_connect,stripe_payment_intents,elastic_path_payments_stripe
+    method:
+      type: ENUM:purchase,authorize,capture,refund
+    options.shopper_reference:
+      type: STRING
+    options.recurring_processing_model:
+      type: STRING
+    options.customer_payment_profile_id:
+      type: STRING
+    options.custom_fields:
+      type: STRING
+    options.description:
+      type: STRING
+    options.soft_descriptor:
+      type: STRING
+    options.application_context.return_url:
+      type: STRING
+    options.application_context.cancel_url:
+      type: STRING
+    options.application_context.shipping_preference:
+      type: STRING
+    options.application_context.landing_page:
+      type: ENUM:LOGIN,BILLING,NO_PREFERENCE
+    options.application_context.locale:
+      type: STRING
+    options.application_context.brand_name:
+      type: STRING
+    options.idempotency_key:
+      type: STRING
+    options.receipt_email:
+      type: STRING
+    options.customer:
+      type: STRING
+    amount:
+      type: INT
 order-transactions:
   singular-name: "order-transaction"
   json-api-type: "transaction"
@@ -1386,6 +1435,41 @@ pcm-product-templates:
       type: RESOURCE_ID:flow
     "data[n].type":
       type: ENUM:template
+pcm-product-variations:
+  singular-name: "pcm-product-variation"
+  json-api-type: "template"
+  json-api-format: "legacy"
+  no-wrapping: true
+  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/hierarchies/relationships/get-node-products.html"
+  get-collection:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/relationships/variations/get-variation-relationships.html"
+    url: "/pcm/products/{pcm_products}/relationships/variations"
+  create-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/relationships/variations/create-variation-relationships.html"
+    url: "/pcm/products/{pcm_products}/relationships/variations"
+  update-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/relationships/variations/replace-variation-relationships.html"
+    url: "/pcm/products/{pcm_products}/relationships/variations"
+  delete-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/relationships/variations/delete-variation-relationships.html"
+    url: "/pcm/products/{pcm_products}/relationships/variations"
+  attributes:
+    "data[n].id":
+      type: RESOURCE_ID:pcm-variations
+    "data[n].type":
+      type: ENUM:product-variation
+pcm-child-products:
+  singular-name: "pcm-child-product"
+  json-api-type: "not-used"
+  no-wrapping: true
+  json-api-format: "legacy"
+  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/build-child-products.html"
+  get-collection:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/get-child-products.html"
+    url: "/pcm/products/{pcm_products}/children"
+  create-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/get-child-products.html"
+    url: "/pcm/products/{pcm_products}/build"
 pcm-pricebooks:
   singular-name: "pcm-pricebook"
   json-api-type: "pricebook"
@@ -1503,6 +1587,35 @@ pcm-variation-options:
       type: STRING
     id:
       type: RESOURCE_ID:pcm-variation-options
+pcm-variation-modifiers:
+  singular-name: "pcm-variation-modifier"
+  json-api-format: "compliant"
+  json-api-type: "product-variation-modifier"
+  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/options/modifiers/modifiers.html"
+  get-collection:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/options/modifiers/modifier-crud.html#get-get-all-modifiers"
+    url: "/pcm/variations/{pcm_variations}/options/{pcm_variation_options}/modifiers"
+  get-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/options/modifiers/modifier-crud.html#get-get-a-modifier"
+    url: "/pcm/variations/{pcm_variations}/options/{pcm_variation_options}/modifiers/{pcm_variation_modifiers}"
+  create-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/options/modifiers/modifier-crud.html#post-create-a-modifier"
+    url: "/pcm/variations/{pcm_variations}/options/{pcm_variation_options}/modifiers"
+  update-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/options/modifiers/modifier-crud.html#put-update-a-modifier"
+    url: "/pcm/variations/{pcm_variations}/options/{pcm_variation_options}/modifiers/{pcm_variation_modifiers}"
+  delete-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/options/modifiers/modifier-crud.html#delete-delete-a-modifier"
+    url: "/pcm/variations/{pcm_variations}/options/{pcm_variation_options}/modifiers/{pcm_variation_modifiers}"
+  attributes:
+    attribute.type:
+      type: ENUM:commodity_type,status,description_append,description_prepend,description_equals,name_append,name_prepend,name_equals,sku_append,sku_prepend,sku_equals,slug_append,slug_prepend,slug_equals
+    attribute.value:
+      type: STRING
+    seek:
+      type: STRING
+    set:
+      type: STRING
 personal-data-log-entries:
   singular-name: "personal-data-log-entry"
   json-api-type: "personal_data_log_entry"

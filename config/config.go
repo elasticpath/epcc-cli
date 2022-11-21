@@ -7,6 +7,7 @@ type Env struct {
 	EPCC_BETA_API_FEATURES             string `env:"EPCC_BETA_API_FEATURES"`
 	EPCC_RATE_LIMIT                    uint16 `env:"EPCC_RATE_LIMIT"`
 	EPCC_CLI_SUPPRESS_NO_AUTH_MESSAGES bool   `env:"EPCC_CLI_SUPPRESS_NO_AUTH_MESSAGES"`
+	EPCC_RUNBOOK_DIRECTORY             string `env:"EPCC_RUNBOOK_DIRECTORY"`
 }
 
 var Envs = &Env{}
