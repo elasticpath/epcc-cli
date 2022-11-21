@@ -29,7 +29,7 @@ func TestSavedAliasIsReturnedInAllAliasesForSingleResponse(t *testing.T) {
 	}
 }`)
 
-	aliases := GetAliasesForJsonApiType("foo")
+	aliases := GetAliasesForJsonApiTypeAndAlternates("foo", []string{})
 
 	// Verification
 	require.Len(t, aliases, 2, "There should be %d aliases in map not %d", 2, len(aliases))
@@ -69,7 +69,7 @@ func TestSavedAliasAppendsAndPreservesPreviousUnrelatedAliases(t *testing.T) {
 	}
 }`)
 
-	aliases := GetAliasesForJsonApiType("foo")
+	aliases := GetAliasesForJsonApiTypeAndAlternates("foo", []string{})
 
 	// Verification
 
@@ -115,7 +115,7 @@ func TestSavedAliasIsReplacedWhenNewEntityHasTheSameAttributeValue(t *testing.T)
 	}
 }`)
 
-	aliases := GetAliasesForJsonApiType("foo")
+	aliases := GetAliasesForJsonApiTypeAndAlternates("foo", []string{})
 
 	// Verification
 
@@ -164,7 +164,7 @@ func TestSavedAliasIsReplacedWhenSameEntityHasANewValue(t *testing.T) {
 	}
 }`)
 
-	aliases := GetAliasesForJsonApiType("foo")
+	aliases := GetAliasesForJsonApiTypeAndAlternates("foo", []string{})
 
 	// Verification
 
@@ -209,7 +209,7 @@ func TestDeleteAliasByIdDeletesAnAlias(t *testing.T) {
 
 	DeleteAliasesById("123", "foo")
 
-	aliases := GetAliasesForJsonApiType("foo")
+	aliases := GetAliasesForJsonApiTypeAndAlternates("foo", []string{})
 
 	// Verification
 
@@ -246,7 +246,7 @@ func TestAllAliasesAreReturnedInAllAliasesForArrayResponse(t *testing.T) {
 }
 `)
 
-	aliases := GetAliasesForJsonApiType("foo")
+	aliases := GetAliasesForJsonApiTypeAndAlternates("foo", []string{})
 
 	// Verification
 
@@ -285,7 +285,7 @@ func TestSavedAliasIsReturnedForAnEmailInLegacyObjectResponse(t *testing.T) {
 	}
 }`)
 
-	aliases := GetAliasesForJsonApiType("foo")
+	aliases := GetAliasesForJsonApiTypeAndAlternates("foo", []string{})
 
 	// Verification
 
@@ -321,7 +321,7 @@ func TestSavedAliasIsReturnedForAnSkuInLegacyObjectResponse(t *testing.T) {
 	}
 }`)
 
-	aliases := GetAliasesForJsonApiType("foo")
+	aliases := GetAliasesForJsonApiTypeAndAlternates("foo", []string{})
 
 	// Verification
 
@@ -346,6 +346,51 @@ func TestSavedAliasIsReturnedForAnSkuInLegacyObjectResponse(t *testing.T) {
 	require.Equal(t, "test", aliases["last_read=entity"].Sku)
 }
 
+func TestSavedAliasIsReturnedForAnCodeInLegacyObjectResponse(t *testing.T) {
+
+	// Fixture Setup
+	err := ClearAllAliases()
+	if err != nil {
+		t.Fatalf("Could not clear aliases")
+	}
+
+	// Execute SUT
+	SaveAliasesForResources(
+		// language=JSON
+		`
+{
+	"data": {
+		"id": "123",
+		"code": "hello",
+		"type": "foo"
+	}
+}`)
+
+	aliases := GetAliasesForJsonApiTypeAndAlternates("foo", []string{})
+
+	// Verification
+
+	require.Len(t, aliases, 3, "There should be %d aliases in map not %d", 3, len(aliases))
+
+	require.Contains(t, aliases, "code=hello")
+	require.Equal(t, "123", aliases["code=hello"].Id)
+
+	require.Contains(t, aliases, "code=hello")
+	require.Equal(t, "hello", aliases["code=hello"].Code)
+
+	require.Contains(t, aliases, "id=123")
+	require.Equal(t, "123", aliases["id=123"].Id)
+
+	require.Contains(t, aliases, "id=123")
+	require.Equal(t, "hello", aliases["id=123"].Code)
+
+	require.Contains(t, aliases, "last_read=entity")
+	require.Equal(t, "123", aliases["last_read=entity"].Id)
+
+	require.Contains(t, aliases, "last_read=entity")
+	require.Equal(t, "hello", aliases["last_read=entity"].Code)
+}
+
 func TestSavedAliasIsReturnedForASlugInLegacyObjectResponse(t *testing.T) {
 
 	// Fixture Setup
@@ -366,7 +411,7 @@ func TestSavedAliasIsReturnedForASlugInLegacyObjectResponse(t *testing.T) {
 	}
 }`)
 
-	aliases := GetAliasesForJsonApiType("foo")
+	aliases := GetAliasesForJsonApiTypeAndAlternates("foo", []string{})
 
 	// Verification
 
@@ -411,7 +456,7 @@ func TestSavedAliasIsReturnedForANameInLegacyObjectResponse(t *testing.T) {
 	}
 }`)
 
-	aliases := GetAliasesForJsonApiType("foo")
+	aliases := GetAliasesForJsonApiTypeAndAlternates("foo", []string{})
 
 	// Verification
 
@@ -450,7 +495,7 @@ func TestSavedAliasIsReturnedForAnEmailInComplaintObjectResponse(t *testing.T) {
 	}
 }`)
 
-	aliases := GetAliasesForJsonApiType("foo")
+	aliases := GetAliasesForJsonApiTypeAndAlternates("foo", []string{})
 
 	// Verification
 
@@ -489,7 +534,7 @@ func TestSavedAliasIsReturnedForAnSkuInComplaintObjectResponse(t *testing.T) {
 	}
 }`)
 
-	aliases := GetAliasesForJsonApiType("foo")
+	aliases := GetAliasesForJsonApiTypeAndAlternates("foo", []string{})
 
 	// Verification
 
@@ -536,7 +581,7 @@ func TestSavedAliasIsReturnedForASlugInComplaintObjectResponse(t *testing.T) {
 	}
 }`)
 
-	aliases := GetAliasesForJsonApiType("foo")
+	aliases := GetAliasesForJsonApiTypeAndAlternates("foo", []string{})
 
 	// Verification
 
@@ -583,7 +628,7 @@ func TestSavedAliasIsReturnedForANameInComplaintObjectResponse(t *testing.T) {
 	}
 }`)
 
-	aliases := GetAliasesForJsonApiType("foo")
+	aliases := GetAliasesForJsonApiTypeAndAlternates("foo", []string{})
 
 	// Verification
 
@@ -639,7 +684,7 @@ func TestSavedAliasIsReturnedForARelationshipObjectInArrayResponse(t *testing.T)
 	
 }`)
 
-	aliases := GetAliasesForJsonApiType("bar")
+	aliases := GetAliasesForJsonApiTypeAndAlternates("bar", []string{})
 
 	require.Len(t, aliases, 8, "There should be %d aliases in map not %d", 8, len(aliases))
 
@@ -695,7 +740,7 @@ func TestSavedAliasIsReturnedForARelationshipObjectInSingleResponse(t *testing.T
 	
 }`)
 
-	aliases := GetAliasesForJsonApiType("bar")
+	aliases := GetAliasesForJsonApiTypeAndAlternates("bar", []string{})
 
 	require.Len(t, aliases, 4, "There should be %d aliases in map not %d", 4, len(aliases))
 
@@ -730,7 +775,161 @@ func TestResolveAliasValuesReturnsAliasForMatchingValue(t *testing.T) {
 		"type": "foo"
 	}
 }`)
-	value := ResolveAliasValuesOrReturnIdentity("foo", "id=123", "id")
+	value := ResolveAliasValuesOrReturnIdentity("foo", []string{}, "id=123", "id")
+
+	// Verification
+
+	if value != "123" {
+		t.Errorf("Alias value of 123 should have been returned, but got %s", value)
+		return
+	}
+}
+
+func TestResolveAliasValuesReturnsAliasSkuForMatchingValue(t *testing.T) {
+
+	// Fixture Setup
+	err := ClearAllAliases()
+	if err != nil {
+		t.Fatalf("Could not clear aliases")
+	}
+
+	// Execute SUT
+	SaveAliasesForResources(
+		// language=JSON
+		`
+{
+	"data": {
+		"id": "123",
+		"type": "foo",
+		"sku": "mysku"
+		
+	}
+}`)
+	value := ResolveAliasValuesOrReturnIdentity("foo", []string{}, "id=123", "sku")
+
+	// Verification
+
+	if value != "mysku" {
+		t.Errorf("Alias value of 123 should have been returned, but got %s", value)
+		return
+	}
+}
+
+func TestResolveAliasValuesReturnsAliasCodeForMatchingValue(t *testing.T) {
+
+	// Fixture Setup
+	err := ClearAllAliases()
+	if err != nil {
+		t.Fatalf("Could not clear aliases")
+	}
+
+	// Execute SUT
+	SaveAliasesForResources(
+		// language=JSON
+		`
+{
+	"data": {
+		"id": "123",
+		"type": "foo",
+		"code": "hello"
+		
+	}
+}`)
+	value := ResolveAliasValuesOrReturnIdentity("foo", []string{}, "id=123", "code")
+
+	// Verification
+
+	if value != "hello" {
+		t.Errorf("Alias value of hello should have been returned, but got %s", value)
+		return
+	}
+}
+
+func TestResolveAliasValuesReturnsAliasSlugForMatchingValue(t *testing.T) {
+
+	// Fixture Setup
+	err := ClearAllAliases()
+	if err != nil {
+		t.Fatalf("Could not clear aliases")
+	}
+
+	// Execute SUT
+	SaveAliasesForResources(
+		// language=JSON
+		`
+{
+	"data": {
+		"id": "123",
+		"type": "foo",
+		"slug": "test"
+		
+	}
+}`)
+	value := ResolveAliasValuesOrReturnIdentity("foo", []string{}, "id=123", "slug")
+
+	// Verification
+
+	if value != "test" {
+		t.Errorf("Alias value of test should have been returned, but got %s", value)
+		return
+	}
+}
+
+func TestResolveAliasValuesReturnsAliasForMatchingValueAsAlternateType(t *testing.T) {
+
+	// Fixture Setup
+	err := ClearAllAliases()
+	if err != nil {
+		t.Fatalf("Could not clear aliases")
+	}
+
+	// Execute SUT
+	SaveAliasesForResources(
+		// language=JSON
+		`
+{
+	"data": {
+		"id": "123",
+		"type": "foo"
+	}
+}`)
+	value := ResolveAliasValuesOrReturnIdentity("bar", []string{"zoo", "foo"}, "id=123", "id")
+
+	// Verification
+
+	if value != "123" {
+		t.Errorf("Alias value of 123 should have been returned, but got %s", value)
+		return
+	}
+}
+
+func TestResolveAliasValuesReturnsAliasForTypeAndNotAlternateTypeWhenCollisionOccurs(t *testing.T) {
+
+	// Fixture Setup
+	err := ClearAllAliases()
+	if err != nil {
+		t.Fatalf("Could not clear aliases")
+	}
+
+	// Execute SUT
+	SaveAliasesForResources(
+		// language=JSON
+		`
+{
+	"data": [
+	{
+		"id": "123",
+		"name": "hello",
+		"type": "foo"
+	},
+	{
+		"id": "456",
+		"name": "hello",
+		"type": "bar"
+	}
+]
+}`)
+	value := ResolveAliasValuesOrReturnIdentity("foo", []string{"zoo", "bar"}, "name=hello", "id")
 
 	// Verification
 
@@ -759,7 +958,7 @@ func TestResolveAliasValuesReturnsRequestForUnMatchingValue(t *testing.T) {
 	}
 }`)
 
-	value := ResolveAliasValuesOrReturnIdentity("foo", "id=ABC", "id")
+	value := ResolveAliasValuesOrReturnIdentity("foo", []string{}, "id=ABC", "id")
 
 	// Verification
 
@@ -789,7 +988,7 @@ func TestResolveAliasValuesReturnsRequestForUnMatchingValueAndType(t *testing.T)
 	}
 }`)
 
-	value := ResolveAliasValuesOrReturnIdentity("bar", "id=XYZ", "id")
+	value := ResolveAliasValuesOrReturnIdentity("bar", []string{}, "id=XYZ", "id")
 
 	// Verification
 
@@ -834,8 +1033,8 @@ func TestClearAllAliasesClearsAllAliases(t *testing.T) {
 		return
 	}
 
-	fooAliases := GetAliasesForJsonApiType("foo")
-	barAliases := GetAliasesForJsonApiType("bar")
+	fooAliases := GetAliasesForJsonApiTypeAndAlternates("foo", []string{})
+	barAliases := GetAliasesForJsonApiTypeAndAlternates("bar", []string{})
 
 	// Verification
 	if len(fooAliases) != 0 {
@@ -886,8 +1085,8 @@ func TestClearAllAliasesForJsonTypeOnlyClearsJsonType(t *testing.T) {
 		return
 	}
 
-	fooAliases := GetAliasesForJsonApiType("foo")
-	barAliases := GetAliasesForJsonApiType("bar")
+	fooAliases := GetAliasesForJsonApiTypeAndAlternates("foo", []string{})
+	barAliases := GetAliasesForJsonApiTypeAndAlternates("bar", []string{})
 
 	// Verification
 	if len(fooAliases) != 0 {
@@ -935,7 +1134,7 @@ func TestThatCorruptAliasFileDoesntCrashProgramWhenReadingAliases(t *testing.T) 
 		return
 	}
 
-	aliases := GetAliasesForJsonApiType("foo")
+	aliases := GetAliasesForJsonApiTypeAndAlternates("foo", []string{})
 
 	// Verification
 	require.Len(t, aliases, 0, "There should be %d aliases in map not %d", 0, len(aliases))
@@ -984,7 +1183,7 @@ func TestThatCorruptAliasFileDoesntCrashProgramWhenSavingAliases(t *testing.T) {
 	}
 }`)
 
-	aliases := GetAliasesForJsonApiType("foo")
+	aliases := GetAliasesForJsonApiTypeAndAlternates("foo", []string{})
 
 	// Verification
 	require.Len(t, aliases, 2, "There should be %d aliases in map not %d", 2, len(aliases))

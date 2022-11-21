@@ -91,7 +91,7 @@ func GenerateUrl(urlInfo *CrudEntityInfo, args []string) (string, error) {
 				log.Tracef("url %s uses a type [%s] instead of id, so URL will be filled with this", urlInfo.Url, override)
 				attribute = override
 			}
-			values[varName] = uritemplate.String(aliases.ResolveAliasValuesOrReturnIdentity(varType.JsonApiType, args[idx], attribute))
+			values[varName] = uritemplate.String(aliases.ResolveAliasValuesOrReturnIdentity(varType.JsonApiType, varType.AlternateJsonApiTypesForAliases, args[idx], attribute))
 		} else {
 			log.Warnf("Could not find a resource with type %s, aliases are probably broken", resourceType)
 			values[varName] = uritemplate.String(args[idx])
