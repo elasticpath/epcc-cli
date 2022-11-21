@@ -168,6 +168,8 @@ application-keys:
 authentication-realms:
   singular-name: "authentication-realm"
   json-api-type: "authentication-realm"
+  alternate-json-type-for-aliases:
+    - authentication_realm
   json-api-format: "legacy"
   docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/authentication-realms/index.html"
   get-collection:

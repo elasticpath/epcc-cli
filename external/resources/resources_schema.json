@@ -21,6 +21,9 @@
           "type":"string",
           "enum": ["compliant", "legacy"]
         },
+        "alternate-json-type-for-aliases": {
+          "type":"array"
+        },
         "no-wrapping": {
           "type": "boolean"
         },

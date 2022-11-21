@@ -28,6 +28,9 @@ type Resource struct {
 	// The type that should be used in the JSON API.
 	JsonApiType string `yaml:"json-api-type"`
 
+	// Alterative types used for aliases
+	AlternateJsonApiTypesForAliases []string `yaml:"alternate-json-type-for-aliases"`
+
 	// Some resources (e.g., PCM, accelerator svc, bury most attributes under the attributes key). This is considered "compliant", other services just bury attributes under data, this is "legacy.
 	JsonApiFormat string `yaml:"json-api-format"`
 

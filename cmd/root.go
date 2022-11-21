@@ -162,7 +162,7 @@ func Execute() {
 	<-shutdownHandlerDone
 
 	if err != nil {
-		log.Errorf("Error occured while processing command %s", err)
+		log.Errorf("Error occured while processing command: %s", err)
 		os.Exit(1)
 	} else {
 		os.Exit(0)

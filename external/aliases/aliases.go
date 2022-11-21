@@ -42,7 +42,27 @@ var arrayPathPattern = regexp.MustCompile("^\\.data\\[([0-9]+)]$")
 // Used to determine name of relationship
 var relationshipPattern = regexp.MustCompile("^\\.data(?:\\[[0-9]+])?\\.relationships\\.([^.]+)\\.data")
 
-func GetAliasesForJsonApiType(jsonApiType string) map[string]*id.IdableAttributes {
+func GetAliasesForJsonApiTypeAndAlternates(jsonApiType string, alternateJsonApiTypes []string) map[string]*id.IdableAttributes {
+
+	aliases := map[string]*id.IdableAttributes{}
+
+	for k, v := range getAliasesForSingleJsonApiType(jsonApiType) {
+		aliases[k] = v
+	}
+
+	for _, alternateJsonApiType := range alternateJsonApiTypes {
+		for k, v := range getAliasesForSingleJsonApiType(alternateJsonApiType) {
+			if _, ok := aliases[k]; !ok {
+				aliases[k] = v
+			}
+
+		}
+	}
+
+	return aliases
+}
+
+func getAliasesForSingleJsonApiType(jsonApiType string) map[string]*id.IdableAttributes {
 
 	mutex.RLock()
 
@@ -78,8 +98,8 @@ func GetAliasesForJsonApiType(jsonApiType string) map[string]*id.IdableAttribute
 	return aliasMap
 }
 
-func ResolveAliasValuesOrReturnIdentity(jsonApiType string, value string, attribute string) string {
-	if result, ok := GetAliasesForJsonApiType(jsonApiType)[value]; ok {
+func ResolveAliasValuesOrReturnIdentity(jsonApiType string, alternateJsonApiTypes []string, value string, attribute string) string {
+	if result, ok := GetAliasesForJsonApiTypeAndAlternates(jsonApiType, alternateJsonApiTypes)[value]; ok {
 
 		if attribute == "id" {
 			return result.Id
@@ -157,7 +177,7 @@ func getAliasFileForJsonApiType(profileDirectory string, resourceType string) st
 }
 
 func modifyAliases(jsonApiType string, fn func(map[string]*id.IdableAttributes)) {
-	aliasMap := GetAliasesForJsonApiType(jsonApiType)
+	aliasMap := getAliasesForSingleJsonApiType(jsonApiType)
 
 	mutex.Lock()
 	defer mutex.Unlock()

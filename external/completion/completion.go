@@ -162,7 +162,7 @@ func Complete(c Request) ([]string, cobra.ShellCompDirective) {
 					resourceType := strings.Replace(attribute.Type, "RESOURCE_ID:", "", 1)
 
 					if aliasType, ok := resources.GetResourceByName(resourceType); ok {
-						for alias := range aliases.GetAliasesForJsonApiType(aliasType.JsonApiType) {
+						for alias := range aliases.GetAliasesForJsonApiTypeAndAlternates(aliasType.JsonApiType, aliasType.AlternateJsonApiTypesForAliases) {
 							results = append(results, alias)
 						}
 					}
@@ -252,7 +252,7 @@ func Complete(c Request) ([]string, cobra.ShellCompDirective) {
 
 	if c.Type&CompleteAlias > 0 {
 		jsonApiType := c.Resource.JsonApiType
-		aliasesForJsonApiType := aliases.GetAliasesForJsonApiType(jsonApiType)
+		aliasesForJsonApiType := aliases.GetAliasesForJsonApiTypeAndAlternates(jsonApiType, c.Resource.AlternateJsonApiTypesForAliases)
 
 		for alias := range aliasesForJsonApiType {
 			results = append(results, alias)

@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 	"github.com/buildkite/shellwords"
-	"github.com/elasticpath/epcc-cli/external/aliases"
 	"github.com/elasticpath/epcc-cli/external/completion"
 	"github.com/elasticpath/epcc-cli/external/json"
 	"github.com/elasticpath/epcc-cli/external/resources"
@@ -290,7 +289,6 @@ func processRunbookVariablesOnCommand(runbookActionRunActionCommand *cobra.Comma
 
 			if strings.HasPrefix(variable.Type, "RESOURCE_ID:") {
 				if resourceInfo, ok := resources.GetResourceByName(variable.Type[12:]); ok {
-					aliases.GetAliasesForJsonApiType(resourceInfo.JsonApiType)
 					return completion.Complete(completion.Request{
 						Type:     completion.CompleteAlias,
 						Resource: resourceInfo,

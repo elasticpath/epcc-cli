@@ -40,7 +40,7 @@ var aliasListCmd = &cobra.Command{
 				return fmt.Errorf("could not find resource information for resource: %s", args[0])
 			}
 
-			aliases := aliases.GetAliasesForJsonApiType(resource.JsonApiType)
+			aliases := aliases.GetAliasesForJsonApiTypeAndAlternates(resource.JsonApiType, resource.AlternateJsonApiTypesForAliases)
 
 			sortedAliasNames := make([]string, 0, len(aliases))
 

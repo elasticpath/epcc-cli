@@ -89,7 +89,7 @@ func deleteInternal(args []string) (string, error) {
 		return "", fmt.Errorf("got nil response")
 	}
 
-	idToDelete := aliases.ResolveAliasValuesOrReturnIdentity(resource.JsonApiType, "id", args[len(args)-1])
+	idToDelete := aliases.ResolveAliasValuesOrReturnIdentity(resource.JsonApiType, resource.AlternateJsonApiTypesForAliases, "id", args[len(args)-1])
 	aliases.DeleteAliasesById(idToDelete, resource.JsonApiType)
 
 	if resp.Body != nil {
