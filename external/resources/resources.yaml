@@ -723,6 +723,45 @@ integrations:
       type: STRING
     observes[n]:
       type: ENUM:address.created,address.updated,address.deleted,account.created,account.updated,account.deleted,account-member.created,account-member.updated,account-member.deleted,account-membership.created,account-membership.updated,account-membership.deleted,brand.created,brand.updated,brand.deleted,cart.updated,cart.deleted,category.created,category.updated,category.deleted,collection.created,collection.updated,collection.deleted,currency.created,currency.updated,currency.deleted,customer.created,customer.updated,customer.deleted,file.created,file.deleted,integration.created,integration.updated,integration.deleted,order.created,order.updated,order.fulfilled,order.authorized,order.paid,order.refunded,payment-gateway.updated,product.created,product.updated,product.deleted,settings.created,settings.updated,stock-transaction.created,transaction.created,transaction.updated,user-authentication-info.created,user-authentication-info.updated,user-authentication-info.deleted
+inventories:
+  singular-name: "inventory"
+  json-api-type: "stock"
+  json-api-format: "legacy"
+  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/inventory/index.html"
+  get-collection:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/inventory/get-all-inventory.html"
+    url: "/v2/inventories"
+  get-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/inventory/get-a-product-stock.html"
+    url: "/v2/inventories/{pcm_products}"
+  create-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/inventory/create-inventory.html"
+    url: "/v2/inventories/{pcm_products}"
+  delete-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/inventory/delete-inventory.html"
+    url: "/v2/inventories/{pcm_products}"
+  attributes:
+    quantity:
+      type: INT
+inventory-transactions:
+  singular-name: "inventory-transaction"
+  json-api-type: "stock-transaction"
+  json-api-format: "legacy"
+  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/inventory/get-a-product-stock-transactions.html"
+  get-collection:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/inventory/get-a-product-stock-transactions.html"
+    url: "/v2/inventories/{pcm_products}/transactions"
+  get-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/inventory/get-a-product-stock-transaction.html"
+    url: "/v2/inventories/{pcm_products}/transactions/{inventory_transactions}"
+  create-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/inventory/update-inventory.html"
+    url: "/v2/inventories/{pcm_products}/transactions"
+  attributes:
+    action:
+      type: ENUM:increment,decrement,allocate,deallocate
+    quantity:
+      type: INT
 catalog-products:
   singular-name: "catalog-product"
   json-api-type: "product"
