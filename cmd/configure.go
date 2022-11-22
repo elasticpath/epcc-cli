@@ -2,12 +2,14 @@ package cmd
 
 import (
 	"bufio"
+	"fmt"
 	"github.com/elasticpath/epcc-cli/config"
 	"github.com/elasticpath/epcc-cli/external/profiles"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"gopkg.in/ini.v1"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -24,10 +26,21 @@ var configure = &cobra.Command{
 			os.Exit(1)
 		}
 		newProfile := config.Env{}
+
 		reader := bufio.NewReader(os.Stdin)
 		println("Create new Profile")
-		print("Profile Name:")
-		text := readInput(reader)
+		var text = ""
+		profileName := "default"
+		if defaultVal, ok := os.LookupEnv("EPCC_PROFILE"); ok {
+			profileName = defaultVal
+		}
+
+		fmt.Printf("Profile Name[%s]:", profileName)
+		text = readInput(reader)
+		if text != "" {
+			profileName = text
+		}
+
 		print("API Base URL [https://api.moltin.com]:")
 		if input := readInput(reader); input != "" {
 			newProfile.EPCC_API_BASE_URL = input
@@ -38,14 +51,32 @@ var configure = &cobra.Command{
 		newProfile.EPCC_CLIENT_ID = readInput(reader)
 		print("Client Secret [None]:")
 		newProfile.EPCC_CLIENT_SECRET = readInput(reader)
-		print("(https://documentation.elasticpath.com/commerce-cloud/docs/api/basics/api-contract.html#beta-apis) [None]:")
+		print("Beta Features Enabled (See: https://documentation.elasticpath.com/commerce-cloud/docs/api/basics/api-contract.html#beta-apis) [None]:")
 		newProfile.EPCC_BETA_API_FEATURES = readInput(reader)
 
-		section, err := cfg.NewSection(text)
+		print("Rate Limit [10]:")
+
+		if input := readInput(reader); input != "" {
+			rateLimit, err := strconv.Atoi(input)
+
+			if err != nil {
+				log.Errorf("Invalid rate limit %s, error: %v", input, err)
+				os.Exit(2)
+			}
+			newProfile.EPCC_RATE_LIMIT = uint16(rateLimit)
+		} else {
+			newProfile.EPCC_RATE_LIMIT = 10
+		}
+
+		section, err := cfg.NewSection(profileName)
+		if err != nil {
+			log.Errorf("error creating section, error: %v", err)
+			os.Exit(3)
+		}
 		section.ReflectFrom(&newProfile)
 		cfg.SaveTo(configPath)
 		if err != nil {
-			log.Errorf("error writing to file " + configPath)
+			log.Errorf("error writing to file %s, error: %v", configPath, err)
 			os.Exit(1)
 		}
 		config.Envs = &newProfile

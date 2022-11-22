@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/elasticpath/epcc-cli/external/aliases"
+	"github.com/elasticpath/epcc-cli/external/autofill"
 	"github.com/elasticpath/epcc-cli/external/completion"
 	"github.com/elasticpath/epcc-cli/external/crud"
 	"github.com/elasticpath/epcc-cli/external/encoding"
@@ -23,7 +24,7 @@ var create = &cobra.Command{
 	Short: "Creates an entity of a resource.",
 	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		body, err := createInternal(args)
+		body, err := createInternal(args, crud.AutoFillOnCreate)
 
 		if err != nil {
 			return err
@@ -91,7 +92,7 @@ var create = &cobra.Command{
 	},
 }
 
-func createInternal(args []string) (string, error) {
+func createInternal(args []string, autoFillOnCreate bool) (string, error) {
 	// Find Resource
 	resource, ok := resources.GetResourceByName(args[0])
 	if !ok {
@@ -153,7 +154,15 @@ func createInternal(args []string) (string, error) {
 			args = append(args, "type", resource.JsonApiType)
 		}
 		// Create the body from remaining args
-		body, err := json.ToJson(args[(idCount+1):], resource.NoWrapping, resource.JsonApiFormat == "compliant", resource.Attributes)
+
+		jsonArgs := args[(idCount + 1):]
+		if autoFillOnCreate {
+			autofilledData := autofill.GetJsonArrayForResource(&resource)
+
+			jsonArgs = append(autofilledData, jsonArgs...)
+		}
+
+		body, err := json.ToJson(jsonArgs, resource.NoWrapping, resource.JsonApiFormat == "compliant", resource.Attributes)
 
 		if err != nil {
 			return "", err

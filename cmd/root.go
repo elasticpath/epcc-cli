@@ -68,8 +68,9 @@ func init() {
 	RootCmd.PersistentFlags().Float32VarP(&requestTimeout, "timeout", "", 10, "Request timeout in seconds (fractional values allowed)")
 
 	RootCmd.PersistentFlags().BoolVarP(&aliases.SkipAliasProcessing, "skip-alias-processing", "", false, "if set, we don't process the response for aliases")
-
+	ResetStore.PersistentFlags().BoolVarP(&DeleteApplicationKeys, "delete-application-keys", "", false, "if set, we delete application keys as well")
 	create.Flags().StringVar(&crud.OverrideUrlPath, "override-url-path", "", "Override the URL that will be used for the Request")
+	create.Flags().BoolVarP(&crud.AutoFillOnCreate, "auto-fill", "", false, "Auto generate value for fields")
 	delete.Flags().StringVar(&crud.OverrideUrlPath, "override-url-path", "", "Override the URL that will be used for the Request")
 	get.Flags().StringVar(&crud.OverrideUrlPath, "override-url-path", "", "Override the URL that will be used for the Request")
 	update.Flags().StringVar(&crud.OverrideUrlPath, "override-url-path", "", "Override the URL that will be used for the Request")
@@ -167,7 +168,7 @@ func Execute() {
 	<-shutdownHandlerDone
 
 	if err != nil {
-		log.Errorf("Error occured while processing command: %s", err)
+		log.Errorf("Error occurred while processing command: %s", err)
 		os.Exit(1)
 	} else {
 		os.Exit(0)

@@ -77,8 +77,12 @@ func toJsonObject(args []string, noWrapping bool, compliant bool, attributes map
 			if strings.HasPrefix(attributeInfo.Type, "RESOURCE_ID:") {
 				resourceType := strings.Replace(attributeInfo.Type, "RESOURCE_ID:", "", 1)
 
+				aliasAttributeToUse := "id"
+				if attributeInfo.AliasAttribute != "" {
+					aliasAttributeToUse = attributeInfo.AliasAttribute
+				}
 				if aliasType, ok := resources.GetResourceByName(resourceType); ok {
-					val = aliases.ResolveAliasValuesOrReturnIdentity(aliasType.JsonApiType, aliasType.AlternateJsonApiTypesForAliases, val, "id")
+					val = aliases.ResolveAliasValuesOrReturnIdentity(aliasType.JsonApiType, aliasType.AlternateJsonApiTypesForAliases, val, aliasAttributeToUse)
 				} else {
 					log.Warnf("Could not find a resource for %s, this is a bug.", resourceType)
 				}

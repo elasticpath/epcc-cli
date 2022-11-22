@@ -91,7 +91,9 @@ type CrudEntityAttribute struct {
 	Key string
 
 	// The type of the attribute
-	Type string `yaml:"type"`
+	Type           string `yaml:"type"`
+	AutoFill       string `yaml:"autofill"`
+	AliasAttribute string `yaml:"alias_attribute"`
 }
 
 func GetPluralResourceNames() []string {

@@ -116,6 +116,8 @@ func ResolveAliasValuesOrReturnIdentity(jsonApiType string, alternateJsonApiType
 			return result.Code
 		}
 
+		log.Warnf("Alias was found for for %s, but the attribute is unknown, must be one of {id, slug, sku, code}, but got %s", value, attribute)
+
 	}
 	return value
 }

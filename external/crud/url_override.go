@@ -1,5 +1,6 @@
 package crud
 
-var OverrideUrlPath string = ""
+var OverrideUrlPath = ""
+var AutoFillOnCreate = false
 
 var QueryParameters []string
