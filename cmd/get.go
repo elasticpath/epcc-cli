@@ -14,6 +14,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strings"
 )
 
 var get = &cobra.Command{
@@ -193,6 +194,14 @@ func getResource(args []string) (*http.Response, error) {
 	params := url.Values{}
 	for i := idCount + 1; i+1 < len(args); i = i + 2 {
 		params.Add(args[i], args[i+1])
+	}
+
+	for _, v := range crud.QueryParameters {
+		keyAndValue := strings.SplitN(v, "=", 2)
+		if len(keyAndValue) != 2 {
+			return nil, fmt.Errorf("Could not parse query parameter %v, all query parameters should be a key and value format", keyAndValue)
+		}
+		params.Add(keyAndValue[0], keyAndValue[1])
 	}
 
 	// Steve doesn't understand this logic check

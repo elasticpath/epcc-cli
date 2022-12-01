@@ -13,6 +13,8 @@ import (
 	"github.com/spf13/cobra"
 	"io"
 	"net/http"
+	"net/url"
+	"strings"
 )
 
 var delete = &cobra.Command{
@@ -133,8 +135,18 @@ func deleteResource(args []string) (*http.Response, error) {
 		resourceURL = crud.OverrideUrlPath
 	}
 
+	params := url.Values{}
+
+	for _, v := range crud.QueryParameters {
+		keyAndValue := strings.SplitN(v, "=", 2)
+		if len(keyAndValue) != 2 {
+			return nil, fmt.Errorf("Could not parse query parameter %v, all query parameters should be a key and value format", keyAndValue)
+		}
+		params.Add(keyAndValue[0], keyAndValue[1])
+	}
+
 	// Submit request
-	resp, err := httpclient.DoRequest(context.TODO(), "DELETE", resourceURL, "", nil)
+	resp, err := httpclient.DoRequest(context.TODO(), "DELETE", resourceURL, params.Encode(), nil)
 	if err != nil {
 		return nil, fmt.Errorf("got error %s", err.Error())
 	}
