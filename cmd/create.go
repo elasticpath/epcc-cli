@@ -14,6 +14,7 @@ import (
 	"github.com/spf13/cobra"
 	"io"
 	"net/http"
+	"net/url"
 	"strings"
 )
 
@@ -138,6 +139,16 @@ func createInternal(args []string) (string, error) {
 	} else {
 		// Assume it's application/json
 
+		params := url.Values{}
+
+		for _, v := range crud.QueryParameters {
+			keyAndValue := strings.SplitN(v, "=", 2)
+			if len(keyAndValue) != 2 {
+				return "", fmt.Errorf("Could not parse query parameter %v, all query parameters should be a key and value format", keyAndValue)
+			}
+			params.Add(keyAndValue[0], keyAndValue[1])
+		}
+
 		if !resource.NoWrapping {
 			args = append(args, "type", resource.JsonApiType)
 		}
@@ -149,7 +160,7 @@ func createInternal(args []string) (string, error) {
 		}
 
 		// Submit request
-		resp, err = httpclient.DoRequest(context.TODO(), "POST", resourceURL, "", strings.NewReader(body))
+		resp, err = httpclient.DoRequest(context.TODO(), "POST", resourceURL, params.Encode(), strings.NewReader(body))
 
 	}
 

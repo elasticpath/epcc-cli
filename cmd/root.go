@@ -74,6 +74,11 @@ func init() {
 	get.Flags().StringVar(&crud.OverrideUrlPath, "override-url-path", "", "Override the URL that will be used for the Request")
 	update.Flags().StringVar(&crud.OverrideUrlPath, "override-url-path", "", "Override the URL that will be used for the Request")
 
+	create.Flags().StringSliceVarP(&crud.QueryParameters, "query-parameters", "q", []string{}, "Pass in key=value an they will be added as query parameters")
+	delete.Flags().StringSliceVarP(&crud.QueryParameters, "query-parameters", "q", []string{}, "Pass in key=value an they will be added as query parameters")
+	get.Flags().StringSliceVarP(&crud.QueryParameters, "query-parameters", "q", []string{}, "Pass in key=value an they will be added as query parameters")
+	update.Flags().StringSliceVarP(&crud.QueryParameters, "query-parameters", "q", []string{}, "Pass in key=value an they will be added as query parameters")
+
 	aliasesCmd.AddCommand(aliasListCmd, aliasClearCmd)
 
 	loginCmd.AddCommand(loginClientCredentials)

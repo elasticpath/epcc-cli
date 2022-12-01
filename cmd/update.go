@@ -12,6 +12,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"io"
+	"net/url"
 	"strings"
 )
 
@@ -125,8 +126,18 @@ func updateInternal(args []string) (string, error) {
 		return "", err
 	}
 
+	params := url.Values{}
+
+	for _, v := range crud.QueryParameters {
+		keyAndValue := strings.SplitN(v, "=", 2)
+		if len(keyAndValue) != 2 {
+			return "", fmt.Errorf("Could not parse query parameter %v, all query parameters should be a key and value format", keyAndValue)
+		}
+		params.Add(keyAndValue[0], keyAndValue[1])
+	}
+
 	// Submit request
-	resp, err := httpclient.DoRequest(context.TODO(), "PUT", resourceURL, "", strings.NewReader(body))
+	resp, err := httpclient.DoRequest(context.TODO(), "PUT", resourceURL, params.Encode(), strings.NewReader(body))
 	if err != nil {
 		return "", fmt.Errorf("got error %s", err.Error())
 	} else if resp == nil {
