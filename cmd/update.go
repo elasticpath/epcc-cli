@@ -22,7 +22,7 @@ var update = &cobra.Command{
 	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 
-		body, err := updateInternal(args)
+		body, err := updateInternal(context.Background(), args)
 
 		if err != nil {
 			return err
@@ -90,7 +90,10 @@ var update = &cobra.Command{
 	},
 }
 
-func updateInternal(args []string) (string, error) {
+func updateInternal(ctx context.Context, args []string) (string, error) {
+	crud.OutstandingRequestCounter.Add(1)
+	defer crud.OutstandingRequestCounter.Done()
+
 	// Find Resource
 	resource, ok := resources.GetResourceByName(args[0])
 	if !ok {
@@ -137,7 +140,7 @@ func updateInternal(args []string) (string, error) {
 	}
 
 	// Submit request
-	resp, err := httpclient.DoRequest(context.TODO(), "PUT", resourceURL, params.Encode(), strings.NewReader(body))
+	resp, err := httpclient.DoRequest(ctx, "PUT", resourceURL, params.Encode(), strings.NewReader(body))
 	if err != nil {
 		return "", fmt.Errorf("got error %s", err.Error())
 	} else if resp == nil {

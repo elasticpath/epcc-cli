@@ -8,6 +8,7 @@ import (
 	"github.com/elasticpath/epcc-cli/external/authentication"
 	"github.com/elasticpath/epcc-cli/external/json"
 	"github.com/elasticpath/epcc-cli/external/profiles"
+	"github.com/elasticpath/epcc-cli/external/shutdown"
 	"github.com/elasticpath/epcc-cli/external/version"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/time/rate"
@@ -28,6 +29,8 @@ var RawHeaders []string
 const EnvNameHttpPrefix = "EPCC_CLI_HTTP_HEADER_"
 
 var httpHeaders = map[string]string{}
+
+var DontLog2xxs = false
 
 var stats = struct {
 	totalRateLimitedTimeInMs       int64
@@ -56,6 +59,29 @@ func init() {
 			}
 		}
 	}
+
+	go func() {
+		lastTotalRequests := uint64(0)
+
+		for {
+			time.Sleep(15 * time.Second)
+
+			statsLock.Lock()
+
+			deltaRequests := stats.totalRequests - lastTotalRequests
+			lastTotalRequests = stats.totalRequests
+			statsLock.Unlock()
+
+			if shutdown.ShutdownFlag.Load() {
+				break
+			}
+
+			if deltaRequests > 0 {
+				log.Infof("Total requests %d, requests in past 15 seconds %d, latest %d requests per second.", lastTotalRequests, deltaRequests, deltaRequests/15.0)
+			}
+
+		}
+	}()
 }
 
 var Limit *rate.Limiter = nil
@@ -106,6 +132,11 @@ var noApiEndpointUrlWarningMessageLogged = false
 
 // DoRequest makes a html request to the EPCC API and handles the response.
 func doRequestInternal(ctx context.Context, method string, contentType string, path string, query string, payload io.Reader) (response *http.Response, error error) {
+
+	if shutdown.ShutdownFlag.Load() {
+		return nil, fmt.Errorf("Shutting down")
+	}
+
 	reqURL, err := url.Parse(config.Envs.EPCC_API_BASE_URL)
 	if err != nil {
 		return nil, err
@@ -271,7 +302,9 @@ func doRequestInternal(ctx context.Context, method string, contentType string, p
 			logf("(%0.4d) %s %s%s ==> %s %s%s", requestNumber, req.Method, getUrl(reqURL), requestHeaders, resp.Proto, resp.Status, responseHeaders)
 		}
 	} else {
-		log.Infof("(%0.4d) %s %s ==> %s %s", requestNumber, method, getUrl(reqURL), resp.Proto, resp.Status)
+		if resp.StatusCode >= 300 || !DontLog2xxs {
+			log.Infof("(%0.4d) %s %s ==> %s %s", requestNumber, method, getUrl(reqURL), resp.Proto, resp.Status)
+		}
 	}
 
 	dumpRes, err := httputil.DumpResponse(resp, true)

@@ -23,7 +23,7 @@ var delete = &cobra.Command{
 	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 
-		body, err := deleteInternal(args)
+		body, err := deleteInternal(context.Background(), args)
 		if err != nil {
 			return err
 		}
@@ -96,13 +96,16 @@ var delete = &cobra.Command{
 	},
 }
 
-func deleteInternal(args []string) (string, error) {
+func deleteInternal(ctx context.Context, args []string) (string, error) {
+	crud.OutstandingRequestCounter.Add(1)
+	defer crud.OutstandingRequestCounter.Done()
+
 	resource, ok := resources.GetResourceByName(args[0])
 	if !ok {
 		return "", fmt.Errorf("could not find resource %s", args[0])
 	}
 
-	resp, err := deleteResource(args)
+	resp, err := deleteResource(ctx, args)
 	if err != nil {
 		return "", err
 	}
@@ -132,7 +135,7 @@ func deleteInternal(args []string) (string, error) {
 
 }
 
-func deleteResource(args []string) (*http.Response, error) {
+func deleteResource(ctx context.Context, args []string) (*http.Response, error) {
 	// Find Resource
 	resource, ok := resources.GetResourceByName(args[0])
 	if !ok {
@@ -186,7 +189,7 @@ func deleteResource(args []string) (*http.Response, error) {
 	}
 
 	// Submit request
-	resp, err := httpclient.DoRequest(context.TODO(), "DELETE", resourceURL, params.Encode(), payload)
+	resp, err := httpclient.DoRequest(ctx, "DELETE", resourceURL, params.Encode(), payload)
 	if err != nil {
 		return nil, fmt.Errorf("got error %s", err.Error())
 	}

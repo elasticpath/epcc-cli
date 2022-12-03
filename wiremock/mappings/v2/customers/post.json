@@ -1,0 +1,23 @@
+{
+  "priority": "1",
+  "request": {
+    "method": "POST",
+    "urlPattern": "/v2/customers/?$"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "bodyFileName": "v2-customers-post-body.json",
+    "transformers": ["response-template", "body-transformer"],
+    "transformerParameters": {
+      "urlRegex": ".*/(?<type>[^/]+)/?$"
+    },
+    "delayDistribution": {
+      "type": "lognormal",
+      "median": 20,
+      "sigma": 0.4
+    }
+  }
+}

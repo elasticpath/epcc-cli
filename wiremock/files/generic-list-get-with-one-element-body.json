@@ -1,0 +1,17 @@
+{
+  "data": [{
+    "id": "{{randomValue type='UUID'}}",
+    "type": "$(type)"
+  }],
+  "meta": {
+    "page": {
+      "limit": 10,
+      "offset": 0,
+      "current": 1,
+      "total": 1
+    },
+    "results": {
+      "total": 1
+    }
+  }
+}

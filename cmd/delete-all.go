@@ -24,7 +24,7 @@ var DeleteAll = &cobra.Command{
 	Args:   cobra.MinimumNArgs(1),
 	Hidden: false,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return deleteAllInternal(args)
+		return deleteAllInternal(context.Background(), args)
 	},
 
 	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
@@ -39,7 +39,7 @@ var DeleteAll = &cobra.Command{
 	},
 }
 
-func deleteAllInternal(args []string) error {
+func deleteAllInternal(ctx context.Context, args []string) error {
 	// Find Resource
 	resource, ok := resources.GetResourceByName(args[0])
 	if !ok {
@@ -54,7 +54,7 @@ func deleteAllInternal(args []string) error {
 		return fmt.Errorf("resource %s doesn't support DELETE", args[0])
 	}
 
-	allParentEntityIds, err := getParentIds(context.Background(), resource)
+	allParentEntityIds, err := getParentIds(ctx, resource)
 
 	if err != nil {
 		return fmt.Errorf("could not retrieve parent ids for for resource %s, error: %w", resource.PluralName, err)
@@ -78,7 +78,7 @@ func deleteAllInternal(args []string) error {
 			params := url.Values{}
 			params.Add("page[limit]", "25")
 
-			resp, err := httpclient.DoRequest(context.Background(), "GET", resourceURL, params.Encode(), nil)
+			resp, err := httpclient.DoRequest(ctx, "GET", resourceURL, params.Encode(), nil)
 
 			if err != nil {
 				return err
@@ -122,7 +122,7 @@ func deleteAllInternal(args []string) error {
 
 			}
 
-			delPage(resource.DeleteEntityInfo, allIds)
+			delPage(ctx, resource.DeleteEntityInfo, allIds)
 		}
 	}
 
@@ -160,7 +160,7 @@ func getParentIds(ctx context.Context, resource resources.Resource) ([][]id.Idab
 
 var flowsUrlRegex = regexp.MustCompile("^/v2/flows/([^/]+)$")
 
-func delPage(urlInfo *resources.CrudEntityInfo, ids [][]id.IdableAttributes) {
+func delPage(ctx context.Context, urlInfo *resources.CrudEntityInfo, ids [][]id.IdableAttributes) {
 	// Create a wait group to run DELETE in parallel
 	wg := sync.WaitGroup{}
 	for _, idAttr := range ids {
@@ -177,7 +177,7 @@ func delPage(urlInfo *resources.CrudEntityInfo, ids [][]id.IdableAttributes) {
 			}
 
 			// Submit request
-			resp, err := httpclient.DoRequest(context.TODO(), "DELETE", resourceURL, "", nil)
+			resp, err := httpclient.DoRequest(ctx, "DELETE", resourceURL, "", nil)
 			if err != nil {
 				return
 			}
@@ -200,7 +200,7 @@ func delPage(urlInfo *resources.CrudEntityInfo, ids [][]id.IdableAttributes) {
 
 				id := matches[1]
 				jsonBody := fmt.Sprintf(`{ "data": { "id":"%s", "type": "flow", "slug": "delete-%s" }}`, id, id)
-				resp2, err := httpclient.DoRequest(context.TODO(), "PUT", resourceURL, "", strings.NewReader(jsonBody))
+				resp2, err := httpclient.DoRequest(ctx, "PUT", resourceURL, "", strings.NewReader(jsonBody))
 
 				if err != nil {
 					return
@@ -212,7 +212,7 @@ func delPage(urlInfo *resources.CrudEntityInfo, ids [][]id.IdableAttributes) {
 					}
 				}
 
-				resp3, err := httpclient.DoRequest(context.TODO(), "DELETE", resourceURL, "", nil)
+				resp3, err := httpclient.DoRequest(ctx, "DELETE", resourceURL, "", nil)
 				if err != nil {
 					return
 				}

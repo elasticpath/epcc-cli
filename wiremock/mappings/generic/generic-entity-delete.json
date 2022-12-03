@@ -1,0 +1,11 @@
+{
+  "priority": 100,
+  "request": {
+    "method": "DELETE",
+    "urlPattern": "/v2.*[a-zA-Z-_]+/[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}/?$"
+  },
+  "response": {
+    "status":204,
+    "statusMessage": "No Content"
+  }
+}

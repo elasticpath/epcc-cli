@@ -24,7 +24,9 @@ var ResetStore = &cobra.Command{
 	Long:  "This command resets a store to it's initial state. There are some limitations to this as for instance orders cannot be deleted, nor can audit entries.",
 	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		storeId, err := getStoreId(args)
+		ctx := context.Background()
+
+		storeId, err := getStoreId(ctx, args)
 		if err != nil {
 			return fmt.Errorf("could not determine store id: %w", err)
 		}
@@ -49,25 +51,25 @@ var ResetStore = &cobra.Command{
 		// We would also need locking to go faster.
 
 		// Get customer and account authentication settings to populate the aliases
-		_, err = getInternal([]string{"customer-authentication-settings"})
+		_, err = getInternal(ctx, []string{"customer-authentication-settings"})
 
 		if err != nil {
 			errors = append(errors, err.Error())
 		}
 
-		_, err = getInternal([]string{"account-authentication-settings"})
+		_, err = getInternal(ctx, []string{"account-authentication-settings"})
 
 		if err != nil {
 			errors = append(errors, err.Error())
 		}
 
-		_, err = getInternal([]string{"merchant-realm-mappings"})
+		_, err = getInternal(ctx, []string{"merchant-realm-mappings"})
 
 		if err != nil {
 			errors = append(errors, err.Error())
 		}
 
-		_, err = getInternal([]string{"authentication-realms"})
+		_, err = getInternal(ctx, []string{"authentication-realms"})
 
 		if err != nil {
 			errors = append(errors, err.Error())
@@ -101,7 +103,7 @@ var ResetStore = &cobra.Command{
 	},
 }
 
-func getStoreId(args []string) (string, error) {
+func getStoreId(ctx context.Context, args []string) (string, error) {
 	resource, ok := resources.GetResourceByName("settings")
 
 	if !ok {
@@ -116,7 +118,7 @@ func getStoreId(args []string) (string, error) {
 
 	params := url.Values{}
 
-	resp, err := httpclient.DoRequest(context.Background(), "GET", resourceURL, params.Encode(), nil)
+	resp, err := httpclient.DoRequest(ctx, "GET", resourceURL, params.Encode(), nil)
 
 	defer resp.Body.Close()
 

@@ -8,6 +8,7 @@ import (
 	"github.com/elasticpath/epcc-cli/external/httpclient"
 	"github.com/elasticpath/epcc-cli/external/logger"
 	"github.com/elasticpath/epcc-cli/external/profiles"
+	"github.com/elasticpath/epcc-cli/external/shutdown"
 	"github.com/elasticpath/epcc-cli/external/version"
 	log "github.com/sirupsen/logrus"
 	"github.com/thediveo/enumflag"
@@ -69,6 +70,7 @@ func init() {
 	RootCmd.PersistentFlags().Uint16VarP(&rateLimit, "rate-limit", "", 10, "Request limit per second")
 	RootCmd.PersistentFlags().BoolVarP(&httpclient.Retry5xx, "retry-5xx", "", false, "Whether we should retry requests with HTTP 5xx response code")
 	RootCmd.PersistentFlags().BoolVarP(&httpclient.Retry429, "retry-429", "", false, "Whether we should retry requests with HTTP 429 response code")
+	RootCmd.PersistentFlags().BoolVarP(&httpclient.DontLog2xxs, "silence-2xx", "", false, "Whether we should silence HTTP 2xx response code logging")
 
 	RootCmd.PersistentFlags().Float32VarP(&requestTimeout, "timeout", "", 10, "Request timeout in seconds (fractional values allowed)")
 
@@ -160,6 +162,7 @@ func Execute() {
 		select {
 		case sig := <-sigs:
 			log.Warnf("Shutting down program due to signal [%v]", sig)
+			shutdown.ShutdownFlag.Store(true)
 			exit = true
 		case <-normalShutdown:
 		}
@@ -167,6 +170,9 @@ func Execute() {
 		defer func() {
 			shutdownHandlerDone <- true
 		}()
+
+		log.Infof("Waiting for all outstanding requests to finish")
+		crud.OutstandingRequestCounter.Wait()
 
 		httpclient.LogStats()
 		aliases.FlushAliases()

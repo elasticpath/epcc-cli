@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	gojson "encoding/json"
 	"fmt"
 	"github.com/elasticpath/epcc-cli/config"
@@ -273,11 +274,12 @@ var loginCustomer = &cobra.Command{
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 
+		ctx := context.Background()
 		newArgs := make([]string, 0)
 		newArgs = append(newArgs, "customer-token")
 		newArgs = append(newArgs, args...)
 
-		body, err := createInternal(newArgs, crud.AutoFillOnCreate)
+		body, err := createInternal(ctx, newArgs, crud.AutoFillOnCreate)
 
 		if err != nil {
 			log.Warnf("Login not completed successfully")
@@ -303,7 +305,7 @@ var loginCustomer = &cobra.Command{
 		if customerTokenResponse != nil {
 
 			// Get the customer so we have aliases where we need the id.
-			getCustomerBody, err := getInternal([]string{"customer", customerTokenResponse.Data.CustomerId})
+			getCustomerBody, err := getInternal(ctx, []string{"customer", customerTokenResponse.Data.CustomerId})
 
 			if err != nil {
 				log.Warnf("Could not retrieve customer")

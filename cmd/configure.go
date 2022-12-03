@@ -18,7 +18,6 @@ var configure = &cobra.Command{
 	Short: "Creates a profile by prompting for input over the command line.",
 	Long:  "Will first prompt for a name then a series of variable specific for the user being created",
 	Run: func(cmd *cobra.Command, args []string) {
-
 		configPath := profiles.GetConfigFilePath()
 		cfg, err := ini.Load(configPath)
 		if err != nil {

@@ -22,7 +22,7 @@ var get = &cobra.Command{
 	Short: "Retrieves a single resource.",
 	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		body, err := getInternal(args)
+		body, err := getInternal(context.Background(), args)
 		if err != nil {
 			return err
 		}
@@ -109,8 +109,8 @@ var get = &cobra.Command{
 	},
 }
 
-func getInternal(args []string) (string, error) {
-	resp, err := getResource(args)
+func getInternal(ctx context.Context, args []string) (string, error) {
+	resp, err := getResource(ctx, args)
 
 	if err != nil {
 		return "", err
@@ -158,7 +158,10 @@ func getUrl(resource resources.Resource, args []string) (*resources.CrudEntityIn
 	}
 }
 
-func getResource(args []string) (*http.Response, error) {
+func getResource(ctx context.Context, args []string) (*http.Response, error) {
+	crud.OutstandingRequestCounter.Add(1)
+	defer crud.OutstandingRequestCounter.Done()
+
 	// Find Resource
 	resource, ok := resources.GetResourceByName(args[0])
 	if !ok {
@@ -210,7 +213,7 @@ func getResource(args []string) (*http.Response, error) {
 	}
 
 	// Submit request
-	resp, err := httpclient.DoRequest(context.TODO(), "GET", resourceURL, params.Encode(), nil)
+	resp, err := httpclient.DoRequest(ctx, "GET", resourceURL, params.Encode(), nil)
 
 	if err != nil {
 		return nil, fmt.Errorf("got error %s", err.Error())
