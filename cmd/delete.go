@@ -69,6 +69,26 @@ var delete = &cobra.Command{
 						Resource: completionResource,
 					})
 				}
+			} else {
+				if (len(args)-idCount)%2 == 1 { // This is an attribute key
+					usedAttributes := make(map[string]int)
+					for i := idCount + 1; i < len(args); i = i + 2 {
+						usedAttributes[args[i]] = 0
+					}
+					return completion.Complete(completion.Request{
+						Type:       completion.CompleteAttributeKey,
+						Resource:   resource,
+						Attributes: usedAttributes,
+						Verb:       completion.Delete,
+					})
+				} else { // This is an attribute value
+					return completion.Complete(completion.Request{
+						Type:      completion.CompleteAttributeValue,
+						Resource:  resource,
+						Verb:      completion.Delete,
+						Attribute: args[len(args)-1],
+					})
+				}
 			}
 		}
 
@@ -145,8 +165,28 @@ func deleteResource(args []string) (*http.Response, error) {
 		params.Add(keyAndValue[0], keyAndValue[1])
 	}
 
+	idCount, err := resources.GetNumberOfVariablesNeeded(resource.DeleteEntityInfo.Url)
+
+	if !resource.NoWrapping {
+		args = append(args, "type", resource.JsonApiType)
+	}
+	// Create the body from remaining args
+
+	jsonArgs := args[(idCount + 1):]
+
+	var payload io.Reader = nil
+	if len(jsonArgs) > 0 {
+		body, err := json.ToJson(jsonArgs, resource.NoWrapping, resource.JsonApiFormat == "compliant", resource.Attributes)
+
+		if err != nil {
+			return nil, err
+		}
+
+		payload = strings.NewReader(body)
+	}
+
 	// Submit request
-	resp, err := httpclient.DoRequest(context.TODO(), "DELETE", resourceURL, params.Encode(), nil)
+	resp, err := httpclient.DoRequest(context.TODO(), "DELETE", resourceURL, params.Encode(), payload)
 	if err != nil {
 		return nil, fmt.Errorf("got error %s", err.Error())
 	}
