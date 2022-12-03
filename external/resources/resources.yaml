@@ -1563,6 +1563,9 @@ pcm-product-templates:
   create-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/relationships/create-product-template-relationships.html"
     url: "/pcm/products/{pcm_products}/relationships/templates"
+  delete-entity:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/relationships/delete-product-template-relationships.html"
+    url: "/pcm/products/{pcm_products}/relationships/templates"
   attributes:
     "data[n].id":
       type: RESOURCE_ID:flow
