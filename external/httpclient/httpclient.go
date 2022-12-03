@@ -60,6 +60,9 @@ func init() {
 
 var Limit *rate.Limiter = nil
 
+var Retry429 = false
+var Retry5xx = false
+
 var statsLock = &sync.Mutex{}
 
 var HttpClient = &http.Client{}
@@ -237,7 +240,19 @@ func doRequestInternal(ctx context.Context, method string, contentType string, p
 		requestHeaders += "\n\n"
 	}
 
-	if resp.StatusCode >= 400 || log.IsLevelEnabled(log.DebugLevel) {
+	displayLongFormRequestAndResponse := resp.StatusCode >= 400
+
+	if resp.StatusCode == 429 && Retry429 {
+		displayLongFormRequestAndResponse = false
+	}
+
+	if resp.StatusCode >= 500 && Retry5xx {
+		displayLongFormRequestAndResponse = false
+	}
+
+	displayLongFormRequestAndResponse = displayLongFormRequestAndResponse || log.IsLevelEnabled(log.DebugLevel)
+
+	if displayLongFormRequestAndResponse {
 		if payload != nil {
 			body, _ := io.ReadAll(&bodyBuf)
 			if len(body) > 0 {
@@ -255,7 +270,7 @@ func doRequestInternal(ctx context.Context, method string, contentType string, p
 		} else {
 			logf("(%0.4d) %s %s%s ==> %s %s%s", requestNumber, req.Method, getUrl(reqURL), requestHeaders, resp.Proto, resp.Status, responseHeaders)
 		}
-	} else if resp.StatusCode >= 200 && resp.StatusCode <= 399 {
+	} else {
 		log.Infof("(%0.4d) %s %s ==> %s %s", requestNumber, method, getUrl(reqURL), resp.Proto, resp.Status)
 	}
 
@@ -266,7 +281,14 @@ func doRequestInternal(ctx context.Context, method string, contentType string, p
 
 	profiles.LogRequestToDisk(method, path, dumpReq, dumpRes, resp.StatusCode)
 
-	return resp, err
+	if resp.StatusCode == 429 && Retry429 {
+		return doRequestInternal(ctx, method, contentType, path, query, &bodyBuf)
+	} else if resp.StatusCode >= 500 && Retry5xx {
+		return doRequestInternal(ctx, method, contentType, path, query, &bodyBuf)
+	} else {
+		return resp, err
+	}
+
 }
 
 func getUrl(u *url.URL) string {
