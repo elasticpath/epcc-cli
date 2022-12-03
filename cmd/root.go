@@ -13,6 +13,8 @@ import (
 	"github.com/thediveo/enumflag"
 	"golang.org/x/time/rate"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/caarlos0/env/v6"
@@ -151,9 +153,14 @@ func Execute() {
 	sigs := make(chan os.Signal, 1)
 	normalShutdown := make(chan bool, 1)
 	shutdownHandlerDone := make(chan bool, 1)
+	signal.Notify(sigs, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM)
+
 	go func() {
+		exit := false
 		select {
-		case <-sigs:
+		case sig := <-sigs:
+			log.Warnf("Shutting down program due to signal [%v]", sig)
+			exit = true
 		case <-normalShutdown:
 		}
 
@@ -163,6 +170,11 @@ func Execute() {
 
 		httpclient.LogStats()
 		aliases.FlushAliases()
+
+		if exit {
+			os.Exit(3)
+		}
+
 	}()
 
 	err := RootCmd.Execute()
