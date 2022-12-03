@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"github.com/buildkite/shellwords"
 	"github.com/elasticpath/epcc-cli/external/completion"
@@ -10,6 +11,7 @@ import (
 	_ "github.com/elasticpath/epcc-cli/external/runbooks"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"golang.org/x/sync/semaphore"
 	"strconv"
 	"strings"
 	"time"
@@ -107,6 +109,8 @@ func initRunbookRunCommands() *cobra.Command {
 	}
 
 	execTimeoutInSeconds := runbookRunCommand.PersistentFlags().Int64("execution-timeout", 120, "How long should the script take to execute before timing out")
+	maxConcurrency := runbookRunCommand.PersistentFlags().Int64("max-concurrency", 2048, "Maximum number of commands at once")
+	semaphore := semaphore.NewWeighted(*maxConcurrency)
 
 	for _, runbook := range runbooks.GetRunbooks() {
 		// Create a copy of runbook scoped to the loop
@@ -134,6 +138,7 @@ func initRunbookRunCommands() *cobra.Command {
 				Short: runbookAction.Description.Short,
 				RunE: func(cmd *cobra.Command, args []string) error {
 					numSteps := len(runbookAction.RawCommands)
+
 					for stepIdx, rawCmd := range runbookAction.RawCommands {
 
 						// Create a copy of loop variables
@@ -146,7 +151,7 @@ func initRunbookRunCommands() *cobra.Command {
 						if err != nil {
 							return err
 						}
-						resultChan := make(chan *commandResult)
+						resultChan := make(chan *commandResult, *maxConcurrency*2)
 						funcs := make([]func(), 0, len(rawCmdLines))
 
 						for commandIdx, rawCmdLine := range rawCmdLines {
@@ -179,6 +184,7 @@ func initRunbookRunCommands() *cobra.Command {
 								switch rawCmdArguments[1] {
 								case "get":
 									funcs = append(funcs, func() {
+
 										body, err := getInternal(rawCmdArguments[2:])
 
 										// We print "get" calls because they don't do anything useful (well I guess they populate aliases)
@@ -207,7 +213,14 @@ func initRunbookRunCommands() *cobra.Command {
 									})
 								case "create":
 									funcs = append(funcs, func() {
-										_, err := createInternal(rawCmdArguments[2:])
+
+										var err error = nil
+
+										if len(rawCmdArguments) >= 3 && rawCmdArguments[2] == "--auto-fill" {
+											_, err = createInternal(rawCmdArguments[3:], true)
+										} else {
+											_, err = createInternal(rawCmdArguments[2:], false)
+										}
 
 										commandResult.error = err
 										resultChan <- commandResult
@@ -239,9 +252,18 @@ func initRunbookRunCommands() *cobra.Command {
 						if len(funcs) > 1 {
 							log.Debugf("Running %d commands", len(funcs))
 						}
-						for _, fn := range funcs {
-							go fn()
-						}
+
+						// Start processing all the functions
+						go func() {
+							for _, fn := range funcs {
+								fn := fn
+								semaphore.Acquire(context.TODO(), 1)
+								go func() {
+									defer semaphore.Release(1)
+									fn()
+								}()
+							}
+						}()
 
 						errorCount := 0
 						for i := 0; i < len(funcs); i++ {

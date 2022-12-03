@@ -96,8 +96,10 @@ accounts:
   attributes:
     name:
       type: STRING
+      autofill: FUNC:Company
     legal_name:
       type: STRING
+      autofill: FUNC:Company
     registration_id:
       type: STRING
     parent_id:
@@ -126,28 +128,41 @@ account-addresses:
   attributes:
     first_name:
       type: STRING
+      autofill: FUNC:FirstName
     last_name:
       type: STRING
+      autofill: FUNC:LastName
     name:
       type: STRING
     phone_number:
       type: STRING
+      autofill: FUNC:PhoneFormatted
     instructions:
       type: STRING
+      autofill: FUNC:Phrase
     company_name:
       type: STRING
+      autofill: FUNC:Company
     line_1:
       type: STRING
+      autofill: FUNC:Street
     line_2:
       type: STRING
     city:
       type: STRING
+      autofill: FUNC:City
     county:
       type: STRING
+      autofill: FUNC:StateAbr
+    region:
+      type: STRING
+      autofill: FUNC:StateAbr
     postcode:
       type: STRING
+      autofill: FUNC:Zip
     country:
       type: STRING
+      autofill: FUNC:CountryAbr
 application-keys:
   singular-name: "application-key"
   json-api-type: "application_key"
@@ -249,7 +264,8 @@ cart-product-items:
     content-type: application/json
   attributes:
     sku:
-      type: STRING
+      type: RESOURCE_ID:pcm-products
+      alias_attribute: sku
     quantity:
       type: INT
     id:
@@ -264,6 +280,12 @@ cart-checkout:
     url: "/v2/carts/{carts}/checkout"
     content-type: application/json
   attributes:
+    account.id:
+      type: RESOURCE_ID:account
+    account.member_id:
+      type: RESOURCE_ID:account-member
+    customer.id:
+      type: RESOURCE_ID:customer
     customer.email:
       type: STRING
     customer.name:
@@ -274,28 +296,62 @@ cart-checkout:
       type: STRING
     billing_address.first_name:
       type: STRING
+      autofill: FUNC:FirstName
     billing_address.last_name:
       type: STRING
+      autofill: FUNC:LastName
+    billing_address.company_name:
+      type: STRING
+      autofill: FUNC:Company
     billing_address.line_1:
       type: STRING
-    billing_address.postcode:
+      autofill: FUNC:Street
+    billing_address.line_2:
       type: STRING
+    billing_address.city:
+      type: STRING
+      autofill: FUNC:City
     billing_address.county:
       type: STRING
+      autofill: FUNC:StateAbr
+    billing_address.region:
+      type: STRING
+      autofill: FUNC:State
+    billing_address.postcode:
+      type: STRING
+      autofill: FUNC:Zip
     billing_address.country:
       type: STRING
+      autofill: FUNC:Country
     shipping_address.first_name:
       type: STRING
+      autofill: FUNC:FirstName
     shipping_address.last_name:
       type: STRING
+      autofill: FUNC:LastName
+    shipping_address.company_name:
+      type: STRING
+      autofill: FUNC:Company
     shipping_address.line_1:
       type: STRING
-    shipping_address.postcode:
+      autofill: FUNC:Street
+    shipping_address.line_2:
       type: STRING
+    shipping_address.city:
+      type: STRING
+      autofill: FUNC:City
     shipping_address.county:
       type: STRING
+      autofill: FUNC:StateAbr
+    shipping_address.region:
+      type: STRING
+      autofill: FUNC:StateAbr
+    shipping_address.postcode:
+      type: STRING
+      autofill: FUNC:Zip
     shipping_address.country:
       type: STRING
+      autofill: FUNC:Country
 currencies:
   singular-name: "currency"
   json-api-type: "currency"
@@ -370,8 +426,10 @@ customers:
   attributes:
     name:
       type: STRING
+      autofill: FUNC:Name
     email:
       type: STRING
+      autofill: FUNC:Email
     password:
       type: STRING
 customer-addresses:
@@ -398,28 +456,41 @@ customer-addresses:
   attributes:
     first_name:
       type: STRING
+      autofill: FUNC:FirstName
     last_name:
       type: STRING
+      autofill: FUNC:LastName
     name:
       type: STRING
     phone_number:
       type: STRING
+      autofill: FUNC:PhoneFormatted
     instructions:
       type: STRING
+      autofill: FUNC:Phrase
     company_name:
       type: STRING
+      autofill: FUNC:Company
     line_1:
       type: STRING
+      autofill: FUNC:Street
     line_2:
       type: STRING
     city:
       type: STRING
+      autofill: FUNC:City
     county:
       type: STRING
+      autofill: FUNC:StateAbr
+    region:
+      type: STRING
+      autofill: FUNC:StateAbr
     postcode:
       type: STRING
+      autofill: FUNC:Zip
     country:
       type: STRING
+      autofill: FUNC:CountryAbr
 customer-tokens:
   singular-name: "customer-token"
   json-api-type: "token"
@@ -491,12 +562,15 @@ flows:
   attributes:
     enabled:
       type: BOOL
+      autofill: VALUE:true
     description:
       type: STRING
+      autofill: VALUE:Auto Generated
     slug:
       type: STRING
     name:
       type: STRING
+      autofill: VALUE:Auto Generated
 fields:
   singular-name: "field"
   json-api-type: "field"
@@ -521,22 +595,27 @@ fields:
   attributes:
     name:
       type: STRING
+      autofill: VALUE:Auto Generated
     slug:
       type: STRING
     field_type:
       type: ENUM:string,integer,boolean,float,date,relationship
     description:
       type: STRING
+      autofill: VALUE:Auto Generated
     required:
       type: BOOL
+      autofill: VALUE:true
     default:
       type: STRING
     enabled:
       type: BOOL
+      autofill: VALUE:true
     order:
       type: INT
     omit_null:
       type: BOOL
+      autofill: VALUE:true
     validation_rules[n].type:
       type: ENUM:enum,email,slug,between,one-to-many,one-to-one
     validation_rules[n].options:
@@ -549,8 +628,10 @@ fields:
       type: STRING
     relationships.flow.data.type:
       type: ENUM:flow
+      autofill: VALUE:flow
     relationships.flow.data.id:
       type: RESOURCE_ID:flows
+
 flow-fields:
   singular-name: "flow-field"
   json-api-type: "field"
@@ -705,10 +786,12 @@ integrations:
   attributes:
     enabled:
       type: BOOL
+      autofill: VALUE:true
     integration_type:
       type: ENUM:webhook,aws_sqs
     description:
       type: STRING
+      autofill: VALUE:Auto Generated
     name:
       type: STRING
     configuration.url:
@@ -851,18 +934,22 @@ orders:
       type: STRING
     shipping_address.last_name:
       type: STRING
+    shipping_address.company_name:
+      type: STRING
     shipping_address.line_1:
       type: STRING
-    shipping_address.postcode:
+    shipping_address.line_2:
+      type: STRING
+    shipping_address.city:
       type: STRING
     shipping_address.county:
       type: STRING
+    shipping_address.region:
+      type: STRING
+    shipping_address.postcode:
+      type: STRING
     shipping_address.country:
       type: STRING
-    status:
-      type: ENUM:cancelled
-    shipping:
-      type: ENUM:fulfilled
 order-items:
   singular-name: "order-item"
   json-api-type: "order_item"
@@ -1441,18 +1528,23 @@ pcm-products:
   attributes:
     name:
       type: STRING
+      autofill: FUNC:CarModel
     commodity_type:
       type: ENUM:physical,digital
+      autofill: VALUE:physical
     sku:
       type: STRING
+      autofill: FUNC:BuzzWord
     slug:
       type: STRING
     description:
       type: STRING
+      autofill: VALUE:Auto Generated
     mpn:
       type: STRING
     status:
       type: ENUM:draft,live
+      autofill: VALUE:live
     upc_ean:
       type: STRING
     locales.en-US.name:
@@ -1683,7 +1775,6 @@ personal-data-related-data-entries:
       type: JSON_API_TYPE
     resource_id:
       type: STRING
-
 personal-data-erasure-requests:
   singular-name:  "personal-data-erasure-request"
   json-api-type: "erasure_request"
@@ -1703,7 +1794,6 @@ personal-data-erasure-requests:
       type: JSON_API_TYPE
     resource_id:
       type: STRING
-
 promotion-codes:
   singular-name: "promotion-code"
   json-api-type: "promotion_codes"
@@ -1756,6 +1846,7 @@ promotions:
       type: STRING
     enabled:
       type: BOOL
+      autofill: VALUE:True
     automatic:
       type: BOOL
     promotion_type:
@@ -1828,8 +1919,10 @@ user-authentication-infos:
   attributes:
     name:
       type: STRING
+      autofill: FUNC:Name
     email:
       type: STRING
+      autofill: FUNC:Email
 user-authentication-oidc-profile-infos:
   singular-name: "user-authentication-oidc-profile-info"
   json-api-type: "user_authentication_oidc_profile_info"
@@ -1882,8 +1975,10 @@ user-authentication-password-profile-infos:
   attributes:
     username:
       type: STRING
+      autofill: FUNC:Email
     password:
       type: STRING
+      autofill: FUNC:UUID
     password_profile_id:
       type: RESOURCE_ID:password-profiles
 v2-brands:
@@ -1981,8 +2076,6 @@ v2-collections:
       type: ENUM:live,draft
     id:
       type: RESOURCE_ID:v2-collections
-
-
 v2-products:
   singular-name: "v2-product"
   json-api-type: "product"

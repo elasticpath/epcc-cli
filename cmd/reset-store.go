@@ -16,52 +16,17 @@ import (
 	"strings"
 )
 
+var DeleteApplicationKeys = true
+
 var ResetStore = &cobra.Command{
 	Use:   "reset-store [STORE_ID]",
 	Short: "Resets a store to it's initial state on a \"best effort\" basis.",
 	Long:  "This command resets a store to it's initial state. There are some limitations to this as for instance orders cannot be deleted, nor can audit entries.",
 	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		resource, ok := resources.GetResourceByName("customer-authentication-settings")
-
-		if !ok {
-			return fmt.Errorf("could not find resource %s, we need it to determine the store id.", args[0])
-		}
-
-		resourceURL, err := resources.GenerateUrl(resource.GetCollectionInfo, make([]string, 0))
-
+		storeId, err := getStoreId(args)
 		if err != nil {
-			return err
-		}
-
-		params := url.Values{}
-
-		resp, err := httpclient.DoRequest(context.Background(), "GET", resourceURL, params.Encode(), nil)
-
-		defer resp.Body.Close()
-
-		body, err := io.ReadAll(resp.Body)
-
-		if err != nil {
-			return err
-		}
-
-		var jsonStruct = map[string]interface{}{}
-		err = gojson.Unmarshal(body, &jsonStruct)
-		if err != nil {
-			return err
-		}
-
-		storeIdInterface, err := json.RunJQ(".data.id", jsonStruct)
-
-		if err != nil {
-			return err
-		}
-
-		storeId, ok := storeIdInterface.(string)
-
-		if !ok {
-			return fmt.Errorf("Could not retrieve store id, could not cast result to string %T => %v", storeIdInterface, storeIdInterface)
+			return fmt.Errorf("could not determine store id: %w", err)
 		}
 
 		// We secretly support regexes for this command, it is undocumented however
@@ -91,6 +56,12 @@ var ResetStore = &cobra.Command{
 		}
 
 		_, err = getInternal([]string{"account-authentication-settings"})
+
+		if err != nil {
+			errors = append(errors, err.Error())
+		}
+
+		_, err = getInternal([]string{"merchant-realm-mappings"})
 
 		if err != nil {
 			errors = append(errors, err.Error())
@@ -128,6 +99,51 @@ var ResetStore = &cobra.Command{
 		return nil
 
 	},
+}
+
+func getStoreId(args []string) (string, error) {
+	resource, ok := resources.GetResourceByName("settings")
+
+	if !ok {
+		return "", fmt.Errorf("could not find resource %s, we need it to determine the store id.", args[0])
+	}
+
+	resourceURL, err := resources.GenerateUrl(resource.GetCollectionInfo, make([]string, 0))
+
+	if err != nil {
+		return "", err
+	}
+
+	params := url.Values{}
+
+	resp, err := httpclient.DoRequest(context.Background(), "GET", resourceURL, params.Encode(), nil)
+
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+
+	if err != nil {
+		return "", err
+	}
+
+	var jsonStruct = map[string]interface{}{}
+	err = gojson.Unmarshal(body, &jsonStruct)
+	if err != nil {
+		return "", err
+	}
+
+	storeIdInterface, err := json.RunJQ(".data.id", jsonStruct)
+
+	if err != nil {
+		return "", err
+	}
+
+	storeId, ok := storeIdInterface.(string)
+
+	if !ok {
+		return "", fmt.Errorf("Could not retrieve store id, could not cast result to string %T => %v", storeIdInterface, storeIdInterface)
+	}
+	return storeId, nil
 }
 
 func resetResourcesUndeletableResources() (error, []string) {
@@ -169,6 +185,8 @@ func resetResourcesUndeletableResources() (error, []string) {
 func deleteAllResourceData(resourceNames []string) (error, []string) {
 	noGetCollectionEndpoint := make([]string, 0)
 	noDeleteEndpoint := make([]string, 0)
+	ignoredEndpoints := make([]string, 0)
+
 	maxDepth := 0
 	errors := make([]string, 0)
 
@@ -200,6 +218,10 @@ func deleteAllResourceData(resourceNames []string) (error, []string) {
 			continue
 		}
 
+		if !DeleteApplicationKeys && resource.PluralName == "application-keys" {
+			ignoredEndpoints = append(ignoredEndpoints, "application-keys")
+		}
+
 		myDepth, err := resources.GetNumberOfVariablesNeeded(resource.GetCollectionInfo.Url)
 
 		if err != nil {
@@ -212,9 +234,6 @@ func deleteAllResourceData(resourceNames []string) (error, []string) {
 	}
 
 	log.Infof("Maximum depth of any resource is %d", maxDepth)
-
-	sort.Strings(noGetCollectionEndpoint)
-	sort.Strings(noDeleteEndpoint)
 
 	for depth := maxDepth; depth >= 0; depth -= 1 {
 		log.Infof("Processing all resources with depth %d", depth)
@@ -230,6 +249,10 @@ func deleteAllResourceData(resourceNames []string) (error, []string) {
 			}
 
 			if resource.DeleteEntityInfo == nil {
+				continue
+			}
+
+			if resource.PluralName == "application-keys" && !DeleteApplicationKeys {
 				continue
 			}
 
@@ -253,7 +276,10 @@ func deleteAllResourceData(resourceNames []string) (error, []string) {
 
 	sort.Strings(noGetCollectionEndpoint)
 	sort.Strings(noDeleteEndpoint)
+	sort.Strings(ignoredEndpoints)
+
 	log.Infof("The following %d resources were not deleted because we have no way to get a collection: %s", len(noGetCollectionEndpoint), strings.Join(noGetCollectionEndpoint, ", "))
 	log.Infof("The following %d resources were not deleted because we have no way to delete an element: %s", len(noDeleteEndpoint), strings.Join(noDeleteEndpoint, ", "))
+	log.Infof("The following %d resources were not deleted because they were ignored: %s", len(ignoredEndpoints), strings.Join(ignoredEndpoints, ", "))
 	return nil, errors
 }

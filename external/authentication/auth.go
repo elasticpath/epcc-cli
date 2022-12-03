@@ -34,6 +34,8 @@ var noTokenWarningMutex = sync.RWMutex{}
 
 var noTokenWarningMessageLogged = false
 
+var getTokenMutex = sync.Mutex{}
+
 func GetAuthenticationToken(useTokenFromProfileDir bool, valuesOverride *url.Values) (*ApiTokenResponse, error) {
 
 	if useTokenFromProfileDir {
@@ -45,11 +47,21 @@ func GetAuthenticationToken(useTokenFromProfileDir bool, valuesOverride *url.Val
 			// Use cached authentication (but clone first)
 			bearerCopy := *bearerToken
 			return &bearerCopy, nil
+		}
+	}
+
+	getTokenMutex.Lock()
+	defer getTokenMutex.Unlock()
+
+	if bearerToken != nil {
+		if time.Now().Unix()+60 < bearerToken.Expires {
+			// Use cached authentication (but clone first)
+			bearerCopy := *bearerToken
+			return &bearerCopy, nil
 		} else {
 			// TODO This will also happen a bunch of times in concurrent goroutines
 			log.Infof("Existing token has expired (or will very soon), refreshing. Token expiry is at %s", time.Unix(bearerToken.Expires, 0).Format(time.RFC1123Z))
 		}
-
 	}
 
 	requestValues := valuesOverride

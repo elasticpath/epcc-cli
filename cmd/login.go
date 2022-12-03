@@ -7,6 +7,7 @@ import (
 	"github.com/elasticpath/epcc-cli/external/authentication"
 	"github.com/elasticpath/epcc-cli/external/browser"
 	"github.com/elasticpath/epcc-cli/external/completion"
+	"github.com/elasticpath/epcc-cli/external/crud"
 	"github.com/elasticpath/epcc-cli/external/json"
 	"github.com/elasticpath/epcc-cli/external/resources"
 	log "github.com/sirupsen/logrus"
@@ -276,7 +277,7 @@ var loginCustomer = &cobra.Command{
 		newArgs = append(newArgs, "customer-token")
 		newArgs = append(newArgs, args...)
 
-		body, err := createInternal(newArgs)
+		body, err := createInternal(newArgs, crud.AutoFillOnCreate)
 
 		if err != nil {
 			log.Warnf("Login not completed successfully")

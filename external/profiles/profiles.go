@@ -41,7 +41,7 @@ func GetProfileDataDirectory() string {
 
 func GetConfigFilePath() string {
 	configPath := GetProfileDirectory()
-	configPath = filepath.Clean(filepath.FromSlash(configPath + "/../config"))
+	configPath = filepath.Clean(filepath.FromSlash(configPath + "/config"))
 	if _, err := os.Stat(configPath); err != nil {
 		log.Trace("could not find file at " + configPath)
 		file, err := os.Create(configPath)
