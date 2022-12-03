@@ -1,0 +1,20 @@
+{
+  "priority": "1",
+  "request": {
+    "method": "POST",
+    "urlPattern": "/oauth/access_token$"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "expires": 1999999999,
+      "identifier": "client_credentials",
+      "expires_in": 100000000,
+      "access_token": "0011223344556677889900112233445566778899",
+      "token_type": "Bearer"
+    }
+  }
+}

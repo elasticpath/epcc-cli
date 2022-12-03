@@ -1,0 +1,18 @@
+{
+  "priority": 100,
+  "request": {
+    "method": "PUT",
+    "urlPattern": "/v2(/[a-zA-Z-_]*)*/[a-zA-Z-_]+/[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}/?$"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "bodyFileName": "generic-entity-get-body.json",
+    "transformers": ["response-template", "body-transformer"],
+    "transformerParameters": {
+      "urlRegex": ".*/(?<type>[^/]+)/(?<id>[^/]+)/?$"
+    }
+  }
+}

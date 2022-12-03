@@ -1,0 +1,10 @@
+{
+  "data": {
+    "id": "{{randomValue type='UUID'}}",
+    "type": "customer",
+    "name": "{{jsonPath request.body '$.data.name'}}",
+    "email": "{{jsonPath request.body '$.data.email'}}",
+    "password": true
+  }
+}
+

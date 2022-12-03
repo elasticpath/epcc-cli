@@ -24,7 +24,7 @@ var create = &cobra.Command{
 	Short: "Creates an entity of a resource.",
 	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		body, err := createInternal(args, crud.AutoFillOnCreate)
+		body, err := createInternal(context.Background(), args, crud.AutoFillOnCreate)
 
 		if err != nil {
 			return err
@@ -92,7 +92,10 @@ var create = &cobra.Command{
 	},
 }
 
-func createInternal(args []string, autoFillOnCreate bool) (string, error) {
+func createInternal(ctx context.Context, args []string, autoFillOnCreate bool) (string, error) {
+	crud.OutstandingRequestCounter.Add(1)
+	defer crud.OutstandingRequestCounter.Done()
+
 	// Find Resource
 	resource, ok := resources.GetResourceByName(args[0])
 	if !ok {
@@ -135,7 +138,7 @@ func createInternal(args []string, autoFillOnCreate bool) (string, error) {
 		}
 
 		// Submit request
-		resp, err = httpclient.DoFileRequest(context.TODO(), resourceURL, byteBuf, contentType)
+		resp, err = httpclient.DoFileRequest(ctx, resourceURL, byteBuf, contentType)
 
 	} else {
 		// Assume it's application/json
@@ -169,7 +172,7 @@ func createInternal(args []string, autoFillOnCreate bool) (string, error) {
 		}
 
 		// Submit request
-		resp, err = httpclient.DoRequest(context.TODO(), "POST", resourceURL, params.Encode(), strings.NewReader(body))
+		resp, err = httpclient.DoRequest(ctx, "POST", resourceURL, params.Encode(), strings.NewReader(body))
 
 	}
 

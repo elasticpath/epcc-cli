@@ -9,11 +9,13 @@ import (
 	"github.com/elasticpath/epcc-cli/external/resources"
 	"github.com/elasticpath/epcc-cli/external/runbooks"
 	_ "github.com/elasticpath/epcc-cli/external/runbooks"
+	"github.com/elasticpath/epcc-cli/external/shutdown"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"golang.org/x/sync/semaphore"
 	"strconv"
 	"strings"
+	"sync/atomic"
 	"time"
 )
 
@@ -30,6 +32,8 @@ func initRunbookCommands() {
 	runbookGlobalCmd.AddCommand(initRunbookShowCommands())
 	runbookGlobalCmd.AddCommand(initRunbookRunCommands())
 }
+
+var AbortRunbookExecution = atomic.Bool{}
 
 func initRunbookShowCommands() *cobra.Command {
 
@@ -139,6 +143,10 @@ func initRunbookRunCommands() *cobra.Command {
 				RunE: func(cmd *cobra.Command, args []string) error {
 					numSteps := len(runbookAction.RawCommands)
 
+					parentCtx := context.Background()
+
+					ctx, cancelFunc := context.WithCancel(parentCtx)
+
 					for stepIdx, rawCmd := range runbookAction.RawCommands {
 
 						// Create a copy of loop variables
@@ -185,7 +193,7 @@ func initRunbookRunCommands() *cobra.Command {
 								case "get":
 									funcs = append(funcs, func() {
 
-										body, err := getInternal(rawCmdArguments[2:])
+										body, err := getInternal(ctx, rawCmdArguments[2:])
 
 										// We print "get" calls because they don't do anything useful (well I guess they populate aliases)
 										json.PrintJson(body)
@@ -198,7 +206,7 @@ func initRunbookRunCommands() *cobra.Command {
 								case "delete":
 									funcs = append(funcs, func() {
 
-										_, err := deleteInternal(rawCmdArguments[2:])
+										_, err := deleteInternal(ctx, rawCmdArguments[2:])
 
 										commandResult.error = err
 
@@ -207,7 +215,7 @@ func initRunbookRunCommands() *cobra.Command {
 									})
 								case "delete-all":
 									funcs = append(funcs, func() {
-										err := deleteAllInternal(rawCmdArguments[2:])
+										err := deleteAllInternal(ctx, rawCmdArguments[2:])
 										commandResult.error = err
 										resultChan <- commandResult
 									})
@@ -217,9 +225,9 @@ func initRunbookRunCommands() *cobra.Command {
 										var err error = nil
 
 										if len(rawCmdArguments) >= 3 && rawCmdArguments[2] == "--auto-fill" {
-											_, err = createInternal(rawCmdArguments[3:], true)
+											_, err = createInternal(ctx, rawCmdArguments[3:], true)
 										} else {
-											_, err = createInternal(rawCmdArguments[2:], false)
+											_, err = createInternal(ctx, rawCmdArguments[2:], false)
 										}
 
 										commandResult.error = err
@@ -227,7 +235,7 @@ func initRunbookRunCommands() *cobra.Command {
 									})
 								case "update":
 									funcs = append(funcs, func() {
-										_, err := updateInternal(rawCmdArguments[2:])
+										_, err := updateInternal(ctx, rawCmdArguments[2:])
 										commandResult.error = err
 
 										resultChan <- commandResult
@@ -255,7 +263,13 @@ func initRunbookRunCommands() *cobra.Command {
 
 						// Start processing all the functions
 						go func() {
-							for _, fn := range funcs {
+							for idx, fn := range funcs {
+								if shutdown.ShutdownFlag.Load() {
+									log.Infof("Aborting runbook execution, after %d scheduled executions", idx)
+									cancelFunc()
+									break
+								}
+
 								fn := fn
 								semaphore.Acquire(context.TODO(), 1)
 								go func() {
@@ -269,11 +283,16 @@ func initRunbookRunCommands() *cobra.Command {
 						for i := 0; i < len(funcs); i++ {
 							select {
 							case result := <-resultChan:
-								if result.error != nil {
-									log.Warnf("(Step %d/%d Command %d/%d) %v", result.stepIdx+1, numSteps, result.commandIdx+1, len(funcs), fmt.Errorf("error processing command [%s], %w", result.commandLine, err))
-									errorCount++
+								if !shutdown.ShutdownFlag.Load() {
+									if result.error != nil {
+										log.Warnf("(Step %d/%d Command %d/%d) %v", result.stepIdx+1, numSteps, result.commandIdx+1, len(funcs), fmt.Errorf("error processing command [%s], %w", result.commandLine, result.error))
+										errorCount++
+									} else {
+										log.Debugf("(Step %d/%d Command %d/%d) finished successfully ", result.stepIdx+1, numSteps, result.commandIdx+1, len(funcs))
+									}
 								} else {
-									log.Debugf("(Step %d/%d Command %d/%d) finished successfully ", result.stepIdx+1, numSteps, result.commandIdx+1, len(funcs))
+									log.Tracef("Shutdown flag enabled, completion result %v", result)
+									cancelFunc()
 								}
 							case <-time.After(time.Duration(*execTimeoutInSeconds) * time.Second):
 								return fmt.Errorf("timeout of %d seconds reached, only %d of %d commands finished of step %d/%d", *execTimeoutInSeconds, i+1, len(funcs), stepIdx+1, numSteps)
@@ -289,6 +308,7 @@ func initRunbookRunCommands() *cobra.Command {
 							return fmt.Errorf("error occurred while processing script aborting")
 						}
 					}
+					defer cancelFunc()
 					return nil
 				},
 			}

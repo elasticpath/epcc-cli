@@ -15,7 +15,7 @@ func TestSavedAliasIsReturnedInAllAliasesForSingleResponse(t *testing.T) {
 	// Fixture Setup
 	err := ClearAllAliases()
 	if err != nil {
-		t.Fatalf("Could not clear aliases")
+		t.Fatalf("Could not clear typeToAliasNameToIdMap")
 	}
 
 	// Execute SUT
@@ -32,7 +32,7 @@ func TestSavedAliasIsReturnedInAllAliasesForSingleResponse(t *testing.T) {
 	aliases := GetAliasesForJsonApiTypeAndAlternates("foo", []string{})
 
 	// Verification
-	require.Len(t, aliases, 2, "There should be %d aliases in map not %d", 2, len(aliases))
+	require.Len(t, aliases, 2, "There should be %d typeToAliasNameToIdMap in map not %d", 2, len(aliases))
 
 	require.Contains(t, aliases, "id=123")
 	require.Equal(t, "123", aliases["id=123"].Id)
@@ -46,7 +46,7 @@ func TestSavedAliasAppendsAndPreservesPreviousUnrelatedAliases(t *testing.T) {
 	// Fixture Setup
 	err := ClearAllAliases()
 	if err != nil {
-		t.Fatalf("Could not clear aliases")
+		t.Fatalf("Could not clear typeToAliasNameToIdMap")
 	}
 
 	// Execute SUT
@@ -73,7 +73,7 @@ func TestSavedAliasAppendsAndPreservesPreviousUnrelatedAliases(t *testing.T) {
 
 	// Verification
 
-	require.Len(t, aliases, 3, "There should be %d aliases in map not %d", 3, len(aliases))
+	require.Len(t, aliases, 3, "There should be %d typeToAliasNameToIdMap in map not %d", 3, len(aliases))
 
 	require.Contains(t, aliases, "id=123")
 	require.Equal(t, "123", aliases["id=123"].Id)
@@ -90,7 +90,7 @@ func TestSavedAliasIsReplacedWhenNewEntityHasTheSameAttributeValue(t *testing.T)
 	// Fixture Setup
 	err := ClearAllAliases()
 	if err != nil {
-		t.Fatalf("Could not clear aliases")
+		t.Fatalf("Could not clear typeToAliasNameToIdMap")
 	}
 
 	// Execute SUT
@@ -119,7 +119,7 @@ func TestSavedAliasIsReplacedWhenNewEntityHasTheSameAttributeValue(t *testing.T)
 
 	// Verification
 
-	require.Len(t, aliases, 4, "There should be %d aliases in map not %d", 4, len(aliases))
+	require.Len(t, aliases, 4, "There should be %d typeToAliasNameToIdMap in map not %d", 4, len(aliases))
 
 	require.Contains(t, aliases, "id=123")
 	require.Equal(t, "123", aliases["id=123"].Id)
@@ -139,7 +139,7 @@ func TestSavedAliasIsReplacedWhenSameEntityHasANewValue(t *testing.T) {
 	// Fixture Setup
 	err := ClearAllAliases()
 	if err != nil {
-		t.Fatalf("Could not clear aliases")
+		t.Fatalf("Could not clear typeToAliasNameToIdMap")
 	}
 
 	// Execute SUT
@@ -168,7 +168,7 @@ func TestSavedAliasIsReplacedWhenSameEntityHasANewValue(t *testing.T) {
 
 	// Verification
 
-	require.Len(t, aliases, 3, "There should be %d aliases in map not %d", 3, len(aliases))
+	require.Len(t, aliases, 3, "There should be %d typeToAliasNameToIdMap in map not %d", 3, len(aliases))
 
 	require.Contains(t, aliases, "id=123")
 	require.Equal(t, "123", aliases["id=123"].Id)
@@ -179,12 +179,117 @@ func TestSavedAliasIsReplacedWhenSameEntityHasANewValue(t *testing.T) {
 	require.Equal(t, "123", aliases["last_read=entity"].Id)
 }
 
+func TestThatLastReadAliasesAreNotReplacedWhenSeenInADifferentContext(t *testing.T) {
+
+	// Fixture Setup
+	err := ClearAllAliases()
+	if err != nil {
+		t.Fatalf("Could not clear typeToAliasNameToIdMap")
+	}
+
+	// Execute SUT
+	SaveAliasesForResources(
+		// language=JSON
+		`
+{
+	"data": {
+		"id": "123",
+		"type": "foo",
+		"name": "Alpha"
+	}
+}`)
+	SaveAliasesForResources(
+		// language=JSON
+		`
+{	
+	"data": [{
+		"id": "123",
+		"type": "foo",
+		"name":"Beta"
+		}]
+}`)
+
+	aliases := GetAliasesForJsonApiTypeAndAlternates("foo", []string{})
+
+	// Verification
+
+	require.Len(t, aliases, 4, "There should be %d typeToAliasNameToIdMap in map not %d", 3, len(aliases))
+
+	require.Contains(t, aliases, "id=123")
+	require.Equal(t, "123", aliases["id=123"].Id)
+
+	require.Contains(t, aliases, "name=Beta")
+	require.Equal(t, "123", aliases["name=Beta"].Id)
+	require.Contains(t, aliases, "last_read=entity")
+	require.Equal(t, "123", aliases["last_read=entity"].Id)
+	require.Contains(t, aliases, "last_read=array[0]")
+	require.Equal(t, "123", aliases["last_read=array[0]"].Id)
+}
+
 func TestDeleteAliasByIdDeletesAnAlias(t *testing.T) {
 
 	// Fixture Setup
 	err := ClearAllAliases()
 	if err != nil {
-		t.Fatalf("Could not clear aliases")
+		t.Fatalf("Could not clear typeToAliasNameToIdMap")
+	}
+	SaveAliasesForResources(
+		// language=JSON
+		`
+{
+	"data": {
+		"id": "123",
+		"type": "foo",
+		"name": "Steve",
+		"sku": "456",
+		"slug": "foo-123"
+	}
+}`)
+	SaveAliasesForResources(
+		// language=JSON
+		`
+{
+	"data": {
+		"id": "456",
+		"type": "foo",
+		"name": "Steve",
+		"sku": "456",
+		"slug": "foo-456"
+	}
+}`)
+
+	// Execute SUT
+
+	DeleteAliasesById("123", "foo")
+
+	aliases := GetAliasesForJsonApiTypeAndAlternates("foo", []string{})
+
+	// Verification
+
+	require.Len(t, aliases, 5, "There should be %d typeToAliasNameToIdMap in map not %d", 5, len(aliases))
+
+	require.Contains(t, aliases, "id=456")
+	require.Equal(t, "456", aliases["id=456"].Id)
+
+	require.Contains(t, aliases, "last_read=entity")
+	require.Equal(t, "456", aliases["last_read=entity"].Id)
+
+	require.Contains(t, aliases, "name=Steve")
+	require.Equal(t, "456", aliases["name=Steve"].Id)
+
+	require.Contains(t, aliases, "sku=456")
+	require.Equal(t, "456", aliases["sku=456"].Id)
+
+	require.Contains(t, aliases, "slug=foo-456")
+	require.Equal(t, "456", aliases["slug=foo-456"].Id)
+}
+
+func TestDeleteAliasByIdDeletesAnAliasOnly(t *testing.T) {
+
+	// Fixture Setup
+	err := ClearAllAliases()
+	if err != nil {
+		t.Fatalf("Could not clear typeToAliasNameToIdMap")
 	}
 	SaveAliasesForResources(
 		// language=JSON
@@ -213,7 +318,7 @@ func TestDeleteAliasByIdDeletesAnAlias(t *testing.T) {
 
 	// Verification
 
-	require.Len(t, aliases, 2, "There should be %d aliases in map not %d", 2, len(aliases))
+	require.Len(t, aliases, 2, "There should be %d typeToAliasNameToIdMap in map not %d", 2, len(aliases))
 
 	require.Contains(t, aliases, "id=456")
 	require.Equal(t, "456", aliases["id=456"].Id)
@@ -227,7 +332,7 @@ func TestAllAliasesAreReturnedInAllAliasesForArrayResponse(t *testing.T) {
 	// Fixture Setup
 	err := ClearAllAliases()
 	if err != nil {
-		t.Fatalf("Could not clear aliases")
+		t.Fatalf("Could not clear typeToAliasNameToIdMap")
 	}
 
 	// Execute SUT
@@ -250,7 +355,7 @@ func TestAllAliasesAreReturnedInAllAliasesForArrayResponse(t *testing.T) {
 
 	// Verification
 
-	require.Len(t, aliases, 4, "There should be %d aliases in map not %d", 4, len(aliases))
+	require.Len(t, aliases, 4, "There should be %d typeToAliasNameToIdMap in map not %d", 4, len(aliases))
 
 	require.Contains(t, aliases, "id=123")
 	require.Equal(t, "123", aliases["id=123"].Id)
@@ -270,7 +375,7 @@ func TestSavedAliasIsReturnedForAnEmailInLegacyObjectResponse(t *testing.T) {
 	// Fixture Setup
 	err := ClearAllAliases()
 	if err != nil {
-		t.Fatalf("Could not clear aliases")
+		t.Fatalf("Could not clear typeToAliasNameToIdMap")
 	}
 
 	// Execute SUT
@@ -289,7 +394,7 @@ func TestSavedAliasIsReturnedForAnEmailInLegacyObjectResponse(t *testing.T) {
 
 	// Verification
 
-	require.Len(t, aliases, 3, "There should be %d aliases in map not %d", 3, len(aliases))
+	require.Len(t, aliases, 3, "There should be %d typeToAliasNameToIdMap in map not %d", 3, len(aliases))
 
 	require.Contains(t, aliases, "email=test@test.com")
 	require.Equal(t, "123", aliases["email=test@test.com"].Id)
@@ -306,7 +411,7 @@ func TestSavedAliasIsReturnedForAnSkuInLegacyObjectResponse(t *testing.T) {
 	// Fixture Setup
 	err := ClearAllAliases()
 	if err != nil {
-		t.Fatalf("Could not clear aliases")
+		t.Fatalf("Could not clear typeToAliasNameToIdMap")
 	}
 
 	// Execute SUT
@@ -325,7 +430,7 @@ func TestSavedAliasIsReturnedForAnSkuInLegacyObjectResponse(t *testing.T) {
 
 	// Verification
 
-	require.Len(t, aliases, 3, "There should be %d aliases in map not %d", 3, len(aliases))
+	require.Len(t, aliases, 3, "There should be %d typeToAliasNameToIdMap in map not %d", 3, len(aliases))
 
 	require.Contains(t, aliases, "sku=test")
 	require.Equal(t, "123", aliases["sku=test"].Id)
@@ -351,7 +456,7 @@ func TestSavedAliasIsReturnedForAnCodeInLegacyObjectResponse(t *testing.T) {
 	// Fixture Setup
 	err := ClearAllAliases()
 	if err != nil {
-		t.Fatalf("Could not clear aliases")
+		t.Fatalf("Could not clear typeToAliasNameToIdMap")
 	}
 
 	// Execute SUT
@@ -370,7 +475,7 @@ func TestSavedAliasIsReturnedForAnCodeInLegacyObjectResponse(t *testing.T) {
 
 	// Verification
 
-	require.Len(t, aliases, 3, "There should be %d aliases in map not %d", 3, len(aliases))
+	require.Len(t, aliases, 3, "There should be %d typeToAliasNameToIdMap in map not %d", 3, len(aliases))
 
 	require.Contains(t, aliases, "code=hello")
 	require.Equal(t, "123", aliases["code=hello"].Id)
@@ -396,7 +501,7 @@ func TestSavedAliasIsReturnedForASlugInLegacyObjectResponse(t *testing.T) {
 	// Fixture Setup
 	err := ClearAllAliases()
 	if err != nil {
-		t.Fatalf("Could not clear aliases")
+		t.Fatalf("Could not clear typeToAliasNameToIdMap")
 	}
 
 	// Execute SUT
@@ -415,7 +520,7 @@ func TestSavedAliasIsReturnedForASlugInLegacyObjectResponse(t *testing.T) {
 
 	// Verification
 
-	require.Len(t, aliases, 3, "There should be %d aliases in map not %d", 3, len(aliases))
+	require.Len(t, aliases, 3, "There should be %d typeToAliasNameToIdMap in map not %d", 3, len(aliases))
 
 	require.Contains(t, aliases, "slug=test")
 	require.Equal(t, "123", aliases["slug=test"].Id)
@@ -441,7 +546,7 @@ func TestSavedAliasIsReturnedForANameInLegacyObjectResponse(t *testing.T) {
 	// Fixture Setup
 	err := ClearAllAliases()
 	if err != nil {
-		t.Fatalf("Could not clear aliases")
+		t.Fatalf("Could not clear typeToAliasNameToIdMap")
 	}
 
 	// Execute SUT
@@ -460,7 +565,7 @@ func TestSavedAliasIsReturnedForANameInLegacyObjectResponse(t *testing.T) {
 
 	// Verification
 
-	require.Len(t, aliases, 3, "There should be %d aliases in map not %d", 3, len(aliases))
+	require.Len(t, aliases, 3, "There should be %d typeToAliasNameToIdMap in map not %d", 3, len(aliases))
 
 	require.Contains(t, aliases, "name=Test_Testerson")
 	require.Equal(t, "123", aliases["name=Test_Testerson"].Id)
@@ -478,7 +583,7 @@ func TestSavedAliasIsReturnedForAnEmailInComplaintObjectResponse(t *testing.T) {
 	// Fixture Setup
 	err := ClearAllAliases()
 	if err != nil {
-		t.Fatalf("Could not clear aliases")
+		t.Fatalf("Could not clear typeToAliasNameToIdMap")
 	}
 
 	// Execute SUT
@@ -499,7 +604,7 @@ func TestSavedAliasIsReturnedForAnEmailInComplaintObjectResponse(t *testing.T) {
 
 	// Verification
 
-	require.Len(t, aliases, 3, "There should be %d aliases in map not %d", 3, len(aliases))
+	require.Len(t, aliases, 3, "There should be %d typeToAliasNameToIdMap in map not %d", 3, len(aliases))
 
 	require.Contains(t, aliases, "email=test@test.com")
 	require.Equal(t, "123", aliases["email=test@test.com"].Id)
@@ -517,7 +622,7 @@ func TestSavedAliasIsReturnedForAnSkuInComplaintObjectResponse(t *testing.T) {
 	// Fixture Setup
 	err := ClearAllAliases()
 	if err != nil {
-		t.Fatalf("Could not clear aliases")
+		t.Fatalf("Could not clear typeToAliasNameToIdMap")
 	}
 
 	// Execute SUT
@@ -538,7 +643,7 @@ func TestSavedAliasIsReturnedForAnSkuInComplaintObjectResponse(t *testing.T) {
 
 	// Verification
 
-	require.Len(t, aliases, 3, "There should be %d aliases in map not %d", 3, len(aliases))
+	require.Len(t, aliases, 3, "There should be %d typeToAliasNameToIdMap in map not %d", 3, len(aliases))
 
 	require.Contains(t, aliases, "sku=test")
 	require.Equal(t, "123", aliases["sku=test"].Id)
@@ -564,7 +669,7 @@ func TestSavedAliasIsReturnedForASlugInComplaintObjectResponse(t *testing.T) {
 	// Fixture Setup
 	err := ClearAllAliases()
 	if err != nil {
-		t.Fatalf("Could not clear aliases")
+		t.Fatalf("Could not clear typeToAliasNameToIdMap")
 	}
 
 	// Execute SUT
@@ -585,7 +690,7 @@ func TestSavedAliasIsReturnedForASlugInComplaintObjectResponse(t *testing.T) {
 
 	// Verification
 
-	require.Len(t, aliases, 3, "There should be %d aliases in map not %d", 3, len(aliases))
+	require.Len(t, aliases, 3, "There should be %d typeToAliasNameToIdMap in map not %d", 3, len(aliases))
 
 	require.Contains(t, aliases, "slug=test")
 	require.Equal(t, "123", aliases["slug=test"].Id)
@@ -611,7 +716,7 @@ func TestSavedAliasIsReturnedForANameInComplaintObjectResponse(t *testing.T) {
 	// Fixture Setup
 	err := ClearAllAliases()
 	if err != nil {
-		t.Fatalf("Could not clear aliases")
+		t.Fatalf("Could not clear typeToAliasNameToIdMap")
 	}
 
 	// Execute SUT
@@ -632,7 +737,7 @@ func TestSavedAliasIsReturnedForANameInComplaintObjectResponse(t *testing.T) {
 
 	// Verification
 
-	require.Len(t, aliases, 3, "There should be %d aliases in map not %d", 3, len(aliases))
+	require.Len(t, aliases, 3, "There should be %d typeToAliasNameToIdMap in map not %d", 3, len(aliases))
 
 	require.Contains(t, aliases, "name=Test_Testerson")
 	require.Equal(t, "123", aliases["name=Test_Testerson"].Id)
@@ -648,7 +753,7 @@ func TestSavedAliasIsReturnedForANameInComplaintObjectResponse(t *testing.T) {
 func TestSavedAliasIsReturnedForARelationshipObjectInArrayResponse(t *testing.T) {
 	err := ClearAllAliases()
 	if err != nil {
-		t.Fatalf("Could not clear aliases")
+		t.Fatalf("Could not clear typeToAliasNameToIdMap")
 	}
 
 	// Execute SUT
@@ -686,7 +791,7 @@ func TestSavedAliasIsReturnedForARelationshipObjectInArrayResponse(t *testing.T)
 
 	aliases := GetAliasesForJsonApiTypeAndAlternates("bar", []string{})
 
-	require.Len(t, aliases, 8, "There should be %d aliases in map not %d", 8, len(aliases))
+	require.Len(t, aliases, 8, "There should be %d typeToAliasNameToIdMap in map not %d", 8, len(aliases))
 
 	require.Contains(t, aliases, "id=abc")
 	require.Equal(t, "abc", aliases["id=abc"].Id)
@@ -716,7 +821,7 @@ func TestSavedAliasIsReturnedForARelationshipObjectInArrayResponse(t *testing.T)
 func TestSavedAliasIsReturnedForARelationshipObjectInSingleResponse(t *testing.T) {
 	err := ClearAllAliases()
 	if err != nil {
-		t.Fatalf("Could not clear aliases")
+		t.Fatalf("Could not clear typeToAliasNameToIdMap")
 	}
 
 	// Execute SUT
@@ -742,7 +847,7 @@ func TestSavedAliasIsReturnedForARelationshipObjectInSingleResponse(t *testing.T
 
 	aliases := GetAliasesForJsonApiTypeAndAlternates("bar", []string{})
 
-	require.Len(t, aliases, 4, "There should be %d aliases in map not %d", 4, len(aliases))
+	require.Len(t, aliases, 4, "There should be %d typeToAliasNameToIdMap in map not %d", 4, len(aliases))
 
 	require.Contains(t, aliases, "id=456")
 	require.Equal(t, "456", aliases["id=456"].Id)
@@ -762,7 +867,7 @@ func TestResolveAliasValuesReturnsAliasForMatchingValue(t *testing.T) {
 	// Fixture Setup
 	err := ClearAllAliases()
 	if err != nil {
-		t.Fatalf("Could not clear aliases")
+		t.Fatalf("Could not clear typeToAliasNameToIdMap")
 	}
 
 	// Execute SUT
@@ -790,7 +895,7 @@ func TestResolveAliasValuesReturnsAliasSkuForMatchingValue(t *testing.T) {
 	// Fixture Setup
 	err := ClearAllAliases()
 	if err != nil {
-		t.Fatalf("Could not clear aliases")
+		t.Fatalf("Could not clear typeToAliasNameToIdMap")
 	}
 
 	// Execute SUT
@@ -820,7 +925,7 @@ func TestResolveAliasValuesReturnsAliasCodeForMatchingValue(t *testing.T) {
 	// Fixture Setup
 	err := ClearAllAliases()
 	if err != nil {
-		t.Fatalf("Could not clear aliases")
+		t.Fatalf("Could not clear typeToAliasNameToIdMap")
 	}
 
 	// Execute SUT
@@ -850,7 +955,7 @@ func TestResolveAliasValuesReturnsAliasSlugForMatchingValue(t *testing.T) {
 	// Fixture Setup
 	err := ClearAllAliases()
 	if err != nil {
-		t.Fatalf("Could not clear aliases")
+		t.Fatalf("Could not clear typeToAliasNameToIdMap")
 	}
 
 	// Execute SUT
@@ -880,7 +985,7 @@ func TestResolveAliasValuesReturnsAliasForMatchingValueAsAlternateType(t *testin
 	// Fixture Setup
 	err := ClearAllAliases()
 	if err != nil {
-		t.Fatalf("Could not clear aliases")
+		t.Fatalf("Could not clear typeToAliasNameToIdMap")
 	}
 
 	// Execute SUT
@@ -908,7 +1013,7 @@ func TestResolveAliasValuesReturnsAliasForTypeAndNotAlternateTypeWhenCollisionOc
 	// Fixture Setup
 	err := ClearAllAliases()
 	if err != nil {
-		t.Fatalf("Could not clear aliases")
+		t.Fatalf("Could not clear typeToAliasNameToIdMap")
 	}
 
 	// Execute SUT
@@ -944,7 +1049,7 @@ func TestResolveAliasValuesReturnsRequestForUnMatchingValue(t *testing.T) {
 	// Fixture Setup
 	err := ClearAllAliases()
 	if err != nil {
-		t.Fatalf("Could not clear aliases")
+		t.Fatalf("Could not clear typeToAliasNameToIdMap")
 	}
 
 	// Execute SUT
@@ -974,7 +1079,7 @@ func TestResolveAliasValuesReturnsRequestForUnMatchingValueAndType(t *testing.T)
 	// Fixture Setup
 	err := ClearAllAliases()
 	if err != nil {
-		t.Fatalf("Could not clear aliases")
+		t.Fatalf("Could not clear typeToAliasNameToIdMap")
 	}
 
 	// Execute SUT
@@ -1003,7 +1108,7 @@ func TestClearAllAliasesClearsAllAliases(t *testing.T) {
 	// Fixture Setup
 	err := ClearAllAliases()
 	if err != nil {
-		t.Fatalf("Could not clear aliases")
+		t.Fatalf("Could not clear typeToAliasNameToIdMap")
 	}
 
 	SaveAliasesForResources(
@@ -1029,7 +1134,7 @@ func TestClearAllAliasesClearsAllAliases(t *testing.T) {
 	// Execute SUT
 	err = ClearAllAliases()
 	if err != nil {
-		t.Errorf("Couldn't clear aliases %v", err)
+		t.Errorf("Couldn't clear typeToAliasNameToIdMap %v", err)
 		return
 	}
 
@@ -1054,7 +1159,7 @@ func TestClearAllAliasesForJsonTypeOnlyClearsJsonType(t *testing.T) {
 	// Fixture Setup
 	err := ClearAllAliases()
 	if err != nil {
-		t.Fatalf("Could not clear aliases")
+		t.Fatalf("Could not clear typeToAliasNameToIdMap")
 	}
 
 	SaveAliasesForResources(
@@ -1081,7 +1186,7 @@ func TestClearAllAliasesForJsonTypeOnlyClearsJsonType(t *testing.T) {
 	err = ClearAllAliasesForJsonApiType("foo")
 
 	if err != nil {
-		t.Errorf("Couldn't clear aliases %v", err)
+		t.Errorf("Couldn't clear typeToAliasNameToIdMap %v", err)
 		return
 	}
 
@@ -1105,7 +1210,7 @@ func TestThatCorruptAliasFileDoesntCrashProgramWhenReadingAliases(t *testing.T) 
 	// Fixture Setup
 	err := ClearAllAliases()
 	if err != nil {
-		t.Fatalf("Could not clear aliases")
+		t.Fatalf("Could not clear typeToAliasNameToIdMap")
 	}
 
 	SaveAliasesForResources(
@@ -1137,7 +1242,7 @@ func TestThatCorruptAliasFileDoesntCrashProgramWhenReadingAliases(t *testing.T) 
 	aliases := GetAliasesForJsonApiTypeAndAlternates("foo", []string{})
 
 	// Verification
-	require.Len(t, aliases, 0, "There should be %d aliases in map not %d", 0, len(aliases))
+	require.Len(t, aliases, 0, "There should be %d typeToAliasNameToIdMap in map not %d", 0, len(aliases))
 
 }
 
@@ -1145,7 +1250,7 @@ func TestThatCorruptAliasFileDoesntCrashProgramWhenSavingAliases(t *testing.T) {
 	// Fixture Setup
 	err := ClearAllAliases()
 	if err != nil {
-		t.Fatalf("Could not clear aliases")
+		t.Fatalf("Could not clear typeToAliasNameToIdMap")
 	}
 
 	SaveAliasesForResources(
@@ -1186,7 +1291,7 @@ func TestThatCorruptAliasFileDoesntCrashProgramWhenSavingAliases(t *testing.T) {
 	aliases := GetAliasesForJsonApiTypeAndAlternates("foo", []string{})
 
 	// Verification
-	require.Len(t, aliases, 2, "There should be %d aliases in map not %d", 2, len(aliases))
+	require.Len(t, aliases, 2, "There should be %d typeToAliasNameToIdMap in map not %d", 2, len(aliases))
 
 	require.Contains(t, aliases, "id=456")
 	require.Equal(t, "456", aliases["id=456"].Id)

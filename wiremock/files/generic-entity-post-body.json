@@ -1,0 +1,6 @@
+{
+  "data": {
+    "id": "{{randomValue type='UUID'}}",
+    "type": "$(type)"
+  }
+}

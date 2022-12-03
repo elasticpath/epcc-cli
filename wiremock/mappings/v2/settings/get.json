@@ -1,0 +1,23 @@
+{
+  "priority": 1,
+  "request": {
+    "method": "GET",
+    "urlPattern": "/v2/settings/?"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "data": {
+        "type": "settings",
+        "id": "00000000-0000-4000-b000-000000000000",
+        "page_length": 120,
+        "list_child_products": true,
+        "additional_languages": [],
+        "calculation_method": "simple"
+      }
+    }
+  }
+}

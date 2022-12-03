@@ -1,0 +1,18 @@
+{
+  "priority": "1000",
+  "request": {
+    "method": "POST",
+    "urlPattern": "/v2(/[a-zA-Z-_]*)*/[a-zA-Z-_]+/?$"
+  },
+  "response": {
+    "status": 201,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "bodyFileName": "generic-entity-post-body.json",
+    "transformers": ["response-template", "body-transformer"],
+    "transformerParameters": {
+      "urlRegex": ".*/(?<type>[^/]+)/?$"
+    }
+  }
+}

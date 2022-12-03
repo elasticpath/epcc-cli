@@ -1,0 +1,13 @@
+version: '2.2'
+services:
+  wiremock:
+    build:
+      context: ./wiremock
+    volumes:
+      - ./wiremock/mappings:/home/wiremock/mappings/
+      - ./wiremock/files:/home/wiremock/__files/
+    ports:
+      - 44400:8080
+    healthcheck:
+      test: |
+        curl -f http://localhost:8080

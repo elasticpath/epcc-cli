@@ -1,0 +1,18 @@
+{
+  "priority": 100,
+  "request": {
+    "method": "GET",
+    "urlPathPattern": "/v2(/[a-zA-Z-_]*)*/[a-zA-Z-_]+/?$"
+  },
+  "response": {
+    "status":200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "bodyFileName": "generic-list-get-with-one-element-body.json",
+    "transformers": ["response-template", "body-transformer"],
+    "transformerParameters": {
+      "urlRegex": ".*/(?<type>[^?/]+)/?(\\?.*)?$"
+    }
+  }
+}
