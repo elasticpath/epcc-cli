@@ -9,7 +9,7 @@ require (
 	github.com/caarlos0/env/v6 v6.10.1
 	github.com/google/uuid v1.3.0
 	github.com/gookit/color v1.5.2
-	github.com/itchyny/gojq v0.12.10
+	github.com/itchyny/gojq v0.12.11
 	github.com/mattn/go-isatty v0.0.17
 	github.com/santhosh-tekuri/jsonschema/v4 v4.0.0
 	github.com/santhosh-tekuri/jsonschema/v5 v5.1.1
