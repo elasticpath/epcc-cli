@@ -39,6 +39,8 @@ account-members:
   json-api-type: "account-member"
   json-api-format: "legacy"
   docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/account-management/account-members/index.html"
+  alternate-json-type-for-aliases:
+    - user_authentication_info
   get-collection:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/account-management/account-members/get-all-account-members.html"
     url: "/v2/account-members"

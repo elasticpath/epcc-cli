@@ -115,6 +115,13 @@ func getAliasesForSingleJsonApiType(jsonApiType string) map[string]*id.IdableAtt
 }
 
 func ResolveAliasValuesOrReturnIdentity(jsonApiType string, alternateJsonApiTypes []string, value string, attribute string) string {
+	splitAlias := strings.Split(value, "/")
+
+	if len(splitAlias) == 2 {
+		alternateJsonApiTypes = append(alternateJsonApiTypes, splitAlias[0])
+		value = splitAlias[1]
+	}
+
 	if result, ok := GetAliasesForJsonApiTypeAndAlternates(jsonApiType, alternateJsonApiTypes)[value]; ok {
 
 		if attribute == "id" {

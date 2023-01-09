@@ -94,9 +94,11 @@ func init() {
 	loginCmd.AddCommand(loginInfo)
 	loginCmd.AddCommand(loginDocs)
 	loginCmd.AddCommand(loginCustomer)
+	loginCmd.AddCommand(loginAccountManagement)
 
 	logoutCmd.AddCommand(logoutBearer)
 	logoutCmd.AddCommand(logoutCustomer)
+	logoutCmd.AddCommand(logoutAccountManagement)
 }
 
 var persistentPreRunFuncs []func(cmd *cobra.Command, args []string) error
@@ -171,7 +173,11 @@ func Execute() {
 			shutdownHandlerDone <- true
 		}()
 
-		log.Infof("Waiting for all outstanding requests to finish")
+		go func() {
+			time.Sleep(2 * time.Second)
+			log.Infof("Waiting for all outstanding requests to finish")
+		}()
+
 		crud.OutstandingRequestCounter.Wait()
 
 		httpclient.LogStats()

@@ -188,6 +188,49 @@ func RunJQ(queryStr string, result interface{}) (interface{}, error) {
 	return result, nil
 }
 
+// These copy and paste functions below, were because the existing functions were buggy
+// if the iterator returns more than one thing, only the last is saved.
+// it was deemed to risky to fix at the moment.
+func RunJQOnStringWithArray(queryStr string, json string) ([]interface{}, error) {
+
+	var obj interface{}
+
+	err := gojson.Unmarshal([]byte(json), &obj)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return RunJQWithArray(queryStr, obj)
+}
+
+func RunJQWithArray(queryStr string, result interface{}) ([]interface{}, error) {
+	query, err := gojq.Parse(queryStr)
+
+	if err != nil {
+		// %w causes the error to be wrapped.
+		return nil, fmt.Errorf("error parsing json key %s: %w", queryStr, err)
+	}
+
+	iter := query.Run(result)
+
+	queryResult := []interface{}{}
+
+	for {
+		v, ok := iter.Next()
+		if !ok {
+			break
+		}
+		if err, ok := v.(error); ok {
+			partialResult, _ := gojson.Marshal(result)
+
+			return nil, fmt.Errorf("error %w when running query %s on json %s", err, queryStr, partialResult)
+		}
+
+		queryResult = append(queryResult, v)
+	}
+	return queryResult, nil
+}
 func formatValue(v string) string {
 	if match, _ := regexp.MatchString("^([0-9]+(\\.[0-9]+)?|false|true|null)$", v); match {
 		return v
