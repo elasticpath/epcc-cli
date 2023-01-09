@@ -403,9 +403,9 @@ Usage:
   epcc runbooks show [command]
 
 Available Commands:
+  account-management               Sample commands for using account management
   extend-customer-resources-how-to Create flows on the customer resources
   hello-world                      A hello world runbook
-  large-datasets                   Large Datasets
   manual-gateway-how-to            Manual gateway tutorial
   pxm-how-to                       Create and manipulate the Getting Started PXM Catalog
 ```

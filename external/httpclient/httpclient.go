@@ -191,6 +191,12 @@ func doRequestInternal(ctx context.Context, method string, contentType string, p
 		req.Header.Add("X-Moltin-Customer-Token", customerToken.Data.Token)
 	}
 
+	accountManagementAuthenticationToken := authentication.GetAccountManagementAuthenticationToken()
+
+	if accountManagementAuthenticationToken != nil {
+		req.Header.Add("EP-Account-Management-Authentication-Token", accountManagementAuthenticationToken.Token)
+	}
+
 	req.Header.Add("Content-Type", contentType)
 
 	req.Header.Add("User-Agent", UserAgent)

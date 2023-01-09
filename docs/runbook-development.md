@@ -12,13 +12,16 @@ Users developing runbooks should have familiarity with:
 3. Familiarity with [Go Templates](https://blog.gopheracademy.com/advent-2017/using-go-templates/) may help for more advanced cases.
   * The EPCC CLI uses the [Sprig](http://masterminds.github.io/sprig/) template functions which is the same library used by [Helm templates](https://helm.sh/docs/chart_template_guide/getting_started/)   
 
-
 ### Tip
 
+#### JSON Schema
 There is a JSON Schema for Runbooks available [here](https://github.com/elasticpath/epcc-cli/blob/main/external/runbooks/runbook_schema.json), if you are using IntelliJ or GoLand you can use IntelliJ's [built-in support for JSON Templates](https://www.jetbrains.com/help/idea/json.html#8991cb99).
 
 ![RunbookJSONSchema](./runbook-json-schema.png)
 
+#### Qualified Aliases
+
+You might find runbooks more readable if you prefix an aliases with the JSON API Type (this is the type reported by the API) (i.e., an alias like last_read=entity could be `user_authentication_info/last_read=entity`)
 
 ## Syntax
 

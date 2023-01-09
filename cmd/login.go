@@ -5,6 +5,7 @@ import (
 	gojson "encoding/json"
 	"fmt"
 	"github.com/elasticpath/epcc-cli/config"
+	"github.com/elasticpath/epcc-cli/external/aliases"
 	"github.com/elasticpath/epcc-cli/external/authentication"
 	"github.com/elasticpath/epcc-cli/external/browser"
 	"github.com/elasticpath/epcc-cli/external/completion"
@@ -175,6 +176,15 @@ var loginClientCredentials = &cobra.Command{
 			}
 		}
 
+		if authentication.IsAccountManagementAuthenticationTokenSet() {
+			log.Infof("Destroying Account Management Authentication Token as it should only be used with implicit tokens.")
+			err := authentication.ClearAccountManagementAuthenticationToken()
+
+			if err != nil {
+				log.Warnf("Could not clear account management authentication token: %v", err)
+			}
+		}
+
 		token, err := authentication.GetAuthenticationToken(false, &values)
 
 		if err != nil {
@@ -290,8 +300,12 @@ var loginCustomer = &cobra.Command{
 
 		if apiToken != nil {
 			if apiToken.Identifier == "client_credentials" {
-				log.Warnf("You are current logged in with client_credentials, please switch to implicit with `epcc login implicit` to use customer token correctly. Mixing client_credentials and customer token can lead to unintended results.")
+				log.Warnf("You are currently logged in with client_credentials, please switch to implicit with `epcc login implicit` to use the customer token correctly. Mixing client_credentials and customer token can lead to unintended results.")
 			}
+		}
+
+		if authentication.IsAccountManagementAuthenticationTokenSet() {
+			log.Warnf("You are currently logged in with an Account Management Authentication Token, please logout of this token with `epcc logout account-management`. Mixing customer tokens and account management authentication token is not supported. ")
 		}
 
 		var customerTokenResponse *authentication.CustomerTokenResponse
@@ -333,5 +347,221 @@ var loginCustomer = &cobra.Command{
 		authentication.SaveCustomerToken(*customerTokenResponse)
 
 		return json.PrintJson(body)
+	},
+}
+
+var loginAccountManagement = &cobra.Command{
+	Use:   "account-management [ account_name <ACCOUNT_NAME> | account_id <ACCOUNT_ID>] username <USERNAME> password <PASSWORD> password_profile_id <PROFILE_ID> ",
+	Short: "Obtain an account management authentication token",
+	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		res, ok := resources.GetResourceByName("account-management-authentication-tokens")
+
+		if !ok {
+			panic("Could not find account-management-authentication-token type")
+		}
+
+		accountRes, ok := resources.GetResourceByName("accounts")
+
+		if !ok {
+			panic("Could not find accounts type")
+		}
+
+		if len(args)%2 == 0 {
+			return completion.Complete(completion.Request{
+				Type:     completion.CompleteAttributeKey + completion.CompleteLoginAccountManagementKey,
+				Verb:     completion.Create,
+				Resource: res,
+			})
+		} else {
+			usedAttributes := make(map[string]int)
+			for i := 1; i < len(args); i = i + 2 {
+				usedAttributes[args[i]] = 0
+			}
+
+			if args[len(args)-1] == "account_id" {
+				return completion.Complete(completion.Request{
+					Type:       completion.CompleteAlias,
+					Verb:       completion.Update,
+					Resource:   accountRes,
+					Attributes: usedAttributes,
+				})
+			} else {
+				return completion.Complete(completion.Request{
+					Type:       completion.CompleteAttributeValue,
+					Verb:       completion.Create,
+					Resource:   res,
+					Attributes: usedAttributes,
+				})
+			}
+
+		}
+	},
+
+	RunE: func(cmd *cobra.Command, args []string) error {
+		ctx := context.Background()
+
+		if authentication.IsCustomerTokenSet() {
+			log.Warnf("You are currently logged in with a Customer Token, please logout of this token with `epcc logout customer`. Mixing customer tokens and account management authentication token is not supported. ")
+		}
+
+		apiToken := authentication.GetApiToken()
+
+		if apiToken != nil {
+			if apiToken.Identifier == "client_credentials" {
+				log.Warnf("You are currently logged in with client_credentials, please switch to implicit with `epcc login implicit` to use the account management token correctly. Mixing client_credentials and the account management token can lead to unintended results.")
+			}
+		}
+
+		// Populate an alias to get the authentication_realm.
+		_, err := getInternal(ctx, []string{"account-authentication-settings"})
+
+		if err != nil {
+			return fmt.Errorf("couldn't determine authentication realm: %w", err)
+		}
+
+		loginArgs := make([]string, 0)
+
+		loginArgs = append(loginArgs, "account-management-authentication-token")
+
+		if len(args)%2 != 0 {
+			return fmt.Errorf("this function should have an even number of arguments please correct this, total args %d", len(args))
+		}
+
+		passwordAuthentication := false
+		for _, v := range args {
+			if v == "password" {
+				passwordAuthentication = true
+
+				loginArgs = append(loginArgs, "authentication_mechanism", "password")
+			}
+		}
+
+		// Try and auto-detect the password profile id
+		if passwordAuthentication {
+			resp, err := getInternal(ctx, []string{"password-profiles", "related_authentication_realm_for_account_authentication_settings_last_read=entity"})
+
+			if err != nil {
+				return fmt.Errorf("couldn't determine password profile: %w", err)
+			}
+
+			passwordProfileIds, err := json.RunJQOnStringWithArray(".data[].id", resp)
+
+			if err != nil {
+				return fmt.Errorf("couldn't determine password profile, error processing json response: %w", err)
+			}
+
+			if len(passwordProfileIds) == 0 {
+				log.Warnf("Password authentication doesn't seem to be enabled in the store as we couldn't find any password-profiles")
+			} else if len(passwordProfileIds) == 1 {
+				if passwordProfileId, ok := passwordProfileIds[0].(string); ok {
+					loginArgs = append(loginArgs, "password_profile_id", passwordProfileId)
+
+					passwordProfileName, _ := json.RunJQOnString(".data[0].name", resp)
+					log.Infof("Auto-detected Password Profile \"%s\" (id %s) to login with", passwordProfileName, passwordProfileId)
+
+				} else {
+					log.Warnf("[BUG] got non-string back from jq query")
+				}
+
+			} else {
+				log.Infof("Multiple ways to authenticate with password detected (%d), you must specify password_profile_id to login", len(passwordProfileIds))
+			}
+
+		}
+
+		// validate and gather the argument that we will search for in the account token list
+		searchFor := ""
+		searchValue := ""
+
+		for i := 0; i < len(args); i += 2 {
+			switch args[i] {
+			case "account_name":
+				if searchFor != "" {
+					return fmt.Errorf("you can only specify exactly one of account_name or account_id ")
+				}
+				searchFor = "account_name"
+				searchValue = args[i+1]
+			case "account_id":
+				if searchFor != "" {
+					return fmt.Errorf("you can only specify exactly one of account_name or account_id ")
+				}
+				searchFor = "account_id"
+				searchValue = aliases.ResolveAliasValuesOrReturnIdentity("account", []string{}, args[i+1], "id")
+			default:
+				loginArgs = append(loginArgs, args[i], args[i+1])
+			}
+		}
+
+		// Do the login and get back a list of accounts
+		body, err := createInternal(ctx, loginArgs, crud.AutoFillOnCreate)
+
+		if err != nil {
+			log.Warnf("Login not completed successfully")
+			return err
+		}
+
+		var accountTokenResponse *authentication.AccountManagementAuthenticationTokenResponse
+
+		err = gojson.Unmarshal([]byte(body), &accountTokenResponse)
+
+		if err != nil {
+			return err
+		}
+
+		var selectedAccount *authentication.AccountManagementAuthenticationTokenStruct
+
+		if accountTokenResponse != nil {
+			if len(accountTokenResponse.Data) == 0 {
+				return fmt.Errorf("Could not login, this user isn't associated with any accounts")
+			}
+
+			if searchFor == "" {
+				if len(accountTokenResponse.Data) == 1 {
+					selectedAccount = &accountTokenResponse.Data[0]
+				} else {
+					log.Errorf("More than one account found but you didn't specify one to login with in on the command line (using the account_id or account_name argument).")
+					for _, v := range accountTokenResponse.Data {
+						log.Infof("Found Account \"%s\", Id <%s>", v.AccountName, v.AccountId)
+					}
+					return fmt.Errorf("no account specified and %d available", len(accountTokenResponse.Data))
+				}
+			} else {
+				for _, v := range accountTokenResponse.Data {
+					log.Debugf("Found account \"%s\" (id=%s)", v.AccountName, v.AccountId)
+
+					if searchFor == "account_name" {
+						if v.AccountName == searchValue {
+							selectedAccount = &v
+						}
+					} else if searchFor == "account_id" {
+						if v.AccountId == searchValue {
+							selectedAccount = &v
+						}
+					} else {
+						return fmt.Errorf("Unsure how to search for %v, this is a bug in the code", searchFor)
+					}
+				}
+			}
+
+		} else {
+			return fmt.Errorf("nil response received to authentication token response")
+		}
+
+		if selectedAccount == nil {
+			return fmt.Errorf("could not find matching account with value %s, amoung %d accounts", searchValue, len(accountTokenResponse.Data))
+		}
+
+		authentication.SaveAccountManagementAuthenticationToken(*selectedAccount)
+
+		accountMembers, err := getInternal(ctx, []string{"account-members"})
+
+		if err == nil {
+			accountMemberId, _ := json.RunJQOnString(".data[0].id", accountMembers)
+			accountMemberName, _ := json.RunJQOnString(".data[0].name", accountMembers)
+			log.Infof("Successfully authenticated as Account Member: %s <%s> with Account: %s <%s>, session expires %s", accountMemberName, accountMemberId, selectedAccount.AccountName, selectedAccount.AccountId, selectedAccount.Expires)
+		}
+
+		jsonBody, _ := gojson.Marshal(selectedAccount)
+		return json.PrintJson(string(jsonBody))
 	},
 }

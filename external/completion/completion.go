@@ -9,17 +9,18 @@ import (
 )
 
 const (
-	CompletePluralResource    = 1
-	CompleteSingularResource  = 2
-	CompleteAttributeKey      = 4
-	CompleteAttributeValue    = 8
-	CompleteQueryParamKey     = 16
-	CompleteQueryParamValue   = 32
-	CompleteCrudAction        = 64
-	CompleteAlias             = 128
-	CompleteLoginLogoutAPI    = 256
-	CompleteLoginClientID     = 512
-	CompleteLoginClientSecret = 1024
+	CompletePluralResource            = 1
+	CompleteSingularResource          = 2
+	CompleteAttributeKey              = 4
+	CompleteAttributeValue            = 8
+	CompleteQueryParamKey             = 16
+	CompleteQueryParamValue           = 32
+	CompleteCrudAction                = 64
+	CompleteAlias                     = 128
+	CompleteLoginLogoutAPI            = 256
+	CompleteLoginClientID             = 512
+	CompleteLoginClientSecret         = 1024
+	CompleteLoginAccountManagementKey = 2048
 )
 
 const (
@@ -269,6 +270,10 @@ func Complete(c Request) ([]string, cobra.ShellCompDirective) {
 				results = append(results, "updated_at", "-updated_at", "created_at", "-created_at")
 			}
 		}
+	}
+
+	if c.Type&CompleteLoginAccountManagementKey > 0 {
+		results = append(results, "account_id", "account_name")
 	}
 
 	// This is dead code since I hacked the aliases to never return spaces.
