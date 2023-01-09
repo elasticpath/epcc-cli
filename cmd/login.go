@@ -68,6 +68,25 @@ var loginInfo = &cobra.Command{
 			}
 		}
 
+		accountManagementAuthenticationToken := authentication.GetAccountManagementAuthenticationToken()
+		if accountManagementAuthenticationToken != nil {
+			expiry, _ := time.Parse(time.RFC3339, accountManagementAuthenticationToken.Expires)
+
+			if time.Now().Unix() > expiry.Unix() {
+				log.Infof("We are using an account management authentication token for account %s (id=%s), but the token expired at: %s ", accountManagementAuthenticationToken.AccountName, accountManagementAuthenticationToken.AccountId, expiry.Format(time.RFC1123Z))
+			} else {
+				log.Infof("We are using an account management authentication token for account %s (id=%s), the token expires at: %s", accountManagementAuthenticationToken.AccountName, accountManagementAuthenticationToken.AccountId, expiry.Format(time.RFC1123Z))
+			}
+
+			if apiTokenResponse != nil && apiTokenResponse.Identifier == "client_credentials" {
+				log.Warnf("You are current logged in with client_credentials and the account management authentication token. Mixing client_credentials and account management authentication token can lead to unintended results.")
+			}
+		}
+
+		if authentication.IsAccountManagementAuthenticationTokenSet() && authentication.IsCustomerTokenSet() {
+			log.Warnf("You are currently logged in with both a customer token and account management authentication token, please logout of one of them with `epcc logout [account-management | customer]`. Mixing customer tokens and account management authentication token is not supported.")
+		}
+
 		if authentication.IsAutoLoginEnabled() {
 			if config.Envs.EPCC_CLIENT_SECRET != "" {
 				log.Infof("Auto login is enabled and we will (attempt to) login with client_credentials")

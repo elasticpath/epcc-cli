@@ -4,8 +4,8 @@
 ## Overview
 This project is designed as a tool for power users to interact with the [Elastic Path Commerce Cloud API](https://documentation.elasticpath.com/commerce-cloud/docs/api/) via the command line and the project is designed to fill three distinct niches:
 1. Provide a fast way for users familiar with the API to interact with it.
-2. Provide a simpler way to do scripting with the API (i.e., instead of using curl and creating JSON in the shell, simpler ways of doing concurrency with [Runbooks]([Runbook Development](docs/runbook-development.md))).
-3. Provide a reusable set of scripts for creating data sets.
+2. Provide a simpler way to do scripting with the API (i.e., instead of using curl and creating JSON in the shell)
+3. Provide a reusable set of scripts for creating data sets with [Runbooks](docs/runbook-development.md).
 
 This tool is not meant for new users unfamiliar with the API, new users are  highly encouraged to use the [Elastic Path Commerce Cloud Postman Collection](https://documentation.elasticpath.com/commerce-cloud/docs/developer/how-to/test-with-postman-collection.html) instead of this tool.
 
@@ -35,12 +35,13 @@ The following is a summary of the main commands, in general you can type `epcc h
 
 #### Authentication Commands
 
-| Command                         | Description                                      |
-|---------------------------------|--------------------------------------------------|
-| `epcc login client_credentials` | Login to the API using a Client Credential Token |
-| `epcc login customer`           | Login to the API using a Customer Token          |
-| `epcc login implicit`           | Login to the API using an Implicit Token         |
-| `epcc login status`             | Determine the current state of the login         |
+| Command                         | Description                                                       |
+|---------------------------------|-------------------------------------------------------------------|
+| `epcc login client_credentials` | Login to the API using a Client Credential Token                  |
+| `epcc login customer`           | Login to the API using a Customer Token                           |
+| `epcc login account-management` | Login to the API using an Account Management Authentication Token |
+| `epcc login implicit`           | Login to the API using an Implicit Token                          |
+| `epcc login status`             | Determine the current state of the login                          |
 
 #### Debugging Commands 
 | Command                                            | Description                                                                  |
