@@ -43,4 +43,102 @@ actions:
       - epcc get account-member user_authentication_info/last_read=entity
       - epcc create account name "Personal Account For {{ .name }}" legal_name "Individual Account For {{ .name }}"
       - epcc create account-membership last_read=entity account_member_id user_authentication_info/last_read=entity
+  catalog-rule-example:
+    description:
+      short: "Create some catalog rules"
+    variables:
+      account_1_username:
+        type: STRING
+        default: "account1"
+        description:
+          short: "Username of the first account"
+      account_2_username:
+        type: STRING
+        default: "account2"
+        description:
+          short: "Username of the second account"
+      account_1_password:
+        type: STRING
+        default: "password"
+        description:
+          short: "Password (if set we will try and create a user-authentication-password-profile-info)"
+      account_2_password:
+        type: STRING
+        default: "password"
+        description:
+          short: "Password (if set we will try and create a user-authentication-password-profile-info)"
+    commands:
+      - epcc get account-authentication-settings
+      # Initialize alias for password profile id
+      - epcc get password-profiles related_authentication_realm_for_account_authentication_settings_last_read=entity
+      # Create Account 1
+      - epcc create account name "Account 1" legal_name "Account 1"
+      - epcc create user-authentication-info related_authentication_realm_for_account_authentication_settings_last_read=entity name "Account 1" email "account1@example.com"
+      - epcc create user-authentication-password-profile-info related_authentication_realm_for_account_authentication_settings_last_read=entity name=Account_1 username "{{.account_1_username}}" password "{{.account_1_password}}" password_profile_id last_read=array[0]
+      - epcc get account-member user_authentication_info/last_read=entity
+      - epcc create account-membership name=Account_1 account_member_id user_authentication_info/last_read=entity
+      # Create Account 2
+      - epcc create account name "Account 2" legal_name "Account 2"
+      - epcc create user-authentication-info related_authentication_realm_for_account_authentication_settings_last_read=entity name "Account 2" email "account2@example.com"
+      - epcc create user-authentication-password-profile-info related_authentication_realm_for_account_authentication_settings_last_read=entity name=Account_2 username "{{.account_2_username}}" password "{{.account_2_password}}" password_profile_id last_read=array[0]
+      - epcc get account-member user_authentication_info/last_read=entity
+      - epcc create account-membership name=Account_2 account_member_id user_authentication_info/last_read=entity
+      # Create PXM Stuff
+      - |
+        epcc create pcm-hierarchy name "Hierarchy For Account 1" description "Hierarchy For Account 1" slug "hierarchy-account-1"
+        epcc create pcm-hierarchy name "Hierarchy For Account 2" description "Hierarchy For Account 2" slug "hierarchy-account-2"
+      - |
+        epcc create pcm-node slug=hierarchy-account-1 name "Account 1 Node" description "Account 1 Node" slug "node-account-1"
+        epcc create pcm-node slug=hierarchy-account-2 name "Account 2 Node" description "Account 2 Node" slug "node-account-2"
+      - |
+        epcc create pcm-product name "Account 1 Product" sku "product-account-1" slug "product-account-1" description "Account 1 Product" status live commodity_type physical upc_ean \"123\" mpn mpn-account-1
+        epcc create pcm-product name "Account 2 Product" sku "product-account-2" slug "product-account-2" description "Account 2 Product" status live commodity_type physical upc_ean \"456\" mpn mpn-account-2
+      - |
+        epcc create pcm-node-product name=Hierarchy_For_Account_1 name=Account_1_Node data[0].type product data[0].id sku=product-account-1
+        epcc create pcm-node-product name=Hierarchy_For_Account_2 name=Account_2_Node data[0].type product data[0].id sku=product-account-2
+
+      - |
+        epcc create pcm-pricebook name "Account 1 Pricebook" description "Account 1 Pricebook"
+        epcc create pcm-pricebook name "Account 2 Pricebook" description "Account 2 Pricebook"
+      - |
+        epcc create pcm-catalog name "Account 1 Catalog" description "Account 1 Catalog" pricebook_id name=Account_1_Pricebook hierarchy_ids[0] name=Hierarchy_For_Account_1
+        epcc create pcm-catalog name "Account 2 Catalog" description "Account 2 Catalog" pricebook_id name=Account_2_Pricebook hierarchy_ids[0] name=Hierarchy_For_Account_2
+      - epcc create pcm-catalog-releases name=Account_1_Catalog
+      # Don't hammer the catalog publishing endpoint, might get rate limited
+      - sleep 2
+      - epcc create pcm-catalog-releases name=Account_2_Catalog
+      - sleep 5
+      - epcc get pcm-catalog-releases name=Account_1_Catalog
+      - epcc get pcm-catalog-releases name=Account_2_Catalog
+      - epcc create pcm-catalog-rule name "Account 1 Rule" description "Rule for Account 1" account_ids[0] name=Account_1 catalog_id name=Account_1_Catalog
+      - epcc create pcm-catalog-rule name "Account 2 Rule" description "Rule for Account 2" account_ids[0] name=Account_2 catalog_id name=Account_2_Catalog
+  catalog-rule-example-reset:
+    description:
+      short: "Reset the store configuration"
+    ignore_errors: true
+    commands:
+      - | 
+        epcc delete accounts name=Account_1
+        epcc delete accounts name=Account_2
+        epcc delete pcm-catalog-rule name=Account_1_Rule
+        epcc delete pcm-catalog-rule name=Account_2_Rule
+      - |
+        epcc delete pcm-catalog-releases name=Account_1_Catalog name=Account_1_Catalog
+        epcc delete pcm-catalog-releases name=Account_2_Catalog name=Account_2_Catalog
+      - | 
+        epcc delete pcm-catalog name=Account_1_Catalog
+        epcc delete pcm-catalog name=Account_2_Catalog
+      - |
+        epcc delete user-authentication-info related_authentication_realm_for_account_authentication_settings_last_read=entity name=Account_1
+        epcc delete user-authentication-info related_authentication_realm_for_account_authentication_settings_last_read=entity name=Account_2
+        epcc delete pcm-hierarchy name=Hierarchy_For_Account_1
+        epcc delete pcm-hierarchy name=Hierarchy_For_Account_2
+        epcc delete pcm-product sku=product-account-1
+        epcc delete pcm-product sku=product-account-2
+        epcc delete pcm-pricebook name=Account_1_Pricebook
+        epcc delete pcm-pricebook name=Account_2_Pricebook
+        epcc delete pcm-pricebook name=Account_2_Pricebook
+      
+        
+      
 
