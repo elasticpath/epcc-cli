@@ -87,6 +87,14 @@ func toJsonObject(args []string, noWrapping bool, compliant bool, attributes map
 					log.Warnf("Could not find a resource for %s, this is a bug.", resourceType)
 				}
 			}
+		} else {
+			splitAlias := strings.Split(val, "/")
+
+			if len(splitAlias) == 4 {
+				if splitAlias[0] == "alias" {
+					val = aliases.ResolveAliasValuesOrReturnIdentity(splitAlias[1], []string{}, splitAlias[2], splitAlias[3])
+				}
+			}
 		}
 
 		val = formatValue(val)
