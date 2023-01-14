@@ -102,6 +102,7 @@ actions:
       - epcc create pcm-node-product name=Pet_Supplies name=Dog_Supplies data[0].type product data[0].id name=SKU-less_Bed_and_Ball_Bundle
       - epcc create pcm-catalog name "Pet Supplies Catalog" description "Pet Supplies Catalog" pricebook_id name=VIP_Pricing hierarchy_ids[0] name=Pet_Supplies
       - epcc create pcm-catalog-releases name=Pet_Supplies_Catalog
+      - sleep 2
       - epcc get pcm-catalog-releases name=Pet_Supplies_Catalog
 
   reset:
