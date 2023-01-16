@@ -1553,8 +1553,6 @@ pcm-products:
       type: STRING
     locales.en-US.description:
       type: STRING
-    components.*.options[n].id:
-      type: RESOURCE_ID:pcm-products
 pcm-product-templates:
   singular-name: "pcm-product-template"
   json-api-type: "template"
