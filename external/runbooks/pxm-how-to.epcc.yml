@@ -84,6 +84,27 @@ actions:
       - |
         epcc get pcm-child-products sku=shirt
 
+  publish-catalog-with-bundles:
+    description:
+      short: "Create a sample pet store catalog with bundle products"
+    commands:
+      - epcc create pcm-hierarchy name "Pet Supplies" description "Pet supplies" slug "Pet-Supplies-PS0"
+      - epcc create pcm-node name=Pet_Supplies name "Dog Supplies" description "Supplies for dogs" slug "Dogs-PS1"
+      - epcc create pcm-product name "Fluffy Bed" sku "fluffy-bed-sku" slug "fluffy-bed" description "Fluffy and comfortable dog bed." status live commodity_type physical
+      - epcc create pcm-node-product name=Pet_Supplies name=Dog_Supplies data[0].type product data[0].id sku=fluffy-bed-sku
+      - epcc create pcm-product name "Squeaky Ball" sku "squeaky-ball-sku" slug "squeaky-ball" description "Grey rubber ball with satisfying sqeak." status live commodity_type physical
+      - epcc create pcm-node-product name=Pet_Supplies name=Dog_Supplies data[0].type product data[0].id sku=squeaky-ball-sku
+      - epcc create pcm-pricebook name "VIP Pricing" description "Special pricing for Very Important Pups."
+      - |
+        epcc create pcm-product-price name=VIP_Pricing currencies.USD.amount 5000 currencies.USD.includes_tax false sku fluffy-bed-sku
+        epcc create pcm-product-price name=VIP_Pricing currencies.USD.amount 500 currencies.USD.includes_tax false sku squeaky-ball-sku
+      - epcc create pcm-product attributes.name "SKU-less Bed and Ball Bundle" attributes.commodity_type "physical" status "live" components.dogbed.max 1 components.dogbed.min 1 components.dogbed.name "Dog Bed" components.dogbed.options[0].id alias/product/name=Fluffy_Bed/id components.dogbed.options[0].type "product" components.dogbed.options[0].quantity 1 components.dogball.max 1 components.dogball.min 1 components.dogball.name "Dog Ball" components.dogball.options[0].id alias/product/name=Squeaky_Ball/id components.dogball.options[0].type "product" components.dogball.options[0].quantity 1
+      - epcc create pcm-node-product name=Pet_Supplies name=Dog_Supplies data[0].type product data[0].id name=SKU-less_Bed_and_Ball_Bundle
+      - epcc create pcm-catalog name "Pet Supplies Catalog" description "Pet Supplies Catalog" pricebook_id name=VIP_Pricing hierarchy_ids[0] name=Pet_Supplies
+      - epcc create pcm-catalog-releases name=Pet_Supplies_Catalog
+      - sleep 2
+      - epcc get pcm-catalog-releases name=Pet_Supplies_Catalog
+
   reset:
     description:
       short: "Delete all catalogs, hierarchy and nodes"
@@ -94,18 +115,25 @@ actions:
       - |
         epcc delete currency code=GBP
         epcc delete pcm-catalog-releases name=Ranges_Catalog name=Ranges_Catalog
+        epcc delete pcm-catalog-releases name=Pet_Supplies_Catalog name=Pet_Supplies_Catalog
         epcc delete pcm-catalog-releases name=Ranges_Catalog_for_Special_Customers name=Ranges_Catalog_for_Special_Customers
         epcc delete pcm-catalog-rule name=Catalog_Rule_for_Civil_Servants    
         epcc delete pcm-product name=BestEver_Gas_Range
         epcc delete pcm-product name=BestEver_Electric_Range
+        epcc delete pcm-product name=SKU-less_Bed_and_Ball_Bundle
         epcc delete pcm-hierarchy name=Major_Appliances
         epcc delete pcm-pricebook name=Preferred_Pricing
         epcc delete pcm-pricebook name=Loyal_Civil_Servants_Pricing
         epcc delete customer name=Leslie_Knope
         epcc delete customer name=Ron_Swanson
+        epcc delete pcm-product name=Fluffy_Bed
+        epcc delete pcm-product name=Squeaky_Ball
+        epcc delete pcm-hierarchy name=Pet_Supplies
+        epcc delete pcm-pricebook name=VIP_Pricing
       - |
         epcc delete pcm-catalog name=Ranges_Catalog_for_Special_Customers
         epcc delete pcm-catalog name=Ranges_Catalog
+        epcc delete pcm-catalog name=Pet_Supplies_Catalog
       - | 
         epcc delete flow name=Book
         epcc delete flow name=Condition

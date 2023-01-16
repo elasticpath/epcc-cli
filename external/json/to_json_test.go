@@ -372,6 +372,20 @@ func TestToJsonCompliantFormatSimpleArrayWithTwoValues(t *testing.T) {
 	}
 }
 
+func TestToJsonCompliantAliasForNestedArray(t *testing.T) {
+	// Fixture Setup
+	input := []string{"components.shampoo.options[0].id", "alias/product/name=Clean_Shampoo/id"}
+	expected := `{"data":{"attributes":{"components":{"shampoo":{"options":[{"id":"name=Clean_Shampoo"}]}}}}}`
+
+	// Execute SUT
+	actual, _ := ToJson(input, false, true, map[string]*resources.CrudEntityAttribute{})
+
+	// Verification
+	if actual != expected {
+		t.Fatalf("Testing json conversion of empty value %s did not match expected %s, actually: %s", input, expected, actual)
+	}
+}
+
 func TestToJsonErrorsWhenArrayAndObjectKeysSpecified(t *testing.T) {
 	// Fixture Setup
 	input := []string{"[0]", "val", "key", "val2"}

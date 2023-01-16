@@ -158,7 +158,9 @@ INFO[0001] POST https://api.moltin.com/v2/customers ==> HTTP/1.1 201 Created
    * epcc update customer email=test@test.com name "James Smith"
    * epcc update customer last_read=entity name "Jacob Smith"
 
-8. The alias `last_read=entity` is a special one, and it refers to the last entity with type `customer` that the EPCC CLI saw, similarly when you get a list of all entities (i.e., epcc get customers), you will see aliases like `last_read=array[0]` which is the first element in the last array it was seen. Other aliases may exist as well, so use the `epcc aliases list <resource_type>` to see them. 
+8. The alias `last_read=entity` is a special one, and it refers to the last entity with type `customer` that the EPCC CLI saw, similarly when you get a list of all entities (i.e., epcc get customers), you will see aliases like `last_read=array[0]` which is the first element in the last array it was seen. Other aliases may exist as well, so use the `epcc aliases list <resource_type>` to see them.
+   - Some resources require other resource IDs at creation to tie related components together (for example, when adding components to bundles).  In these cases, the generated ID might not be immediately available for entry, though aliases for the required components exist.  To solve this, use the pattern `<target_id_key> alias/<resource>/name=<alias_name>/id`.  This syntax tells the system to extract the ID field from the resource identified by the alias.
+   - For example, the `publish-catalog-with-bundles` action under the `pxm-how-to.yml` runbook includes the line `components.dogbed.options[0].id alias/product/name=Fluffy_Bed/id`.  This command says that the `dogbed` component ID (under `options`) should use the ID from the product aliased with the name `Fluffy_Bed`.
 
 9. The output of the epcc cli contains a lot of output, however almost all the output is on [standard error](https://en.wikipedia.org/wiki/Standard_streams#Standard_error_(stderr)), and the only thing *for crud commands* that is output is the JSON response, this means you can pipe the output to a JSON processing library like so:
 ```shell
