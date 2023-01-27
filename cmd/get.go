@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	gojson "encoding/json"
 	"fmt"
 	"github.com/elasticpath/epcc-cli/external/aliases"
 	"github.com/elasticpath/epcc-cli/external/completion"
@@ -25,6 +26,22 @@ var get = &cobra.Command{
 		body, err := getInternal(context.Background(), args)
 		if err != nil {
 			return err
+		}
+
+		if outputJq != "" {
+			output, err := json.RunJQOnStringWithArray(outputJq, body)
+
+			if err != nil {
+				return err
+			}
+
+			outputJson, err := gojson.Marshal(output)
+
+			if err != nil {
+				return err
+			}
+
+			return json.PrintJson(string(outputJson))
 		}
 
 		return json.PrintJson(body)

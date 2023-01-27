@@ -27,6 +27,8 @@ var rateLimit uint16
 
 var requestTimeout float32
 
+var outputJq string
+
 func init() {
 	cobra.OnInitialize(initConfig)
 
@@ -86,6 +88,41 @@ func init() {
 	delete.Flags().StringSliceVarP(&crud.QueryParameters, "query-parameters", "q", []string{}, "Pass in key=value an they will be added as query parameters")
 	get.Flags().StringSliceVarP(&crud.QueryParameters, "query-parameters", "q", []string{}, "Pass in key=value an they will be added as query parameters")
 	update.Flags().StringSliceVarP(&crud.QueryParameters, "query-parameters", "q", []string{}, "Pass in key=value an they will be added as query parameters")
+
+	create.Flags().StringVarP(&outputJq, "output-jq", "", "", "A jq expression, if set we will restrict output to only this")
+	get.Flags().StringVarP(&outputJq, "output-jq", "", "", "A jq expression, if set we will restrict output to only this")
+	update.Flags().StringVarP(&outputJq, "output-jq", "", "", "A jq expression, if set we will restrict output to only this")
+
+	completionFunc := func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		return []string{
+			".data.",
+			".data.attributes.",
+			".data.attributes.email",
+			".data.attributes.id",
+			".data.attributes.name",
+			".data.attributes.sku",
+			".data.attributes.slug",
+			".data.email",
+			".data.id",
+			".data.name",
+			".data.sku",
+			".data.slug",
+			".data[].attributes",
+			".data[].attributes.email",
+			".data[].attributes.name",
+			".data[].attributes.sku",
+			".data[].attributes.slug",
+			".data[].email",
+			".data[].id",
+			".data[].name",
+			".data[].sku",
+			".data[].slug",
+		}, cobra.ShellCompDirectiveNoSpace
+	}
+
+	create.RegisterFlagCompletionFunc("output-jq", completionFunc)
+	get.RegisterFlagCompletionFunc("output-jq", completionFunc)
+	update.RegisterFlagCompletionFunc("output-jq", completionFunc)
 
 	aliasesCmd.AddCommand(aliasListCmd, aliasClearCmd)
 

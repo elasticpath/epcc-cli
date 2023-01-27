@@ -151,6 +151,49 @@ You will need to use a bare double dash "--" before the argument, this signals t
 ```bash
 $ epcc get customers -- sort -updated_at
 ```
+
+### JQ Output
+
+The `--output-jq` option can post process the output of `epcc create` `epcc get` and `epcc update`, for instance the following can be used to create richer
+output.
+
+```bash
+$epcc create customer --auto-fill 
+INFO[0000] (0001) POST https://api.moltin.com/v2/customers ==> HTTP/2.0 201 Created 
+{
+  "data": {
+    "type": "customer",
+    "id": "49d8e601-d110-42b7-99d2-60db73a6fb62",
+    "authentication_mechanism": "password",
+    "email": "thorabartell@gutmann.org",
+    "name": "Michele Schuppe",
+    "password": false
+  }
+}
+
+$epcc create customer --auto-fill 
+INFO[0001] (0001) POST https://api.moltin.com/v2/customers ==> HTTP/2.0 201 Created 
+{
+  "data": {
+    "type": "customer",
+    "id": "bf642721-44e5-4919-9fa5-b9c7da1ded1f",
+    "authentication_mechanism": "password",
+    "email": "kavondonnelly@yost.info",
+    "name": "Matt Robel",
+    "password": false
+  }
+}
+$epcc get customers  --output-jq '.data[] | "\(.name) has id \(.id)"'
+INFO[0000] (0001) GET https://api.moltin.com/v2/customers ==> HTTP/2.0 200 OK 
+[
+  "Michele Schuppe has id 49d8e601-d110-42b7-99d2-60db73a6fb62",
+  "Matt Robel has id bf642721-44e5-4919-9fa5-b9c7da1ded1f"
+]
+```
+
+The [JQ Manual](https://stedolan.github.io/jq/manual/) has some additional guidance on syntax, although
+this is based on [GoJQ which has a number of differences](https://github.com/itchyny/gojq#difference-to-jq).
+
 ## Development Tips
 
 ### Fast rebuilds
