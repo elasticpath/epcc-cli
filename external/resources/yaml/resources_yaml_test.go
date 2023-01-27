@@ -1,11 +1,14 @@
-package resources
+package resources__test
 
 import (
 	"fmt"
+	"github.com/elasticpath/epcc-cli/external/completion"
+	"github.com/elasticpath/epcc-cli/external/resources"
 	"github.com/santhosh-tekuri/jsonschema/v4"
 	log "github.com/sirupsen/logrus"
 	"github.com/yosida95/uritemplate/v3"
 	"gopkg.in/yaml.v3"
+	"net/http"
 	"os"
 	"regexp"
 	"strings"
@@ -19,7 +22,7 @@ func TestUriTemplatesAllReferenceValidResource(t *testing.T) {
 
 	// Execute SUT
 	errors := ""
-	for key, val := range resources {
+	for key, val := range resources.GetPluralResources() {
 
 		if val.CreateEntityInfo != nil {
 			err := validateCrudEntityInfo(*val.CreateEntityInfo)
@@ -66,7 +69,6 @@ func TestUriTemplatesAllReferenceValidResource(t *testing.T) {
 	}
 
 	// Verification
-
 	if len(errors) > 0 {
 		t.Fatalf("Errors occurred while validating URI Templates:\n%s", errors)
 	}
@@ -74,17 +76,34 @@ func TestUriTemplatesAllReferenceValidResource(t *testing.T) {
 
 var arrayLiteralIndex = regexp.MustCompile("\\[[0-9]+]")
 
-func validateAttributeInfo(info *CrudEntityAttribute) string {
+func validateAttributeInfo(info *resources.CrudEntityAttribute) string {
 	match := arrayLiteralIndex.Match([]byte(info.Key))
 	errors := ""
+
+	if info.Key[0] == '^' {
+		if info.Key[len(info.Key)-1] != '$' {
+			errors += fmt.Sprintf("\t attribute `%s` starts with a ^ but doesn't end with a $, this is likely a bug due to regex rules)\n", info.Key)
+		} else {
+			if _, err := regexp.Compile(info.Key); err != nil {
+				errors += fmt.Sprintf("\t attribute `%s` is a regex, but it doesn't compile: %v", info.Key, err)
+			}
+
+			rt := completion.NewRegexCompletionTree()
+			if err := rt.AddRegex(info.Key); err != nil {
+				errors += fmt.Sprintf("\t attribute `%s` is a regex, but the completion tree doesn't support it: %v", info.Key, err)
+			}
+
+		}
+	}
 	if match {
 		errors += fmt.Sprintf("\t attribute `%s` has array index (e.g., [4] instead of [n], this is almost certainly a bug)\n", info.Key)
 	}
 
 	if strings.HasPrefix(info.Type, "RESOURCE_ID:") {
 		resourceType := info.Type[len("RESOURCE_ID:"):]
-		if _, ok := resources[resourceType]; !ok {
-			if _, ok := resourcesSingular[resourceType]; !ok {
+		if _, ok := resources.GetResourceByName(resourceType); !ok {
+
+			if _, ok := resources.GetSingularResourceByName(resourceType); !ok {
 				errors += fmt.Sprintf("\t attribute `%s` references a resource type that doesn't exist: %s\n", info.Key, resourceType)
 			}
 		}
@@ -92,7 +111,7 @@ func validateAttributeInfo(info *CrudEntityAttribute) string {
 
 	return errors
 }
-func validateCrudEntityInfo(info CrudEntityInfo) string {
+func validateCrudEntityInfo(info resources.CrudEntityInfo) string {
 	errors := ""
 
 	template, err := uritemplate.New(info.Url)
@@ -103,7 +122,7 @@ func validateCrudEntityInfo(info CrudEntityInfo) string {
 		for _, variable := range template.Varnames() {
 			variables[variable] = true
 			resourceName := strings.ReplaceAll(variable, "_", "-")
-			if _, ok := resources[resourceName]; !ok {
+			if _, ok := resources.GetPluralResources()[resourceName]; !ok {
 				errors += fmt.Sprintf("\tError processing Uri %s, the URI template references a resource %s, but could not find it\n", info.Url, resourceName)
 			}
 		}
@@ -124,7 +143,7 @@ func validateCrudEntityInfo(info CrudEntityInfo) string {
 }
 
 func TestJsonSchemaValidate(t *testing.T) {
-	sch, err := jsonschema.Compile("resources_schema.json")
+	sch, err := jsonschema.Compile("../resources_schema.json")
 	if err != nil {
 		log.Fatalf("%#v", err)
 	}
@@ -141,5 +160,46 @@ func TestJsonSchemaValidate(t *testing.T) {
 
 	if err = sch.ValidateInterface(v); err != nil {
 		log.Fatalf("%#v", err)
+	}
+}
+
+func TestResourceDocsExist(t *testing.T) {
+	const httpStatusCodeOk = 200
+
+	Resources := resources.GetPluralResources()
+	linksReferenceCount := make(map[string]int, len(Resources))
+
+	for resource := range Resources {
+		linksReferenceCount[Resources[resource].Docs]++
+		if Resources[resource].GetCollectionInfo != nil {
+			linksReferenceCount[Resources[resource].GetCollectionInfo.Docs]++
+		}
+		if Resources[resource].CreateEntityInfo != nil {
+			linksReferenceCount[Resources[resource].CreateEntityInfo.Docs]++
+		}
+		if Resources[resource].GetEntityInfo != nil {
+			linksReferenceCount[Resources[resource].GetEntityInfo.Docs]++
+		}
+		if Resources[resource].UpdateEntityInfo != nil {
+			linksReferenceCount[Resources[resource].UpdateEntityInfo.Docs]++
+		}
+		if Resources[resource].DeleteEntityInfo != nil {
+			linksReferenceCount[Resources[resource].DeleteEntityInfo.Docs]++
+		}
+	}
+
+	for link := range linksReferenceCount {
+		response, err := http.DefaultClient.Head(link)
+		if err != nil {
+			t.Errorf("Error Retrieving Link\nLink: %s\nError Message: %s\nReference Count: %d", link, err, linksReferenceCount[link])
+		} else {
+			if response.StatusCode != httpStatusCodeOk {
+				t.Errorf("Unexpected Response\nLink: %s\nExpected Status Code: %d\nActual Status Code: %d\nReference Count: %d",
+					link, httpStatusCodeOk, response.StatusCode, linksReferenceCount[link])
+			}
+			if err := response.Body.Close(); err != nil {
+				t.Errorf("Error Closing Reponse Body\nError Message: %s", err)
+			}
+		}
 	}
 }

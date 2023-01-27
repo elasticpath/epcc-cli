@@ -7,7 +7,7 @@ import (
 	"regexp"
 )
 
-//go:embed resources.yaml
+//go:embed yaml/resources.yaml
 var resourceMetaData string
 
 var resources map[string]Resource
@@ -128,6 +128,16 @@ func GetResourceByName(name string) (Resource, bool) {
 	}
 
 	res, ok = resourcesSingular[name]
+
+	if ok {
+		return res, true
+	}
+
+	return Resource{}, false
+}
+
+func GetSingularResourceByName(name string) (Resource, bool) {
+	res, ok := resourcesSingular[name]
 
 	if ok {
 		return res, true

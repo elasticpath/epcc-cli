@@ -272,6 +272,19 @@ cart-product-items:
       type: INT
     id:
       type: RESOURCE_ID:pcm-products
+    ^custom_inputs\.([a-zA-Z0-9_-]+)\.$:
+      type: STRING
+    tax[n].type:
+      type: ENUM:tax_item
+    tax[n].name:
+      type: STRING
+    tax[n].juristiction:
+      type: STRING
+    tax[n].code:
+      type: STRING
+    tax[n].rate:
+      type: FLOAT
+
 cart-checkout:
   singular-name: "cart-checkout"
   json-api-type: "checkout"
@@ -1531,6 +1544,9 @@ pcm-products:
     name:
       type: STRING
       autofill: FUNC:CarModel
+    external_ref:
+      type: STRING
+      autofill: FUNC:UUID
     commodity_type:
       type: ENUM:physical,digital
       autofill: VALUE:physical
@@ -1553,6 +1569,28 @@ pcm-products:
       type: STRING
     locales.en-US.description:
       type: STRING
+    ^custom_inputs\.([a-zA-Z0-9-_]+)\.name$:
+      type: STRING
+    ^custom_inputs\.([a-zA-Z0-9-_]+)\.validation_rules\[n\]$:
+      type: STRING
+    ^custom_inputs\.([a-zA-Z0-9-_]+)\.validation_rules\[n\]\.type$:
+      type: ENUM:string
+    ^custom_inputs\.([a-zA-Z0-9-_]+)\.validation_rules\[n\]\.max_length$:
+      type: INT
+    ^custom_inputs\.([a-zA-Z0-9-_]+)\.validation_rules\[n\]\.required$:
+      type: BOOL
+    ^components\.([a-zA-Z0-9-_]+)\.name$:
+      type: STRING
+    ^components\.([a-zA-Z0-9-_]+)\.min$:
+      type: INT
+    ^components\.([a-zA-Z0-9-_]+)\.max$:
+      type: INT
+    ^components\.([a-zA-Z0-9-_]+)\.options\.id\[n\]$:
+      type: RESOURCE_ID:pcm-products
+    ^components\.([a-zA-Z0-9-_]+)\.options\.type$:
+      type: ENUM:product
+    ^components\.([a-zA-Z0-9-_]+)\.options\.quantity$:
+      type: INT
 pcm-product-templates:
   singular-name: "pcm-product-template"
   json-api-type: "template"
