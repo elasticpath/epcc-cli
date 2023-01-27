@@ -4,6 +4,7 @@ import (
 	"github.com/elasticpath/epcc-cli/external/aliases"
 	"github.com/elasticpath/epcc-cli/external/resources"
 	"github.com/spf13/cobra"
+	"regexp"
 	"strconv"
 	"strings"
 )
@@ -109,7 +110,27 @@ func Complete(c Request) ([]string, cobra.ShellCompDirective) {
 	}
 
 	if c.Type&CompleteAttributeKey > 0 {
+		autoCompleteAttributes := []string{}
+		//simpleAttributes := []string{}
+
+		rt := NewRegexCompletionTree()
 		for k := range c.Resource.Attributes {
+			if (strings.HasPrefix(k, "^")) && (strings.HasSuffix(k, "$")) {
+				rt.AddRegex(k)
+			} else {
+				autoCompleteAttributes = append(autoCompleteAttributes, k)
+			}
+		}
+
+		for s := range c.Attributes {
+			rt.AddExistingValue(s)
+		}
+
+		if regexOptions, err := rt.GetCompletionOptions(); err == nil {
+			autoCompleteAttributes = append(autoCompleteAttributes, regexOptions...)
+		}
+
+		for _, k := range autoCompleteAttributes {
 			if strings.Contains(k, "[n]") {
 				i := strings.Index(k, "[n]")
 				prefix := k[:i+1]
@@ -147,8 +168,23 @@ func Complete(c Request) ([]string, cobra.ShellCompDirective) {
 			if i != -1 && j != -1 {
 				attr = attr[:i+1] + "n" + attr[j:]
 			}
-			if attribute := c.Resource.Attributes[attr]; attribute != nil {
+			attribute := c.Resource.Attributes[attr]
 
+			if attribute == nil {
+				for k, v := range c.Resource.Attributes {
+					if k[0] == '^' && k[len(k)-1] == '$' {
+						// Unit tests should stop a panic
+						r := regexp.MustCompile(k)
+
+						if r.MatchString(attr) {
+							attribute = v
+							break
+						}
+					}
+				}
+			}
+
+			if attribute != nil {
 				if attribute.Type == "BOOL" {
 					results = append(results, "true", "false")
 				} else if strings.HasPrefix(attribute.Type, "ENUM:") {

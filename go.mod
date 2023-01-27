@@ -24,6 +24,8 @@ require (
 	gopkg.in/yaml.v3 v3.0.1
 )
 
+require github.com/quasilyte/regex/syntax v0.0.0-20210819130434-b3f0c404a727
+
 require (
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver/v3 v3.2.0 // indirect
@@ -40,6 +42,6 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/xo/terminfo v0.0.0-20210125001918-ca9a967f8778 // indirect
 	golang.org/x/crypto v0.3.0 // indirect
-	golang.org/x/sys v0.2.0 // indirect
-	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
+	golang.org/x/sys v0.2.0 // indirect; indirect\
+
 )

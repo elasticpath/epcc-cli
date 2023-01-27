@@ -53,6 +53,14 @@ var create = &cobra.Command{
 						for i := idCount + 1; i < len(args); i = i + 2 {
 							usedAttributes[args[i]] = 0
 						}
+
+						// I think this allows you to complete the current argument
+						// This is necessary because if you are using something with a wildcard or regex
+						// You won't see it in the attribute list, and therefor it won't be able to auto complete it.
+						toComplete := strings.ReplaceAll(toComplete, "<ENTER>", "")
+						if toComplete != "" {
+							usedAttributes[toComplete] = 0
+						}
 						return completion.Complete(completion.Request{
 							Type:       completion.CompleteAttributeKey,
 							Resource:   resource,
