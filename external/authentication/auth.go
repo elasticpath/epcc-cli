@@ -25,7 +25,7 @@ type ApiTokenResponse struct {
 }
 
 var HttpClient = &http.Client{
-	Timeout: time.Second * 10,
+	Timeout: time.Second * 60,
 }
 
 var bearerToken *ApiTokenResponse = nil

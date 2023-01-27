@@ -72,7 +72,7 @@ func init() {
 	RootCmd.PersistentFlags().BoolVarP(&httpclient.Retry429, "retry-429", "", false, "Whether we should retry requests with HTTP 429 response code")
 	RootCmd.PersistentFlags().BoolVarP(&httpclient.DontLog2xxs, "silence-2xx", "", false, "Whether we should silence HTTP 2xx response code logging")
 
-	RootCmd.PersistentFlags().Float32VarP(&requestTimeout, "timeout", "", 10, "Request timeout in seconds (fractional values allowed)")
+	RootCmd.PersistentFlags().Float32VarP(&requestTimeout, "timeout", "", 60, "Request timeout in seconds (fractional values allowed)")
 
 	RootCmd.PersistentFlags().BoolVarP(&aliases.SkipAliasProcessing, "skip-alias-processing", "", false, "if set, we don't process the response for aliases")
 	ResetStore.PersistentFlags().BoolVarP(&DeleteApplicationKeys, "delete-application-keys", "", false, "if set, we delete application keys as well")
