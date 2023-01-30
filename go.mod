@@ -12,7 +12,7 @@ require (
 	github.com/itchyny/gojq v0.12.11
 	github.com/mattn/go-isatty v0.0.17
 	github.com/santhosh-tekuri/jsonschema/v4 v4.0.0
-	github.com/santhosh-tekuri/jsonschema/v5 v5.1.1
+	github.com/santhosh-tekuri/jsonschema/v5 v5.2.0
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/cobra v1.6.1
 	github.com/stretchr/testify v1.8.1
