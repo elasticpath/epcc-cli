@@ -5,6 +5,19 @@ import (
 	"testing"
 )
 
+func TestNoRegexReturnsEmptyValue(t *testing.T) {
+
+	// Fixture Setup
+
+	// Execute SUT
+	rt := NewRegexCompletionTree()
+	completionOptions, err := rt.GetCompletionOptions()
+
+	// Verify
+	require.NoError(t, err)
+	require.Equal(t, []string{}, completionOptions)
+}
+
 func TestSingleRegexReturnsCompletionOptionUpToFirstCaptureGroup(t *testing.T) {
 
 	// Fixture Setup
