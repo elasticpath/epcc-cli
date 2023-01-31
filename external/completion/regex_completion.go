@@ -71,6 +71,11 @@ func (t *RegexTree) AddRegex(regex string) error {
 }
 
 func (t *RegexTree) GetCompletionOptions() ([]string, error) {
+
+	if t.rootNode == nil {
+		return []string{}, nil
+	}
+
 	return t.rootNode.GetCompletionOptions()
 }
 
