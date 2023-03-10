@@ -19,77 +19,91 @@ import (
 	"strings"
 )
 
-var create = &cobra.Command{
-	Use:   "create <RESOURCE> [ID_1] [ID_2]... <KEY_1> <VAL_1> <KEY_2> <VAL_2>...",
-	Short: "Creates an entity of a resource.",
-	Args:  cobra.MinimumNArgs(1),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		body, err := createInternal(context.Background(), args, crud.AutoFillOnCreate)
+type CreateCommand struct {
+	cobra.Command
+	AutoFillOnCreate *bool
+}
 
-		if err != nil {
-			return err
-		}
+func (c *CreateCommand) init() {
+	create.Flags().StringVar(&crud.OverrideUrlPath, "override-url-path", "", "Override the URL that will be used for the Request")
+	create.Flags().BoolVarP(c.AutoFillOnCreate, "auto-fill", "", false, "Auto generate value for fields")
+	create.Flags().StringSliceVarP(&crud.QueryParameters, "query-parameters", "q", []string{}, "Pass in key=value an they will be added as query parameters")
+}
 
-		return json.PrintJson(body)
-	},
+var create = &CreateCommand{
+	Command: cobra.Command{
+		Use:   "create <RESOURCE> [ID_1] [ID_2]... <KEY_1> <VAL_1> <KEY_2> <VAL_2>...",
+		Short: "Creates an entity of a resource.",
+		Args:  cobra.MinimumNArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			body, err := createInternal(context.Background(), args, *create.AutoFillOnCreate)
 
-	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		if len(args) == 0 {
-			return completion.Complete(completion.Request{
-				Type: completion.CompleteSingularResource,
-				Verb: completion.Create,
-			})
-		}
+			if err != nil {
+				return err
+			}
 
-		// Find Resource
-		resource, ok := resources.GetResourceByName(args[0])
-		if ok {
-			if resource.CreateEntityInfo != nil {
-				resourceURL := resource.CreateEntityInfo.Url
-				idCount, _ := resources.GetNumberOfVariablesNeeded(resourceURL)
-				if len(args)-idCount >= 1 { // Arg is after IDs
-					if (len(args)-idCount)%2 == 1 { // This is an attribute key
-						usedAttributes := make(map[string]int)
-						for i := idCount + 1; i < len(args); i = i + 2 {
-							usedAttributes[args[i]] = 0
+			return json.PrintJson(body)
+		},
+
+		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+			if len(args) == 0 {
+				return completion.Complete(completion.Request{
+					Type: completion.CompleteSingularResource,
+					Verb: completion.Create,
+				})
+			}
+
+			// Find Resource
+			resource, ok := resources.GetResourceByName(args[0])
+			if ok {
+				if resource.CreateEntityInfo != nil {
+					resourceURL := resource.CreateEntityInfo.Url
+					idCount, _ := resources.GetNumberOfVariablesNeeded(resourceURL)
+					if len(args)-idCount >= 1 { // Arg is after IDs
+						if (len(args)-idCount)%2 == 1 { // This is an attribute key
+							usedAttributes := make(map[string]int)
+							for i := idCount + 1; i < len(args); i = i + 2 {
+								usedAttributes[args[i]] = 0
+							}
+							return completion.Complete(completion.Request{
+								Type:       completion.CompleteAttributeKey,
+								Resource:   resource,
+								Attributes: usedAttributes,
+								Verb:       completion.Create,
+							})
+						} else { // This is an attribute value
+							return completion.Complete(completion.Request{
+								Type:      completion.CompleteAttributeValue,
+								Resource:  resource,
+								Verb:      completion.Create,
+								Attribute: args[len(args)-1],
+							})
 						}
-						return completion.Complete(completion.Request{
-							Type:       completion.CompleteAttributeKey,
-							Resource:   resource,
-							Attributes: usedAttributes,
-							Verb:       completion.Create,
-						})
-					} else { // This is an attribute value
-						return completion.Complete(completion.Request{
-							Type:      completion.CompleteAttributeValue,
-							Resource:  resource,
-							Verb:      completion.Create,
-							Attribute: args[len(args)-1],
-						})
-					}
-				} else {
-					// Arg is in IDS
-					// Must be for a resource completion
-					types, err := resources.GetTypesOfVariablesNeeded(resourceURL)
+					} else {
+						// Arg is in IDS
+						// Must be for a resource completion
+						types, err := resources.GetTypesOfVariablesNeeded(resourceURL)
 
-					if err != nil {
-						return []string{}, cobra.ShellCompDirectiveNoFileComp
-					}
+						if err != nil {
+							return []string{}, cobra.ShellCompDirectiveNoFileComp
+						}
 
-					typeIdxNeeded := len(args) - 1
+						typeIdxNeeded := len(args) - 1
 
-					if completionResource, ok := resources.GetResourceByName(types[typeIdxNeeded]); ok {
-						return completion.Complete(completion.Request{
-							Type:     completion.CompleteAlias,
-							Resource: completionResource,
-						})
+						if completionResource, ok := resources.GetResourceByName(types[typeIdxNeeded]); ok {
+							return completion.Complete(completion.Request{
+								Type:     completion.CompleteAlias,
+								Resource: completionResource,
+							})
+						}
 					}
 				}
 			}
-		}
 
-		return []string{}, cobra.ShellCompDirectiveNoFileComp
+			return []string{}, cobra.ShellCompDirectiveNoFileComp
+		},
 	},
+	AutoFillOnCreate: false,
 }
 
 func createInternal(ctx context.Context, args []string, autoFillOnCreate bool) (string, error) {

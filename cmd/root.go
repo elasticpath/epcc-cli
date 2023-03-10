@@ -40,7 +40,7 @@ func init() {
 		docsCommand,
 		testJson,
 		get,
-		create,
+		&create.Command,
 		update,
 		delete,
 		DeleteAll,
@@ -54,6 +54,7 @@ func init() {
 		runbookGlobalCmd,
 	)
 
+	create.init()
 	Logs.AddCommand(LogsList, LogsShow, LogsClear)
 
 	testJson.Flags().BoolVarP(&noWrapping, "no-wrapping", "", false, "if set, we won't wrap the output the json in a data tag")
@@ -76,13 +77,15 @@ func init() {
 
 	RootCmd.PersistentFlags().BoolVarP(&aliases.SkipAliasProcessing, "skip-alias-processing", "", false, "if set, we don't process the response for aliases")
 	ResetStore.PersistentFlags().BoolVarP(&DeleteApplicationKeys, "delete-application-keys", "", false, "if set, we delete application keys as well")
-	create.Flags().StringVar(&crud.OverrideUrlPath, "override-url-path", "", "Override the URL that will be used for the Request")
-	create.Flags().BoolVarP(&crud.AutoFillOnCreate, "auto-fill", "", false, "Auto generate value for fields")
+
+
+
+
 	delete.Flags().StringVar(&crud.OverrideUrlPath, "override-url-path", "", "Override the URL that will be used for the Request")
 	get.Flags().StringVar(&crud.OverrideUrlPath, "override-url-path", "", "Override the URL that will be used for the Request")
 	update.Flags().StringVar(&crud.OverrideUrlPath, "override-url-path", "", "Override the URL that will be used for the Request")
 
-	create.Flags().StringSliceVarP(&crud.QueryParameters, "query-parameters", "q", []string{}, "Pass in key=value an they will be added as query parameters")
+
 	delete.Flags().StringSliceVarP(&crud.QueryParameters, "query-parameters", "q", []string{}, "Pass in key=value an they will be added as query parameters")
 	get.Flags().StringSliceVarP(&crud.QueryParameters, "query-parameters", "q", []string{}, "Pass in key=value an they will be added as query parameters")
 	update.Flags().StringSliceVarP(&crud.QueryParameters, "query-parameters", "q", []string{}, "Pass in key=value an they will be added as query parameters")
