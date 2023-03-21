@@ -8,7 +8,7 @@ require (
 	github.com/buildkite/shellwords v0.0.0-20180315110454-59467a9b8e10
 	github.com/caarlos0/env/v6 v6.10.1
 	github.com/google/uuid v1.3.0
-	github.com/gookit/color v1.5.2
+	github.com/gookit/color v1.5.3
 	github.com/itchyny/gojq v0.12.12
 	github.com/mattn/go-isatty v0.0.17
 	github.com/santhosh-tekuri/jsonschema/v4 v4.0.0
@@ -42,6 +42,6 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/xo/terminfo v0.0.0-20210125001918-ca9a967f8778 // indirect
 	golang.org/x/crypto v0.3.0 // indirect
-	golang.org/x/sys v0.5.0 // indirect; indirect\
+	golang.org/x/sys v0.6.0 // indirect; indirect\
 
 )
