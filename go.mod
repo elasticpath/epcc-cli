@@ -8,7 +8,7 @@ require (
 	github.com/buildkite/shellwords v0.0.0-20180315110454-59467a9b8e10
 	github.com/caarlos0/env/v6 v6.10.1
 	github.com/google/uuid v1.3.0
-	github.com/gookit/color v1.5.2
+	github.com/gookit/color v1.5.3
 	github.com/itchyny/gojq v0.12.12
 	github.com/mattn/go-isatty v0.0.18
 	github.com/santhosh-tekuri/jsonschema/v4 v4.0.0
