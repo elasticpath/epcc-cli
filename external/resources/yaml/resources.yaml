@@ -1436,6 +1436,15 @@ pcm-hierarchies:
       type: STRING
     locales.en-US.description:
       type: STRING
+pcm-hierarchy-node-children:
+  singular-name: "pcm-hierarchy-node-child"
+  json-api-type: "node"
+  json-api-format: "compliant"
+  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/hierarchies/relationships/get-node-children.html"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/pxm-hierarchies/hierarchies-api/get-a-hierarchy"
+    # This call is documented only in the response
+    url: "/pcm/hierarchies/{pcm_hierarchies}/children"
 pcm-node-children:
   singular-name: "pcm-node-child"
   json-api-type: "node"
