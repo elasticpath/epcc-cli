@@ -98,7 +98,7 @@ func SaveRequest(title string, requestBytes []byte, responseBytes []byte) error 
 		return err
 	}
 
-	f, err := os.Create(fmt.Sprintf("%s/%d_%s", dir, time.Now().Unix(), titleb64))
+	f, err := os.Create(fmt.Sprintf("%s/%d_%s", dir, time.Now().UnixMicro(), titleb64))
 	if err != nil {
 		return err
 	}
