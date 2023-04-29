@@ -284,7 +284,43 @@ cart-product-items:
       type: STRING
     tax[n].rate:
       type: FLOAT
-
+cart-custom-items:
+  singular-name: "cart-custom-item"
+  json-api-type: "custom_item"
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/carts/cart-items/add-custom-item-to-cart"
+  create-entity:
+    docs: "https://elasticpath.dev/docs/carts/cart-items/add-custom-item-to-cart"
+    url: "/v2/carts/{carts}/items"
+    content-type: application/json
+  attributes:
+    sku:
+      type: STRING
+    quantity:
+      type: INT
+      autofill: FUNC:NonZeroUint8
+    description:
+      type: STRING
+    name:
+      type: STRING
+      autofill: FUNC:CarModel
+    ^custom_inputs\.([a-zA-Z0-9_-]+)\.$:
+      type: STRING
+    price.amount:
+      type: INT
+      autofill: FUNC:Uint16
+    price.includes_tax:
+      type: BOOL
+    tax[n].type:
+      type: ENUM:tax_item
+    tax[n].name:
+      type: STRING
+    tax[n].juristiction:
+      type: STRING
+    tax[n].code:
+      type: STRING
+    tax[n].rate:
+      type: FLOAT
 cart-checkout:
   singular-name: "cart-checkout"
   json-api-type: "checkout"
