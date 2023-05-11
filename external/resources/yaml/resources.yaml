@@ -1476,10 +1476,9 @@ pcm-hierarchy-node-children:
   singular-name: "pcm-hierarchy-node-child"
   json-api-type: "node"
   json-api-format: "compliant"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/hierarchies/relationships/get-node-children.html"
+  docs: "https://elasticpath.dev/docs/pxm-hierarchies/hierarchies-api/get-a-hierarchies-children"
   get-collection:
-    docs: "https://elasticpath.dev/docs/pxm-hierarchies/hierarchies-api/get-a-hierarchy"
-    # This call is documented only in the response
+    docs: "https://elasticpath.dev/docs/pxm-hierarchies/hierarchies-api/get-a-hierarchies-children"
     url: "/pcm/hierarchies/{pcm_hierarchies}/children"
 pcm-node-children:
   singular-name: "pcm-node-child"
@@ -2301,3 +2300,14 @@ v2-modifiers:
       type: STRING
     id:
       type: RESOURCE_ID:v2-variation-option
+stores:
+  singular-name: "store"
+  json-api-type: "store"
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/getting-started/api-reference"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/getting-started/api-reference"
+    url: "/v2/stores/"
+  get-entity:
+    docs: "https://elasticpath.dev/docs/getting-started/api-reference"
+    url: "/v2/stores/{settings}"

@@ -1,0 +1,11 @@
+name: "misc"
+description:
+  long: "Miscellaneous runbooks"
+  short: "Miscellaneous runbooks"
+actions:
+  get-store-info:
+    description:
+      short: "Get the store info"
+    commands:
+      - epcc get settings
+      - epcc get store last_read=entity
