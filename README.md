@@ -194,6 +194,12 @@ INFO[0000] (0001) GET https://api.moltin.com/v2/customers ==> HTTP/2.0 200 OK
 The [JQ Manual](https://stedolan.github.io/jq/manual/) has some additional guidance on syntax, although
 this is based on [GoJQ which has a number of differences](https://github.com/itchyny/gojq#difference-to-jq).
 
+
+### How to determine the store you are using
+
+```bash
+epcc runbooks run misc get-store-info
+```
 ## Development Tips
 
 ### Fast rebuilds
