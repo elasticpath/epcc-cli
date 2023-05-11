@@ -58,19 +58,21 @@ func init() {
 func InitializeBuiltInRunbooks() {
 	LoadBuiltInRunbooks(embeddedRunbooks)
 	if config.Envs.EPCC_RUNBOOK_DIRECTORY != "" {
-		LoadRunbooksFromDirectory(config.Envs.EPCC_RUNBOOK_DIRECTORY)
+		if loadedRunbookCount := LoadRunbooksFromDirectory(config.Envs.EPCC_RUNBOOK_DIRECTORY); loadedRunbookCount == 0 {
+			log.Warnf("EPCC_RUNBOOK_DIRECTORY set as %s but no files found, runbooks should end in .epcc.yml", config.Envs.EPCC_RUNBOOK_DIRECTORY)
+		}
 	}
-
 }
 
-func LoadRunbooksFromDirectory(dir string) {
+func LoadRunbooksFromDirectory(dir string) uint32 {
 
 	entries, err := os.ReadDir(dir)
 	if err != nil {
 		log.Warnf("Could not read Runbooks from directory %s due to error: %v", dir, err)
-		return
+		return 0
 	}
 
+	count := uint32(0)
 	for _, entry := range entries {
 		info, err := entry.Info()
 		if err != nil {
@@ -95,11 +97,14 @@ func LoadRunbooksFromDirectory(dir string) {
 				log.Warnf("Could not read Runbooks from file %s due to error: %v", filename, err)
 				continue
 			}
+			count++
 		} else {
 			log.Tracef("File %s does not end in .epcc.yml, not parsing.", filename)
 		}
 
 	}
+
+	return count
 }
 
 func GetRunbookNames() []string {
