@@ -112,7 +112,7 @@ func initRunbookRunCommands() *cobra.Command {
 		SilenceUsage: true,
 	}
 
-	execTimeoutInSeconds := runbookRunCommand.PersistentFlags().Int64("execution-timeout", 120, "How long should the script take to execute before timing out")
+	execTimeoutInSeconds := runbookRunCommand.PersistentFlags().Int64("execution-timeout", 900, "How long should the script take to execute before timing out")
 	maxConcurrency := runbookRunCommand.PersistentFlags().Int64("max-concurrency", 2048, "Maximum number of commands at once")
 	semaphore := semaphore.NewWeighted(*maxConcurrency)
 
