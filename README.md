@@ -59,6 +59,14 @@ The following is a summary of the main commands, in general you can type `epcc h
 | `epcc runbooks show <RUNBOOK> <ACTION>` | Show a specific runbook (script)                             |
 | `epcc runbooks run <RUNBOOK> <ACTION>`  | Run a specific runbook (script)                              |
 
+#### Tuning Runbooks
+
+1. `--execution-timeout` will control how long the `epcc` process can run before timing out.
+2. `--rate-limit` will control the number of requests per second to EPCC.
+3. `--max-concurrency` will control the maximum number of concurrent commands that can run simultaneously.
+    * This differs from the rate limit in that if a request takes 2 seconds, a rate limit of 3 will allow 6 requests in flight at a time, where as `--max-concurrency` would limit you to 3. 
+
+
 ### Configuration
 
 #### Via Prompts
