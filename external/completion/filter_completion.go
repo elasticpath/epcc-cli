@@ -7,14 +7,6 @@ import (
 	"strings"
 )
 
-var doubleQuotedRegexp = regexp.MustCompile(`\s*"([^\\"]|(\\"))+"\s*`)
-
-var singleQuotedRegexp = regexp.MustCompile(`\s*'([^\\']|(\\'))+'\s*`)
-
-var doubleQuotedOpenRegexp = regexp.MustCompile(`\s*"([^\\"]|(\\"))+\s*$`)
-
-var singleQuotedOpenRegexp = regexp.MustCompile(`\s*'([^\\']|(\\'))+\s*$`)
-
 func GetFilterCompletion(toComplete string, r resources.Resource) []string {
 
 	res, err := lex(toComplete)
@@ -42,7 +34,7 @@ func GetFilterCompletion(toComplete string, r resources.Resource) []string {
 	var commasInOperator = 0
 	for _, t := range res {
 		tt := t
-		if t.tokenType.typeCode == binary_op || t.tokenType.typeCode == vararg_op {
+		if t.tokenType.typeCode == binaryOp || t.tokenType.typeCode == varargOp {
 			lastOperatorToken = &tt
 			commasInOperator = 0
 		}
@@ -53,16 +45,16 @@ func GetFilterCompletion(toComplete string, r resources.Resource) []string {
 	}
 
 	switch lastElement.currentState {
-	case lexerState_singleQuote:
+	case lexerStateInSingleQuote:
 		switch lastElement.tokenType.typeCode {
-		case single_quote_str_contents:
-			if lastOperatorToken.tokenType.typeCode == binary_op && commasInOperator >= 1 {
+		case singleQuoteStrContents:
+			if lastOperatorToken.tokenType.typeCode == binaryOp && commasInOperator >= 1 {
 				return []string{toComplete + `')`}
 			} else {
 				return []string{toComplete + `',`, toComplete + `')`}
 			}
-		case single_quote_char:
-			if lastOperatorToken.tokenType.typeCode == binary_op && commasInOperator >= 1 {
+		case singleQuoteChar:
+			if lastOperatorToken.tokenType.typeCode == binaryOp && commasInOperator >= 1 {
 				return []string{toComplete + ")"}
 			} else {
 				return []string{toComplete + ",", toComplete + ")"}
@@ -71,16 +63,16 @@ func GetFilterCompletion(toComplete string, r resources.Resource) []string {
 		}
 		//
 
-	case lexerState_doubleQuote:
+	case lexerStateInDoubleQuote:
 		switch lastElement.tokenType.typeCode {
-		case double_quote_str_contents:
-			if lastOperatorToken.tokenType.typeCode == binary_op && commasInOperator >= 1 {
+		case doubleQuoteStrContents:
+			if lastOperatorToken.tokenType.typeCode == binaryOp && commasInOperator >= 1 {
 				return []string{toComplete + `")`}
 			} else {
 				return []string{toComplete + `",`, toComplete + `")`}
 			}
-		case double_quote_char:
-			if lastOperatorToken.tokenType.typeCode == binary_op && commasInOperator >= 1 {
+		case doubleQuoteChar:
+			if lastOperatorToken.tokenType.typeCode == binaryOp && commasInOperator >= 1 {
 				return []string{toComplete + ")"}
 			} else {
 				return []string{toComplete + ",", toComplete + ")"}
@@ -88,9 +80,9 @@ func GetFilterCompletion(toComplete string, r resources.Resource) []string {
 
 		}
 
-	case lexerState_regular:
+	case lexerStateRegular:
 		switch lastElement.tokenType.typeCode {
-		case binary_op, vararg_op:
+		case binaryOp, varargOp:
 			for _, attr := range attributeNames {
 				completions = append(completions, lastElement.entireTextMatchFromStart+attr+",")
 			}
@@ -98,7 +90,7 @@ func GetFilterCompletion(toComplete string, r resources.Resource) []string {
 			for _, op := range ops {
 				completions = append(completions, lastElement.entireTextMatchFromStart+op)
 			}
-		case raw_literal:
+		case rawLiteral:
 			if len(res) >= 2 {
 				secondLastElement := res[len(res)-2]
 				for _, op := range ops {
@@ -110,26 +102,26 @@ func GetFilterCompletion(toComplete string, r resources.Resource) []string {
 
 		}
 
-	case lexerState_filterOp:
+	case lexerStateInFilterOperator:
 		// There must be two elements in the list (since the current state is filterOp, one state must have transitioned us)
 		secondLastElement := res[len(res)-2]
 		switch lastElement.tokenType.typeCode {
-		case raw_literal:
+		case rawLiteral:
 			switch secondLastElement.tokenType.typeCode {
-			case binary_op, vararg_op:
+			case binaryOp, varargOp:
 				// Previous element is a operator, so let's assume a field.
 				for _, attr := range attributeNames {
 					completions = append(completions, secondLastElement.entireTextMatchFromStart+attr+",")
 				}
 			case comma:
-				if lastOperatorToken.tokenType.typeCode == binary_op {
+				if lastOperatorToken.tokenType.typeCode == binaryOp {
 					return []string{toComplete + `)`}
 				} else {
 					return []string{toComplete + `,`, toComplete + `)`}
 				}
 
 			}
-		case right_parenthesis:
+		case rightParenthesis:
 			completions = append(completions, lastElement.entireTextMatchFromStart+":")
 		}
 
@@ -143,27 +135,25 @@ type tokenCode uint16
 
 const (
 	chain tokenCode = 1 << iota
-	binary_op
-	vararg_op
-	right_parenthesis
+	binaryOp
+	varargOp
+	rightParenthesis
 	comma
-	single_quote_char
-	single_quote_str_contents
-	double_quote_char
-
-	double_quote_str_contents
-
-	raw_literal
+	singleQuoteChar
+	singleQuoteStrContents
+	doubleQuoteChar
+	doubleQuoteStrContents
+	rawLiteral
 )
 
 type lexerState uint8
 
 const (
-	lexerState_regular lexerState = 1 << iota
-	lexerState_filterOp
+	lexerStateRegular lexerState = 1 << iota
+	lexerStateInFilterOperator
 
-	lexerState_singleQuote
-	lexerState_doubleQuote
+	lexerStateInSingleQuote
+	lexerStateInDoubleQuote
 )
 
 type tokenType struct {
@@ -176,58 +166,53 @@ var tokenTypes = []tokenType{
 	{
 		typeCode:     chain,
 		regexMatches: []*regexp.Regexp{regexp.MustCompile(`^\s*:`)},
-		validStates:  map[lexerState]lexerState{lexerState_regular: lexerState_regular},
+		validStates:  map[lexerState]lexerState{lexerStateRegular: lexerStateRegular},
 	},
 	{
-		typeCode:     binary_op,
+		typeCode:     binaryOp,
 		regexMatches: []*regexp.Regexp{regexp.MustCompile(`^\s*(eq|like|gt|ge|lt|le)\s*[(]`)},
-		validStates:  map[lexerState]lexerState{lexerState_regular: lexerState_filterOp},
+		validStates:  map[lexerState]lexerState{lexerStateRegular: lexerStateInFilterOperator},
 	},
 	{
-		typeCode:     vararg_op,
+		typeCode:     varargOp,
 		regexMatches: []*regexp.Regexp{regexp.MustCompile(`^\s*(in)\s*[(]`)},
-		validStates:  map[lexerState]lexerState{lexerState_regular: lexerState_filterOp},
+		validStates:  map[lexerState]lexerState{lexerStateRegular: lexerStateInFilterOperator},
 	},
-	//{
-	//	typeCode:     left_parenthesis,
-	//	regexMatches: []*regexp.Regexp{regexp.MustCompile(`^\s*\(`)},
-	//	validStates:  map[lexerState]lexerState{lexerState_regular: lexerState_regular},
-	//},
 	{
-		typeCode:     right_parenthesis,
+		typeCode:     rightParenthesis,
 		regexMatches: []*regexp.Regexp{regexp.MustCompile(`^\s*\)`)},
-		validStates:  map[lexerState]lexerState{lexerState_filterOp: lexerState_regular},
+		validStates:  map[lexerState]lexerState{lexerStateInFilterOperator: lexerStateRegular},
 	},
 	{
 		typeCode:     comma,
 		regexMatches: []*regexp.Regexp{regexp.MustCompile(`^\s*,`)},
-		validStates:  map[lexerState]lexerState{lexerState_filterOp: lexerState_filterOp},
+		validStates:  map[lexerState]lexerState{lexerStateInFilterOperator: lexerStateInFilterOperator},
 	},
 	{
-		typeCode:     single_quote_char,
+		typeCode:     singleQuoteChar,
 		regexMatches: []*regexp.Regexp{regexp.MustCompile(`^\s*'`)},
-		validStates:  map[lexerState]lexerState{lexerState_filterOp: lexerState_singleQuote, lexerState_singleQuote: lexerState_filterOp},
+		validStates:  map[lexerState]lexerState{lexerStateInFilterOperator: lexerStateInSingleQuote, lexerStateInSingleQuote: lexerStateInFilterOperator},
 	},
 	{
-		typeCode:     double_quote_char,
+		typeCode:     doubleQuoteChar,
 		regexMatches: []*regexp.Regexp{regexp.MustCompile(`^\s*"`)},
-		validStates:  map[lexerState]lexerState{lexerState_filterOp: lexerState_doubleQuote, lexerState_doubleQuote: lexerState_filterOp},
+		validStates:  map[lexerState]lexerState{lexerStateInFilterOperator: lexerStateInDoubleQuote, lexerStateInDoubleQuote: lexerStateInFilterOperator},
 	},
 	{
-		typeCode:     single_quote_str_contents,
+		typeCode:     singleQuoteStrContents,
 		regexMatches: []*regexp.Regexp{regexp.MustCompile(`^\s*([^\\']|(\\'))+`)},
-		validStates:  map[lexerState]lexerState{lexerState_singleQuote: lexerState_singleQuote},
+		validStates:  map[lexerState]lexerState{lexerStateInSingleQuote: lexerStateInSingleQuote},
 	},
 	{
-		typeCode:     double_quote_str_contents,
+		typeCode:     doubleQuoteStrContents,
 		regexMatches: []*regexp.Regexp{regexp.MustCompile(`^\s*([^\\"]|(\\"))+`)},
-		validStates:  map[lexerState]lexerState{lexerState_doubleQuote: lexerState_doubleQuote},
+		validStates:  map[lexerState]lexerState{lexerStateInDoubleQuote: lexerStateInDoubleQuote},
 	},
 	{
-		typeCode:     raw_literal,
+		typeCode:     rawLiteral,
 		regexMatches: []*regexp.Regexp{regexp.MustCompile(`^\s*[a-zA-Z0-9@$_*.{}| +:/-]+`)},
 		// A raw literal is what we parse incomplete functions to be
-		validStates: map[lexerState]lexerState{lexerState_regular: lexerState_regular, lexerState_filterOp: lexerState_filterOp},
+		validStates: map[lexerState]lexerState{lexerStateRegular: lexerStateRegular, lexerStateInFilterOperator: lexerStateInFilterOperator},
 	},
 }
 
@@ -241,7 +226,7 @@ type lexedToken struct {
 }
 
 func lex(input string) ([]lexedToken, error) {
-	var currentState = lexerState_regular
+	var currentState = lexerStateRegular
 
 	var remainingString = strings.Trim(input, " ")
 
