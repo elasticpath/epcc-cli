@@ -16,8 +16,6 @@ func GetFilterCompletion(toComplete string, r resources.Resource) []string {
 		return ops
 	}
 
-	fmt.Sprintf("%v", res)
-
 	lastElement := res[len(res)-1]
 
 	attributeNames := make([]string, 0, len(r.Attributes))
