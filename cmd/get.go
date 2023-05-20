@@ -109,6 +109,7 @@ var get = &cobra.Command{
 							Resource:   resource,
 							Verb:       completion.GetAll,
 							QueryParam: args[len(args)-1],
+							ToComplete: toComplete,
 						})
 					} else {
 						return completion.Complete(completion.Request{
@@ -116,6 +117,7 @@ var get = &cobra.Command{
 							Resource:   resource,
 							Verb:       completion.Get,
 							QueryParam: args[len(args)-1],
+							ToComplete: toComplete,
 						})
 					}
 				}

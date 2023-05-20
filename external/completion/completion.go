@@ -41,6 +41,7 @@ type Request struct {
 	Verb       int
 	Attribute  string
 	QueryParam string
+	ToComplete string
 }
 
 func Complete(c Request) ([]string, cobra.ShellCompDirective) {
@@ -304,7 +305,11 @@ func Complete(c Request) ([]string, cobra.ShellCompDirective) {
 				}
 
 				results = append(results, "updated_at", "-updated_at", "created_at", "-created_at")
+			} else if c.QueryParam == "filter" {
+				results = append(results, GetFilterCompletion(c.ToComplete, c.Resource)...)
+				compDir = compDir | cobra.ShellCompDirectiveNoSpace
 			}
+
 		}
 	}
 
