@@ -73,7 +73,20 @@ func toJsonObject(args []string, noWrapping bool, compliant bool, attributes map
 		// Look for a match of attribute names with [n] instead of [0] or [1] whatever the user supplied
 		attributeName = attributeWithArrayIndex.ReplaceAllString(attributeName, "[n]")
 
-		if attributeInfo, ok := attributes[attributeName]; ok {
+		attributeInfo, hasAttribute := attributes[attributeName]
+
+		useAttribute := false
+		if hasAttribute {
+			if strings.HasPrefix(attributeInfo.Type, "RESOURCE_ID:") {
+				useAttribute = true
+			}
+
+			if strings.HasPrefix(attributeInfo.Type, "RESOURCE_ID:*") {
+				useAttribute = false
+			}
+		}
+
+		if useAttribute {
 			if strings.HasPrefix(attributeInfo.Type, "RESOURCE_ID:") {
 				resourceType := strings.Replace(attributeInfo.Type, "RESOURCE_ID:", "", 1)
 
@@ -81,6 +94,7 @@ func toJsonObject(args []string, noWrapping bool, compliant bool, attributes map
 				if attributeInfo.AliasAttribute != "" {
 					aliasAttributeToUse = attributeInfo.AliasAttribute
 				}
+
 				if aliasType, ok := resources.GetResourceByName(resourceType); ok {
 					val = aliases.ResolveAliasValuesOrReturnIdentity(aliasType.JsonApiType, aliasType.AlternateJsonApiTypesForAliases, val, aliasAttributeToUse)
 				} else {

@@ -2,9 +2,15 @@ package json
 
 import (
 	"fmt"
+	"github.com/elasticpath/epcc-cli/external/aliases"
 	"github.com/elasticpath/epcc-cli/external/resources"
+	"github.com/stretchr/testify/require"
 	"testing"
 )
+
+func init() {
+	aliases.InitializeAliasDirectoryForTesting()
+}
 
 func TestErrorMessageWhenOddNumberOfValuesPassed(t *testing.T) {
 	// Fixture Setup
@@ -372,10 +378,82 @@ func TestToJsonCompliantFormatSimpleArrayWithTwoValues(t *testing.T) {
 	}
 }
 
+func TestToJsonCompliantForAlias(t *testing.T) {
+	// Fixture Setup
+	aliases.SaveAliasesForResources(
+		// language=JSON
+		`
+{
+	"data": {
+		"id": "123-456",
+		"type": "account"
+	}
+}`)
+
+	input := []string{"parent_id", "last_read=entity"}
+
+	expected :=
+		// language=JSON
+		`{"data":{"parent_id":"123-456"}}`
+
+	res, ok := resources.GetResourceByName("accounts")
+
+	require.True(t, ok, "Should have gotten a resource back")
+
+	// Execute SUT
+	actual, _ := ToJson(input, false, false, res.Attributes)
+
+	// Verification
+	if actual != expected {
+		t.Fatalf("Testing json conversion of empty value %s did not match expected %s, actually: %s", input, expected, actual)
+	}
+}
+
+func TestToJsonCompliantForAliasWithWildcard(t *testing.T) {
+	// Fixture Setup
+	aliases.SaveAliasesForResources(
+		// language=JSON
+		`
+{
+	"data": {
+		"id": "123-456",
+		"type": "account"
+	}
+}`)
+
+	input := []string{"data.id", "alias/account/last_read=entity/id"}
+
+	expected :=
+		// language=JSON
+		`{"data":{"id":"123-456"}}`
+
+	res, ok := resources.GetResourceByName("entries-relationship")
+
+	require.True(t, ok, "Should have gotten a resource back")
+
+	// Execute SUT
+	actual, _ := ToJson(input, true, false, res.Attributes)
+
+	// Verification
+	if actual != expected {
+		t.Fatalf("Testing json conversion of empty value %s did not match expected %s, actually: %s", input, expected, actual)
+	}
+}
+
 func TestToJsonCompliantAliasForNestedArray(t *testing.T) {
 	// Fixture Setup
+	aliases.SaveAliasesForResources(
+		// language=JSON
+		`
+{
+	"data": {
+		"id": "123-456",
+		"type": "product",
+		"name": "Clean Shampoo"
+	}
+}`)
 	input := []string{"components.shampoo.options[0].id", "alias/product/name=Clean_Shampoo/id"}
-	expected := `{"data":{"attributes":{"components":{"shampoo":{"options":[{"id":"name=Clean_Shampoo"}]}}}}}`
+	expected := `{"data":{"attributes":{"components":{"shampoo":{"options":[{"id":"123-456"}]}}}}}`
 
 	// Execute SUT
 	actual, _ := ToJson(input, false, true, map[string]*resources.CrudEntityAttribute{})

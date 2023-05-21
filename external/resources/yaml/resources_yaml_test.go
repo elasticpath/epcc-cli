@@ -101,10 +101,12 @@ func validateAttributeInfo(info *resources.CrudEntityAttribute) string {
 
 	if strings.HasPrefix(info.Type, "RESOURCE_ID:") {
 		resourceType := info.Type[len("RESOURCE_ID:"):]
-		if _, ok := resources.GetResourceByName(resourceType); !ok {
+		if resourceType != "*" {
+			if _, ok := resources.GetResourceByName(resourceType); !ok {
 
-			if _, ok := resources.GetSingularResourceByName(resourceType); !ok {
-				errors += fmt.Sprintf("\t attribute `%s` references a resource type that doesn't exist: %s\n", info.Key, resourceType)
+				if _, ok := resources.GetSingularResourceByName(resourceType); !ok {
+					errors += fmt.Sprintf("\t attribute `%s` references a resource type that doesn't exist: %s\n", info.Key, resourceType)
+				}
 			}
 		}
 	}
