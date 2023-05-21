@@ -298,6 +298,7 @@ var loginCustomer = &cobra.Command{
 				Verb:       completion.Create,
 				Resource:   res,
 				Attributes: usedAttributes,
+				ToComplete: toComplete,
 			})
 		}
 	},
@@ -410,6 +411,7 @@ var loginAccountManagement = &cobra.Command{
 					Verb:       completion.Create,
 					Resource:   res,
 					Attributes: usedAttributes,
+					ToComplete: toComplete,
 				})
 			}
 

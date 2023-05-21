@@ -199,7 +199,44 @@ func Complete(c Request) ([]string, cobra.ShellCompDirective) {
 				} else if strings.HasPrefix(attribute.Type, "RESOURCE_ID:") {
 					resourceType := strings.Replace(attribute.Type, "RESOURCE_ID:", "", 1)
 
-					if aliasType, ok := resources.GetResourceByName(resourceType); ok {
+					if resourceType == "*" {
+						toComplete := c.ToComplete
+						fullyQualifiedAlias := strings.Split(toComplete, "/")
+
+						switch len(fullyQualifiedAlias) {
+						case 1:
+							results = append(results, "alias/")
+							compDir = compDir | cobra.ShellCompDirectiveNoSpace
+
+						case 2:
+							for _, v := range resources.GetPluralResources() {
+								results = append(results, "alias/"+v.JsonApiType+"/")
+							}
+							compDir = compDir | cobra.ShellCompDirectiveNoSpace
+
+						case 3, 4:
+							if aliasType, ok := resources.GetResourceByName(fullyQualifiedAlias[1]); ok {
+								for alias := range aliases.GetAliasesForJsonApiTypeAndAlternates(aliasType.JsonApiType, aliasType.AlternateJsonApiTypesForAliases) {
+									results = append(results, "alias/"+aliasType.JsonApiType+"/"+alias+"/id")
+
+									if _, ok2 := aliasType.Attributes["sku"]; ok2 {
+										results = append(results, "alias/"+aliasType.JsonApiType+"/"+alias+"/sku")
+									}
+
+									if _, ok2 := aliasType.Attributes["slug"]; ok2 {
+										results = append(results, "alias/"+aliasType.JsonApiType+"/"+alias+"/slug")
+									}
+
+									if _, ok2 := aliasType.Attributes["code"]; ok2 {
+										results = append(results, "alias/"+aliasType.JsonApiType+"/"+alias+"/code")
+									}
+
+								}
+							}
+
+						}
+
+					} else if aliasType, ok := resources.GetResourceByName(resourceType); ok {
 						for alias := range aliases.GetAliasesForJsonApiTypeAndAlternates(aliasType.JsonApiType, aliasType.AlternateJsonApiTypesForAliases) {
 							results = append(results, alias)
 						}

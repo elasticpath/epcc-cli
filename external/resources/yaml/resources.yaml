@@ -783,8 +783,12 @@ entries-relationship:
       fields: slug
   attributes:
     data[n].id:
-      type: STRING
+      type: RESOURCE_ID:*
     data[n].type:
+      type: JSON_API_TYPE
+    data.id:
+      type: RESOURCE_ID:*
+    data.type:
       type: SINGULAR_RESOURCE_TYPE
 integration-jobs:
   singular-name: "integration-job"
@@ -1848,7 +1852,7 @@ personal-data-log-entries:
     resource_type:
       type: JSON_API_TYPE
     resource_id:
-      type: STRING
+      type: RESOURCE_ID:*
 personal-data-related-data-entries:
   singular-name: "personal-data-related-data-entry"
   json-api-type: "related_data_entry"
@@ -1861,7 +1865,7 @@ personal-data-related-data-entries:
     resource_type:
       type: JSON_API_TYPE
     resource_id:
-      type: STRING
+      type: RESOURCE_ID:*
 personal-data-erasure-requests:
   singular-name:  "personal-data-erasure-request"
   json-api-type: "erasure_request"
@@ -1880,7 +1884,7 @@ personal-data-erasure-requests:
     resource_type:
       type: JSON_API_TYPE
     resource_id:
-      type: STRING
+      type: RESOURCE_ID:*
 promotion-codes:
   singular-name: "promotion-code"
   json-api-type: "promotion_codes"
