@@ -9,7 +9,7 @@ import (
 )
 
 var docsCommand = &cobra.Command{
-	Use:   "docs <resource>",
+	Use:   "docs <resource> [verb]",
 	Short: "Opens up API documentation for the resource",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var err error = nil
@@ -26,6 +26,10 @@ var docsCommand = &cobra.Command{
 					return doDefault()
 				}
 			} else {
+				if len(args) != 2 {
+					return fmt.Errorf("you must supply a second argument because the first argument [%s] was not a resource", args[0])
+				}
+
 				resource, ok = resources.GetResourceByName(args[1])
 
 				if !ok {
