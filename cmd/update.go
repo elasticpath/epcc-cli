@@ -30,7 +30,7 @@ var update = &cobra.Command{
 		}
 
 		if outputJq != "" {
-			output, err := json.RunJQOnStringWithArray(outputJq, body)
+			output, err := json.RunJQOnString(outputJq, body)
 
 			if err != nil {
 				return err
