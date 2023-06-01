@@ -295,6 +295,13 @@ func (e *encoder) encodeMap(vs map[string]interface{}) {
 			return true
 		}
 
+		// Force links to be second last
+		if kvs[i].key == "links" {
+			return false
+		} else if kvs[j].key == "links" {
+			return true
+		}
+
 		return kvs[i].key < kvs[j].key
 	})
 	for i, kv := range kvs {
