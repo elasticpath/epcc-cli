@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/buildkite/shellwords"
 	"github.com/elasticpath/epcc-cli/external/completion"
+	"github.com/elasticpath/epcc-cli/external/httpclient"
 	"github.com/elasticpath/epcc-cli/external/json"
 	"github.com/elasticpath/epcc-cli/external/resources"
 	"github.com/elasticpath/epcc-cli/external/runbooks"
@@ -187,13 +188,18 @@ func initRunbookRunCommands() *cobra.Command {
 								commandLine: rawCmdLine,
 							}
 
+							overrides := &httpclient.HttpParameterOverrides{
+								QueryParameters: nil,
+								OverrideUrlPath: "",
+							}
+
 							switch rawCmdArguments[0] {
 							case "epcc":
 								switch rawCmdArguments[1] {
 								case "get":
 									funcs = append(funcs, func() {
 
-										body, err := getInternal(ctx, rawCmdArguments[2:])
+										body, err := getInternal(ctx, overrides, rawCmdArguments[2:])
 
 										// We print "get" calls because they don't do anything useful (well I guess they populate aliases)
 										json.PrintJson(body)
@@ -206,7 +212,7 @@ func initRunbookRunCommands() *cobra.Command {
 								case "delete":
 									funcs = append(funcs, func() {
 
-										_, err := deleteInternal(ctx, rawCmdArguments[2:])
+										_, err := deleteInternal(ctx, overrides, rawCmdArguments[2:])
 
 										commandResult.error = err
 
@@ -225,9 +231,9 @@ func initRunbookRunCommands() *cobra.Command {
 										var err error = nil
 
 										if len(rawCmdArguments) >= 3 && rawCmdArguments[2] == "--auto-fill" {
-											_, err = createInternal(ctx, rawCmdArguments[3:], true)
+											_, err = createInternal(ctx, overrides, rawCmdArguments[3:], true)
 										} else {
-											_, err = createInternal(ctx, rawCmdArguments[2:], false)
+											_, err = createInternal(ctx, overrides, rawCmdArguments[2:], false)
 										}
 
 										commandResult.error = err
@@ -235,7 +241,7 @@ func initRunbookRunCommands() *cobra.Command {
 									})
 								case "update":
 									funcs = append(funcs, func() {
-										_, err := updateInternal(ctx, rawCmdArguments[2:])
+										_, err := updateInternal(ctx, overrides, rawCmdArguments[2:])
 										commandResult.error = err
 
 										resultChan <- commandResult

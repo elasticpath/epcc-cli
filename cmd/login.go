@@ -9,7 +9,7 @@ import (
 	"github.com/elasticpath/epcc-cli/external/authentication"
 	"github.com/elasticpath/epcc-cli/external/browser"
 	"github.com/elasticpath/epcc-cli/external/completion"
-	"github.com/elasticpath/epcc-cli/external/crud"
+	"github.com/elasticpath/epcc-cli/external/httpclient"
 	"github.com/elasticpath/epcc-cli/external/json"
 	"github.com/elasticpath/epcc-cli/external/resources"
 	log "github.com/sirupsen/logrus"
@@ -304,12 +304,17 @@ var loginCustomer = &cobra.Command{
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 
+		overrides := &httpclient.HttpParameterOverrides{
+			QueryParameters: nil,
+			OverrideUrlPath: "",
+		}
+
 		ctx := context.Background()
 		newArgs := make([]string, 0)
 		newArgs = append(newArgs, "customer-token")
 		newArgs = append(newArgs, args...)
 
-		body, err := createInternal(ctx, newArgs, crud.AutoFillOnCreate)
+		body, err := createInternal(ctx, overrides, newArgs, false)
 
 		if err != nil {
 			log.Warnf("Login not completed successfully")
@@ -339,7 +344,7 @@ var loginCustomer = &cobra.Command{
 		if customerTokenResponse != nil {
 
 			// Get the customer so we have aliases where we need the id.
-			getCustomerBody, err := getInternal(ctx, []string{"customer", customerTokenResponse.Data.CustomerId})
+			getCustomerBody, err := getInternal(ctx, overrides, []string{"customer", customerTokenResponse.Data.CustomerId})
 
 			if err != nil {
 				log.Warnf("Could not retrieve customer")
@@ -420,6 +425,10 @@ var loginAccountManagement = &cobra.Command{
 
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
+		overrides := &httpclient.HttpParameterOverrides{
+			QueryParameters: nil,
+			OverrideUrlPath: "",
+		}
 
 		if authentication.IsCustomerTokenSet() {
 			log.Warnf("You are currently logged in with a Customer Token, please logout of this token with `epcc logout customer`. Mixing customer tokens and account management authentication token is not supported. ")
@@ -434,7 +443,7 @@ var loginAccountManagement = &cobra.Command{
 		}
 
 		// Populate an alias to get the authentication_realm.
-		_, err := getInternal(ctx, []string{"account-authentication-settings"})
+		_, err := getInternal(ctx, overrides, []string{"account-authentication-settings"})
 
 		if err != nil {
 			return fmt.Errorf("couldn't determine authentication realm: %w", err)
@@ -459,7 +468,7 @@ var loginAccountManagement = &cobra.Command{
 
 		// Try and auto-detect the password profile id
 		if passwordAuthentication {
-			resp, err := getInternal(ctx, []string{"password-profiles", "related_authentication_realm_for_account_authentication_settings_last_read=entity"})
+			resp, err := getInternal(ctx, overrides, []string{"password-profiles", "related_authentication_realm_for_account_authentication_settings_last_read=entity"})
 
 			if err != nil {
 				return fmt.Errorf("couldn't determine password profile: %w", err)
@@ -514,7 +523,7 @@ var loginAccountManagement = &cobra.Command{
 		}
 
 		// Do the login and get back a list of accounts
-		body, err := createInternal(ctx, loginArgs, crud.AutoFillOnCreate)
+		body, err := createInternal(ctx, overrides, loginArgs, false)
 
 		if err != nil {
 			log.Warnf("Login not completed successfully")
@@ -574,7 +583,7 @@ var loginAccountManagement = &cobra.Command{
 
 		authentication.SaveAccountManagementAuthenticationToken(*selectedAccount)
 
-		accountMembers, err := getInternal(ctx, []string{"account-members"})
+		accountMembers, err := getInternal(ctx, overrides, []string{"account-members"})
 
 		if err == nil {
 			accountMemberId, _ := json.RunJQOnString(".data[0].id", accountMembers)

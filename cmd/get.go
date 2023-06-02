@@ -18,118 +18,135 @@ import (
 	"strings"
 )
 
-var get = &cobra.Command{
-	Use:   "get [RESOURCE] [ID_1] [ID_2]",
-	Short: "Retrieves a single resource.",
-	Args:  cobra.MinimumNArgs(1),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		body, err := getInternal(context.Background(), args)
-		if err != nil {
-			return err
-		}
+func NewGetCommand(parentCmd *cobra.Command) {
 
-		if outputJq != "" {
-			output, err := json.RunJQOnString(outputJq, body)
+	overrides := &httpclient.HttpParameterOverrides{
+		QueryParameters: nil,
+		OverrideUrlPath: "",
+	}
 
+	var outputJq = ""
+
+	var get = &cobra.Command{
+		Use:   "get [RESOURCE] [ID_1] [ID_2]",
+		Short: "Retrieves a single resource.",
+		Args:  cobra.MinimumNArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			body, err := getInternal(context.Background(), overrides, args)
 			if err != nil {
 				return err
 			}
 
-			outputJson, err := gojson.Marshal(output)
+			if outputJq != "" {
+				output, err := json.RunJQOnString(outputJq, body)
 
-			if err != nil {
-				return err
+				if err != nil {
+					return err
+				}
+
+				outputJson, err := gojson.Marshal(output)
+
+				if err != nil {
+					return err
+				}
+
+				return json.PrintJson(string(outputJson))
 			}
 
-			return json.PrintJson(string(outputJson))
-		}
+			return json.PrintJson(body)
+		},
 
-		return json.PrintJson(body)
-	},
+		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+			if len(args) == 0 {
+				return completion.Complete(completion.Request{
+					Type: completion.CompleteSingularResource | completion.CompletePluralResource,
+					Verb: completion.Get,
+				})
+			} else if resource, ok := resources.GetResourceByName(args[0]); ok {
+				// len(args) == 0 means complete resource
+				// len(args) == 1 means first id
+				// lens(args) == 2 means second id.
 
-	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		if len(args) == 0 {
-			return completion.Complete(completion.Request{
-				Type: completion.CompleteSingularResource | completion.CompletePluralResource,
-				Verb: completion.Get,
-			})
-		} else if resource, ok := resources.GetResourceByName(args[0]); ok {
-			// len(args) == 0 means complete resource
-			// len(args) == 1 means first id
-			// lens(args) == 2 means second id.
+				resourceURL, err := getUrl(resource, args)
+				if err != nil {
+					return []string{}, cobra.ShellCompDirectiveNoFileComp
+				}
 
-			resourceURL, err := getUrl(resource, args)
-			if err != nil {
-				return []string{}, cobra.ShellCompDirectiveNoFileComp
-			}
-
-			idCount, err := resources.GetNumberOfVariablesNeeded(resourceURL.Url)
-
-			if err != nil {
-				return []string{}, cobra.ShellCompDirectiveNoFileComp
-			}
-
-			if len(args) > 0 && len(args) < 1+idCount {
-				// Must be for a resource completion
-				types, err := resources.GetTypesOfVariablesNeeded(resourceURL.Url)
+				idCount, err := resources.GetNumberOfVariablesNeeded(resourceURL.Url)
 
 				if err != nil {
 					return []string{}, cobra.ShellCompDirectiveNoFileComp
 				}
 
-				typeIdxNeeded := len(args) - 1
+				if len(args) > 0 && len(args) < 1+idCount {
+					// Must be for a resource completion
+					types, err := resources.GetTypesOfVariablesNeeded(resourceURL.Url)
 
-				if completionResource, ok := resources.GetResourceByName(types[typeIdxNeeded]); ok {
-					return completion.Complete(completion.Request{
-						Type:     completion.CompleteAlias,
-						Resource: completionResource,
-					})
-				}
+					if err != nil {
+						return []string{}, cobra.ShellCompDirectiveNoFileComp
+					}
 
-			} else if len(args) >= idCount+1 { // Arg is after IDs
-				if (len(args)-idCount)%2 == 1 { // This is a query param key
-					if resource.SingularName != args[0] { // If the resource is plural/get-collection
+					typeIdxNeeded := len(args) - 1
+
+					if completionResource, ok := resources.GetResourceByName(types[typeIdxNeeded]); ok {
 						return completion.Complete(completion.Request{
-							Type:     completion.CompleteQueryParamKey,
-							Resource: resource,
-							Verb:     completion.GetAll,
-						})
-					} else {
-						return completion.Complete(completion.Request{
-							Type:     completion.CompleteQueryParamKey,
-							Resource: resource,
-							Verb:     completion.Get,
+							Type:     completion.CompleteAlias,
+							Resource: completionResource,
 						})
 					}
-				} else {
-					// This is a query param value
-					if resource.SingularName != args[0] { // If the resource is plural/get-collection
-						return completion.Complete(completion.Request{
-							Type:       completion.CompleteQueryParamValue,
-							Resource:   resource,
-							Verb:       completion.GetAll,
-							QueryParam: args[len(args)-1],
-							ToComplete: toComplete,
-						})
+
+				} else if len(args) >= idCount+1 { // Arg is after IDs
+					if (len(args)-idCount)%2 == 1 { // This is a query param key
+						if resource.SingularName != args[0] { // If the resource is plural/get-collection
+							return completion.Complete(completion.Request{
+								Type:     completion.CompleteQueryParamKey,
+								Resource: resource,
+								Verb:     completion.GetAll,
+							})
+						} else {
+							return completion.Complete(completion.Request{
+								Type:     completion.CompleteQueryParamKey,
+								Resource: resource,
+								Verb:     completion.Get,
+							})
+						}
 					} else {
-						return completion.Complete(completion.Request{
-							Type:       completion.CompleteQueryParamValue,
-							Resource:   resource,
-							Verb:       completion.Get,
-							QueryParam: args[len(args)-1],
-							ToComplete: toComplete,
-						})
+						// This is a query param value
+						if resource.SingularName != args[0] { // If the resource is plural/get-collection
+							return completion.Complete(completion.Request{
+								Type:       completion.CompleteQueryParamValue,
+								Resource:   resource,
+								Verb:       completion.GetAll,
+								QueryParam: args[len(args)-1],
+								ToComplete: toComplete,
+							})
+						} else {
+							return completion.Complete(completion.Request{
+								Type:       completion.CompleteQueryParamValue,
+								Resource:   resource,
+								Verb:       completion.Get,
+								QueryParam: args[len(args)-1],
+								ToComplete: toComplete,
+							})
+						}
 					}
 				}
 			}
-		}
 
-		return []string{}, cobra.ShellCompDirectiveNoFileComp
-	},
+			return []string{}, cobra.ShellCompDirectiveNoFileComp
+		},
+	}
+
+	get.Flags().StringVar(&overrides.OverrideUrlPath, "override-url-path", "", "Override the URL that will be used for the Request")
+	get.Flags().StringSliceVarP(&overrides.QueryParameters, "query-parameters", "q", []string{}, "Pass in key=value an they will be added as query parameters")
+	get.Flags().StringVarP(&outputJq, "output-jq", "", "", "A jq expression, if set we will restrict output to only this")
+	_ = get.RegisterFlagCompletionFunc("output-jq", jqCompletionFunc)
+
+	parentCmd.AddCommand(get)
 }
 
-func getInternal(ctx context.Context, args []string) (string, error) {
-	resp, err := getResource(ctx, args)
+func getInternal(ctx context.Context, overrides *httpclient.HttpParameterOverrides, args []string) (string, error) {
+	resp, err := getResource(ctx, overrides, args)
 
 	if err != nil {
 		return "", err
@@ -177,7 +194,7 @@ func getUrl(resource resources.Resource, args []string) (*resources.CrudEntityIn
 	}
 }
 
-func getResource(ctx context.Context, args []string) (*http.Response, error) {
+func getResource(ctx context.Context, overrides *httpclient.HttpParameterOverrides, args []string) (*http.Response, error) {
 	crud.OutstandingRequestCounter.Add(1)
 	defer crud.OutstandingRequestCounter.Done()
 
@@ -207,9 +224,9 @@ func getResource(ctx context.Context, args []string) (*http.Response, error) {
 		return nil, err
 	}
 
-	if crud.OverrideUrlPath != "" {
-		log.Warnf("Overriding URL Path from %s to %s", resourceURL, crud.OverrideUrlPath)
-		resourceURL = crud.OverrideUrlPath
+	if overrides.OverrideUrlPath != "" {
+		log.Warnf("Overriding URL Path from %s to %s", resourceURL, overrides.OverrideUrlPath)
+		resourceURL = overrides.OverrideUrlPath
 	}
 
 	// Add remaining args as query params
@@ -218,7 +235,7 @@ func getResource(ctx context.Context, args []string) (*http.Response, error) {
 		params.Add(args[i], args[i+1])
 	}
 
-	for _, v := range crud.QueryParameters {
+	for _, v := range overrides.QueryParameters {
 		keyAndValue := strings.SplitN(v, "=", 2)
 		if len(keyAndValue) != 2 {
 			return nil, fmt.Errorf("Could not parse query parameter %v, all query parameters should be a key and value format", keyAndValue)
