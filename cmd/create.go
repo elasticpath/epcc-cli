@@ -20,105 +20,124 @@ import (
 	"strings"
 )
 
-var create = &cobra.Command{
-	Use:   "create <RESOURCE> [ID_1] [ID_2]... <KEY_1> <VAL_1> <KEY_2> <VAL_2>...",
-	Short: "Creates an entity of a resource.",
-	Args:  cobra.MinimumNArgs(1),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		body, err := createInternal(context.Background(), args, crud.AutoFillOnCreate)
+func NewCreateCommand(parentCmd *cobra.Command) {
 
-		if err != nil {
-			return err
-		}
+	var autoFillOnCreate = false
 
-		if outputJq != "" {
-			output, err := json.RunJQOnString(outputJq, body)
+	var outputJq = ""
+	overrides := &httpclient.HttpParameterOverrides{
+		QueryParameters: nil,
+		OverrideUrlPath: "",
+	}
 
-			if err != nil {
-				return err
-			}
-
-			outputJson, err := gojson.Marshal(output)
+	var create = &cobra.Command{
+		Use:   "create <RESOURCE> [ID_1] [ID_2]... <KEY_1> <VAL_1> <KEY_2> <VAL_2>...",
+		Short: "Creates an entity of a resource.",
+		Args:  cobra.MinimumNArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			body, err := createInternal(context.Background(), overrides, args, autoFillOnCreate)
 
 			if err != nil {
 				return err
 			}
 
-			return json.PrintJson(string(outputJson))
-		}
+			if outputJq != "" {
+				output, err := json.RunJQOnString(outputJq, body)
 
-		return json.PrintJson(body)
-	},
+				if err != nil {
+					return err
+				}
 
-	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		if len(args) == 0 {
-			return completion.Complete(completion.Request{
-				Type: completion.CompleteSingularResource,
-				Verb: completion.Create,
-			})
-		}
+				outputJson, err := gojson.Marshal(output)
 
-		// Find Resource
-		resource, ok := resources.GetResourceByName(args[0])
-		if ok {
-			if resource.CreateEntityInfo != nil {
-				resourceURL := resource.CreateEntityInfo.Url
-				idCount, _ := resources.GetNumberOfVariablesNeeded(resourceURL)
-				if len(args)-idCount >= 1 { // Arg is after IDs
-					if (len(args)-idCount)%2 == 1 { // This is an attribute key
-						usedAttributes := make(map[string]int)
-						for i := idCount + 1; i < len(args); i = i + 2 {
-							usedAttributes[args[i]] = 0
+				if err != nil {
+					return err
+				}
+
+				return json.PrintJson(string(outputJson))
+			}
+
+			return json.PrintJson(body)
+		},
+
+		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+			if len(args) == 0 {
+				return completion.Complete(completion.Request{
+					Type: completion.CompleteSingularResource,
+					Verb: completion.Create,
+				})
+			}
+
+			// Find Resource
+			resource, ok := resources.GetResourceByName(args[0])
+			if ok {
+				if resource.CreateEntityInfo != nil {
+					resourceURL := resource.CreateEntityInfo.Url
+					idCount, _ := resources.GetNumberOfVariablesNeeded(resourceURL)
+					if len(args)-idCount >= 1 { // Arg is after IDs
+						if (len(args)-idCount)%2 == 1 { // This is an attribute key
+							usedAttributes := make(map[string]int)
+							for i := idCount + 1; i < len(args); i = i + 2 {
+								usedAttributes[args[i]] = 0
+							}
+
+							// I think this allows you to complete the current argument
+							// This is necessary because if you are using something with a wildcard or regex
+							// You won't see it in the attribute list, and therefor it won't be able to auto complete it.
+							toComplete := strings.ReplaceAll(toComplete, "<ENTER>", "")
+							if toComplete != "" {
+								usedAttributes[toComplete] = 0
+							}
+							return completion.Complete(completion.Request{
+								Type:       completion.CompleteAttributeKey,
+								Resource:   resource,
+								Attributes: usedAttributes,
+								Verb:       completion.Create,
+							})
+						} else { // This is an attribute value
+							return completion.Complete(completion.Request{
+								Type:       completion.CompleteAttributeValue,
+								Resource:   resource,
+								Verb:       completion.Create,
+								Attribute:  args[len(args)-1],
+								ToComplete: toComplete,
+							})
+						}
+					} else {
+						// Arg is in IDS
+						// Must be for a resource completion
+						types, err := resources.GetTypesOfVariablesNeeded(resourceURL)
+
+						if err != nil {
+							return []string{}, cobra.ShellCompDirectiveNoFileComp
 						}
 
-						// I think this allows you to complete the current argument
-						// This is necessary because if you are using something with a wildcard or regex
-						// You won't see it in the attribute list, and therefor it won't be able to auto complete it.
-						toComplete := strings.ReplaceAll(toComplete, "<ENTER>", "")
-						if toComplete != "" {
-							usedAttributes[toComplete] = 0
+						typeIdxNeeded := len(args) - 1
+
+						if completionResource, ok := resources.GetResourceByName(types[typeIdxNeeded]); ok {
+							return completion.Complete(completion.Request{
+								Type:     completion.CompleteAlias,
+								Resource: completionResource,
+							})
 						}
-						return completion.Complete(completion.Request{
-							Type:       completion.CompleteAttributeKey,
-							Resource:   resource,
-							Attributes: usedAttributes,
-							Verb:       completion.Create,
-						})
-					} else { // This is an attribute value
-						return completion.Complete(completion.Request{
-							Type:       completion.CompleteAttributeValue,
-							Resource:   resource,
-							Verb:       completion.Create,
-							Attribute:  args[len(args)-1],
-							ToComplete: toComplete,
-						})
-					}
-				} else {
-					// Arg is in IDS
-					// Must be for a resource completion
-					types, err := resources.GetTypesOfVariablesNeeded(resourceURL)
-
-					if err != nil {
-						return []string{}, cobra.ShellCompDirectiveNoFileComp
-					}
-
-					typeIdxNeeded := len(args) - 1
-
-					if completionResource, ok := resources.GetResourceByName(types[typeIdxNeeded]); ok {
-						return completion.Complete(completion.Request{
-							Type:     completion.CompleteAlias,
-							Resource: completionResource,
-						})
 					}
 				}
 			}
-		}
 
-		return []string{}, cobra.ShellCompDirectiveNoFileComp
-	},
+			return []string{}, cobra.ShellCompDirectiveNoFileComp
+		},
+	}
+
+	create.Flags().StringVar(&overrides.OverrideUrlPath, "override-url-path", "", "Override the URL that will be used for the Request")
+	create.Flags().BoolVarP(&autoFillOnCreate, "auto-fill", "", false, "Auto generate value for fields")
+	create.Flags().StringSliceVarP(&overrides.QueryParameters, "query-parameters", "q", []string{}, "Pass in key=value an they will be added as query parameters")
+	create.Flags().StringVarP(&outputJq, "output-jq", "", "", "A jq expression, if set we will restrict output to only this")
+
+	_ = create.RegisterFlagCompletionFunc("output-jq", jqCompletionFunc)
+	parentCmd.AddCommand(create)
 }
 
-func createInternal(ctx context.Context, args []string, autoFillOnCreate bool) (string, error) {
+func createInternal(ctx context.Context, overrides *httpclient.HttpParameterOverrides, args []string, autoFillOnCreate bool) (string, error) {
 	crud.OutstandingRequestCounter.Add(1)
 	defer crud.OutstandingRequestCounter.Done()
 
@@ -144,9 +163,9 @@ func createInternal(ctx context.Context, args []string, autoFillOnCreate bool) (
 	// Replace ids with args in resourceURL
 	resourceURL, err = resources.GenerateUrl(resource.CreateEntityInfo, args[1:])
 
-	if crud.OverrideUrlPath != "" {
-		log.Warnf("Overriding URL Path from %s to %s", resourceURL, crud.OverrideUrlPath)
-		resourceURL = crud.OverrideUrlPath
+	if overrides.OverrideUrlPath != "" {
+		log.Warnf("Overriding URL Path from %s to %s", resourceURL, overrides.OverrideUrlPath)
+		resourceURL = overrides.OverrideUrlPath
 	}
 
 	if err != nil {
@@ -171,7 +190,7 @@ func createInternal(ctx context.Context, args []string, autoFillOnCreate bool) (
 
 		params := url.Values{}
 
-		for _, v := range crud.QueryParameters {
+		for _, v := range overrides.QueryParameters {
 			keyAndValue := strings.SplitN(v, "=", 2)
 			if len(keyAndValue) != 2 {
 				return "", fmt.Errorf("Could not parse query parameter %v, all query parameters should be a key and value format", keyAndValue)

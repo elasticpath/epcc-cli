@@ -17,98 +17,114 @@ import (
 	"strings"
 )
 
-var update = &cobra.Command{
-	Use:   "update <RESOURCE> [PARENT_ID_1] [PARENT_ID_2] [ID]... <KEY_1> <VAL_1> <KEY_2> <VAL_2>...",
-	Short: "Updates an entity of a resource.",
-	Args:  cobra.MinimumNArgs(1),
-	RunE: func(cmd *cobra.Command, args []string) error {
+func NewUpdateCommand(parentCmd *cobra.Command) {
+	overrides := &httpclient.HttpParameterOverrides{
+		QueryParameters: nil,
+		OverrideUrlPath: "",
+	}
 
-		body, err := updateInternal(context.Background(), args)
+	var outputJq = ""
 
-		if err != nil {
-			return err
-		}
+	var update = &cobra.Command{
+		Use:   "update <RESOURCE> [PARENT_ID_1] [PARENT_ID_2] [ID]... <KEY_1> <VAL_1> <KEY_2> <VAL_2>...",
+		Short: "Updates an entity of a resource.",
+		Args:  cobra.MinimumNArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
 
-		if outputJq != "" {
-			output, err := json.RunJQOnString(outputJq, body)
-
-			if err != nil {
-				return err
-			}
-
-			outputJson, err := gojson.Marshal(output)
+			body, err := updateInternal(context.Background(), overrides, args)
 
 			if err != nil {
 				return err
 			}
 
-			return json.PrintJson(string(outputJson))
-		}
+			if outputJq != "" {
+				output, err := json.RunJQOnString(outputJq, body)
 
-		return json.PrintJson(body)
-	},
+				if err != nil {
+					return err
+				}
 
-	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		if len(args) == 0 {
-			return completion.Complete(completion.Request{
-				Type: completion.CompleteSingularResource,
-				Verb: completion.Update,
-			})
-		}
+				outputJson, err := gojson.Marshal(output)
 
-		// Find Resource
-		resource, ok := resources.GetResourceByName(args[0])
-		if ok {
-			if resource.UpdateEntityInfo != nil {
-				resourceURL := resource.UpdateEntityInfo.Url
-				idCount, _ := resources.GetNumberOfVariablesNeeded(resourceURL)
-				if len(args)-idCount >= 1 { // Arg is after IDs
-					if (len(args)-idCount)%2 == 1 { // This is an attribute key
-						usedAttributes := make(map[string]int)
-						for i := idCount + 1; i < len(args); i = i + 2 {
-							usedAttributes[args[i]] = 0
+				if err != nil {
+					return err
+				}
+
+				return json.PrintJson(string(outputJson))
+			}
+
+			return json.PrintJson(body)
+		},
+
+		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+			if len(args) == 0 {
+				return completion.Complete(completion.Request{
+					Type: completion.CompleteSingularResource,
+					Verb: completion.Update,
+				})
+			}
+
+			// Find Resource
+			resource, ok := resources.GetResourceByName(args[0])
+			if ok {
+				if resource.UpdateEntityInfo != nil {
+					resourceURL := resource.UpdateEntityInfo.Url
+					idCount, _ := resources.GetNumberOfVariablesNeeded(resourceURL)
+					if len(args)-idCount >= 1 { // Arg is after IDs
+						if (len(args)-idCount)%2 == 1 { // This is an attribute key
+							usedAttributes := make(map[string]int)
+							for i := idCount + 1; i < len(args); i = i + 2 {
+								usedAttributes[args[i]] = 0
+							}
+							return completion.Complete(completion.Request{
+								Type:       completion.CompleteAttributeKey,
+								Resource:   resource,
+								Attributes: usedAttributes,
+								Verb:       completion.Update,
+							})
+						} else { // This is an attribute value
+							return completion.Complete(completion.Request{
+								Type:       completion.CompleteAttributeValue,
+								Resource:   resource,
+								Verb:       completion.Update,
+								Attribute:  args[len(args)-1],
+								ToComplete: toComplete,
+							})
 						}
-						return completion.Complete(completion.Request{
-							Type:       completion.CompleteAttributeKey,
-							Resource:   resource,
-							Attributes: usedAttributes,
-							Verb:       completion.Update,
-						})
-					} else { // This is an attribute value
-						return completion.Complete(completion.Request{
-							Type:       completion.CompleteAttributeValue,
-							Resource:   resource,
-							Verb:       completion.Update,
-							Attribute:  args[len(args)-1],
-							ToComplete: toComplete,
-						})
-					}
-				} else {
-					// Arg is in IDS
-					// Must be for a resource completion
-					types, err := resources.GetTypesOfVariablesNeeded(resourceURL)
+					} else {
+						// Arg is in IDS
+						// Must be for a resource completion
+						types, err := resources.GetTypesOfVariablesNeeded(resourceURL)
 
-					if err != nil {
-						return []string{}, cobra.ShellCompDirectiveNoFileComp
-					}
+						if err != nil {
+							return []string{}, cobra.ShellCompDirectiveNoFileComp
+						}
 
-					typeIdxNeeded := len(args) - 1
+						typeIdxNeeded := len(args) - 1
 
-					if completionResource, ok := resources.GetResourceByName(types[typeIdxNeeded]); ok {
-						return completion.Complete(completion.Request{
-							Type:     completion.CompleteAlias,
-							Resource: completionResource,
-						})
+						if completionResource, ok := resources.GetResourceByName(types[typeIdxNeeded]); ok {
+							return completion.Complete(completion.Request{
+								Type:     completion.CompleteAlias,
+								Resource: completionResource,
+							})
+						}
 					}
 				}
 			}
-		}
 
-		return []string{}, cobra.ShellCompDirectiveNoFileComp
-	},
+			return []string{}, cobra.ShellCompDirectiveNoFileComp
+		},
+	}
+
+	update.Flags().StringVar(&overrides.OverrideUrlPath, "override-url-path", "", "Override the URL that will be used for the Request")
+	update.Flags().StringSliceVarP(&overrides.QueryParameters, "query-parameters", "q", []string{}, "Pass in key=value an they will be added as query parameters")
+	update.Flags().StringVarP(&outputJq, "output-jq", "", "", "A jq expression, if set we will restrict output to only this")
+	_ = update.RegisterFlagCompletionFunc("output-jq", jqCompletionFunc)
+	parentCmd.AddCommand(update)
+
 }
 
-func updateInternal(ctx context.Context, args []string) (string, error) {
+func updateInternal(ctx context.Context, overrides *httpclient.HttpParameterOverrides, args []string) (string, error) {
 	crud.OutstandingRequestCounter.Add(1)
 	defer crud.OutstandingRequestCounter.Done()
 
@@ -135,9 +151,9 @@ func updateInternal(ctx context.Context, args []string) (string, error) {
 		return "", err
 	}
 
-	if crud.OverrideUrlPath != "" {
-		log.Warnf("Overriding URL Path from %s to %s", resourceURL, crud.OverrideUrlPath)
-		resourceURL = crud.OverrideUrlPath
+	if overrides.OverrideUrlPath != "" {
+		log.Warnf("Overriding URL Path from %s to %s", resourceURL, overrides.OverrideUrlPath)
+		resourceURL = overrides.OverrideUrlPath
 	}
 
 	args = append(args, "type", resource.JsonApiType)
@@ -149,7 +165,7 @@ func updateInternal(ctx context.Context, args []string) (string, error) {
 
 	params := url.Values{}
 
-	for _, v := range crud.QueryParameters {
+	for _, v := range overrides.QueryParameters {
 		keyAndValue := strings.SplitN(v, "=", 2)
 		if len(keyAndValue) != 2 {
 			return "", fmt.Errorf("Could not parse query parameter %v, all query parameters should be a key and value format", keyAndValue)

@@ -26,6 +26,11 @@ var ResetStore = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
 
+		overrides := &httpclient.HttpParameterOverrides{
+			QueryParameters: nil,
+			OverrideUrlPath: "",
+		}
+
 		storeId, err := getStoreId(ctx, args)
 		if err != nil {
 			return fmt.Errorf("could not determine store id: %w", err)
@@ -51,31 +56,31 @@ var ResetStore = &cobra.Command{
 		// We would also need locking to go faster.
 
 		// Get customer and account authentication settings to populate the aliases
-		_, err = getInternal(ctx, []string{"customer-authentication-settings"})
+		_, err = getInternal(ctx, overrides, []string{"customer-authentication-settings"})
 
 		if err != nil {
 			errors = append(errors, err.Error())
 		}
 
-		_, err = getInternal(ctx, []string{"account-authentication-settings"})
+		_, err = getInternal(ctx, overrides, []string{"account-authentication-settings"})
 
 		if err != nil {
 			errors = append(errors, err.Error())
 		}
 
-		_, err = getInternal(ctx, []string{"merchant-realm-mappings"})
+		_, err = getInternal(ctx, overrides, []string{"merchant-realm-mappings"})
 
 		if err != nil {
 			errors = append(errors, err.Error())
 		}
 
-		_, err = getInternal(ctx, []string{"authentication-realms"})
+		_, err = getInternal(ctx, overrides, []string{"authentication-realms"})
 
 		if err != nil {
 			errors = append(errors, err.Error())
 		}
 
-		err, resetUndeletableResourcesErrors := resetResourcesUndeletableResources()
+		err, resetUndeletableResourcesErrors := resetResourcesUndeletableResources(ctx, overrides)
 
 		if err != nil {
 			return err
@@ -148,7 +153,7 @@ func getStoreId(ctx context.Context, args []string) (string, error) {
 	return storeId, nil
 }
 
-func resetResourcesUndeletableResources() (error, []string) {
+func resetResourcesUndeletableResources(ctx context.Context, overrides *httpclient.HttpParameterOverrides) (error, []string) {
 
 	resetCmds := [][]string{
 		{"payment-gateway-adyen", "merchant_account", "", "username", "", "password", "", "enabled", "false", "test", "false"},
@@ -175,7 +180,14 @@ func resetResourcesUndeletableResources() (error, []string) {
 	errors := make([]string, 0)
 
 	for _, resetCmd := range resetCmds {
-		err := update.RunE(update, resetCmd)
+		body, err := updateInternal(ctx, overrides, resetCmd)
+
+		if err != nil {
+			errors = append(errors, fmt.Errorf("error resetting  %s: %v", resetCmd[0], err).Error())
+		}
+
+		err = json.PrintJson(body)
+
 		if err != nil {
 			errors = append(errors, fmt.Errorf("error resetting  %s: %v", resetCmd[0], err).Error())
 		}

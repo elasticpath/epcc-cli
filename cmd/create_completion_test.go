@@ -1,13 +1,17 @@
 package cmd
 
 import (
+	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
 
-func TestCreateCompletionRetunsSomeTypes(t *testing.T) {
+func TestCreateCompletionReturnsSomeTypes(t *testing.T) {
 
 	// Fixture Setup
+	rootCmd := &cobra.Command{}
+	NewCreateCommand(rootCmd)
+	create := rootCmd.Commands()[0]
 
 	// Execute SUT
 	completionResult, _ := create.ValidArgsFunction(create, []string{}, "")
@@ -20,6 +24,9 @@ func TestCreateCompletionRetunsSomeTypes(t *testing.T) {
 func TestCreateCompletionReturnsSomeFields(t *testing.T) {
 
 	// Fixture Setup
+	rootCmd := &cobra.Command{}
+	NewCreateCommand(rootCmd)
+	create := rootCmd.Commands()[0]
 
 	// Execute SUT
 	completionResult, _ := create.ValidArgsFunction(create, []string{"customer"}, "")
@@ -32,6 +39,9 @@ func TestCreateCompletionReturnsSomeFields(t *testing.T) {
 func TestCreateCompletionReturnsSomeFieldWhileExcludingUsedOnes(t *testing.T) {
 
 	// Fixture Setup
+	rootCmd := &cobra.Command{}
+	NewCreateCommand(rootCmd)
+	create := rootCmd.Commands()[0]
 
 	// Execute SUT
 	completionResult, _ := create.ValidArgsFunction(create, []string{"customer", "name", "John"}, "")
