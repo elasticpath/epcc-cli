@@ -42,19 +42,27 @@ func NewCreateCommand(parentCmd *cobra.Command) {
 			}
 
 			if outputJq != "" {
-				output, err := json.RunJQOnString(outputJq, body)
+				output, err := json.RunJQOnStringWithArray(outputJq, body)
 
 				if err != nil {
 					return err
 				}
 
-				outputJson, err := gojson.Marshal(output)
+				for _, outputLine := range output {
+					outputJson, err := gojson.Marshal(outputLine)
 
-				if err != nil {
-					return err
+					if err != nil {
+						return err
+					}
+
+					err = json.PrintJson(string(outputJson))
+
+					if err != nil {
+						return err
+					}
 				}
 
-				return json.PrintJson(string(outputJson))
+				return nil
 			}
 
 			return json.PrintJson(body)
