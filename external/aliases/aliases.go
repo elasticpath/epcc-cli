@@ -80,7 +80,7 @@ func getAliasesForSingleJsonApiType(jsonApiType string) map[string]*id.IdableAtt
 
 		data, err := os.ReadFile(aliasFile)
 		if err != nil {
-			log.Debugf("Could not read %s, error %s", aliasFile, err)
+			log.Debugf("Could not read alias file: %s, error %s", aliasFile, err)
 			data = []byte{}
 		} else {
 		}

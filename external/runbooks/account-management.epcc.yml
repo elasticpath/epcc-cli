@@ -71,6 +71,8 @@ actions:
       - epcc get account-authentication-settings
       # Initialize alias for password profile id
       - epcc get password-profiles related_authentication_realm_for_account_authentication_settings_last_read=entity
+      # TODO: Create Password Profile if one isn't enabled.
+
       # Create Account 1
       - epcc create account name "Account 1" legal_name "Account 1"
       - epcc create user-authentication-info related_authentication_realm_for_account_authentication_settings_last_read=entity name "Account 1" email "account1@example.com"
@@ -105,6 +107,7 @@ actions:
         epcc create pcm-catalog name "Account 2 Catalog" description "Account 2 Catalog" pricebook_id name=Account_2_Pricebook hierarchy_ids[0] name=Hierarchy_For_Account_2
       - epcc create pcm-catalog-releases name=Account_1_Catalog
       # Don't hammer the catalog publishing endpoint, might get rate limited
+      # TODO Wait for catalog to be published
       - sleep 2
       - epcc create pcm-catalog-releases name=Account_2_Catalog
       - sleep 5

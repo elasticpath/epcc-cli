@@ -66,7 +66,6 @@ func init() {
 		cmCommand,
 		docsCommand,
 		testJson,
-		DeleteAll,
 		Logs,
 		resourceListCommand,
 		aliasesCmd,
@@ -81,6 +80,7 @@ func init() {
 	NewDeleteCommand(RootCmd)
 	NewGetCommand(RootCmd)
 	NewUpdateCommand(RootCmd)
+	NewDeleteAllCommand(RootCmd)
 
 	Logs.AddCommand(LogsList, LogsShow, LogsClear)
 

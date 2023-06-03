@@ -18,27 +18,32 @@ import (
 	"sync"
 )
 
-var DeleteAll = &cobra.Command{
-	Use:    "delete-all [RESOURCE]",
-	Short:  "Deletes all of a resource.",
-	Args:   cobra.MinimumNArgs(1),
-	Hidden: false,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		return deleteAllInternal(context.Background(), args)
-	},
+func NewDeleteAllCommand(parentCmd *cobra.Command) {
 
-	ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		if len(args) == 0 {
-			return completion.Complete(completion.Request{
-				Type: completion.CompletePluralResource,
-				Verb: completion.DeleteAll,
-			})
-		}
+	var deleteAll = &cobra.Command{
+		Use:    "delete-all [RESOURCE]",
+		Short:  "Deletes all of a resource.",
+		Args:   cobra.MinimumNArgs(1),
+		Hidden: false,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return deleteAllInternal(context.Background(), args)
+		},
 
-		return []string{}, cobra.ShellCompDirectiveNoFileComp
-	},
+		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+			if len(args) == 0 {
+				return completion.Complete(completion.Request{
+					Type: completion.CompletePluralResource,
+					Verb: completion.DeleteAll,
+				})
+			}
+
+			return []string{}, cobra.ShellCompDirectiveNoFileComp
+		},
+	}
+
+	parentCmd.AddCommand(deleteAll)
+
 }
-
 func deleteAllInternal(ctx context.Context, args []string) error {
 	// Find Resource
 	resource, ok := resources.GetResourceByName(args[0])

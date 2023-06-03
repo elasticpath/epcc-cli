@@ -27,7 +27,8 @@ actions:
     variables:
       customer_id:
         type: RESOURCE_ID:customer
-        default: 123
+        default: 00000000-feed-dada-iced-c0ffee000000
+        required: true
         description:
           short: "Customer with which to create the address"
       country:
@@ -45,7 +46,7 @@ actions:
     commands:
       - |
         {{- range untilStep 0 .number_of_addresses 1 }}
-        epcc create customer-address "{{$.customer_id}}" name "address_{{.}}" first_name "John" last_name "Smith" line_1 "1234 Main Street" county "XX" "postcode" "H0H 0H0" country "{{$.country}}"
+        epcc create customer-address "{{$.customer_id }}" name "address_{{.}}" first_name "John" last_name "Smith" line_1 "1234 Main Street" county "XX" "postcode" "H0H 0H0" country "{{$.country}}"
         {{- end -}}
   reset:
     ignore_errors: true

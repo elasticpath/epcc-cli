@@ -43,6 +43,7 @@ type Variable struct {
 	Name        string
 	Type        string `yaml:"type"`
 	Default     string `yaml:"default"`
+	Required    bool   `yaml:"required"`
 	Description *RunbookDescription
 }
 
