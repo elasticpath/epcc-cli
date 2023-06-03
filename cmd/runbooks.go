@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"github.com/buildkite/shellwords"
 	"github.com/elasticpath/epcc-cli/external/completion"
-	"github.com/elasticpath/epcc-cli/external/httpclient"
-	"github.com/elasticpath/epcc-cli/external/json"
 	"github.com/elasticpath/epcc-cli/external/resources"
 	"github.com/elasticpath/epcc-cli/external/runbooks"
 	_ "github.com/elasticpath/epcc-cli/external/runbooks"
@@ -32,6 +30,7 @@ func initRunbookCommands() {
 
 	runbookGlobalCmd.AddCommand(initRunbookShowCommands())
 	runbookGlobalCmd.AddCommand(initRunbookRunCommands())
+	runbookGlobalCmd.AddCommand(initRunbookDevCommands())
 }
 
 var AbortRunbookExecution = atomic.Bool{}
@@ -87,7 +86,7 @@ func initRunbookShowCommands() *cobra.Command {
 				},
 			}
 
-			processRunbookVariablesOnCommand(runbookShowRunbookActionCmd, runbookStringArguments, runbookAction.Variables)
+			processRunbookVariablesOnCommand(runbookShowRunbookActionCmd, runbookStringArguments, runbookAction.Variables, false)
 
 			runbookShowRunbookCmd.AddCommand(runbookShowRunbookActionCmd)
 		}
@@ -172,95 +171,33 @@ func initRunbookRunCommands() *cobra.Command {
 								continue
 							}
 
+							if !strings.HasPrefix(rawCmdLine, "epcc ") {
+								// Some commands like sleep don't have prefix
+								// This hack allows them to run
+								rawCmdLine = "epcc " + rawCmdLine
+							}
 							rawCmdArguments, err := shellwords.SplitPosix(strings.Trim(rawCmdLine, " \n"))
 
 							if err != nil {
 								return err
 							}
 
-							if len(rawCmdArguments) < 2 {
-								return fmt.Errorf("Each command should start with epcc [verb], but the following line does not:\n\t%s", rawCmdLine)
-							}
+							funcs = append(funcs, func() {
 
-							commandResult := &commandResult{
-								stepIdx:     stepIdx,
-								commandIdx:  commandIdx,
-								commandLine: rawCmdLine,
-							}
-
-							overrides := &httpclient.HttpParameterOverrides{
-								QueryParameters: nil,
-								OverrideUrlPath: "",
-							}
-
-							switch rawCmdArguments[0] {
-							case "epcc":
-								switch rawCmdArguments[1] {
-								case "get":
-									funcs = append(funcs, func() {
-
-										body, err := getInternal(ctx, overrides, rawCmdArguments[2:])
-
-										// We print "get" calls because they don't do anything useful (well I guess they populate aliases)
-										json.PrintJson(body)
-
-										commandResult.error = err
-
-										resultChan <- commandResult
-									})
-
-								case "delete":
-									funcs = append(funcs, func() {
-
-										_, err := deleteInternal(ctx, overrides, rawCmdArguments[2:])
-
-										commandResult.error = err
-
-										resultChan <- commandResult
-
-									})
-								case "delete-all":
-									funcs = append(funcs, func() {
-										err := deleteAllInternal(ctx, rawCmdArguments[2:])
-										commandResult.error = err
-										resultChan <- commandResult
-									})
-								case "create":
-									funcs = append(funcs, func() {
-
-										var err error = nil
-
-										if len(rawCmdArguments) >= 3 && rawCmdArguments[2] == "--auto-fill" {
-											_, err = createInternal(ctx, overrides, rawCmdArguments[3:], true)
-										} else {
-											_, err = createInternal(ctx, overrides, rawCmdArguments[2:], false)
-										}
-
-										commandResult.error = err
-										resultChan <- commandResult
-									})
-								case "update":
-									funcs = append(funcs, func() {
-										_, err := updateInternal(ctx, overrides, rawCmdArguments[2:])
-										commandResult.error = err
-
-										resultChan <- commandResult
-									})
-								default:
-									return fmt.Errorf("Each command needs to have a valid verb of { get, create, update, delete, delete-all }, but we got %s in line:\n\t", rawCmdArguments[1])
-								}
-							case "sleep":
-								res, err := strconv.Atoi(rawCmdArguments[1])
-								if err != nil {
-									return fmt.Errorf("Invalid argument to sleep %v, must be an integer", rawCmdArguments[1])
+								stepCmd := generateRunbookCmd()
+								stepCmd.SetArgs(rawCmdArguments[1:])
+								err := stepCmd.ExecuteContext(ctx)
+								commandResult := &commandResult{
+									stepIdx:     stepIdx,
+									commandIdx:  commandIdx,
+									commandLine: rawCmdLine,
+									error:       err,
 								}
 
-								funcs = append(funcs, func() {
-									log.Infof("Sleeping for %d seconds", res)
-									time.Sleep(time.Duration(res) * time.Second)
-									resultChan <- commandResult
-								})
-							}
+								resultChan <- commandResult
+
+							})
+
 						}
 
 						if len(funcs) > 1 {
@@ -318,7 +255,7 @@ func initRunbookRunCommands() *cobra.Command {
 					return nil
 				},
 			}
-			processRunbookVariablesOnCommand(runbookActionRunActionCommand, runbookStringArguments, runbookAction.Variables)
+			processRunbookVariablesOnCommand(runbookActionRunActionCommand, runbookStringArguments, runbookAction.Variables, true)
 
 			runbookRunRunbookCmd.AddCommand(runbookActionRunActionCommand)
 		}
@@ -327,12 +264,22 @@ func initRunbookRunCommands() *cobra.Command {
 	return runbookRunCommand
 }
 
-func processRunbookVariablesOnCommand(runbookActionRunActionCommand *cobra.Command, runbookStringArguments map[string]*string, variables map[string]runbooks.Variable) {
+func processRunbookVariablesOnCommand(runbookActionRunActionCommand *cobra.Command, runbookStringArguments map[string]*string, variables map[string]runbooks.Variable, enableRequiredVars bool) {
 	for key, variable := range variables {
 		key := key
 		variable := variable
 
-		runbookActionRunActionCommand.Flags().StringVar(runbookStringArguments[key], key, variable.Default, variable.Description.Short)
+		if variable.Required && enableRequiredVars {
+			runbookActionRunActionCommand.Flags().StringVar(runbookStringArguments[key], key, "", variable.Description.Short)
+			err := runbookActionRunActionCommand.MarkFlagRequired(key)
+
+			if err != nil {
+				log.Errorf("Could not set flag as required, this is a bug of some kind %s: %v", key, err)
+			}
+		} else {
+			runbookActionRunActionCommand.Flags().StringVar(runbookStringArguments[key], key, variable.Default, variable.Description.Short)
+		}
+
 		runbookActionRunActionCommand.RegisterFlagCompletionFunc(key, func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 
 			if strings.HasPrefix(variable.Type, "RESOURCE_ID:") {
@@ -348,4 +295,56 @@ func processRunbookVariablesOnCommand(runbookActionRunActionCommand *cobra.Comma
 
 		})
 	}
+}
+
+// Creates a new instance of a cobra.Command
+// We use a new instance for each step so that we can benefit from flags in runbooks
+func generateRunbookCmd() *cobra.Command {
+	root := &cobra.Command{
+		Use:          "epcc",
+		SilenceUsage: true,
+	}
+
+	NewCreateCommand(root)
+	NewUpdateCommand(root)
+	NewDeleteCommand(root)
+	NewGetCommand(root)
+	NewDeleteAllCommand(root)
+	getDevCommands(root)
+
+	return root
+}
+
+func initRunbookDevCommands() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:          "dev",
+		Hidden:       true,
+		SilenceUsage: true,
+	}
+
+	getDevCommands(cmd)
+	return cmd
+}
+
+func getDevCommands(parent *cobra.Command) {
+	parent.AddCommand(&cobra.Command{
+		Use:   "sleep time",
+		Short: "Sleep for a predefined duration",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+
+			timeToSleep, err := strconv.Atoi(args[0])
+
+			if err != nil {
+				return fmt.Errorf("could not sleep due to error: %v", err)
+			}
+
+			log.Debugf("Sleeping for %d seconds", timeToSleep)
+			time.Sleep(time.Duration(timeToSleep) * time.Second)
+
+			return nil
+
+		},
+	})
+
 }

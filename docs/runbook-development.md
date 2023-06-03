@@ -95,7 +95,9 @@ actions:
    variables:
     customer_id:
       type: RESOURCE_ID:customer
-      default: 123
+      default: 00000000-feed-dada-iced-c0ffee000000
+      # When you set a variable as required with a default, the default is used only for the `show` command.
+      required: true
       description:
        short: "Customer with which to create the address"
     country:
@@ -133,9 +135,9 @@ Usage:
   epcc runbooks show hello-world create-some-customer-addresses [flags]
 
 Flags:
-    --country string          The country the address should be in (default "US")
-    --customer_id string        Customer with which to create the address (default "123")
-  -h, --help                 help for create-some-customer-addresses
+    --country string              The country the address should be in (default "US")
+    --customer_id string          Customer with which to create the address 
+  -h, --help                      help for create-some-customer-addresses
     --number_of_addresses string  The number of addresses (default "10")
 ```
 

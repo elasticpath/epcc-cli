@@ -69,6 +69,10 @@
                       "type": ["integer", "string"],
                       "description": "A default value, which must result in a syntactically correct template, even if it isn't semantically correct."
                     },
+                    "required": {
+                      "type": ["boolean"],
+                      "description": "If true, then this argument is required"
+                    },
                     "description": {
                       "type": "object",
                       "additionalProperties": false,
