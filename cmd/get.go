@@ -38,7 +38,7 @@ func NewGetCommand(parentCmd *cobra.Command) {
 			}
 
 			if outputJq != "" {
-				output, err := json.RunJQOnString(outputJq, body)
+				output, err := json.RunJQOnStringWithArray(outputJq, body)
 
 				if err != nil {
 					return err
