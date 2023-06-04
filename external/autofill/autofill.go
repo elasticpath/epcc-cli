@@ -64,7 +64,7 @@ func GetJsonArrayForResource(r *resources.Resource) []string {
 
 						if _, err := strconv.Atoi(arg); err == nil {
 							// If we get an integer value back, lets just quote it.
-							arg = fmt.Sprintf("\"%s\"", v)
+							arg = fmt.Sprintf("\"%s\"", arg)
 						}
 					}
 

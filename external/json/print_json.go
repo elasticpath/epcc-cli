@@ -1,6 +1,7 @@
 package json
 
 import (
+	"bytes"
 	gojson "encoding/json"
 	"github.com/mattn/go-isatty"
 	log "github.com/sirupsen/logrus"
@@ -20,6 +21,15 @@ func PrintJson(json string) error {
 func PrintJsonToStderr(json string) error {
 	defer os.Stderr.Sync()
 	return printJsonToWriter(json, os.Stderr)
+}
+
+func PrettyPrint(in string) string {
+	var out bytes.Buffer
+	err := gojson.Indent(&out, []byte(in), "", "   ")
+	if err != nil {
+		return in
+	}
+	return out.String()
 }
 
 func printJsonToWriter(json string, w io.Writer) error {

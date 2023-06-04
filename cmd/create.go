@@ -31,115 +31,200 @@ func NewCreateCommand(parentCmd *cobra.Command) {
 	}
 
 	var create = &cobra.Command{
-		Use:   "create <RESOURCE> [ID_1] [ID_2]... <KEY_1> <VAL_1> <KEY_2> <VAL_2>...",
-		Short: "Creates an entity of a resource.",
-		Args:  cobra.MinimumNArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			body, err := createInternal(context.Background(), overrides, args, autoFillOnCreate)
+		Use:          "create",
+		Short:        "Creates a resource",
+		SilenceUsage: false,
+	}
 
-			if err != nil {
-				return err
+	for name, resource := range resources.GetPluralResources() {
+		name := name
+		resource := resource
+
+		if resource.CreateEntityInfo == nil {
+			continue
+		}
+
+		usageString := resource.SingularName
+		resourceName := resource.SingularName
+		resourceUrl := resource.CreateEntityInfo.Url
+		//		completionVerb := completion.Create
+
+		types, err := resources.GetTypesOfVariablesNeeded(resourceUrl)
+
+		if err != nil {
+			log.Warnf("Error processing resource %s, could not determine types from resource url %s", name, resourceUrl)
+		}
+
+		singularTypeNames := GetSingularTypeNames(types)
+		usageString += GetParametersForTypes(singularTypeNames) + GetJsonKeyValuesForUsage(resource)
+
+		exampleWithIds := fmt.Sprintf("  epcc create %s %s", resourceName, GetArgumentExampleWithIds(singularTypeNames))
+		exampleWithAliases := fmt.Sprintf("  epcc create %s %s", resourceName, GetArgumentExampleWithAlias(singularTypeNames))
+
+		parametersLongUsage := GetParameterUsageForTypes(singularTypeNames)
+
+		baseJsonArgs := []string{}
+		if !resource.NoWrapping {
+			baseJsonArgs = append(baseJsonArgs, "type", resource.JsonApiType)
+		}
+
+		emptyJson, _ := json.ToJson(baseJsonArgs, resource.NoWrapping, resource.JsonApiFormat == "compliant", resource.Attributes)
+
+		examples := GetJsonExample(fmt.Sprintf("# Create a %s", resource.SingularName), exampleWithIds, fmt.Sprintf("> POST %s", FillUrlWithIds(resource.CreateEntityInfo)), emptyJson)
+
+		if len(types) > 0 {
+			examples += GetJsonExample(fmt.Sprintf("# Create a %s using aliases", resource.SingularName), exampleWithIds, fmt.Sprintf("> POST %s", FillUrlWithIds(resource.CreateEntityInfo)), emptyJson)
+		}
+
+		if resource.CreateEntityInfo.ContentType != "multipart/form-data" {
+			for k, _ := range resource.Attributes {
+
+				if k[0] == '^' {
+					continue
+				}
+
+				results, _ := completion.Complete(completion.Request{
+					Type:       completion.CompleteAttributeValue,
+					Resource:   resource,
+					Verb:       completion.Create,
+					Attribute:  k,
+					ToComplete: "",
+				})
+
+				arg := `"Hello World"`
+
+				if len(results) > 0 {
+					arg = results[0]
+				}
+
+				extendedArgs := append(baseJsonArgs, k, arg)
+
+				// Don't try and use more than one key as some are mutually exclusive and the JSON will crash.
+				// Resources that are heterogenous and can have array or object fields at some level (i.e., data[n].id and data.id) are examples
+				jsonTxt, _ := json.ToJson(extendedArgs, resource.NoWrapping, resource.JsonApiFormat == "compliant", resource.Attributes)
+				examples += GetJsonExample(fmt.Sprintf("# Create a %s passing in an argument", resourceName), fmt.Sprintf("%s %s %s", exampleWithAliases, k, arg), fmt.Sprintf("> POST %s", FillUrlWithIds(resource.CreateEntityInfo)), jsonTxt)
+
+				autofilledData := autofill.GetJsonArrayForResource(&resource)
+
+				extendedArgs = append(autofilledData, extendedArgs...)
+
+				jsonTxt, _ = json.ToJson(extendedArgs, resource.NoWrapping, resource.JsonApiFormat == "compliant", resource.Attributes)
+				examples += GetJsonExample(fmt.Sprintf("# Create a %s (using --auto-fill) and passing in an argument", resourceName), fmt.Sprintf("%s --auto-fill %s %s", exampleWithAliases, k, arg), fmt.Sprintf("> POST %s", FillUrlWithIds(resource.CreateEntityInfo)), jsonTxt)
+
+				break
 			}
+		}
 
-			if outputJq != "" {
-				output, err := json.RunJQOnStringWithArray(outputJq, body)
+		var createResourceCmd = &cobra.Command{
+			Use:   usageString,
+			Short: fmt.Sprintf("Calls %s", GetHelpResourceUrls(resourceUrl)),
+			Long: fmt.Sprintf(`Creates a %s in a store/organization by calling %s.
+%s
+`, resourceName, GetHelpResourceUrls(resourceUrl), parametersLongUsage),
+			Example: strings.ReplaceAll(strings.Trim(examples, "\n"), "  ", " "),
+			Args:    GetArgsFunctionForResource(singularTypeNames),
+			RunE: func(cmd *cobra.Command, args []string) error {
+				body, err := createInternal(context.Background(), overrides, append([]string{name}, args...), autoFillOnCreate)
 
 				if err != nil {
 					return err
 				}
 
-				for _, outputLine := range output {
-					outputJson, err := gojson.Marshal(outputLine)
+				if outputJq != "" {
+					output, err := json.RunJQOnStringWithArray(outputJq, body)
 
 					if err != nil {
 						return err
 					}
 
-					err = json.PrintJson(string(outputJson))
-
-					if err != nil {
-						return err
-					}
-				}
-
-				return nil
-			}
-
-			return json.PrintJson(body)
-		},
-
-		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-			if len(args) == 0 {
-				return completion.Complete(completion.Request{
-					Type: completion.CompleteSingularResource,
-					Verb: completion.Create,
-				})
-			}
-
-			// Find Resource
-			resource, ok := resources.GetResourceByName(args[0])
-			if ok {
-				if resource.CreateEntityInfo != nil {
-					resourceURL := resource.CreateEntityInfo.Url
-					idCount, _ := resources.GetNumberOfVariablesNeeded(resourceURL)
-					if len(args)-idCount >= 1 { // Arg is after IDs
-						if (len(args)-idCount)%2 == 1 { // This is an attribute key
-							usedAttributes := make(map[string]int)
-							for i := idCount + 1; i < len(args); i = i + 2 {
-								usedAttributes[args[i]] = 0
-							}
-
-							// I think this allows you to complete the current argument
-							// This is necessary because if you are using something with a wildcard or regex
-							// You won't see it in the attribute list, and therefor it won't be able to auto complete it.
-							toComplete := strings.ReplaceAll(toComplete, "<ENTER>", "")
-							if toComplete != "" {
-								usedAttributes[toComplete] = 0
-							}
-							return completion.Complete(completion.Request{
-								Type:       completion.CompleteAttributeKey,
-								Resource:   resource,
-								Attributes: usedAttributes,
-								Verb:       completion.Create,
-							})
-						} else { // This is an attribute value
-							return completion.Complete(completion.Request{
-								Type:       completion.CompleteAttributeValue,
-								Resource:   resource,
-								Verb:       completion.Create,
-								Attribute:  args[len(args)-1],
-								ToComplete: toComplete,
-							})
-						}
-					} else {
-						// Arg is in IDS
-						// Must be for a resource completion
-						types, err := resources.GetTypesOfVariablesNeeded(resourceURL)
+					for _, outputLine := range output {
+						outputJson, err := gojson.Marshal(outputLine)
 
 						if err != nil {
-							return []string{}, cobra.ShellCompDirectiveNoFileComp
+							return err
 						}
 
-						typeIdxNeeded := len(args) - 1
+						err = json.PrintJson(string(outputJson))
 
-						if completionResource, ok := resources.GetResourceByName(types[typeIdxNeeded]); ok {
-							return completion.Complete(completion.Request{
-								Type:     completion.CompleteAlias,
-								Resource: completionResource,
-							})
+						if err != nil {
+							return err
+						}
+					}
+
+					return nil
+				}
+
+				return json.PrintJson(body)
+			},
+
+			ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+				// Find Resource
+				resource, ok := resources.GetResourceByName(resourceName)
+				if ok {
+					if resource.CreateEntityInfo != nil {
+						resourceURL := resource.CreateEntityInfo.Url
+						idCount, _ := resources.GetNumberOfVariablesNeeded(resourceURL)
+						if len(args)-idCount >= 1 { // Arg is after IDs
+							if (len(args)-idCount)%2 == 1 { // This is an attribute key
+								usedAttributes := make(map[string]int)
+								for i := idCount + 1; i < len(args); i = i + 2 {
+									usedAttributes[args[i]] = 0
+								}
+
+								// I think this allows you to complete the current argument
+								// This is necessary because if you are using something with a wildcard or regex
+								// You won't see it in the attribute list, and therefore it won't be able to auto complete it.
+								// I now think this does nothing.
+								toComplete := strings.ReplaceAll(toComplete, "<ENTER>", "")
+								if toComplete != "" {
+									usedAttributes[toComplete] = 0
+								}
+								return completion.Complete(completion.Request{
+									Type:       completion.CompleteAttributeKey,
+									Resource:   resource,
+									Attributes: usedAttributes,
+									Verb:       completion.Create,
+								})
+							} else { // This is an attribute value
+								return completion.Complete(completion.Request{
+									Type:       completion.CompleteAttributeValue,
+									Resource:   resource,
+									Verb:       completion.Create,
+									Attribute:  args[len(args)-1],
+									ToComplete: toComplete,
+								})
+							}
+						} else {
+							// Arg is in IDS
+							// Must be for a resource completion
+							types, err := resources.GetTypesOfVariablesNeeded(resourceURL)
+
+							if err != nil {
+								return []string{}, cobra.ShellCompDirectiveNoFileComp
+							}
+
+							typeIdxNeeded := len(args) - 1
+
+							if completionResource, ok := resources.GetResourceByName(types[typeIdxNeeded]); ok {
+								return completion.Complete(completion.Request{
+									Type:     completion.CompleteAlias,
+									Resource: completionResource,
+								})
+							}
 						}
 					}
 				}
-			}
 
-			return []string{}, cobra.ShellCompDirectiveNoFileComp
-		},
+				return []string{}, cobra.ShellCompDirectiveNoFileComp
+			},
+		}
+		create.AddCommand(createResourceCmd)
 	}
 
-	create.Flags().StringVar(&overrides.OverrideUrlPath, "override-url-path", "", "Override the URL that will be used for the Request")
-	create.Flags().BoolVarP(&autoFillOnCreate, "auto-fill", "", false, "Auto generate value for fields")
-	create.Flags().StringSliceVarP(&overrides.QueryParameters, "query-parameters", "q", []string{}, "Pass in key=value an they will be added as query parameters")
-	create.Flags().StringVarP(&outputJq, "output-jq", "", "", "A jq expression, if set we will restrict output to only this")
+	create.PersistentFlags().StringVar(&overrides.OverrideUrlPath, "override-url-path", "", "Override the URL that will be used for the Request")
+	create.PersistentFlags().BoolVarP(&autoFillOnCreate, "auto-fill", "", false, "Auto generate value for fields")
+	create.PersistentFlags().StringSliceVarP(&overrides.QueryParameters, "query-parameters", "q", []string{}, "Pass in key=value an they will be added as query parameters")
+	create.PersistentFlags().StringVarP(&outputJq, "output-jq", "", "", "A jq expression, if set we will restrict output to only this")
 
 	_ = create.RegisterFlagCompletionFunc("output-jq", jqCompletionFunc)
 	parentCmd.AddCommand(create)
