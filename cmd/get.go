@@ -40,13 +40,14 @@ func NewGetCommand(parentCmd *cobra.Command) {
 	for name, resource := range resources.GetPluralResources() {
 		name := name
 		resource := resource
+
 		for i := 0; i < 2; i++ {
 			i := i
 			usageString := ""
-			resourceUrl := ""
 			resourceName := ""
 			completionVerb := 0
 			usageGetType := ""
+			var urlInfo *resources.CrudEntityInfo = nil
 
 			switch i {
 			case singularResourceRequest:
@@ -56,7 +57,8 @@ func NewGetCommand(parentCmd *cobra.Command) {
 
 				resourceName = resource.PluralName
 				usageString = resource.PluralName
-				resourceUrl = resource.GetCollectionInfo.Url
+
+				urlInfo = resource.GetCollectionInfo
 				completionVerb = completion.GetAll
 				usageGetType = "all (or a single page) of"
 
@@ -66,11 +68,13 @@ func NewGetCommand(parentCmd *cobra.Command) {
 				}
 				usageString = resource.SingularName
 				resourceName = resource.SingularName
-				resourceUrl = resource.GetEntityInfo.Url
+
+				urlInfo = resource.GetEntityInfo
 				completionVerb = completion.Get
 				usageGetType = "a single"
 			}
 
+			resourceUrl := urlInfo.Url
 			types, err := resources.GetTypesOfVariablesNeeded(resourceUrl)
 
 			if err != nil {
@@ -79,17 +83,17 @@ func NewGetCommand(parentCmd *cobra.Command) {
 
 			singularTypeNames := GetSingularTypeNames(types)
 
-			exampleWithIds := fmt.Sprintf("  epcc get %s %s ", resourceName, GetArgumentExampleWithIds(singularTypeNames))
-			exampleWithAliases := fmt.Sprintf("  epcc get %s %s ", resourceName, GetArgumentExampleWithAlias(singularTypeNames))
+			exampleWithIds := fmt.Sprintf("  epcc get %s %s", resourceName, GetArgumentExampleWithIds(singularTypeNames))
+			exampleWithAliases := fmt.Sprintf("  epcc get %s %s", resourceName, GetArgumentExampleWithAlias(singularTypeNames))
 
 			parametersLongUsage := GetParameterUsageForTypes(singularTypeNames)
 
 			usageString += GetParametersForTypes(singularTypeNames)
 
-			examples := fmt.Sprintf("  # Retrieve %s %s\n%s\n\n", usageGetType, resourceName, exampleWithIds)
+			examples := fmt.Sprintf("  # Retrieve %s %s\n%s\n  > GET %s\n\n", usageGetType, resourceName, exampleWithIds, FillUrlWithIds(urlInfo))
 
 			if len(types) > 0 {
-				examples += fmt.Sprintf("  # Retrieve %s %s using aliases \n%s\n\n", usageGetType, resourceName, exampleWithAliases)
+				examples += fmt.Sprintf("  # Retrieve %s %s using aliases \n%s\n  > GET %s\n\n", usageGetType, resourceName, exampleWithAliases, FillUrlWithIds(urlInfo))
 			}
 
 			queryParameters, _ := completion.Complete(completion.Request{
@@ -105,7 +109,7 @@ func NewGetCommand(parentCmd *cobra.Command) {
 
 				switch qp {
 				case "page[limit]":
-					examples += fmt.Sprintf("  # Retrieve %s %s with page[limit] = 25 and page[offset] = 500 \n%s %s %s %s %s \n\n", usageGetType, resourceName, exampleWithAliases, qp, "25", "page[offset]", "500")
+					examples += fmt.Sprintf("  # Retrieve %s %s with page[limit] = 25 and page[offset] = 500 \n%s %s %s %s %s \n > GET %s \n\n", usageGetType, resourceName, exampleWithAliases, qp, "25", "page[offset]", "500", FillUrlWithIds(urlInfo)+"?page[limit]=25&page[offset]=500")
 					usageString += fmt.Sprintf(" [page[limit] N]")
 				case "page[offset]":
 					// No example
@@ -125,9 +129,9 @@ func NewGetCommand(parentCmd *cobra.Command) {
 
 					for i, v := range sortKeys {
 						if v[0] != '-' {
-							examples += fmt.Sprintf("  # Retrieve %s %s sorted in ascending order of %s\n%s %s %s \n\n", usageGetType, resourceName, v, exampleWithAliases, qp, v)
+							examples += fmt.Sprintf("  # Retrieve %s %s sorted in ascending order of %s\n%s %s %s \n > GET %s\n\n", usageGetType, resourceName, v, exampleWithAliases, qp, v, FillUrlWithIds(urlInfo)+"?sort="+v)
 						} else {
-							examples += fmt.Sprintf("  # Retrieve %s %s sorted in descending order of %s\n%s %s -- %s \n\n", usageGetType, resourceName, v, exampleWithAliases, qp, v)
+							examples += fmt.Sprintf("  # Retrieve %s %s sorted in descending order of %s\n%s %s -- %s\n > GET %s\n\n", usageGetType, resourceName, v, exampleWithAliases, qp, v, FillUrlWithIds(urlInfo)+"?sort="+v)
 						}
 
 						if i > 2 {
@@ -153,8 +157,9 @@ func NewGetCommand(parentCmd *cobra.Command) {
 					for i, v := range attributeKeys {
 						examples += fmt.Sprintf(`  # Retrieve %s %s with filter %s(%s,"Hello World")
   %s %s '%s(%s,"Hello World")'
+ > GET %s
 
-`, usageGetType, resourceName, searchOps[i], v, exampleWithAliases, qp, searchOps[i], v)
+`, usageGetType, resourceName, searchOps[i], v, exampleWithAliases, qp, searchOps[i], v, FillUrlWithIds(urlInfo)+fmt.Sprintf(`?filter=%s(%s,"Hello World")`, searchOps[i], v))
 
 						if i >= 2 {
 							// Only need three examples for sort
@@ -164,7 +169,7 @@ func NewGetCommand(parentCmd *cobra.Command) {
 
 				default:
 					usageString += fmt.Sprintf(" [%s VALUE]", qp)
-					examples += fmt.Sprintf("  # Retrieve %s %s with a %s = %s\n%s %s %s \n\n", usageGetType, resourceName, qp, "x", exampleWithAliases, qp, "x")
+					examples += fmt.Sprintf("  # Retrieve %s %s with a(n) %s = %s\n%s %s %s \n > GET %s \n\n", usageGetType, resourceName, qp, "x", exampleWithAliases, qp, "x", FillUrlWithIds(urlInfo)+"?"+qp+"=x")
 				}
 
 			}
@@ -172,7 +177,7 @@ func NewGetCommand(parentCmd *cobra.Command) {
 			newCmd := &cobra.Command{
 				Use: usageString,
 				// The replace all is a hack for the moment the URL could be made nicer
-				Short: fmt.Sprintf("Calls %s", strings.ReplaceAll(resourceUrl, "_", "-")),
+				Short: fmt.Sprintf("Calls %s", GetHelpResourceUrls(resourceUrl)),
 				// The double "  " to " " is just a hack cause I was lazy
 
 				Long: fmt.Sprintf(`Retrieves %s %s defined in a store/organization by calling %s.

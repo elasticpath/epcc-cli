@@ -61,7 +61,7 @@ func NewCreateCommand(parentCmd *cobra.Command) {
 		exampleWithIds := fmt.Sprintf("  epcc create %s %s", resourceName, GetArgumentExampleWithIds(singularTypeNames))
 		exampleWithAliases := fmt.Sprintf("  epcc create %s %s", resourceName, GetArgumentExampleWithAlias(singularTypeNames))
 
-		parametersLongUsage := GetParameterUsageForTypes(singularTypeNames)
+		parametersLongUsage := GetParameterUsageForTypes(types)
 
 		baseJsonArgs := []string{}
 		if !resource.NoWrapping {
@@ -164,8 +164,8 @@ func NewCreateCommand(parentCmd *cobra.Command) {
 					if resource.CreateEntityInfo != nil {
 						resourceURL := resource.CreateEntityInfo.Url
 						idCount, _ := resources.GetNumberOfVariablesNeeded(resourceURL)
-						if len(args)-idCount >= 1 { // Arg is after IDs
-							if (len(args)-idCount)%2 == 1 { // This is an attribute key
+						if len(args)-idCount >= 0 { // Arg is after IDs
+							if (len(args)-idCount)%2 == 0 { // This is an attribute key
 								usedAttributes := make(map[string]int)
 								for i := idCount + 1; i < len(args); i = i + 2 {
 									usedAttributes[args[i]] = 0

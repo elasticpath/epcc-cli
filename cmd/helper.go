@@ -5,8 +5,11 @@ import (
 	"github.com/elasticpath/epcc-cli/external/json"
 	"github.com/elasticpath/epcc-cli/external/resources"
 	"github.com/google/uuid"
+	"github.com/iancoleman/strcase"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"github.com/yosida95/uritemplate/v3"
+	"net/url"
 	"regexp"
 	"strings"
 )
@@ -70,7 +73,56 @@ func GetArgumentExampleWithAlias(types []string) string {
 }
 
 func GetHelpResourceUrls(resourceUrl string) string {
-	return strings.ReplaceAll(resourceUrl, "_", "-")
+
+	template, err := uritemplate.New(resourceUrl)
+
+	if err != nil {
+		return fmt.Sprintf("error: %s", err)
+	}
+
+	values := uritemplate.Values{}
+
+	for _, varName := range template.Varnames() {
+		res, ok := resources.GetResourceByName(resources.ConvertUriTemplateValueToType(varName))
+
+		if !ok {
+			values[varName] = uritemplate.String("unknown_resource:" + varName)
+			continue
+		}
+
+		typeName := res.SingularName
+		typeName = strings.ReplaceAll(typeName, "-", " ")
+		typeName = strings.Title(typeName)
+		typeName = strings.ReplaceAll(typeName, " ", "")
+		typeName = strings.ReplaceAll(typeName, "V2", "")
+		typeName = strcase.ToLowerCamel(typeName)
+
+		values[varName] = uritemplate.String(":" + typeName + "Id")
+
+	}
+
+	templateUrl, err := template.Expand(values)
+
+	templateUrl, _ = url.PathUnescape(templateUrl)
+
+	return templateUrl
+
+	//// Convert _ to " "
+	//resourceUrl = strings.ReplaceAll(resourceUrl, "_", " ")
+	//
+	//// This will essentially snakeCase It
+	//resourceUrl = strings.Title(resourceUrl)
+	//
+	//// Remove Spaces
+	//resourceUrl = strings.ReplaceAll(resourceUrl, " ", "")
+	//
+	//// Use leading :
+	//resourceUrl = strings.ReplaceAll(resourceUrl, "{", ":")
+	//
+	//// Replace closing } with Id
+	//resourceUrl = strings.ReplaceAll(resourceUrl, "}", "Id")
+	//
+	//return resourceUrl
 }
 
 func GetArgsFunctionForResource(singularTypeNames []string) func(cmd *cobra.Command, args []string) error {

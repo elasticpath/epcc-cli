@@ -26,7 +26,7 @@ require (
 
 require github.com/quasilyte/regex/syntax v0.0.0-20210819130434-b3f0c404a727
 
-require github.com/iancoleman/strcase v0.2.0 // indirect
+require github.com/iancoleman/strcase v0.2.0
 
 require (
 	github.com/Masterminds/goutils v1.1.1 // indirect

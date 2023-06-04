@@ -27,7 +27,7 @@ func GenerateUrlViaIdableAttributes(urlInfo *CrudEntityInfo, args []id.IdableAtt
 	values := uritemplate.Values{}
 
 	for idx, varName := range vars {
-		resourceType := convertUriTemplateValueToType(varName)
+		resourceType := ConvertUriTemplateValueToType(varName)
 		_, ok := GetResourceByName(resourceType)
 		if ok {
 			attribute := "id"
@@ -83,7 +83,7 @@ func GenerateUrl(urlInfo *CrudEntityInfo, args []string) (string, error) {
 	values := uritemplate.Values{}
 
 	for idx, varName := range vars {
-		resourceType := convertUriTemplateValueToType(varName)
+		resourceType := ConvertUriTemplateValueToType(varName)
 		varType, ok := GetResourceByName(resourceType)
 		if ok {
 			attribute := "id"
@@ -132,13 +132,13 @@ func GetTypesOfVariablesNeeded(url string) ([]string, error) {
 
 	for _, value := range template.Varnames() {
 
-		results = append(results, convertUriTemplateValueToType(value))
+		results = append(results, ConvertUriTemplateValueToType(value))
 	}
 
 	return results, nil
 }
 
-func convertUriTemplateValueToType(value string) string {
+func ConvertUriTemplateValueToType(value string) string {
 	// URI templates must use _, so let's swap them for -
 	return strings.ReplaceAll(value, "_", "-")
 }
