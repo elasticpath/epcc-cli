@@ -77,7 +77,7 @@ func NewCreateCommand(parentCmd *cobra.Command) {
 		}
 
 		if resource.CreateEntityInfo.ContentType != "multipart/form-data" {
-			for k, _ := range resource.Attributes {
+			for k := range resource.Attributes {
 
 				if k[0] == '^' {
 					continue
