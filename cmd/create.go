@@ -115,12 +115,41 @@ func NewCreateCommand(parentCmd *cobra.Command) {
 			}
 		}
 
+		argumentsBlurb := ""
+
+		switch resource.CreateEntityInfo.ContentType {
+		case "multipart/form-data":
+			argumentsBlurb = "Key and values are passed in using multipart/form-data encoding\n\nDocumentation:\n  " + resource.CreateEntityInfo.Docs
+		case "application/json", "":
+			argumentsBlurb = fmt.Sprintf(`
+Key and value pairs passed in will be converted to JSON with a jq like syntax.
+
+The EPCC CLI will automatically determine appropriate wrapping
+
+Basic Types:
+key b => { "a": "b" }
+key 1 => { "a": 1  }
+key '"1"' => { "a": "1" }
+key true => { "a": true }
+key null => { "a": null }
+key '"null"'' => { "a": "null" }
+
+
+
+Documentation:
+ %s
+`, resource.CreateEntityInfo.Docs)
+		default:
+			argumentsBlurb = fmt.Sprintf("This resource uses %s encoding, which this help doesn't know how to help you with :) Submit a bug please.\nDocumentation:\n  %s", resource.CreateEntityInfo.ContentType, resource.CreateEntityInfo.Docs)
+		}
+
 		var createResourceCmd = &cobra.Command{
 			Use:   usageString,
 			Short: fmt.Sprintf("Calls %s", GetHelpResourceUrls(resourceUrl)),
 			Long: fmt.Sprintf(`Creates a %s in a store/organization by calling %s.
 %s
-`, resourceName, GetHelpResourceUrls(resourceUrl), parametersLongUsage),
+%s
+`, resourceName, GetHelpResourceUrls(resourceUrl), parametersLongUsage, argumentsBlurb),
 			Example: strings.ReplaceAll(strings.Trim(examples, "\n"), "  ", " "),
 			Args:    GetArgsFunctionForResource(singularTypeNames),
 			RunE: func(cmd *cobra.Command, args []string) error {
