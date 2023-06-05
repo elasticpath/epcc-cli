@@ -196,7 +196,7 @@ Documentation:
 						if len(args)-idCount >= 0 { // Arg is after IDs
 							if (len(args)-idCount)%2 == 0 { // This is an attribute key
 								usedAttributes := make(map[string]int)
-								for i := idCount + 1; i < len(args); i = i + 2 {
+								for i := idCount; i < len(args); i = i + 2 {
 									usedAttributes[args[i]] = 0
 								}
 
