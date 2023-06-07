@@ -138,6 +138,28 @@ func GetTypesOfVariablesNeeded(url string) ([]string, error) {
 	return results, nil
 }
 
+func GetSingularTypesOfVariablesNeeded(url string) ([]string, error) {
+	var ret []string
+	types, err := GetTypesOfVariablesNeeded(url)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for _, t := range types {
+
+		otherType, ok := GetResourceByName(t)
+
+		if !ok {
+			log.Warnf("Error processing resource, could not find type %s", t)
+		}
+
+		ret = append(ret, otherType.SingularName)
+	}
+
+	return ret, nil
+}
+
 func ConvertUriTemplateValueToType(value string) string {
 	// URI templates must use _, so let's swap them for -
 	return strings.ReplaceAll(value, "_", "-")

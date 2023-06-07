@@ -36,124 +36,21 @@ func NewCreateCommand(parentCmd *cobra.Command) {
 		SilenceUsage: false,
 	}
 
-	for name, resource := range resources.GetPluralResources() {
-		name := name
+	for _, resource := range resources.GetPluralResources() {
 		resource := resource
-
+		resourceName := resource.SingularName
 		if resource.CreateEntityInfo == nil {
 			continue
 		}
 
-		usageString := resource.SingularName
-		resourceName := resource.SingularName
-		resourceUrl := resource.CreateEntityInfo.Url
-		//		completionVerb := completion.Create
-
-		types, err := resources.GetTypesOfVariablesNeeded(resourceUrl)
-
-		if err != nil {
-			log.Warnf("Error processing resource %s, could not determine types from resource url %s", name, resourceUrl)
-		}
-
-		singularTypeNames := GetSingularTypeNames(types)
-		usageString += GetParametersForTypes(singularTypeNames) + GetJsonKeyValuesForUsage(resource)
-
-		exampleWithIds := fmt.Sprintf("  epcc create %s %s", resourceName, GetArgumentExampleWithIds(singularTypeNames))
-		exampleWithAliases := fmt.Sprintf("  epcc create %s %s", resourceName, GetArgumentExampleWithAlias(singularTypeNames))
-
-		parametersLongUsage := GetParameterUsageForTypes(types)
-
-		baseJsonArgs := []string{}
-		if !resource.NoWrapping {
-			baseJsonArgs = append(baseJsonArgs, "type", resource.JsonApiType)
-		}
-
-		emptyJson, _ := json.ToJson(baseJsonArgs, resource.NoWrapping, resource.JsonApiFormat == "compliant", resource.Attributes)
-
-		examples := GetJsonExample(fmt.Sprintf("# Create a %s", resource.SingularName), exampleWithIds, fmt.Sprintf("> POST %s", FillUrlWithIds(resource.CreateEntityInfo)), emptyJson)
-
-		if len(types) > 0 {
-			examples += GetJsonExample(fmt.Sprintf("# Create a %s using aliases", resource.SingularName), exampleWithIds, fmt.Sprintf("> POST %s", FillUrlWithIds(resource.CreateEntityInfo)), emptyJson)
-		}
-
-		if resource.CreateEntityInfo.ContentType != "multipart/form-data" {
-			for k := range resource.Attributes {
-
-				if k[0] == '^' {
-					continue
-				}
-
-				results, _ := completion.Complete(completion.Request{
-					Type:       completion.CompleteAttributeValue,
-					Resource:   resource,
-					Verb:       completion.Create,
-					Attribute:  k,
-					ToComplete: "",
-				})
-
-				arg := `"Hello World"`
-
-				if len(results) > 0 {
-					arg = results[0]
-				}
-
-				extendedArgs := append(baseJsonArgs, k, arg)
-
-				// Don't try and use more than one key as some are mutually exclusive and the JSON will crash.
-				// Resources that are heterogenous and can have array or object fields at some level (i.e., data[n].id and data.id) are examples
-				jsonTxt, _ := json.ToJson(extendedArgs, resource.NoWrapping, resource.JsonApiFormat == "compliant", resource.Attributes)
-				examples += GetJsonExample(fmt.Sprintf("# Create a %s passing in an argument", resourceName), fmt.Sprintf("%s %s %s", exampleWithAliases, k, arg), fmt.Sprintf("> POST %s", FillUrlWithIds(resource.CreateEntityInfo)), jsonTxt)
-
-				autofilledData := autofill.GetJsonArrayForResource(&resource)
-
-				extendedArgs = append(autofilledData, extendedArgs...)
-
-				jsonTxt, _ = json.ToJson(extendedArgs, resource.NoWrapping, resource.JsonApiFormat == "compliant", resource.Attributes)
-				examples += GetJsonExample(fmt.Sprintf("# Create a %s (using --auto-fill) and passing in an argument", resourceName), fmt.Sprintf("%s --auto-fill %s %s", exampleWithAliases, k, arg), fmt.Sprintf("> POST %s", FillUrlWithIds(resource.CreateEntityInfo)), jsonTxt)
-
-				break
-			}
-		}
-
-		argumentsBlurb := ""
-
-		switch resource.CreateEntityInfo.ContentType {
-		case "multipart/form-data":
-			argumentsBlurb = "Key and values are passed in using multipart/form-data encoding\n\nDocumentation:\n  " + resource.CreateEntityInfo.Docs
-		case "application/json", "":
-			argumentsBlurb = fmt.Sprintf(`
-Key and value pairs passed in will be converted to JSON with a jq like syntax.
-
-The EPCC CLI will automatically determine appropriate wrapping
-
-Basic Types:
-key b => { "a": "b" }
-key 1 => { "a": 1  }
-key '"1"' => { "a": "1" }
-key true => { "a": true }
-key null => { "a": null }
-key '"null"'' => { "a": "null" }
-
-
-
-Documentation:
- %s
-`, resource.CreateEntityInfo.Docs)
-		default:
-			argumentsBlurb = fmt.Sprintf("This resource uses %s encoding, which this help doesn't know how to help you with :) Submit a bug please.\nDocumentation:\n  %s", resource.CreateEntityInfo.ContentType, resource.CreateEntityInfo.Docs)
-		}
-
 		var createResourceCmd = &cobra.Command{
-			Use:   usageString,
-			Short: fmt.Sprintf("Calls %s", GetHelpResourceUrls(resourceUrl)),
-			Long: fmt.Sprintf(`Creates a %s in a store/organization by calling %s.
-%s
-%s
-`, resourceName, GetHelpResourceUrls(resourceUrl), parametersLongUsage, argumentsBlurb),
-			Example: strings.ReplaceAll(strings.Trim(examples, "\n"), "  ", " "),
-			Args:    GetArgsFunctionForResource(singularTypeNames),
+			Use:     GetCreateUsageString(resource),
+			Short:   GetCreateShort(resource),
+			Long:    GetCreateLong(resource),
+			Example: GetCreateExample(resource),
+			Args:    GetArgFunctionForCreate(resource),
 			RunE: func(cmd *cobra.Command, args []string) error {
-				body, err := createInternal(context.Background(), overrides, append([]string{name}, args...), autoFillOnCreate)
+				body, err := createInternal(context.Background(), overrides, append([]string{resourceName}, args...), autoFillOnCreate)
 
 				if err != nil {
 					return err
@@ -213,6 +110,7 @@ Documentation:
 									Resource:   resource,
 									Attributes: usedAttributes,
 									Verb:       completion.Create,
+									ToComplete: toComplete,
 								})
 							} else { // This is an attribute value
 								return completion.Complete(completion.Request{

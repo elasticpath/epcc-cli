@@ -38,6 +38,7 @@ func TestCreateCompletionReturnsSomeFieldWhileExcludingUsedOnes(t *testing.T) {
 
 	// Verify
 	require.Contains(t, completionResult, "email")
+	require.Contains(t, completionResult, "password")
 	require.NotContains(t, completionResult, "name")
 }
 

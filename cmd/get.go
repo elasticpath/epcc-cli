@@ -13,7 +13,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"io"
-	"math/rand"
 	"net/http"
 	"net/url"
 	"strings"
@@ -37,13 +36,12 @@ func NewGetCommand(parentCmd *cobra.Command) {
 		SilenceUsage: false,
 	}
 
-	for name, resource := range resources.GetPluralResources() {
-		name := name
+	for _, resource := range resources.GetPluralResources() {
 		resource := resource
 
 		for i := 0; i < 2; i++ {
 			i := i
-			usageString := ""
+			//usageString := ""
 			resourceName := ""
 			completionVerb := 0
 			usageGetType := ""
@@ -56,7 +54,7 @@ func NewGetCommand(parentCmd *cobra.Command) {
 				}
 
 				resourceName = resource.PluralName
-				usageString = resource.PluralName
+				//usageString = resource.PluralName
 
 				urlInfo = resource.GetCollectionInfo
 				completionVerb = completion.GetAll
@@ -66,7 +64,7 @@ func NewGetCommand(parentCmd *cobra.Command) {
 				if resource.GetEntityInfo == nil {
 					continue
 				}
-				usageString = resource.SingularName
+				//usageString = resource.SingularName
 				resourceName = resource.SingularName
 
 				urlInfo = resource.GetEntityInfo
@@ -75,117 +73,14 @@ func NewGetCommand(parentCmd *cobra.Command) {
 			}
 
 			resourceUrl := urlInfo.Url
-			types, err := resources.GetTypesOfVariablesNeeded(resourceUrl)
-
-			if err != nil {
-				log.Warnf("Error processing resource %s, could not determine types from resource url %s", name, resourceUrl)
-			}
-
-			singularTypeNames := GetSingularTypeNames(types)
-
-			exampleWithIds := fmt.Sprintf("  epcc get %s %s", resourceName, GetArgumentExampleWithIds(singularTypeNames))
-			exampleWithAliases := fmt.Sprintf("  epcc get %s %s", resourceName, GetArgumentExampleWithAlias(singularTypeNames))
-
-			parametersLongUsage := GetParameterUsageForTypes(singularTypeNames)
-
-			usageString += GetParametersForTypes(singularTypeNames)
-
-			examples := fmt.Sprintf("  # Retrieve %s %s\n%s\n  > GET %s\n\n", usageGetType, resourceName, exampleWithIds, FillUrlWithIds(urlInfo))
-
-			if len(types) > 0 {
-				examples += fmt.Sprintf("  # Retrieve %s %s using aliases \n%s\n  > GET %s\n\n", usageGetType, resourceName, exampleWithAliases, FillUrlWithIds(urlInfo))
-			}
-
-			queryParameters, _ := completion.Complete(completion.Request{
-				Type:     completion.CompleteQueryParamKey,
-				Resource: resource,
-				Verb:     completionVerb,
-			})
-
-			for _, qp := range queryParameters {
-				if qp == "" {
-					continue
-				}
-
-				switch qp {
-				case "page[limit]":
-					examples += fmt.Sprintf("  # Retrieve %s %s with page[limit] = 25 and page[offset] = 500 \n%s %s %s %s %s \n > GET %s \n\n", usageGetType, resourceName, exampleWithAliases, qp, "25", "page[offset]", "500", FillUrlWithIds(urlInfo)+"?page[limit]=25&page[offset]=500")
-					usageString += fmt.Sprintf(" [page[limit] N]")
-				case "page[offset]":
-					// No example
-					usageString += fmt.Sprintf(" [page[offset] N]")
-				case "sort":
-					usageString += fmt.Sprintf(" [sort SORT]")
-					sortKeys, _ := completion.Complete(completion.Request{
-						Type:       completion.CompleteQueryParamValue,
-						Resource:   resource,
-						QueryParam: "sort",
-						Verb:       completionVerb,
-					})
-
-					rand.Shuffle(len(sortKeys), func(i, j int) {
-						sortKeys[i], sortKeys[j] = sortKeys[j], sortKeys[i]
-					})
-
-					for i, v := range sortKeys {
-						if v[0] != '-' {
-							examples += fmt.Sprintf("  # Retrieve %s %s sorted in ascending order of %s\n%s %s %s \n > GET %s\n\n", usageGetType, resourceName, v, exampleWithAliases, qp, v, FillUrlWithIds(urlInfo)+"?sort="+v)
-						} else {
-							examples += fmt.Sprintf("  # Retrieve %s %s sorted in descending order of %s\n%s %s -- %s\n > GET %s\n\n", usageGetType, resourceName, v, exampleWithAliases, qp, v, FillUrlWithIds(urlInfo)+"?sort="+v)
-						}
-
-						if i > 2 {
-							// Only need three examples for sort
-							break
-						}
-					}
-
-				case "filter":
-					usageString += fmt.Sprintf(" [filter FILTER]")
-					attributeKeys, _ := completion.Complete(completion.Request{
-						Type:       completion.CompleteAttributeKey,
-						Resource:   resource,
-						Attributes: map[string]int{},
-						Verb:       completion.Create,
-					})
-
-					rand.Shuffle(len(attributeKeys), func(i, j int) {
-						attributeKeys[i], attributeKeys[j] = attributeKeys[j], attributeKeys[i]
-					})
-
-					searchOps := []string{"eq", "like", "gt"}
-					for i, v := range attributeKeys {
-						examples += fmt.Sprintf(`  # Retrieve %s %s with filter %s(%s,"Hello World")
-  %s %s '%s(%s,"Hello World")'
- > GET %s
-
-`, usageGetType, resourceName, searchOps[i], v, exampleWithAliases, qp, searchOps[i], v, FillUrlWithIds(urlInfo)+fmt.Sprintf(`?filter=%s(%s,"Hello World")`, searchOps[i], v))
-
-						if i >= 2 {
-							// Only need three examples for sort
-							break
-						}
-					}
-
-				default:
-					usageString += fmt.Sprintf(" [%s VALUE]", qp)
-					examples += fmt.Sprintf("  # Retrieve %s %s with a(n) %s = %s\n%s %s %s \n > GET %s \n\n", usageGetType, resourceName, qp, "x", exampleWithAliases, qp, "x", FillUrlWithIds(urlInfo)+"?"+qp+"=x")
-				}
-
-			}
 
 			newCmd := &cobra.Command{
-				Use: usageString,
+				Use: GetGetUsageString(resourceName, resourceUrl, completionVerb, resource),
 				// The replace all is a hack for the moment the URL could be made nicer
-				Short: fmt.Sprintf("Calls %s", GetHelpResourceUrls(resourceUrl)),
-				// The double "  " to " " is just a hack cause I was lazy
-
-				Long: fmt.Sprintf(`Retrieves %s %s defined in a store/organization by calling %s.
-
-%s
-`, usageGetType, resourceName, GetHelpResourceUrls(resourceUrl), parametersLongUsage),
-				Example: strings.ReplaceAll(strings.Trim(examples, "\n"), "  ", " "),
-				Args:    GetArgsFunctionForResource(singularTypeNames),
+				Short:   GetGetShort(resourceUrl),
+				Long:    GetGetLong(resourceName, resourceUrl, usageGetType, completionVerb, urlInfo, resource),
+				Example: GetGetExample(resourceName, resourceUrl, usageGetType, completionVerb, urlInfo, resource),
+				Args:    GetArgFunctionForUrl(resourceName, resourceUrl),
 				RunE: func(cmd *cobra.Command, args []string) error {
 
 					body, err := getInternal(context.Background(), overrides, append([]string{resourceName}, args...))

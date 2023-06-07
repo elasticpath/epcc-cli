@@ -73,6 +73,14 @@ account-memberships:
   attributes:
     account_member_id:
       type: RESOURCE_ID:account-members
+unassigned-account-memberships:
+  singular-name: "unassigned-account-membership"
+  json-api-type: "account_member"
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/accounts/using-account-membership-api/get-all-unassigned-account-members"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/accounts/using-account-membership-api/get-all-unassigned-account-members"
+    url: "/v2/accounts/{accounts}/account-memberships/unassigned-account-members/"
 accounts:
   singular-name: "account"
   json-api-type: "account"
@@ -1720,7 +1728,7 @@ pcm-pricebooks:
   attributes:
     name:
       type: STRING
-    descirption:
+    description:
       type: STRING
 pcm-product-prices:
   singular-name: "pcm-product-price"
