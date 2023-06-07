@@ -22,7 +22,6 @@ const singularResourceRequest = 0
 const collectionResourceRequest = 1
 
 func NewGetCommand(parentCmd *cobra.Command) {
-
 	overrides := &httpclient.HttpParameterOverrides{
 		QueryParameters: nil,
 		OverrideUrlPath: "",

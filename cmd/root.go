@@ -54,7 +54,7 @@ var jqCompletionFunc = func(cmd *cobra.Command, args []string, toComplete string
 	}, cobra.ShellCompDirectiveNoSpace
 }
 
-func init() {
+func InitializeCmd() {
 	cobra.OnInitialize(initConfig)
 
 	if err := env.Parse(config.Envs); err != nil {

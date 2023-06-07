@@ -15,6 +15,7 @@ import (
 	"net/url"
 	"regexp"
 	"strings"
+	"sync"
 )
 
 func GetSingularTypeNames(types []string) []string {
@@ -114,6 +115,15 @@ func GetHelpResourceUrls(resourceUrl string) string {
 func GetArgFunctionForCreate(resource resources.Resource) func(cmd *cobra.Command, args []string) error {
 	return GetArgFunctionForUrl(resource.SingularName, resource.CreateEntityInfo.Url)
 }
+
+func GetArgFunctionForUpdate(resource resources.Resource) func(cmd *cobra.Command, args []string) error {
+	return GetArgFunctionForUrl(resource.SingularName, resource.UpdateEntityInfo.Url)
+}
+
+func GetArgFunctionForDelete(resource resources.Resource) func(cmd *cobra.Command, args []string) error {
+	return GetArgFunctionForUrl(resource.SingularName, resource.DeleteEntityInfo.Url)
+}
+
 func GetArgFunctionForUrl(name, resourceUrl string) func(cmd *cobra.Command, args []string) error {
 
 	singularTypeNames, err := resources.GetSingularTypesOfVariablesNeeded(resourceUrl)
@@ -206,6 +216,18 @@ func GetCreateShort(resource resources.Resource) string {
 	return fmt.Sprintf("Calls POST %s", GetHelpResourceUrls(resource.CreateEntityInfo.Url))
 }
 
+func GetUpdateShort(resource resources.Resource) string {
+	return fmt.Sprintf("Calls PUT %s", GetHelpResourceUrls(resource.UpdateEntityInfo.Url))
+}
+
+func GetDeleteShort(resource resources.Resource) string {
+	return fmt.Sprintf("Calls DELETE %s", GetHelpResourceUrls(resource.DeleteEntityInfo.Url))
+}
+
+func GetDeleteAllShort(resource resources.Resource) string {
+	return fmt.Sprintf("Calls DELETE %s for every resource in GET %s", GetHelpResourceUrls(resource.DeleteEntityInfo.Url), GetHelpResourceUrls(resource.GetCollectionInfo.Url))
+}
+
 func GetGetLong(resourceName string, resourceUrl string, usageGetType string, completionVerb int, urlInfo *resources.CrudEntityInfo, resource resources.Resource) string {
 
 	types, err := resources.GetTypesOfVariablesNeeded(resourceUrl)
@@ -267,6 +289,94 @@ Documentation:
 `, resourceName, GetHelpResourceUrls(resource.CreateEntityInfo.Url), parametersLongUsage, argumentsBlurb)
 }
 
+func GetUpdateLong(resource resources.Resource) string {
+	resourceName := resource.SingularName
+
+	singularTypeNames, err := resources.GetSingularTypesOfVariablesNeeded(resource.UpdateEntityInfo.Url)
+
+	if err != nil {
+		return fmt.Sprintf("Could not generate usage string: %s", err)
+	}
+
+	parametersLongUsage := GetParameterUsageForTypes(singularTypeNames)
+
+	argumentsBlurb := ""
+	switch resource.UpdateEntityInfo.ContentType {
+	case "multipart/form-data":
+		argumentsBlurb = "Key and values are passed in using multipart/form-data encoding\n\nDocumentation:\n  " + resource.DeleteEntityInfo.Docs
+	case "application/json", "":
+		argumentsBlurb = fmt.Sprintf(`
+Key and value pairs passed in will be converted to JSON with a jq like syntax.
+
+The EPCC CLI will automatically determine appropriate wrapping
+
+Basic Types:
+key b => { "a": "b" }
+key 1 => { "a": 1  }
+key '"1"' => { "a": "1" }
+key true => { "a": true }
+key null => { "a": null }
+key '"null"'' => { "a": "null" }
+
+
+
+Documentation:
+ %s
+`, resource.UpdateEntityInfo.Docs)
+	default:
+		argumentsBlurb = fmt.Sprintf("This resource uses %s encoding, which this help doesn't know how to help you with :) Submit a bug please.\nDocumentation:\n  %s", resource.UpdateEntityInfo.ContentType, resource.UpdateEntityInfo.Docs)
+	}
+
+	return fmt.Sprintf(`Updates a %s in a store/organization by calling %s.
+%s
+%s
+`, resourceName, GetHelpResourceUrls(resource.UpdateEntityInfo.Url), parametersLongUsage, argumentsBlurb)
+}
+
+func GetDeleteLong(resource resources.Resource) string {
+	resourceName := resource.SingularName
+
+	singularTypeNames, err := resources.GetSingularTypesOfVariablesNeeded(resource.DeleteEntityInfo.Url)
+
+	if err != nil {
+		return fmt.Sprintf("Could not generate usage string: %s", err)
+	}
+
+	parametersLongUsage := GetParameterUsageForTypes(singularTypeNames)
+
+	argumentsBlurb := ""
+	switch resource.DeleteEntityInfo.ContentType {
+	case "multipart/form-data":
+		argumentsBlurb = "Key and values are passed in using multipart/form-data encoding\n\nDocumentation:\n  " + resource.DeleteEntityInfo.Docs
+	case "application/json", "":
+		argumentsBlurb = fmt.Sprintf(`
+Key and value pairs passed in will be converted to JSON with a jq like syntax.
+
+The EPCC CLI will automatically determine appropriate wrapping
+
+Basic Types:
+key b => { "a": "b" }
+key 1 => { "a": 1  }
+key '"1"' => { "a": "1" }
+key true => { "a": true }
+key null => { "a": null }
+key '"null"'' => { "a": "null" }
+
+
+
+Documentation:
+ %s
+`, resource.DeleteEntityInfo.Docs)
+	default:
+		argumentsBlurb = fmt.Sprintf("This resource uses %s encoding, which this help doesn't know how to help you with :) Submit a bug please.\nDocumentation:\n  %s", resource.DeleteEntityInfo.ContentType, resource.DeleteEntityInfo.Docs)
+	}
+
+	return fmt.Sprintf(`Deletes a %s in a store/organization by calling %s.
+%s
+%s
+`, resourceName, GetHelpResourceUrls(resource.DeleteEntityInfo.Url), parametersLongUsage, argumentsBlurb)
+}
+
 func GetGetUsageString(resourceName string, resourceUrl string, completionVerb int, resource resources.Resource) string {
 	singularTypeNames, err := resources.GetSingularTypesOfVariablesNeeded(resourceUrl)
 
@@ -275,7 +385,7 @@ func GetGetUsageString(resourceName string, resourceUrl string, completionVerb i
 		return resourceName
 	}
 
-	usageString := GetParametersForTypes(singularTypeNames)
+	usageString := resourceName + GetParametersForTypes(singularTypeNames)
 
 	queryParameters, _ := completion.Complete(completion.Request{
 		Type:     completion.CompleteQueryParamKey,
@@ -319,7 +429,40 @@ func GetCreateUsageString(resource resources.Resource) string {
 	return resourceName + GetParametersForTypes(singularTypeNames) + GetJsonKeyValuesForUsage(resource)
 }
 
+func GetUpdateUsage(resource resources.Resource) string {
+	resourceName := resource.SingularName
+
+	singularTypeNames, err := resources.GetSingularTypesOfVariablesNeeded(resource.UpdateEntityInfo.Url)
+
+	if err != nil {
+		log.Warnf("Could not generate usage string for %s, error %v", resourceName, err)
+		return resourceName
+	}
+
+	return resourceName + GetParametersForTypes(singularTypeNames) + GetJsonKeyValuesForUsage(resource)
+}
+
+func GetDeleteUsage(resource resources.Resource) string {
+	resourceName := resource.SingularName
+
+	singularTypeNames, err := resources.GetSingularTypesOfVariablesNeeded(resource.DeleteEntityInfo.Url)
+
+	if err != nil {
+		log.Warnf("Could not generate usage string for %s, error %v", resourceName, err)
+		return resourceName
+	}
+
+	return resourceName + GetParametersForTypes(singularTypeNames) + GetJsonKeyValuesForUsage(resource)
+}
+
+var getExampleCache sync.Map
+
 func GetGetExample(resourceName string, resourceUrl string, usageGetType string, completionVerb int, urlInfo *resources.CrudEntityInfo, resource resources.Resource) string {
+
+	cacheKey := fmt.Sprintf("%s-%d", resourceName, completionVerb)
+	if example, ok := getExampleCache.Load(cacheKey); ok {
+		return example.(string)
+	}
 
 	singularTypeNames, err := resources.GetSingularTypesOfVariablesNeeded(resourceUrl)
 
@@ -411,10 +554,21 @@ func GetGetExample(resourceName string, resourceUrl string, usageGetType string,
 
 	}
 
-	return strings.ReplaceAll(strings.Trim(examples, "\n"), "  ", " ")
+	example := strings.ReplaceAll(strings.Trim(examples, "\n"), "  ", " ")
+
+	getExampleCache.Store(cacheKey, example)
+
+	return example
 }
+
+var createExampleCache sync.Map
+
 func GetCreateExample(resource resources.Resource) string {
 	resourceName := resource.SingularName
+
+	if v, ok := createExampleCache.Load(resourceName); ok {
+		return v.(string)
+	}
 
 	singularTypeNames, err := resources.GetSingularTypesOfVariablesNeeded(resource.CreateEntityInfo.Url)
 
@@ -477,5 +631,145 @@ func GetCreateExample(resource resources.Resource) string {
 		}
 	}
 
-	return strings.ReplaceAll(strings.Trim(examples, "\n"), "  ", " ")
+	example := strings.ReplaceAll(strings.Trim(examples, "\n"), "  ", " ")
+
+	createExampleCache.Store(resourceName, example)
+
+	return example
+}
+
+var updateExampleCache sync.Map
+
+func GetUpdateExample(resource resources.Resource) string {
+	resourceName := resource.SingularName
+
+	if v, ok := updateExampleCache.Load(resourceName); ok {
+		return v.(string)
+	}
+	singularTypeNames, err := resources.GetSingularTypesOfVariablesNeeded(resource.UpdateEntityInfo.Url)
+
+	if err != nil {
+		return fmt.Sprintf("Could not generate example: %s", err)
+	}
+
+	exampleWithIds := fmt.Sprintf("  epcc update %s %s", resourceName, GetArgumentExampleWithIds(singularTypeNames))
+	exampleWithAliases := fmt.Sprintf("  epcc update %s %s", resourceName, GetArgumentExampleWithAlias(singularTypeNames))
+
+	baseJsonArgs := []string{}
+	if !resource.NoWrapping {
+		baseJsonArgs = append(baseJsonArgs, "type", resource.JsonApiType)
+	}
+
+	emptyJson, _ := json.ToJson(baseJsonArgs, resource.NoWrapping, resource.JsonApiFormat == "compliant", resource.Attributes)
+
+	examples := GetJsonExample(fmt.Sprintf("# Update a %s", resource.SingularName), exampleWithIds, fmt.Sprintf("> PUT %s", FillUrlWithIds(resource.UpdateEntityInfo)), emptyJson)
+
+	if len(singularTypeNames) > 0 {
+		examples += GetJsonExample(fmt.Sprintf("# Update a %s using aliases", resource.SingularName), exampleWithIds, fmt.Sprintf("> PUT %s", FillUrlWithIds(resource.UpdateEntityInfo)), emptyJson)
+	}
+
+	if resource.UpdateEntityInfo.ContentType != "multipart/form-data" {
+		for k := range resource.Attributes {
+
+			if k[0] == '^' {
+				continue
+			}
+
+			results, _ := completion.Complete(completion.Request{
+				Type:       completion.CompleteAttributeValue,
+				Resource:   resource,
+				Verb:       completion.Update,
+				Attribute:  k,
+				ToComplete: "",
+			})
+
+			arg := `"Hello World"`
+
+			if len(results) > 0 {
+				arg = results[0]
+			}
+
+			extendedArgs := append(baseJsonArgs, k, arg)
+
+			// Don't try and use more than one key as some are mutually exclusive and the JSON will crash.
+			// Resources that are heterogenous and can have array or object fields at some level (i.e., data[n].id and data.id) are examples
+			jsonTxt, _ := json.ToJson(extendedArgs, resource.NoWrapping, resource.JsonApiFormat == "compliant", resource.Attributes)
+			examples += GetJsonExample(fmt.Sprintf("# update a %s passing in an argument", resourceName), fmt.Sprintf("%s %s %s", exampleWithAliases, k, arg), fmt.Sprintf("> PUT %s", FillUrlWithIds(resource.UpdateEntityInfo)), jsonTxt)
+
+			break
+		}
+	}
+
+	example := strings.ReplaceAll(strings.Trim(examples, "\n"), "  ", " ")
+	updateExampleCache.Store(resourceName, example)
+	return example
+}
+
+var deleteExampleCache sync.Map
+
+func GetDeleteExample(resource resources.Resource) string {
+	resourceName := resource.SingularName
+	if v, ok := deleteExampleCache.Load(resourceName); ok {
+		return v.(string)
+	}
+
+	singularTypeNames, err := resources.GetSingularTypesOfVariablesNeeded(resource.DeleteEntityInfo.Url)
+
+	if err != nil {
+		return fmt.Sprintf("Could not generate example: %s", err)
+	}
+
+	exampleWithIds := fmt.Sprintf("  epcc delete %s %s", resourceName, GetArgumentExampleWithIds(singularTypeNames))
+	exampleWithAliases := fmt.Sprintf("  epcc delete %s %s", resourceName, GetArgumentExampleWithAlias(singularTypeNames))
+
+	baseJsonArgs := []string{}
+	if !resource.NoWrapping {
+		baseJsonArgs = append(baseJsonArgs, "type", resource.JsonApiType)
+	}
+
+	emptyJson, _ := json.ToJson(baseJsonArgs, resource.NoWrapping, resource.JsonApiFormat == "compliant", resource.Attributes)
+
+	examples := GetJsonExample(fmt.Sprintf("# Delete a %s", resource.SingularName), exampleWithIds, fmt.Sprintf("> PUT %s", FillUrlWithIds(resource.DeleteEntityInfo)), emptyJson)
+
+	if len(singularTypeNames) > 0 {
+		examples += GetJsonExample(fmt.Sprintf("# Delete a %s using aliases", resource.SingularName), exampleWithIds, fmt.Sprintf("> PUT %s", FillUrlWithIds(resource.DeleteEntityInfo)), emptyJson)
+	}
+
+	if resource.DeleteEntityInfo.ContentType != "multipart/form-data" {
+		for k := range resource.Attributes {
+
+			if k[0] == '^' {
+				continue
+			}
+
+			results, _ := completion.Complete(completion.Request{
+				Type:       completion.CompleteAttributeValue,
+				Resource:   resource,
+				Verb:       completion.Delete,
+				Attribute:  k,
+				ToComplete: "",
+			})
+
+			arg := `"Hello World"`
+
+			if len(results) > 0 {
+				arg = results[0]
+			}
+
+			extendedArgs := append(baseJsonArgs, k, arg)
+
+			// Don't try and use more than one key as some are mutually exclusive and the JSON will crash.
+			// Resources that are heterogenous and can have array or object fields at some level (i.e., data[n].id and data.id) are examples
+			jsonTxt, _ := json.ToJson(extendedArgs, resource.NoWrapping, resource.JsonApiFormat == "compliant", resource.Attributes)
+			examples += GetJsonExample(fmt.Sprintf("# delete a %s passing in an argument", resourceName), fmt.Sprintf("%s %s %s", exampleWithAliases, k, arg), fmt.Sprintf("> DELETE %s", FillUrlWithIds(resource.DeleteEntityInfo)), jsonTxt)
+
+			break
+		}
+	}
+
+	example := strings.ReplaceAll(strings.Trim(examples, "\n"), "  ", " ")
+
+	deleteExampleCache.Store(resourceName, example)
+
+	return example
 }

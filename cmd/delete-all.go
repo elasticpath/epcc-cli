@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/elasticpath/epcc-cli/external/aliases"
 	"github.com/elasticpath/epcc-cli/external/apihelper"
-	"github.com/elasticpath/epcc-cli/external/completion"
 	"github.com/elasticpath/epcc-cli/external/httpclient"
 	"github.com/elasticpath/epcc-cli/external/id"
 	"github.com/elasticpath/epcc-cli/external/resources"
@@ -21,26 +20,31 @@ import (
 func NewDeleteAllCommand(parentCmd *cobra.Command) {
 
 	var deleteAll = &cobra.Command{
-		Use:    "delete-all [RESOURCE]",
-		Short:  "Deletes all of a resource.",
-		Args:   cobra.MinimumNArgs(1),
-		Hidden: false,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			return deleteAllInternal(context.Background(), args)
-		},
-
-		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-			if len(args) == 0 {
-				return completion.Complete(completion.Request{
-					Type: completion.CompletePluralResource,
-					Verb: completion.DeleteAll,
-				})
-			}
-
-			return []string{}, cobra.ShellCompDirectiveNoFileComp
-		},
+		Use:          "delete-all",
+		Short:        "Deletes all of a resource",
+		SilenceUsage: false,
 	}
 
+	for _, resource := range resources.GetPluralResources() {
+		if resource.GetCollectionInfo == nil {
+			continue
+		}
+
+		if resource.DeleteEntityInfo == nil {
+			continue
+		}
+		resourceName := resource.PluralName
+
+		var deleteAllResourceCmd = &cobra.Command{
+			Use:    resourceName,
+			Short:  GetDeleteAllShort(resource),
+			Hidden: false,
+			RunE: func(cmd *cobra.Command, args []string) error {
+				return deleteAllInternal(context.Background(), append([]string{resourceName}, args...))
+			},
+		}
+		deleteAll.AddCommand(deleteAllResourceCmd)
+	}
 	parentCmd.AddCommand(deleteAll)
 
 }

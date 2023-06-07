@@ -24,90 +24,107 @@ func NewDeleteCommand(parentCmd *cobra.Command) {
 		OverrideUrlPath: "",
 	}
 
-	var delete = &cobra.Command{
-		Use:   "delete [RESOURCE] [ID_1] [ID_2]",
-		Short: "Deletes a single resource.",
-		Args:  cobra.MinimumNArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
+	var deleteCmd = &cobra.Command{
+		Use:          "delete",
+		Short:        "Deletes a resource",
+		SilenceUsage: false,
+	}
 
-			body, err := deleteInternal(context.Background(), overrides, args)
-			if err != nil {
-				return err
-			}
+	for _, resource := range resources.GetPluralResources() {
+		if resource.DeleteEntityInfo == nil {
+			continue
+		}
+		resource := resource
+		resourceName := resource.SingularName
 
-			return json.PrintJson(body)
-		},
+		var deleteResourceCommand = &cobra.Command{
+			Use:     GetDeleteUsage(resource),
+			Short:   GetDeleteShort(resource),
+			Long:    GetDeleteLong(resource),
+			Example: GetDeleteExample(resource),
+			Args:    GetArgFunctionForDelete(resource),
+			RunE: func(cmd *cobra.Command, args []string) error {
 
-		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-			if len(args) == 0 {
-				return completion.Complete(completion.Request{
-					Type: completion.CompleteSingularResource,
-					Verb: completion.Delete,
-				})
-			} else if resource, ok := resources.GetResourceByName(args[0]); ok {
-				// len(args) == 0 means complete resource
-				// len(args) == 1 means first id
-				// lens(args) == 2 means second id.
-
-				// Replace ids with args in resourceURL
-				if resource.DeleteEntityInfo == nil {
-					return []string{}, cobra.ShellCompDirectiveNoFileComp
-				}
-
-				idCount, err := resources.GetNumberOfVariablesNeeded(resource.DeleteEntityInfo.Url)
-
+				body, err := deleteInternal(context.Background(), overrides, append([]string{resourceName}, args...))
 				if err != nil {
-					return []string{}, cobra.ShellCompDirectiveNoFileComp
+					return err
 				}
 
-				if len(args) > 0 && len(args) < 1+idCount {
-					// Must be for a resource completion
-					types, err := resources.GetTypesOfVariablesNeeded(resource.DeleteEntityInfo.Url)
+				return json.PrintJson(body)
+			},
+
+			ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+				if len(args) == 0 {
+					return completion.Complete(completion.Request{
+						Type: completion.CompleteSingularResource,
+						Verb: completion.Delete,
+					})
+				} else if resource, ok := resources.GetResourceByName(args[0]); ok {
+					// len(args) == 0 means complete resource
+					// len(args) == 1 means first id
+					// lens(args) == 2 means second id.
+
+					// Replace ids with args in resourceURL
+					if resource.DeleteEntityInfo == nil {
+						return []string{}, cobra.ShellCompDirectiveNoFileComp
+					}
+
+					idCount, err := resources.GetNumberOfVariablesNeeded(resource.DeleteEntityInfo.Url)
 
 					if err != nil {
 						return []string{}, cobra.ShellCompDirectiveNoFileComp
 					}
 
-					typeIdxNeeded := len(args) - 1
+					if len(args) > 0 && len(args) < 1+idCount {
+						// Must be for a resource completion
+						types, err := resources.GetTypesOfVariablesNeeded(resource.DeleteEntityInfo.Url)
 
-					if completionResource, ok := resources.GetResourceByName(types[typeIdxNeeded]); ok {
-						return completion.Complete(completion.Request{
-							Type:     completion.CompleteAlias,
-							Resource: completionResource,
-						})
-					}
-				} else {
-					if (len(args)-idCount)%2 == 1 { // This is an attribute key
-						usedAttributes := make(map[string]int)
-						for i := idCount + 1; i < len(args); i = i + 2 {
-							usedAttributes[args[i]] = 0
+						if err != nil {
+							return []string{}, cobra.ShellCompDirectiveNoFileComp
 						}
-						return completion.Complete(completion.Request{
-							Type:       completion.CompleteAttributeKey,
-							Resource:   resource,
-							Attributes: usedAttributes,
-							Verb:       completion.Delete,
-						})
-					} else { // This is an attribute value
-						return completion.Complete(completion.Request{
-							Type:       completion.CompleteAttributeValue,
-							Resource:   resource,
-							Verb:       completion.Delete,
-							Attribute:  args[len(args)-1],
-							ToComplete: toComplete,
-						})
+
+						typeIdxNeeded := len(args) - 1
+
+						if completionResource, ok := resources.GetResourceByName(types[typeIdxNeeded]); ok {
+							return completion.Complete(completion.Request{
+								Type:     completion.CompleteAlias,
+								Resource: completionResource,
+							})
+						}
+					} else {
+						if (len(args)-idCount)%2 == 1 { // This is an attribute key
+							usedAttributes := make(map[string]int)
+							for i := idCount + 1; i < len(args); i = i + 2 {
+								usedAttributes[args[i]] = 0
+							}
+							return completion.Complete(completion.Request{
+								Type:       completion.CompleteAttributeKey,
+								Resource:   resource,
+								Attributes: usedAttributes,
+								Verb:       completion.Delete,
+							})
+						} else { // This is an attribute value
+							return completion.Complete(completion.Request{
+								Type:       completion.CompleteAttributeValue,
+								Resource:   resource,
+								Verb:       completion.Delete,
+								Attribute:  args[len(args)-1],
+								ToComplete: toComplete,
+							})
+						}
 					}
 				}
-			}
 
-			return []string{}, cobra.ShellCompDirectiveNoFileComp
-		},
+				return []string{}, cobra.ShellCompDirectiveNoFileComp
+			},
+		}
+		deleteCmd.AddCommand(deleteResourceCommand)
 	}
 
-	delete.Flags().StringVar(&overrides.OverrideUrlPath, "override-url-path", "", "Override the URL that will be used for the Request")
-	delete.Flags().StringSliceVarP(&overrides.QueryParameters, "query-parameters", "q", []string{}, "Pass in key=value an they will be added as query parameters")
+	deleteCmd.Flags().StringVar(&overrides.OverrideUrlPath, "override-url-path", "", "Override the URL that will be used for the Request")
+	deleteCmd.Flags().StringSliceVarP(&overrides.QueryParameters, "query-parameters", "q", []string{}, "Pass in key=value an they will be added as query parameters")
 
-	parentCmd.AddCommand(delete)
+	parentCmd.AddCommand(deleteCmd)
 }
 func deleteInternal(ctx context.Context, overrides *httpclient.HttpParameterOverrides, args []string) (string, error) {
 	crud.OutstandingRequestCounter.Add(1)

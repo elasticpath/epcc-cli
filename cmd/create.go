@@ -24,6 +24,8 @@ func NewCreateCommand(parentCmd *cobra.Command) {
 
 	var autoFillOnCreate = false
 
+	var noBodyPrint = false
+
 	var outputJq = ""
 	overrides := &httpclient.HttpParameterOverrides{
 		QueryParameters: nil,
@@ -37,11 +39,12 @@ func NewCreateCommand(parentCmd *cobra.Command) {
 	}
 
 	for _, resource := range resources.GetPluralResources() {
-		resource := resource
-		resourceName := resource.SingularName
 		if resource.CreateEntityInfo == nil {
 			continue
 		}
+
+		resource := resource
+		resourceName := resource.SingularName
 
 		var createResourceCmd = &cobra.Command{
 			Use:     GetCreateUsageString(resource),
@@ -80,7 +83,12 @@ func NewCreateCommand(parentCmd *cobra.Command) {
 					return nil
 				}
 
-				return json.PrintJson(body)
+				if noBodyPrint {
+					return nil
+				} else {
+					return json.PrintJson(body)
+				}
+
 			},
 
 			ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
@@ -150,6 +158,7 @@ func NewCreateCommand(parentCmd *cobra.Command) {
 
 	create.PersistentFlags().StringVar(&overrides.OverrideUrlPath, "override-url-path", "", "Override the URL that will be used for the Request")
 	create.PersistentFlags().BoolVarP(&autoFillOnCreate, "auto-fill", "", false, "Auto generate value for fields")
+	create.PersistentFlags().BoolVarP(&noBodyPrint, "silent", "s", false, "Don't print the body on success")
 	create.PersistentFlags().StringSliceVarP(&overrides.QueryParameters, "query-parameters", "q", []string{}, "Pass in key=value an they will be added as query parameters")
 	create.PersistentFlags().StringVarP(&outputJq, "output-jq", "", "", "A jq expression, if set we will restrict output to only this")
 
