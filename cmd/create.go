@@ -22,16 +22,6 @@ import (
 
 func NewCreateCommand(parentCmd *cobra.Command) {
 
-	var autoFillOnCreate = false
-
-	var noBodyPrint = false
-
-	var outputJq = ""
-	overrides := &httpclient.HttpParameterOverrides{
-		QueryParameters: nil,
-		OverrideUrlPath: "",
-	}
-
 	var create = &cobra.Command{
 		Use:          "create",
 		Short:        "Creates a resource",
@@ -39,6 +29,17 @@ func NewCreateCommand(parentCmd *cobra.Command) {
 	}
 
 	for _, resource := range resources.GetPluralResources() {
+
+		var autoFillOnCreate = false
+
+		var noBodyPrint = false
+
+		var outputJq = ""
+		overrides := &httpclient.HttpParameterOverrides{
+			QueryParameters: nil,
+			OverrideUrlPath: "",
+		}
+
 		if resource.CreateEntityInfo == nil {
 			continue
 		}
@@ -153,16 +154,18 @@ func NewCreateCommand(parentCmd *cobra.Command) {
 				return []string{}, cobra.ShellCompDirectiveNoFileComp
 			},
 		}
+
+		createResourceCmd.PersistentFlags().StringVar(&overrides.OverrideUrlPath, "override-url-path", "", "Override the URL that will be used for the Request")
+		createResourceCmd.PersistentFlags().BoolVarP(&autoFillOnCreate, "auto-fill", "", false, "Auto generate value for fields")
+		createResourceCmd.PersistentFlags().BoolVarP(&noBodyPrint, "silent", "s", false, "Don't print the body on success")
+		createResourceCmd.PersistentFlags().StringSliceVarP(&overrides.QueryParameters, "query-parameters", "q", []string{}, "Pass in key=value an they will be added as query parameters")
+		createResourceCmd.PersistentFlags().StringVarP(&outputJq, "output-jq", "", "", "A jq expression, if set we will restrict output to only this")
+
+		_ = createResourceCmd.RegisterFlagCompletionFunc("output-jq", jqCompletionFunc)
+
 		create.AddCommand(createResourceCmd)
 	}
 
-	create.PersistentFlags().StringVar(&overrides.OverrideUrlPath, "override-url-path", "", "Override the URL that will be used for the Request")
-	create.PersistentFlags().BoolVarP(&autoFillOnCreate, "auto-fill", "", false, "Auto generate value for fields")
-	create.PersistentFlags().BoolVarP(&noBodyPrint, "silent", "s", false, "Don't print the body on success")
-	create.PersistentFlags().StringSliceVarP(&overrides.QueryParameters, "query-parameters", "q", []string{}, "Pass in key=value an they will be added as query parameters")
-	create.PersistentFlags().StringVarP(&outputJq, "output-jq", "", "", "A jq expression, if set we will restrict output to only this")
-
-	_ = create.RegisterFlagCompletionFunc("output-jq", jqCompletionFunc)
 	parentCmd.AddCommand(create)
 }
 

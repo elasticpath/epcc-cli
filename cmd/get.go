@@ -28,6 +28,7 @@ func NewGetCommand(parentCmd *cobra.Command) {
 	}
 
 	var outputJq = ""
+	var noBodyPrint = false
 
 	var getCmd = &cobra.Command{
 		Use:          "get",
@@ -110,7 +111,12 @@ func NewGetCommand(parentCmd *cobra.Command) {
 						return nil
 					}
 
-					return json.PrintJson(body)
+					if noBodyPrint {
+						return nil
+					} else {
+						return json.PrintJson(body)
+					}
+
 				},
 				ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 
@@ -165,13 +171,16 @@ func NewGetCommand(parentCmd *cobra.Command) {
 				},
 			}
 
+			newCmd.PersistentFlags().BoolVarP(&noBodyPrint, "silent", "s", false, "Don't print the body on success")
+			newCmd.PersistentFlags().StringVar(&overrides.OverrideUrlPath, "override-url-path", "", "Override the URL that will be used for the Request")
+			newCmd.PersistentFlags().StringSliceVarP(&overrides.QueryParameters, "query-parameters", "q", []string{}, "Pass in key=value an they will be added as query parameters")
+			newCmd.PersistentFlags().StringVarP(&outputJq, "output-jq", "", "", "A jq expression, if set we will restrict output to only this")
+			_ = newCmd.RegisterFlagCompletionFunc("output-jq", jqCompletionFunc)
+
 			getCmd.AddCommand(newCmd)
 		}
 	}
 
-	getCmd.PersistentFlags().StringVar(&overrides.OverrideUrlPath, "override-url-path", "", "Override the URL that will be used for the Request")
-	getCmd.PersistentFlags().StringSliceVarP(&overrides.QueryParameters, "query-parameters", "q", []string{}, "Pass in key=value an they will be added as query parameters")
-	getCmd.PersistentFlags().StringVarP(&outputJq, "output-jq", "", "", "A jq expression, if set we will restrict output to only this")
 	_ = getCmd.RegisterFlagCompletionFunc("output-jq", jqCompletionFunc)
 
 	parentCmd.AddCommand(getCmd)

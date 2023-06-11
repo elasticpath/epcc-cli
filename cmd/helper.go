@@ -56,11 +56,21 @@ func GetParameterUsageForTypes(types []string) string {
 	return r
 }
 
-func GetArgumentExampleWithIds(types []string) string {
+func GetUuidsForTypes(types []string) []string {
+	r := []string{}
+
+	for i := 0; i < len(types); i++ {
+		r = append(r, uuid.New().String())
+	}
+
+	return r
+}
+
+func GetArgumentExampleWithIds(types []string, uuids []string) string {
 	r := ""
 
 	for i := 0; i < len(types); i++ {
-		r += uuid.New().String() + " "
+		r += uuids[i]
 	}
 
 	return r
@@ -187,7 +197,7 @@ func GetJsonExample(description string, call string, header string, jsonTxt stri
 `, description, call, header, jsonTxt)
 }
 
-func FillUrlWithIds(urlInfo *resources.CrudEntityInfo) string {
+func FillUrlWithIds(urlInfo *resources.CrudEntityInfo, uuids []string) string {
 	var ids []string
 
 	idsNeeded, err := resources.GetNumberOfVariablesNeeded(urlInfo.Url)
@@ -197,7 +207,7 @@ func FillUrlWithIds(urlInfo *resources.CrudEntityInfo) string {
 	}
 
 	for i := 0; i < idsNeeded; i++ {
-		ids = append(ids, uuid.New().String())
+		ids = append(ids, uuids[i])
 	}
 
 	url, err := resources.GenerateUrl(urlInfo, ids)
@@ -245,6 +255,47 @@ func GetGetLong(resourceName string, resourceUrl string, usageGetType string, co
 `, usageGetType, resourceName, GetHelpResourceUrls(resourceUrl), parametersLongUsage)
 }
 
+func GetJsonSyntaxExample(resource resources.Resource) string {
+	return fmt.Sprintf(`
+Key and value pairs passed in will be converted to JSON with a jq like syntax.
+
+The EPCC CLI will automatically determine appropriate wrapping
+
+key b => %s
+key 1 => %s
+key '"1"' => %s
+key true => %s
+key null => %s
+key '"null"'' => %s
+key[0] a key[1] true => %s
+key.some.child hello key.some.other goodbye => %s
+`,
+		toJsonExample([]string{"key", "b"}, resource),
+		toJsonExample([]string{"key", "1"}, resource),
+		toJsonExample([]string{"key", "\"1\""}, resource),
+		toJsonExample([]string{"key", "true"}, resource),
+		toJsonExample([]string{"key", "null"}, resource),
+		toJsonExample([]string{"key", "\"null\""}, resource),
+		toJsonExample([]string{"key[0]", "a", "key[1]", "true"}, resource),
+		toJsonExample([]string{"key.some.child", "hello", "key.some.other", "goodbye"}, resource),
+	)
+}
+
+func toJsonExample(in []string, resource resources.Resource) string {
+
+	if !resource.NoWrapping {
+		in = append([]string{"type", resource.JsonApiType}, in...)
+	}
+
+	jsonTxt, err := json.ToJson(in, resource.NoWrapping, resource.JsonApiFormat == "compliant", resource.Attributes)
+
+	if err != nil {
+		return fmt.Sprintf("Could not get json: %s", err)
+	}
+
+	return jsonTxt
+}
+
 func GetCreateLong(resource resources.Resource) string {
 	resourceName := resource.SingularName
 
@@ -262,23 +313,11 @@ func GetCreateLong(resource resources.Resource) string {
 		argumentsBlurb = "Key and values are passed in using multipart/form-data encoding\n\nDocumentation:\n  " + resource.CreateEntityInfo.Docs
 	case "application/json", "":
 		argumentsBlurb = fmt.Sprintf(`
-Key and value pairs passed in will be converted to JSON with a jq like syntax.
-
-The EPCC CLI will automatically determine appropriate wrapping
-
-Basic Types:
-key b => { "a": "b" }
-key 1 => { "a": 1  }
-key '"1"' => { "a": "1" }
-key true => { "a": true }
-key null => { "a": null }
-key '"null"'' => { "a": "null" }
-
-
+%s
 
 Documentation:
  %s
-`, resource.CreateEntityInfo.Docs)
+`, GetJsonSyntaxExample(resource), resource.CreateEntityInfo.Docs)
 	default:
 		argumentsBlurb = fmt.Sprintf("This resource uses %s encoding, which this help doesn't know how to help you with :) Submit a bug please.\nDocumentation:\n  %s", resource.CreateEntityInfo.ContentType, resource.CreateEntityInfo.Docs)
 	}
@@ -470,13 +509,14 @@ func GetGetExample(resourceName string, resourceUrl string, usageGetType string,
 		return fmt.Sprintf("Could not generate example: %s", err)
 	}
 
-	exampleWithIds := fmt.Sprintf("  epcc get %s %s", resourceName, GetArgumentExampleWithIds(singularTypeNames))
+	uuids := GetUuidsForTypes(singularTypeNames)
+	exampleWithIds := fmt.Sprintf("  epcc get %s %s", resourceName, GetArgumentExampleWithIds(singularTypeNames, uuids))
 	exampleWithAliases := fmt.Sprintf("  epcc get %s %s", resourceName, GetArgumentExampleWithAlias(singularTypeNames))
 
-	examples := fmt.Sprintf("  # Retrieve %s %s\n%s\n  > GET %s\n\n", usageGetType, resourceName, exampleWithIds, FillUrlWithIds(urlInfo))
+	examples := fmt.Sprintf("  # Retrieve %s %s\n%s\n  > GET %s\n\n", usageGetType, resourceName, exampleWithIds, FillUrlWithIds(urlInfo, uuids))
 
 	if len(singularTypeNames) > 0 {
-		examples += fmt.Sprintf("  # Retrieve %s %s using aliases \n%s\n  > GET %s\n\n", usageGetType, resourceName, exampleWithAliases, FillUrlWithIds(urlInfo))
+		examples += fmt.Sprintf("  # Retrieve %s %s using aliases \n%s\n  > GET %s\n\n", usageGetType, resourceName, exampleWithAliases, FillUrlWithIds(urlInfo, uuids))
 	}
 
 	queryParameters, _ := completion.Complete(completion.Request{
@@ -492,7 +532,7 @@ func GetGetExample(resourceName string, resourceUrl string, usageGetType string,
 
 		switch qp {
 		case "page[limit]":
-			examples += fmt.Sprintf("  # Retrieve %s %s with page[limit] = 25 and page[offset] = 500 \n%s %s %s %s %s \n > GET %s \n\n", usageGetType, resourceName, exampleWithAliases, qp, "25", "page[offset]", "500", FillUrlWithIds(urlInfo)+"?page[limit]=25&page[offset]=500")
+			examples += fmt.Sprintf("  # Retrieve %s %s with page[limit] = 25 and page[offset] = 500 \n%s %s %s %s %s \n > GET %s \n\n", usageGetType, resourceName, exampleWithAliases, qp, "25", "page[offset]", "500", FillUrlWithIds(urlInfo, uuids)+"?page[limit]=25&page[offset]=500")
 
 		case "sort":
 
@@ -509,9 +549,9 @@ func GetGetExample(resourceName string, resourceUrl string, usageGetType string,
 
 			for i, v := range sortKeys {
 				if v[0] != '-' {
-					examples += fmt.Sprintf("  # Retrieve %s %s sorted in ascending order of %s\n%s %s %s \n > GET %s\n\n", usageGetType, resourceName, v, exampleWithAliases, qp, v, FillUrlWithIds(urlInfo)+"?sort="+v)
+					examples += fmt.Sprintf("  # Retrieve %s %s sorted in ascending order of %s\n%s %s %s \n > GET %s\n\n", usageGetType, resourceName, v, exampleWithAliases, qp, v, FillUrlWithIds(urlInfo, uuids)+"?sort="+v)
 				} else {
-					examples += fmt.Sprintf("  # Retrieve %s %s sorted in descending order of %s\n%s %s -- %s\n > GET %s\n\n", usageGetType, resourceName, v, exampleWithAliases, qp, v, FillUrlWithIds(urlInfo)+"?sort="+v)
+					examples += fmt.Sprintf("  # Retrieve %s %s sorted in descending order of %s\n%s %s -- %s\n > GET %s\n\n", usageGetType, resourceName, v, exampleWithAliases, qp, v, FillUrlWithIds(urlInfo, uuids)+"?sort="+v)
 				}
 
 				if i > 2 {
@@ -539,7 +579,7 @@ func GetGetExample(resourceName string, resourceUrl string, usageGetType string,
   %s %s '%s(%s,"Hello World")'
  > GET %s
 
-`, usageGetType, resourceName, searchOps[i], v, exampleWithAliases, qp, searchOps[i], v, FillUrlWithIds(urlInfo)+fmt.Sprintf(`?filter=%s(%s,"Hello World")`, searchOps[i], v))
+`, usageGetType, resourceName, searchOps[i], v, exampleWithAliases, qp, searchOps[i], v, FillUrlWithIds(urlInfo, uuids)+fmt.Sprintf(`?filter=%s(%s,"Hello World")`, searchOps[i], v))
 
 				if i >= 2 {
 					// Only need three examples for sort
@@ -549,7 +589,7 @@ func GetGetExample(resourceName string, resourceUrl string, usageGetType string,
 
 		default:
 
-			examples += fmt.Sprintf("  # Retrieve %s %s with a(n) %s = %s\n%s %s %s \n > GET %s \n\n", usageGetType, resourceName, qp, "x", exampleWithAliases, qp, "x", FillUrlWithIds(urlInfo)+"?"+qp+"=x")
+			examples += fmt.Sprintf("  # Retrieve %s %s with a(n) %s = %s\n%s %s %s \n > GET %s \n\n", usageGetType, resourceName, qp, "x", exampleWithAliases, qp, "x", FillUrlWithIds(urlInfo, uuids)+"?"+qp+"=x")
 		}
 
 	}
@@ -576,7 +616,9 @@ func GetCreateExample(resource resources.Resource) string {
 		return fmt.Sprintf("Could not generate example: %s", err)
 	}
 
-	exampleWithIds := fmt.Sprintf("  epcc create %s %s", resourceName, GetArgumentExampleWithIds(singularTypeNames))
+	uuids := GetUuidsForTypes(singularTypeNames)
+	exampleWithIds := fmt.Sprintf("  epcc create %s %s", resourceName, GetArgumentExampleWithIds(singularTypeNames, uuids))
+
 	exampleWithAliases := fmt.Sprintf("  epcc create %s %s", resourceName, GetArgumentExampleWithAlias(singularTypeNames))
 
 	baseJsonArgs := []string{}
@@ -586,10 +628,10 @@ func GetCreateExample(resource resources.Resource) string {
 
 	emptyJson, _ := json.ToJson(baseJsonArgs, resource.NoWrapping, resource.JsonApiFormat == "compliant", resource.Attributes)
 
-	examples := GetJsonExample(fmt.Sprintf("# Create a %s", resource.SingularName), exampleWithIds, fmt.Sprintf("> POST %s", FillUrlWithIds(resource.CreateEntityInfo)), emptyJson)
+	examples := GetJsonExample(fmt.Sprintf("# Create a %s", resource.SingularName), exampleWithIds, fmt.Sprintf("> POST %s", FillUrlWithIds(resource.CreateEntityInfo, uuids)), emptyJson)
 
 	if len(singularTypeNames) > 0 {
-		examples += GetJsonExample(fmt.Sprintf("# Create a %s using aliases", resource.SingularName), exampleWithIds, fmt.Sprintf("> POST %s", FillUrlWithIds(resource.CreateEntityInfo)), emptyJson)
+		examples += GetJsonExample(fmt.Sprintf("# Create a %s using aliases", resource.SingularName), exampleWithIds, fmt.Sprintf("> POST %s", FillUrlWithIds(resource.CreateEntityInfo, uuids)), emptyJson)
 	}
 
 	if resource.CreateEntityInfo.ContentType != "multipart/form-data" {
@@ -618,14 +660,14 @@ func GetCreateExample(resource resources.Resource) string {
 			// Don't try and use more than one key as some are mutually exclusive and the JSON will crash.
 			// Resources that are heterogenous and can have array or object fields at some level (i.e., data[n].id and data.id) are examples
 			jsonTxt, _ := json.ToJson(extendedArgs, resource.NoWrapping, resource.JsonApiFormat == "compliant", resource.Attributes)
-			examples += GetJsonExample(fmt.Sprintf("# Create a %s passing in an argument", resourceName), fmt.Sprintf("%s %s %s", exampleWithAliases, k, arg), fmt.Sprintf("> POST %s", FillUrlWithIds(resource.CreateEntityInfo)), jsonTxt)
+			examples += GetJsonExample(fmt.Sprintf("# Create a %s passing in an argument", resourceName), fmt.Sprintf("%s %s %s", exampleWithAliases, k, arg), fmt.Sprintf("> POST %s", FillUrlWithIds(resource.CreateEntityInfo, uuids)), jsonTxt)
 
 			autofilledData := autofill.GetJsonArrayForResource(&resource)
 
 			extendedArgs = append(autofilledData, extendedArgs...)
 
 			jsonTxt, _ = json.ToJson(extendedArgs, resource.NoWrapping, resource.JsonApiFormat == "compliant", resource.Attributes)
-			examples += GetJsonExample(fmt.Sprintf("# Create a %s (using --auto-fill) and passing in an argument", resourceName), fmt.Sprintf("%s --auto-fill %s %s", exampleWithAliases, k, arg), fmt.Sprintf("> POST %s", FillUrlWithIds(resource.CreateEntityInfo)), jsonTxt)
+			examples += GetJsonExample(fmt.Sprintf("# Create a %s (using --auto-fill) and passing in an argument", resourceName), fmt.Sprintf("%s --auto-fill %s %s", exampleWithAliases, k, arg), fmt.Sprintf("> POST %s", FillUrlWithIds(resource.CreateEntityInfo, uuids)), jsonTxt)
 
 			break
 		}
@@ -652,7 +694,8 @@ func GetUpdateExample(resource resources.Resource) string {
 		return fmt.Sprintf("Could not generate example: %s", err)
 	}
 
-	exampleWithIds := fmt.Sprintf("  epcc update %s %s", resourceName, GetArgumentExampleWithIds(singularTypeNames))
+	uuids := GetUuidsForTypes(singularTypeNames)
+	exampleWithIds := fmt.Sprintf("  epcc update %s %s", resourceName, GetArgumentExampleWithIds(singularTypeNames, uuids))
 	exampleWithAliases := fmt.Sprintf("  epcc update %s %s", resourceName, GetArgumentExampleWithAlias(singularTypeNames))
 
 	baseJsonArgs := []string{}
@@ -662,10 +705,10 @@ func GetUpdateExample(resource resources.Resource) string {
 
 	emptyJson, _ := json.ToJson(baseJsonArgs, resource.NoWrapping, resource.JsonApiFormat == "compliant", resource.Attributes)
 
-	examples := GetJsonExample(fmt.Sprintf("# Update a %s", resource.SingularName), exampleWithIds, fmt.Sprintf("> PUT %s", FillUrlWithIds(resource.UpdateEntityInfo)), emptyJson)
+	examples := GetJsonExample(fmt.Sprintf("# Update a %s", resource.SingularName), exampleWithIds, fmt.Sprintf("> PUT %s", FillUrlWithIds(resource.UpdateEntityInfo, uuids)), emptyJson)
 
 	if len(singularTypeNames) > 0 {
-		examples += GetJsonExample(fmt.Sprintf("# Update a %s using aliases", resource.SingularName), exampleWithIds, fmt.Sprintf("> PUT %s", FillUrlWithIds(resource.UpdateEntityInfo)), emptyJson)
+		examples += GetJsonExample(fmt.Sprintf("# Update a %s using aliases", resource.SingularName), exampleWithIds, fmt.Sprintf("> PUT %s", FillUrlWithIds(resource.UpdateEntityInfo, uuids)), emptyJson)
 	}
 
 	if resource.UpdateEntityInfo.ContentType != "multipart/form-data" {
@@ -694,7 +737,7 @@ func GetUpdateExample(resource resources.Resource) string {
 			// Don't try and use more than one key as some are mutually exclusive and the JSON will crash.
 			// Resources that are heterogenous and can have array or object fields at some level (i.e., data[n].id and data.id) are examples
 			jsonTxt, _ := json.ToJson(extendedArgs, resource.NoWrapping, resource.JsonApiFormat == "compliant", resource.Attributes)
-			examples += GetJsonExample(fmt.Sprintf("# update a %s passing in an argument", resourceName), fmt.Sprintf("%s %s %s", exampleWithAliases, k, arg), fmt.Sprintf("> PUT %s", FillUrlWithIds(resource.UpdateEntityInfo)), jsonTxt)
+			examples += GetJsonExample(fmt.Sprintf("# update a %s passing in an argument", resourceName), fmt.Sprintf("%s %s %s", exampleWithAliases, k, arg), fmt.Sprintf("> PUT %s", FillUrlWithIds(resource.UpdateEntityInfo, uuids)), jsonTxt)
 
 			break
 		}
@@ -719,7 +762,8 @@ func GetDeleteExample(resource resources.Resource) string {
 		return fmt.Sprintf("Could not generate example: %s", err)
 	}
 
-	exampleWithIds := fmt.Sprintf("  epcc delete %s %s", resourceName, GetArgumentExampleWithIds(singularTypeNames))
+	uuids := GetUuidsForTypes(singularTypeNames)
+	exampleWithIds := fmt.Sprintf("  epcc delete %s %s", resourceName, GetArgumentExampleWithIds(singularTypeNames, uuids))
 	exampleWithAliases := fmt.Sprintf("  epcc delete %s %s", resourceName, GetArgumentExampleWithAlias(singularTypeNames))
 
 	baseJsonArgs := []string{}
@@ -729,10 +773,10 @@ func GetDeleteExample(resource resources.Resource) string {
 
 	emptyJson, _ := json.ToJson(baseJsonArgs, resource.NoWrapping, resource.JsonApiFormat == "compliant", resource.Attributes)
 
-	examples := GetJsonExample(fmt.Sprintf("# Delete a %s", resource.SingularName), exampleWithIds, fmt.Sprintf("> PUT %s", FillUrlWithIds(resource.DeleteEntityInfo)), emptyJson)
+	examples := GetJsonExample(fmt.Sprintf("# Delete a %s", resource.SingularName), exampleWithIds, fmt.Sprintf("> PUT %s", FillUrlWithIds(resource.DeleteEntityInfo, uuids)), emptyJson)
 
 	if len(singularTypeNames) > 0 {
-		examples += GetJsonExample(fmt.Sprintf("# Delete a %s using aliases", resource.SingularName), exampleWithIds, fmt.Sprintf("> PUT %s", FillUrlWithIds(resource.DeleteEntityInfo)), emptyJson)
+		examples += GetJsonExample(fmt.Sprintf("# Delete a %s using aliases", resource.SingularName), exampleWithIds, fmt.Sprintf("> PUT %s", FillUrlWithIds(resource.DeleteEntityInfo, uuids)), emptyJson)
 	}
 
 	if resource.DeleteEntityInfo.ContentType != "multipart/form-data" {
@@ -761,7 +805,7 @@ func GetDeleteExample(resource resources.Resource) string {
 			// Don't try and use more than one key as some are mutually exclusive and the JSON will crash.
 			// Resources that are heterogenous and can have array or object fields at some level (i.e., data[n].id and data.id) are examples
 			jsonTxt, _ := json.ToJson(extendedArgs, resource.NoWrapping, resource.JsonApiFormat == "compliant", resource.Attributes)
-			examples += GetJsonExample(fmt.Sprintf("# delete a %s passing in an argument", resourceName), fmt.Sprintf("%s %s %s", exampleWithAliases, k, arg), fmt.Sprintf("> DELETE %s", FillUrlWithIds(resource.DeleteEntityInfo)), jsonTxt)
+			examples += GetJsonExample(fmt.Sprintf("# delete a %s passing in an argument", resourceName), fmt.Sprintf("%s %s %s", exampleWithAliases, k, arg), fmt.Sprintf("> DELETE %s", FillUrlWithIds(resource.DeleteEntityInfo, uuids)), jsonTxt)
 
 			break
 		}

@@ -25,6 +25,8 @@ func NewUpdateCommand(parentCmd *cobra.Command) {
 
 	var outputJq = ""
 
+	var noBodyPrint = false
+
 	var update = &cobra.Command{
 		Use:          "update",
 		Short:        "Updates a resource",
@@ -75,7 +77,12 @@ func NewUpdateCommand(parentCmd *cobra.Command) {
 					return nil
 				}
 
-				return json.PrintJson(body)
+				if noBodyPrint {
+					return nil
+				} else {
+					return json.PrintJson(body)
+				}
+
 			},
 
 			ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
@@ -142,6 +149,7 @@ func NewUpdateCommand(parentCmd *cobra.Command) {
 	}
 	update.Flags().StringVar(&overrides.OverrideUrlPath, "override-url-path", "", "Override the URL that will be used for the Request")
 	update.Flags().StringSliceVarP(&overrides.QueryParameters, "query-parameters", "q", []string{}, "Pass in key=value an they will be added as query parameters")
+	update.PersistentFlags().BoolVarP(&noBodyPrint, "silent", "s", false, "Don't print the body on success")
 	update.Flags().StringVarP(&outputJq, "output-jq", "", "", "A jq expression, if set we will restrict output to only this")
 	_ = update.RegisterFlagCompletionFunc("output-jq", jqCompletionFunc)
 	parentCmd.AddCommand(update)

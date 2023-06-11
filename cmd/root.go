@@ -56,6 +56,7 @@ var jqCompletionFunc = func(cmd *cobra.Command, args []string, toComplete string
 
 func InitializeCmd() {
 	cobra.OnInitialize(initConfig)
+	initConfig()
 
 	if err := env.Parse(config.Envs); err != nil {
 		panic("Could not parse environment variables")
@@ -94,7 +95,7 @@ func InitializeCmd() {
 
 	RootCmd.PersistentFlags().BoolVarP(&json.MonochromeOutput, "monochrome-output", "M", false, "By default, epcc will output using colors if the terminal supports this. Use this option to disable it.")
 	RootCmd.PersistentFlags().StringSliceVarP(&httpclient.RawHeaders, "header", "H", []string{}, "Extra headers and values to include in the request when sending HTTP to a server. You may specify any number of extra headers.")
-	RootCmd.PersistentFlags().StringVarP(&profiles.ProfileName, "profile", "P", "default", "overrides the current EPCC_PROFILE var to run the command with the chosen profile.")
+	RootCmd.PersistentFlags().StringVarP(&profiles.ProfileName, "profile", "P", profiles.ProfileName, "overrides the current EPCC_PROFILE var to run the command with the chosen profile.")
 	RootCmd.PersistentFlags().Uint16VarP(&rateLimit, "rate-limit", "", 10, "Request limit per second")
 	RootCmd.PersistentFlags().BoolVarP(&httpclient.Retry5xx, "retry-5xx", "", false, "Whether we should retry requests with HTTP 5xx response code")
 	RootCmd.PersistentFlags().BoolVarP(&httpclient.Retry429, "retry-429", "", false, "Whether we should retry requests with HTTP 429 response code")
