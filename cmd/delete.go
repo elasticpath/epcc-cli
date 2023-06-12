@@ -19,33 +19,48 @@ import (
 
 func NewDeleteCommand(parentCmd *cobra.Command) {
 
-	overrides := &httpclient.HttpParameterOverrides{
-		QueryParameters: nil,
-		OverrideUrlPath: "",
+	var deleteCmd = &cobra.Command{
+		Use:          "delete",
+		Short:        "Deletes a resource",
+		SilenceUsage: false,
 	}
 
-	var delete = &cobra.Command{
-		Use:   "delete [RESOURCE] [ID_1] [ID_2]",
-		Short: "Deletes a single resource.",
-		Args:  cobra.MinimumNArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
+	for _, resource := range resources.GetPluralResources() {
+		if resource.DeleteEntityInfo == nil {
+			continue
+		}
+		overrides := &httpclient.HttpParameterOverrides{
+			QueryParameters: nil,
+			OverrideUrlPath: "",
+		}
 
-			body, err := deleteInternal(context.Background(), overrides, args)
-			if err != nil {
-				return err
-			}
+		var allow404 = false
 
-			return json.PrintJson(body)
-		},
+		resource := resource
+		resourceName := resource.SingularName
 
-		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-			if len(args) == 0 {
-				return completion.Complete(completion.Request{
-					Type: completion.CompleteSingularResource,
-					Verb: completion.Delete,
-				})
-			} else if resource, ok := resources.GetResourceByName(args[0]); ok {
-				// len(args) == 0 means complete resource
+		var deleteResourceCommand = &cobra.Command{
+			Use:     GetDeleteUsage(resource),
+			Short:   GetDeleteShort(resource),
+			Long:    GetDeleteLong(resource),
+			Example: GetDeleteExample(resource),
+			Args:    GetArgFunctionForDelete(resource),
+			RunE: func(cmd *cobra.Command, args []string) error {
+
+				body, err := deleteInternal(context.Background(), overrides, allow404, append([]string{resourceName}, args...))
+
+				if err != nil {
+					if body != "" {
+						json.PrintJson(body)
+					}
+					return err
+				}
+
+				return json.PrintJson(body)
+			},
+
+			ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+
 				// len(args) == 1 means first id
 				// lens(args) == 2 means second id.
 
@@ -60,7 +75,7 @@ func NewDeleteCommand(parentCmd *cobra.Command) {
 					return []string{}, cobra.ShellCompDirectiveNoFileComp
 				}
 
-				if len(args) > 0 && len(args) < 1+idCount {
+				if len(args) < idCount {
 					// Must be for a resource completion
 					types, err := resources.GetTypesOfVariablesNeeded(resource.DeleteEntityInfo.Url)
 
@@ -68,7 +83,7 @@ func NewDeleteCommand(parentCmd *cobra.Command) {
 						return []string{}, cobra.ShellCompDirectiveNoFileComp
 					}
 
-					typeIdxNeeded := len(args) - 1
+					typeIdxNeeded := len(args)
 
 					if completionResource, ok := resources.GetResourceByName(types[typeIdxNeeded]); ok {
 						return completion.Complete(completion.Request{
@@ -77,9 +92,9 @@ func NewDeleteCommand(parentCmd *cobra.Command) {
 						})
 					}
 				} else {
-					if (len(args)-idCount)%2 == 1 { // This is an attribute key
+					if (len(args)-idCount)%2 == 0 { // This is an attribute key
 						usedAttributes := make(map[string]int)
-						for i := idCount + 1; i < len(args); i = i + 2 {
+						for i := idCount; i < len(args); i = i + 2 {
 							usedAttributes[args[i]] = 0
 						}
 						return completion.Complete(completion.Request{
@@ -98,18 +113,19 @@ func NewDeleteCommand(parentCmd *cobra.Command) {
 						})
 					}
 				}
-			}
 
-			return []string{}, cobra.ShellCompDirectiveNoFileComp
-		},
+				return []string{}, cobra.ShellCompDirectiveNoFileComp
+			},
+		}
+		deleteResourceCommand.Flags().StringVar(&overrides.OverrideUrlPath, "override-url-path", "", "Override the URL that will be used for the Request")
+		deleteResourceCommand.Flags().StringSliceVarP(&overrides.QueryParameters, "query-parameters", "q", []string{}, "Pass in key=value an they will be added as query parameters")
+		deleteResourceCommand.Flags().BoolVar(&allow404, "allow-404", allow404, "If set 404's will not be treated as errors")
+		deleteCmd.AddCommand(deleteResourceCommand)
 	}
 
-	delete.Flags().StringVar(&overrides.OverrideUrlPath, "override-url-path", "", "Override the URL that will be used for the Request")
-	delete.Flags().StringSliceVarP(&overrides.QueryParameters, "query-parameters", "q", []string{}, "Pass in key=value an they will be added as query parameters")
-
-	parentCmd.AddCommand(delete)
+	parentCmd.AddCommand(deleteCmd)
 }
-func deleteInternal(ctx context.Context, overrides *httpclient.HttpParameterOverrides, args []string) (string, error) {
+func deleteInternal(ctx context.Context, overrides *httpclient.HttpParameterOverrides, allow404 bool, args []string) (string, error) {
 	crud.OutstandingRequestCounter.Add(1)
 	defer crud.OutstandingRequestCounter.Done()
 
@@ -139,6 +155,13 @@ func deleteInternal(ctx context.Context, overrides *httpclient.HttpParameterOver
 
 		if err != nil {
 			log.Fatal(err)
+		}
+
+		// Check if error response
+		if resp.StatusCode >= 400 && resp.StatusCode <= 600 {
+			if resp.StatusCode != 404 || !allow404 {
+				return string(body), fmt.Errorf(resp.Status)
+			}
 		}
 
 		return string(body), nil

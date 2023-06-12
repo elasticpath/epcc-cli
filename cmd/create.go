@@ -22,126 +22,150 @@ import (
 
 func NewCreateCommand(parentCmd *cobra.Command) {
 
-	var autoFillOnCreate = false
-
-	var outputJq = ""
-	overrides := &httpclient.HttpParameterOverrides{
-		QueryParameters: nil,
-		OverrideUrlPath: "",
+	var create = &cobra.Command{
+		Use:          "create",
+		Short:        "Creates a resource",
+		SilenceUsage: false,
 	}
 
-	var create = &cobra.Command{
-		Use:   "create <RESOURCE> [ID_1] [ID_2]... <KEY_1> <VAL_1> <KEY_2> <VAL_2>...",
-		Short: "Creates an entity of a resource.",
-		Args:  cobra.MinimumNArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			body, err := createInternal(context.Background(), overrides, args, autoFillOnCreate)
+	for _, resource := range resources.GetPluralResources() {
 
-			if err != nil {
-				return err
-			}
+		var autoFillOnCreate = false
 
-			if outputJq != "" {
-				output, err := json.RunJQOnStringWithArray(outputJq, body)
+		var noBodyPrint = false
+
+		var outputJq = ""
+		overrides := &httpclient.HttpParameterOverrides{
+			QueryParameters: nil,
+			OverrideUrlPath: "",
+		}
+
+		if resource.CreateEntityInfo == nil {
+			continue
+		}
+
+		resource := resource
+		resourceName := resource.SingularName
+
+		var createResourceCmd = &cobra.Command{
+			Use:     GetCreateUsageString(resource),
+			Short:   GetCreateShort(resource),
+			Long:    GetCreateLong(resource),
+			Example: GetCreateExample(resource),
+			Args:    GetArgFunctionForCreate(resource),
+			RunE: func(cmd *cobra.Command, args []string) error {
+				body, err := createInternal(context.Background(), overrides, append([]string{resourceName}, args...), autoFillOnCreate)
 
 				if err != nil {
 					return err
 				}
 
-				for _, outputLine := range output {
-					outputJson, err := gojson.Marshal(outputLine)
+				if outputJq != "" {
+					output, err := json.RunJQOnStringWithArray(outputJq, body)
 
 					if err != nil {
 						return err
 					}
 
-					err = json.PrintJson(string(outputJson))
-
-					if err != nil {
-						return err
-					}
-				}
-
-				return nil
-			}
-
-			return json.PrintJson(body)
-		},
-
-		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-			if len(args) == 0 {
-				return completion.Complete(completion.Request{
-					Type: completion.CompleteSingularResource,
-					Verb: completion.Create,
-				})
-			}
-
-			// Find Resource
-			resource, ok := resources.GetResourceByName(args[0])
-			if ok {
-				if resource.CreateEntityInfo != nil {
-					resourceURL := resource.CreateEntityInfo.Url
-					idCount, _ := resources.GetNumberOfVariablesNeeded(resourceURL)
-					if len(args)-idCount >= 1 { // Arg is after IDs
-						if (len(args)-idCount)%2 == 1 { // This is an attribute key
-							usedAttributes := make(map[string]int)
-							for i := idCount + 1; i < len(args); i = i + 2 {
-								usedAttributes[args[i]] = 0
-							}
-
-							// I think this allows you to complete the current argument
-							// This is necessary because if you are using something with a wildcard or regex
-							// You won't see it in the attribute list, and therefor it won't be able to auto complete it.
-							toComplete := strings.ReplaceAll(toComplete, "<ENTER>", "")
-							if toComplete != "" {
-								usedAttributes[toComplete] = 0
-							}
-							return completion.Complete(completion.Request{
-								Type:       completion.CompleteAttributeKey,
-								Resource:   resource,
-								Attributes: usedAttributes,
-								Verb:       completion.Create,
-							})
-						} else { // This is an attribute value
-							return completion.Complete(completion.Request{
-								Type:       completion.CompleteAttributeValue,
-								Resource:   resource,
-								Verb:       completion.Create,
-								Attribute:  args[len(args)-1],
-								ToComplete: toComplete,
-							})
-						}
-					} else {
-						// Arg is in IDS
-						// Must be for a resource completion
-						types, err := resources.GetTypesOfVariablesNeeded(resourceURL)
+					for _, outputLine := range output {
+						outputJson, err := gojson.Marshal(outputLine)
 
 						if err != nil {
-							return []string{}, cobra.ShellCompDirectiveNoFileComp
+							return err
 						}
 
-						typeIdxNeeded := len(args) - 1
+						err = json.PrintJson(string(outputJson))
 
-						if completionResource, ok := resources.GetResourceByName(types[typeIdxNeeded]); ok {
-							return completion.Complete(completion.Request{
-								Type:     completion.CompleteAlias,
-								Resource: completionResource,
-							})
+						if err != nil {
+							return err
+						}
+					}
+
+					return nil
+				}
+
+				if noBodyPrint {
+					return nil
+				} else {
+					return json.PrintJson(body)
+				}
+
+			},
+
+			ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+				// Find Resource
+				resource, ok := resources.GetResourceByName(resourceName)
+				if ok {
+					if resource.CreateEntityInfo != nil {
+						resourceURL := resource.CreateEntityInfo.Url
+						idCount, _ := resources.GetNumberOfVariablesNeeded(resourceURL)
+						if len(args)-idCount >= 0 { // Arg is after IDs
+							if (len(args)-idCount)%2 == 0 { // This is an attribute key
+								usedAttributes := make(map[string]int)
+								for i := idCount; i < len(args); i = i + 2 {
+									usedAttributes[args[i]] = 0
+								}
+
+								// I think this allows you to complete the current argument
+								// This is necessary because if you are using something with a wildcard or regex
+								// You won't see it in the attribute list, and therefore it won't be able to auto complete it.
+								// I now think this does nothing.
+								toComplete := strings.ReplaceAll(toComplete, "<ENTER>", "")
+								if toComplete != "" {
+									usedAttributes[toComplete] = 0
+								}
+								return completion.Complete(completion.Request{
+									Type:       completion.CompleteAttributeKey,
+									Resource:   resource,
+									Attributes: usedAttributes,
+									Verb:       completion.Create,
+									ToComplete: toComplete,
+								})
+							} else { // This is an attribute value
+								return completion.Complete(completion.Request{
+									Type:       completion.CompleteAttributeValue,
+									Resource:   resource,
+									Verb:       completion.Create,
+									Attribute:  args[len(args)-1],
+									ToComplete: toComplete,
+								})
+							}
+						} else {
+							// Arg is in IDS
+							// Must be for a resource completion
+							types, err := resources.GetTypesOfVariablesNeeded(resourceURL)
+
+							if err != nil {
+								return []string{}, cobra.ShellCompDirectiveNoFileComp
+							}
+
+							typeIdxNeeded := len(args)
+
+							if completionResource, ok := resources.GetResourceByName(types[typeIdxNeeded]); ok {
+								return completion.Complete(completion.Request{
+									Type:     completion.CompleteAlias,
+									Resource: completionResource,
+								})
+							}
 						}
 					}
 				}
-			}
 
-			return []string{}, cobra.ShellCompDirectiveNoFileComp
-		},
+				return []string{}, cobra.ShellCompDirectiveNoFileComp
+			},
+		}
+
+		createResourceCmd.PersistentFlags().StringVar(&overrides.OverrideUrlPath, "override-url-path", "", "Override the URL that will be used for the Request")
+		createResourceCmd.PersistentFlags().BoolVarP(&autoFillOnCreate, "auto-fill", "", false, "Auto generate value for fields")
+		createResourceCmd.PersistentFlags().BoolVarP(&noBodyPrint, "silent", "s", false, "Don't print the body on success")
+		createResourceCmd.PersistentFlags().StringSliceVarP(&overrides.QueryParameters, "query-parameters", "q", []string{}, "Pass in key=value an they will be added as query parameters")
+		createResourceCmd.PersistentFlags().StringVarP(&outputJq, "output-jq", "", "", "A jq expression, if set we will restrict output to only this")
+
+		_ = createResourceCmd.RegisterFlagCompletionFunc("output-jq", jqCompletionFunc)
+
+		create.AddCommand(createResourceCmd)
 	}
 
-	create.Flags().StringVar(&overrides.OverrideUrlPath, "override-url-path", "", "Override the URL that will be used for the Request")
-	create.Flags().BoolVarP(&autoFillOnCreate, "auto-fill", "", false, "Auto generate value for fields")
-	create.Flags().StringSliceVarP(&overrides.QueryParameters, "query-parameters", "q", []string{}, "Pass in key=value an they will be added as query parameters")
-	create.Flags().StringVarP(&outputJq, "output-jq", "", "", "A jq expression, if set we will restrict output to only this")
-
-	_ = create.RegisterFlagCompletionFunc("output-jq", jqCompletionFunc)
 	parentCmd.AddCommand(create)
 }
 

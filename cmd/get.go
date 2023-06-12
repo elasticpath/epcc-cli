@@ -18,138 +18,172 @@ import (
 	"strings"
 )
 
-func NewGetCommand(parentCmd *cobra.Command) {
+const singularResourceRequest = 0
+const collectionResourceRequest = 1
 
+func NewGetCommand(parentCmd *cobra.Command) {
 	overrides := &httpclient.HttpParameterOverrides{
 		QueryParameters: nil,
 		OverrideUrlPath: "",
 	}
 
 	var outputJq = ""
+	var noBodyPrint = false
 
-	var get = &cobra.Command{
-		Use:   "get [RESOURCE] [ID_1] [ID_2]",
-		Short: "Retrieves a single resource.",
-		Args:  cobra.MinimumNArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			body, err := getInternal(context.Background(), overrides, args)
-			if err != nil {
-				return err
+	var getCmd = &cobra.Command{
+		Use:          "get",
+		Short:        "Retrieves either a single or all resources",
+		SilenceUsage: false,
+	}
+
+	for _, resource := range resources.GetPluralResources() {
+		resource := resource
+
+		for i := 0; i < 2; i++ {
+			i := i
+			//usageString := ""
+			resourceName := ""
+			completionVerb := 0
+			usageGetType := ""
+			var urlInfo *resources.CrudEntityInfo = nil
+
+			switch i {
+			case singularResourceRequest:
+				if resource.GetCollectionInfo == nil {
+					continue
+				}
+
+				resourceName = resource.PluralName
+				//usageString = resource.PluralName
+
+				urlInfo = resource.GetCollectionInfo
+				completionVerb = completion.GetAll
+				usageGetType = "all (or a single page) of"
+
+			case collectionResourceRequest:
+				if resource.GetEntityInfo == nil {
+					continue
+				}
+				//usageString = resource.SingularName
+				resourceName = resource.SingularName
+
+				urlInfo = resource.GetEntityInfo
+				completionVerb = completion.Get
+				usageGetType = "a single"
 			}
 
-			if outputJq != "" {
-				output, err := json.RunJQOnStringWithArray(outputJq, body)
+			resourceUrl := urlInfo.Url
 
-				if err != nil {
-					return err
-				}
-				for _, outputLine := range output {
-					outputJson, err := gojson.Marshal(outputLine)
+			newCmd := &cobra.Command{
+				Use: GetGetUsageString(resourceName, resourceUrl, completionVerb, resource),
+				// The replace all is a hack for the moment the URL could be made nicer
+				Short:   GetGetShort(resourceUrl),
+				Long:    GetGetLong(resourceName, resourceUrl, usageGetType, completionVerb, urlInfo, resource),
+				Example: GetGetExample(resourceName, resourceUrl, usageGetType, completionVerb, urlInfo, resource),
+				Args:    GetArgFunctionForUrl(resourceName, resourceUrl),
+				RunE: func(cmd *cobra.Command, args []string) error {
 
+					body, err := getInternal(context.Background(), overrides, append([]string{resourceName}, args...))
 					if err != nil {
 						return err
 					}
 
-					err = json.PrintJson(string(outputJson))
+					if outputJq != "" {
+						output, err := json.RunJQOnStringWithArray(outputJq, body)
 
-					if err != nil {
-						return err
+						if err != nil {
+							return err
+						}
+						for _, outputLine := range output {
+							outputJson, err := gojson.Marshal(outputLine)
+
+							if err != nil {
+								return err
+							}
+
+							err = json.PrintJson(string(outputJson))
+
+							if err != nil {
+								return err
+							}
+						}
+
+						return nil
 					}
-				}
 
-				return nil
-			}
+					if noBodyPrint {
+						return nil
+					} else {
+						return json.PrintJson(body)
+					}
 
-			return json.PrintJson(body)
-		},
+				},
+				ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 
-		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-			if len(args) == 0 {
-				return completion.Complete(completion.Request{
-					Type: completion.CompleteSingularResource | completion.CompletePluralResource,
-					Verb: completion.Get,
-				})
-			} else if resource, ok := resources.GetResourceByName(args[0]); ok {
-				// len(args) == 0 means complete resource
-				// len(args) == 1 means first id
-				// lens(args) == 2 means second id.
+					if resourceUrl == "" {
+						return []string{}, cobra.ShellCompDirectiveNoFileComp
+					}
 
-				resourceURL, err := getUrl(resource, args)
-				if err != nil {
-					return []string{}, cobra.ShellCompDirectiveNoFileComp
-				}
-
-				idCount, err := resources.GetNumberOfVariablesNeeded(resourceURL.Url)
-
-				if err != nil {
-					return []string{}, cobra.ShellCompDirectiveNoFileComp
-				}
-
-				if len(args) > 0 && len(args) < 1+idCount {
-					// Must be for a resource completion
-					types, err := resources.GetTypesOfVariablesNeeded(resourceURL.Url)
+					idCount, err := resources.GetNumberOfVariablesNeeded(resourceUrl)
 
 					if err != nil {
 						return []string{}, cobra.ShellCompDirectiveNoFileComp
 					}
 
-					typeIdxNeeded := len(args) - 1
+					if len(args) < idCount {
+						// Must be for a resource completion
+						types, err := resources.GetTypesOfVariablesNeeded(resourceUrl)
 
-					if completionResource, ok := resources.GetResourceByName(types[typeIdxNeeded]); ok {
-						return completion.Complete(completion.Request{
-							Type:     completion.CompleteAlias,
-							Resource: completionResource,
-						})
-					}
+						if err != nil {
+							return []string{}, cobra.ShellCompDirectiveNoFileComp
+						}
 
-				} else if len(args) >= idCount+1 { // Arg is after IDs
-					if (len(args)-idCount)%2 == 1 { // This is a query param key
-						if resource.SingularName != args[0] { // If the resource is plural/get-collection
+						typeIdxNeeded := len(args)
+
+						if completionResource, ok := resources.GetResourceByName(types[typeIdxNeeded]); ok {
 							return completion.Complete(completion.Request{
-								Type:     completion.CompleteQueryParamKey,
-								Resource: resource,
-								Verb:     completion.GetAll,
-							})
-						} else {
-							return completion.Complete(completion.Request{
-								Type:     completion.CompleteQueryParamKey,
-								Resource: resource,
-								Verb:     completion.Get,
+								Type:     completion.CompleteAlias,
+								Resource: completionResource,
 							})
 						}
-					} else {
-						// This is a query param value
-						if resource.SingularName != args[0] { // If the resource is plural/get-collection
+
+					} else if len(args) >= idCount { // Arg is after IDs
+						if (len(args)-idCount)%2 == 0 { // This is a query param key
 							return completion.Complete(completion.Request{
-								Type:       completion.CompleteQueryParamValue,
-								Resource:   resource,
-								Verb:       completion.GetAll,
-								QueryParam: args[len(args)-1],
-								ToComplete: toComplete,
+								Type:     completion.CompleteQueryParamKey,
+								Resource: resource,
+								Verb:     completionVerb,
 							})
+
 						} else {
 							return completion.Complete(completion.Request{
 								Type:       completion.CompleteQueryParamValue,
 								Resource:   resource,
-								Verb:       completion.Get,
+								Verb:       completionVerb,
 								QueryParam: args[len(args)-1],
 								ToComplete: toComplete,
 							})
+
 						}
 					}
-				}
+
+					return []string{}, cobra.ShellCompDirectiveNoFileComp
+				},
 			}
 
-			return []string{}, cobra.ShellCompDirectiveNoFileComp
-		},
+			newCmd.PersistentFlags().BoolVarP(&noBodyPrint, "silent", "s", false, "Don't print the body on success")
+			newCmd.PersistentFlags().StringVar(&overrides.OverrideUrlPath, "override-url-path", "", "Override the URL that will be used for the Request")
+			newCmd.PersistentFlags().StringSliceVarP(&overrides.QueryParameters, "query-parameters", "q", []string{}, "Pass in key=value an they will be added as query parameters")
+			newCmd.PersistentFlags().StringVarP(&outputJq, "output-jq", "", "", "A jq expression, if set we will restrict output to only this")
+			_ = newCmd.RegisterFlagCompletionFunc("output-jq", jqCompletionFunc)
+
+			getCmd.AddCommand(newCmd)
+		}
 	}
 
-	get.Flags().StringVar(&overrides.OverrideUrlPath, "override-url-path", "", "Override the URL that will be used for the Request")
-	get.Flags().StringSliceVarP(&overrides.QueryParameters, "query-parameters", "q", []string{}, "Pass in key=value an they will be added as query parameters")
-	get.Flags().StringVarP(&outputJq, "output-jq", "", "", "A jq expression, if set we will restrict output to only this")
-	_ = get.RegisterFlagCompletionFunc("output-jq", jqCompletionFunc)
+	_ = getCmd.RegisterFlagCompletionFunc("output-jq", jqCompletionFunc)
 
-	parentCmd.AddCommand(get)
+	parentCmd.AddCommand(getCmd)
 }
 
 func getInternal(ctx context.Context, overrides *httpclient.HttpParameterOverrides, args []string) (string, error) {

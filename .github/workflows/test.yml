@@ -47,6 +47,10 @@ jobs:
 
       - name: Unit Tests
         timeout-minutes: 15
+        env:
+          EPCC_CLIENT_ID: ${{ secrets.EPCC_CLIENT_ID }}
+          EPCC_CLIENT_SECRET: ${{ secrets.EPCC_CLIENT_SECRET }}
+          EPCC_API_BASE_URL: ${{ vars.EPCC_API_BASE_URL }}
         run: |
           go test -v -cover ./cmd/ ./external/...
 

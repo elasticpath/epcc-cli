@@ -157,6 +157,7 @@ func initRunbookRunCommands() *cobra.Command {
 						rawCmdLines, err := runbooks.RenderTemplates(templateName, rawCmd, runbookStringArguments, runbookAction.Variables)
 
 						if err != nil {
+							cancelFunc()
 							return err
 						}
 						resultChan := make(chan *commandResult, *maxConcurrency*2)
@@ -179,6 +180,7 @@ func initRunbookRunCommands() *cobra.Command {
 							rawCmdArguments, err := shellwords.SplitPosix(strings.Trim(rawCmdLine, " \n"))
 
 							if err != nil {
+								cancelFunc()
 								return err
 							}
 
@@ -214,11 +216,12 @@ func initRunbookRunCommands() *cobra.Command {
 								}
 
 								fn := fn
-								semaphore.Acquire(context.TODO(), 1)
-								go func() {
-									defer semaphore.Release(1)
-									fn()
-								}()
+								if err := semaphore.Acquire(ctx, 1); err == nil {
+									go func() {
+										defer semaphore.Release(1)
+										fn()
+									}()
+								}
 							}
 						}()
 
@@ -328,7 +331,7 @@ func initRunbookDevCommands() *cobra.Command {
 
 func getDevCommands(parent *cobra.Command) {
 	parent.AddCommand(&cobra.Command{
-		Use:   "sleep time",
+		Use:   "sleep",
 		Short: "Sleep for a predefined duration",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -338,8 +341,7 @@ func getDevCommands(parent *cobra.Command) {
 			if err != nil {
 				return fmt.Errorf("could not sleep due to error: %v", err)
 			}
-
-			log.Debugf("Sleeping for %d seconds", timeToSleep)
+			log.Infof("Sleeping for %d seconds", timeToSleep)
 			time.Sleep(time.Duration(timeToSleep) * time.Second)
 
 			return nil

@@ -19,7 +19,7 @@ Additionally, this tool is not necessarily meant to be a new command line equiva
 2. Add the `epcc` binary to your path.
 3. Load the autocompletion into your shell (See instructions [here](#completion)).
 
-It is highly recommended that new users check out the [Tutorial](docs/tutorial.md)
+It is highly recommended that new users check out the [Tutorial](docs/tutorial.md).
 
 ### Command Overview
 
