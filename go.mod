@@ -13,7 +13,7 @@ require (
 	github.com/mattn/go-isatty v0.0.19
 	github.com/santhosh-tekuri/jsonschema/v4 v4.0.0
 	github.com/santhosh-tekuri/jsonschema/v5 v5.3.0
-	github.com/sirupsen/logrus v1.9.2
+	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.7.0
 	github.com/stretchr/testify v1.8.4
 	github.com/thediveo/enumflag v0.10.1
