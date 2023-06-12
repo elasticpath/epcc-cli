@@ -35,11 +35,14 @@ func GetSingularTypeNames(types []string) []string {
 	return ret
 }
 
+func ConvertSingularTypeToCmdArg(typeName string) string {
+	return fmt.Sprintf("%s_ID", strings.ReplaceAll(strings.ToUpper(typeName), "-", "_"))
+}
 func GetParametersForTypes(types []string) string {
 	r := ""
 
 	for _, t := range types {
-		r += fmt.Sprintf(" %s_ID", strings.ToUpper(t))
+		r += " " + ConvertSingularTypeToCmdArg(t)
 
 	}
 
@@ -143,12 +146,11 @@ func GetArgFunctionForUrl(name, resourceUrl string) func(cmd *cobra.Command, arg
 	}
 
 	return func(cmd *cobra.Command, args []string) error {
-
 		var missingArgs []string
 
 		for i, neededType := range singularTypeNames {
 			if len(args) < i+1 {
-				missingArgs = append(missingArgs, fmt.Sprintf("%s_ID", strings.ToUpper(neededType)))
+				missingArgs = append(missingArgs, ConvertSingularTypeToCmdArg(neededType))
 
 			}
 		}
@@ -816,4 +818,13 @@ func GetDeleteExample(resource resources.Resource) string {
 	deleteExampleCache.Store(resourceName, example)
 
 	return example
+}
+
+func getCommandForResource(cmd *cobra.Command, res string) *cobra.Command {
+	for _, c := range cmd.Commands() {
+		if strings.HasPrefix(c.Use, res+" ") {
+			return c
+		}
+	}
+	return nil
 }

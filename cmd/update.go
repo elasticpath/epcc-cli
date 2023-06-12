@@ -86,72 +86,61 @@ func NewUpdateCommand(parentCmd *cobra.Command) {
 			},
 
 			ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-				if len(args) == 0 {
-					return completion.Complete(completion.Request{
-						Type: completion.CompleteSingularResource,
-						Verb: completion.Update,
-					})
-				}
-
 				// Find Resource
-				resource, ok := resources.GetResourceByName(args[0])
-				if ok {
-					if resource.UpdateEntityInfo != nil {
-						resourceURL := resource.UpdateEntityInfo.Url
-						idCount, _ := resources.GetNumberOfVariablesNeeded(resourceURL)
-						if len(args)-idCount >= 1 { // Arg is after IDs
-							if (len(args)-idCount)%2 == 1 { // This is an attribute key
-								usedAttributes := make(map[string]int)
-								for i := idCount + 1; i < len(args); i = i + 2 {
-									usedAttributes[args[i]] = 0
-								}
-								return completion.Complete(completion.Request{
-									Type:       completion.CompleteAttributeKey,
-									Resource:   resource,
-									Attributes: usedAttributes,
-									Verb:       completion.Update,
-								})
-							} else { // This is an attribute value
-								return completion.Complete(completion.Request{
-									Type:       completion.CompleteAttributeValue,
-									Resource:   resource,
-									Verb:       completion.Update,
-									Attribute:  args[len(args)-1],
-									ToComplete: toComplete,
-								})
-							}
-						} else {
-							// Arg is in IDS
-							// Must be for a resource completion
-							types, err := resources.GetTypesOfVariablesNeeded(resourceURL)
-
-							if err != nil {
-								return []string{}, cobra.ShellCompDirectiveNoFileComp
-							}
-
-							typeIdxNeeded := len(args) - 1
-
-							if completionResource, ok := resources.GetResourceByName(types[typeIdxNeeded]); ok {
-								return completion.Complete(completion.Request{
-									Type:     completion.CompleteAlias,
-									Resource: completionResource,
-								})
-							}
+				resourceURL := resource.UpdateEntityInfo.Url
+				idCount, _ := resources.GetNumberOfVariablesNeeded(resourceURL)
+				if len(args)-idCount >= 0 { // Arg is after IDs
+					if (len(args)-idCount)%2 == 0 { // This is an attribute key
+						usedAttributes := make(map[string]int)
+						for i := idCount; i < len(args); i = i + 2 {
+							usedAttributes[args[i]] = 0
 						}
+						return completion.Complete(completion.Request{
+							Type:       completion.CompleteAttributeKey,
+							Resource:   resource,
+							Attributes: usedAttributes,
+							Verb:       completion.Update,
+						})
+					} else { // This is an attribute value
+						return completion.Complete(completion.Request{
+							Type:       completion.CompleteAttributeValue,
+							Resource:   resource,
+							Verb:       completion.Update,
+							Attribute:  args[len(args)-1],
+							ToComplete: toComplete,
+						})
+					}
+				} else {
+					// Arg is in IDS
+					// Must be for a resource completion
+					types, err := resources.GetTypesOfVariablesNeeded(resourceURL)
+
+					if err != nil {
+						return []string{}, cobra.ShellCompDirectiveNoFileComp
+					}
+
+					typeIdxNeeded := len(args)
+
+					if completionResource, ok := resources.GetResourceByName(types[typeIdxNeeded]); ok {
+						return completion.Complete(completion.Request{
+							Type:     completion.CompleteAlias,
+							Resource: completionResource,
+						})
 					}
 				}
-
 				return []string{}, cobra.ShellCompDirectiveNoFileComp
 			},
 		}
 
+		updateResourceCmd.Flags().StringVar(&overrides.OverrideUrlPath, "override-url-path", "", "Override the URL that will be used for the Request")
+		updateResourceCmd.Flags().StringSliceVarP(&overrides.QueryParameters, "query-parameters", "q", []string{}, "Pass in key=value an they will be added as query parameters")
+		updateResourceCmd.PersistentFlags().BoolVarP(&noBodyPrint, "silent", "s", false, "Don't print the body on success")
+		updateResourceCmd.Flags().StringVarP(&outputJq, "output-jq", "", "", "A jq expression, if set we will restrict output to only this")
+		_ = updateResourceCmd.RegisterFlagCompletionFunc("output-jq", jqCompletionFunc)
+
 		update.AddCommand(updateResourceCmd)
 	}
-	update.Flags().StringVar(&overrides.OverrideUrlPath, "override-url-path", "", "Override the URL that will be used for the Request")
-	update.Flags().StringSliceVarP(&overrides.QueryParameters, "query-parameters", "q", []string{}, "Pass in key=value an they will be added as query parameters")
-	update.PersistentFlags().BoolVarP(&noBodyPrint, "silent", "s", false, "Don't print the body on success")
-	update.Flags().StringVarP(&outputJq, "output-jq", "", "", "A jq expression, if set we will restrict output to only this")
-	_ = update.RegisterFlagCompletionFunc("output-jq", jqCompletionFunc)
+
 	parentCmd.AddCommand(update)
 
 }

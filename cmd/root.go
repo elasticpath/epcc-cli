@@ -12,7 +12,6 @@ import (
 	"github.com/elasticpath/epcc-cli/external/version"
 	log "github.com/sirupsen/logrus"
 	"github.com/thediveo/enumflag"
-	"golang.org/x/time/rate"
 	"os"
 	"os/signal"
 	"syscall"
@@ -62,6 +61,7 @@ func InitializeCmd() {
 		panic("Could not parse environment variables")
 	}
 
+	applyLogLevelEarlyDetectionHack()
 	initRunbookCommands()
 	RootCmd.AddCommand(
 		cmCommand,
@@ -88,10 +88,7 @@ func InitializeCmd() {
 	testJson.Flags().BoolVarP(&noWrapping, "no-wrapping", "", false, "if set, we won't wrap the output the json in a data tag")
 	testJson.Flags().BoolVarP(&compliant, "compliant", "", false, "if set, we wrap most keys in an attributes tags automatically.")
 
-	RootCmd.PersistentFlags().Var(
-		enumflag.New(&logger.Loglevel, "log", logger.LoglevelIds, enumflag.EnumCaseInsensitive),
-		"log",
-		"sets logging level; can be 'trace', 'debug', 'info', 'warn', 'error', 'fatal', 'panic'")
+	addLogLevel(RootCmd)
 
 	RootCmd.PersistentFlags().BoolVarP(&json.MonochromeOutput, "monochrome-output", "M", false, "By default, epcc will output using colors if the terminal supports this. Use this option to disable it.")
 	RootCmd.PersistentFlags().StringSliceVarP(&httpclient.RawHeaders, "header", "H", []string{}, "Extra headers and values to include in the request when sending HTTP to a server. You may specify any number of extra headers.")
@@ -118,6 +115,39 @@ func InitializeCmd() {
 	logoutCmd.AddCommand(logoutBearer)
 	logoutCmd.AddCommand(logoutCustomer)
 	logoutCmd.AddCommand(logoutAccountManagement)
+}
+
+// If there is a log level argument, we will set it much earlier on a dummy command
+// this helps if you need to enable tracing while the root command is being built.
+func applyLogLevelEarlyDetectionHack() {
+	for i, arg := range os.Args {
+		if arg == "--log" && i+1 < len(os.Args) {
+			newCmd := &cobra.Command{
+				Use: "foo",
+			}
+			addLogLevel(newCmd)
+
+			newCmd.SetArgs([]string{"--log", os.Args[i+1]})
+
+			newCmd.RunE = func(command *cobra.Command, args []string) error {
+				log.SetLevel(logger.Loglevel)
+				return nil
+			}
+
+			err := newCmd.Execute()
+			if err != nil {
+				log.Warnf("Couldn't set log level early: %v", err)
+			}
+			return
+		}
+	}
+}
+
+func addLogLevel(cmd *cobra.Command) {
+	cmd.PersistentFlags().Var(
+		enumflag.New(&logger.Loglevel, "log", logger.LoglevelIds, enumflag.EnumCaseInsensitive),
+		"log",
+		"sets logging level; can be 'trace', 'debug', 'info', 'warn', 'error', 'fatal', 'panic'")
 }
 
 var persistentPreRunFuncs []func(cmd *cobra.Command, args []string) error
@@ -152,8 +182,7 @@ Environment Variables
 			rateLimit = config.Envs.EPCC_RATE_LIMIT
 		}
 		log.Debugf("Rate limit set to %d request per second ", rateLimit)
-		httpclient.Limit = rate.NewLimiter(rate.Limit(rateLimit), 1)
-		httpclient.HttpClient.Timeout = time.Duration(int64(requestTimeout*1000) * int64(time.Millisecond))
+		httpclient.Initialize(rateLimit, requestTimeout)
 
 		for _, runFunc := range persistentPreRunFuncs {
 			err := runFunc(cmd, args)

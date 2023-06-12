@@ -139,7 +139,7 @@ func NewCreateCommand(parentCmd *cobra.Command) {
 								return []string{}, cobra.ShellCompDirectiveNoFileComp
 							}
 
-							typeIdxNeeded := len(args) - 1
+							typeIdxNeeded := len(args)
 
 							if completionResource, ok := resources.GetResourceByName(types[typeIdxNeeded]); ok {
 								return completion.Complete(completion.Request{

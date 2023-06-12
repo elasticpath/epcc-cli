@@ -34,6 +34,8 @@ func NewDeleteCommand(parentCmd *cobra.Command) {
 			OverrideUrlPath: "",
 		}
 
+		var allow404 = false
+
 		resource := resource
 		resourceName := resource.SingularName
 
@@ -45,8 +47,12 @@ func NewDeleteCommand(parentCmd *cobra.Command) {
 			Args:    GetArgFunctionForDelete(resource),
 			RunE: func(cmd *cobra.Command, args []string) error {
 
-				body, err := deleteInternal(context.Background(), overrides, append([]string{resourceName}, args...))
+				body, err := deleteInternal(context.Background(), overrides, allow404, append([]string{resourceName}, args...))
+
 				if err != nil {
+					if body != "" {
+						json.PrintJson(body)
+					}
 					return err
 				}
 
@@ -69,7 +75,7 @@ func NewDeleteCommand(parentCmd *cobra.Command) {
 					return []string{}, cobra.ShellCompDirectiveNoFileComp
 				}
 
-				if len(args) > 0 && len(args) < idCount {
+				if len(args) < idCount {
 					// Must be for a resource completion
 					types, err := resources.GetTypesOfVariablesNeeded(resource.DeleteEntityInfo.Url)
 
@@ -77,7 +83,7 @@ func NewDeleteCommand(parentCmd *cobra.Command) {
 						return []string{}, cobra.ShellCompDirectiveNoFileComp
 					}
 
-					typeIdxNeeded := len(args) - 1
+					typeIdxNeeded := len(args)
 
 					if completionResource, ok := resources.GetResourceByName(types[typeIdxNeeded]); ok {
 						return completion.Complete(completion.Request{
@@ -88,7 +94,7 @@ func NewDeleteCommand(parentCmd *cobra.Command) {
 				} else {
 					if (len(args)-idCount)%2 == 0 { // This is an attribute key
 						usedAttributes := make(map[string]int)
-						for i := idCount + 1; i < len(args); i = i + 2 {
+						for i := idCount; i < len(args); i = i + 2 {
 							usedAttributes[args[i]] = 0
 						}
 						return completion.Complete(completion.Request{
@@ -113,13 +119,13 @@ func NewDeleteCommand(parentCmd *cobra.Command) {
 		}
 		deleteResourceCommand.Flags().StringVar(&overrides.OverrideUrlPath, "override-url-path", "", "Override the URL that will be used for the Request")
 		deleteResourceCommand.Flags().StringSliceVarP(&overrides.QueryParameters, "query-parameters", "q", []string{}, "Pass in key=value an they will be added as query parameters")
-
+		deleteResourceCommand.Flags().BoolVar(&allow404, "allow-404", allow404, "If set 404's will not be treated as errors")
 		deleteCmd.AddCommand(deleteResourceCommand)
 	}
 
 	parentCmd.AddCommand(deleteCmd)
 }
-func deleteInternal(ctx context.Context, overrides *httpclient.HttpParameterOverrides, args []string) (string, error) {
+func deleteInternal(ctx context.Context, overrides *httpclient.HttpParameterOverrides, allow404 bool, args []string) (string, error) {
 	crud.OutstandingRequestCounter.Add(1)
 	defer crud.OutstandingRequestCounter.Done()
 
@@ -149,6 +155,13 @@ func deleteInternal(ctx context.Context, overrides *httpclient.HttpParameterOver
 
 		if err != nil {
 			log.Fatal(err)
+		}
+
+		// Check if error response
+		if resp.StatusCode >= 400 && resp.StatusCode <= 600 {
+			if resp.StatusCode != 404 || !allow404 {
+				return string(body), fmt.Errorf(resp.Status)
+			}
 		}
 
 		return string(body), nil

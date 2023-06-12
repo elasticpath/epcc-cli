@@ -86,6 +86,11 @@ func init() {
 
 var Limit *rate.Limiter = nil
 
+func Initialize(rateLimit uint16, requestTimeout float32) {
+	Limit = rate.NewLimiter(rate.Limit(rateLimit), 1)
+	HttpClient.Timeout = time.Duration(int64(requestTimeout*1000) * int64(time.Millisecond))
+}
+
 var Retry429 = false
 var Retry5xx = false
 
