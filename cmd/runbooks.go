@@ -331,7 +331,7 @@ func initRunbookDevCommands() *cobra.Command {
 
 func getDevCommands(parent *cobra.Command) {
 	parent.AddCommand(&cobra.Command{
-		Use:   "sleep time",
+		Use:   "sleep",
 		Short: "Sleep for a predefined duration",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -341,8 +341,7 @@ func getDevCommands(parent *cobra.Command) {
 			if err != nil {
 				return fmt.Errorf("could not sleep due to error: %v", err)
 			}
-
-			log.Debugf("Sleeping for %d seconds", timeToSleep)
+			log.Infof("Sleeping for %d seconds", timeToSleep)
 			time.Sleep(time.Duration(timeToSleep) * time.Second)
 
 			return nil
