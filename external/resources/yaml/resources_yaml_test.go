@@ -223,4 +223,6 @@ func TestResourceDocsExist(t *testing.T) {
 			}
 		}
 	}
+
+	t.Errorf("Incomplete")
 }
