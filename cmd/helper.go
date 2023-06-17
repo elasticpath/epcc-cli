@@ -257,29 +257,48 @@ func GetGetLong(resourceName string, resourceUrl string, usageGetType string, co
 `, usageGetType, resourceName, GetHelpResourceUrls(resourceUrl), parametersLongUsage)
 }
 
-func GetJsonSyntaxExample(resource resources.Resource) string {
+func GetJsonSyntaxExample(resource resources.Resource, verb string, id string) string {
 	return fmt.Sprintf(`
 Key and value pairs passed in will be converted to JSON with a jq like syntax.
 
-The EPCC CLI will automatically determine appropriate wrapping
+The EPCC CLI will automatically determine appropriate wrapping (i.e., wrap the values in a data key or attributes key)
 
-key b => %s
-key 1 => %s
-key '"1"' => %s
-key true => %s
-key null => %s
-key '"null"'' => %s
-key[0] a key[1] true => %s
-key.some.child hello key.some.other goodbye => %s
+# Simple type with key and value 
+epcc %s %s%s key value => %s
+
+# Numeric types will be encoded as json numbers
+epcc %s %s%s key 1 => %s
+
+# If a value *must* be a string, you should wrap it in quotes, be mindful that your shell may require you to quote quotes :)
+epcc %s %s%s key '"1"' => %s
+
+# Boolean types work similarly
+epcc %s %s%s key true => %s
+
+# As does null
+epcc %s %s%s key null => %s
+
+# Which can be encoded with quotes
+epcc %s %s%s key '"null"' => %s
+
+# To send an array use the following syntax
+epcc %s %s%s key[0] a key[1] true => %s
+
+# To send an empty array use the following syntax (apologies)
+epcc %s %s%s key [] => %s
+
+# To send a nested object use the . character to nest values deeper.
+epcc %s %s%s key.some.child hello key.some.other goodbye => %s
 `,
-		toJsonExample([]string{"key", "b"}, resource),
-		toJsonExample([]string{"key", "1"}, resource),
-		toJsonExample([]string{"key", "\"1\""}, resource),
-		toJsonExample([]string{"key", "true"}, resource),
-		toJsonExample([]string{"key", "null"}, resource),
-		toJsonExample([]string{"key", "\"null\""}, resource),
-		toJsonExample([]string{"key[0]", "a", "key[1]", "true"}, resource),
-		toJsonExample([]string{"key.some.child", "hello", "key.some.other", "goodbye"}, resource),
+		verb, resource.SingularName, id, toJsonExample([]string{"key", "b"}, resource),
+		verb, resource.SingularName, id, toJsonExample([]string{"key", "1"}, resource),
+		verb, resource.SingularName, id, toJsonExample([]string{"key", "\"1\""}, resource),
+		verb, resource.SingularName, id, toJsonExample([]string{"key", "true"}, resource),
+		verb, resource.SingularName, id, toJsonExample([]string{"key", "null"}, resource),
+		verb, resource.SingularName, id, toJsonExample([]string{"key", "\"null\""}, resource),
+		verb, resource.SingularName, id, toJsonExample([]string{"key[0]", "a", "key[1]", "true"}, resource),
+		verb, resource.SingularName, id, toJsonExample([]string{"key", "[]"}, resource),
+		verb, resource.SingularName, id, toJsonExample([]string{"key.some.child", "hello", "key.some.other", "goodbye"}, resource),
 	)
 }
 
@@ -319,7 +338,7 @@ func GetCreateLong(resource resources.Resource) string {
 
 Documentation:
  %s
-`, GetJsonSyntaxExample(resource), resource.CreateEntityInfo.Docs)
+`, GetJsonSyntaxExample(resource, "create", ""), resource.CreateEntityInfo.Docs)
 	default:
 		argumentsBlurb = fmt.Sprintf("This resource uses %s encoding, which this help doesn't know how to help you with :) Submit a bug please.\nDocumentation:\n  %s", resource.CreateEntityInfo.ContentType, resource.CreateEntityInfo.Docs)
 	}
@@ -347,23 +366,11 @@ func GetUpdateLong(resource resources.Resource) string {
 		argumentsBlurb = "Key and values are passed in using multipart/form-data encoding\n\nDocumentation:\n  " + resource.DeleteEntityInfo.Docs
 	case "application/json", "":
 		argumentsBlurb = fmt.Sprintf(`
-Key and value pairs passed in will be converted to JSON with a jq like syntax.
-
-The EPCC CLI will automatically determine appropriate wrapping
-
-Basic Types:
-key b => { "a": "b" }
-key 1 => { "a": 1  }
-key '"1"' => { "a": "1" }
-key true => { "a": true }
-key null => { "a": null }
-key '"null"'' => { "a": "null" }
-
-
+%s
 
 Documentation:
  %s
-`, resource.UpdateEntityInfo.Docs)
+`, GetJsonSyntaxExample(resource, "update", " 00000000-feed-dada-iced-c0ffee000000"), resource.UpdateEntityInfo.Docs)
 	default:
 		argumentsBlurb = fmt.Sprintf("This resource uses %s encoding, which this help doesn't know how to help you with :) Submit a bug please.\nDocumentation:\n  %s", resource.UpdateEntityInfo.ContentType, resource.UpdateEntityInfo.Docs)
 	}
@@ -391,23 +398,11 @@ func GetDeleteLong(resource resources.Resource) string {
 		argumentsBlurb = "Key and values are passed in using multipart/form-data encoding\n\nDocumentation:\n  " + resource.DeleteEntityInfo.Docs
 	case "application/json", "":
 		argumentsBlurb = fmt.Sprintf(`
-Key and value pairs passed in will be converted to JSON with a jq like syntax.
-
-The EPCC CLI will automatically determine appropriate wrapping
-
-Basic Types:
-key b => { "a": "b" }
-key 1 => { "a": 1  }
-key '"1"' => { "a": "1" }
-key true => { "a": true }
-key null => { "a": null }
-key '"null"'' => { "a": "null" }
-
-
+%s
 
 Documentation:
  %s
-`, resource.DeleteEntityInfo.Docs)
+`, GetJsonSyntaxExample(resource, "delete", " 00000000-feed-dada-iced-c0ffee000000"), resource.DeleteEntityInfo.Docs)
 	default:
 		argumentsBlurb = fmt.Sprintf("This resource uses %s encoding, which this help doesn't know how to help you with :) Submit a bug please.\nDocumentation:\n  %s", resource.DeleteEntityInfo.ContentType, resource.DeleteEntityInfo.Docs)
 	}
