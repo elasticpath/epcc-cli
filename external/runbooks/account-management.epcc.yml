@@ -105,11 +105,11 @@ actions:
       - |
         epcc create pcm-catalog name "Account 1 Catalog" description "Account 1 Catalog" pricebook_id name=Account_1_Pricebook hierarchy_ids[0] name=Hierarchy_For_Account_1
         epcc create pcm-catalog name "Account 2 Catalog" description "Account 2 Catalog" pricebook_id name=Account_2_Pricebook hierarchy_ids[0] name=Hierarchy_For_Account_2
-      - epcc create pcm-catalog-releases name=Account_1_Catalog
+      - epcc create pcm-catalog-release name=Account_1_Catalog
       # Don't hammer the catalog publishing endpoint, might get rate limited
       # TODO Wait for catalog to be published
       - sleep 2
-      - epcc create pcm-catalog-releases name=Account_2_Catalog
+      - epcc create pcm-catalog-release name=Account_2_Catalog
       - sleep 5
       - epcc get pcm-catalog-releases name=Account_1_Catalog
       - epcc get pcm-catalog-releases name=Account_2_Catalog
@@ -126,8 +126,8 @@ actions:
         epcc delete pcm-catalog-rule name=Account_1_Rule
         epcc delete pcm-catalog-rule name=Account_2_Rule
       - |
-        epcc delete pcm-catalog-releases name=Account_1_Catalog name=Account_1_Catalog
-        epcc delete pcm-catalog-releases name=Account_2_Catalog name=Account_2_Catalog
+        epcc delete pcm-catalog-release name=Account_1_Catalog name=Account_1_Catalog
+        epcc delete pcm-catalog-release name=Account_2_Catalog name=Account_2_Catalog
       - | 
         epcc delete pcm-catalog name=Account_1_Catalog
         epcc delete pcm-catalog name=Account_2_Catalog

@@ -445,7 +445,7 @@ epcc create pcm-pricebook name "Preferred Pricing" description "Catalog with pri
 epcc create pcm-product-price name=Preferred_Pricing currencies.USD.amount 300000 currencies.USD.includes_tax false currencies.GBP.amount 250000 currencies.GBP.includes_tax false sku BE-Electric-Range-1a1a
 epcc create pcm-product-price name=Preferred_Pricing currencies.USD.amount 350000 currencies.USD.includes_tax false currencies.GBP.amount 300000 currencies.GBP.includes_tax false sku BE-Gas-Range-2b2b
 epcc create pcm-catalog name "Ranges Catalog" description "Ranges Catalog" pricebook_id name=Preferred_Pricing hierarchy_ids[0] name=Major_Appliances
-epcc create pcm-catalog-releases name=Ranges_Catalog
+epcc create pcm-catalog-release name=Ranges_Catalog
 epcc get pcm-catalog-releases name=Ranges_Catalog
 ```
 

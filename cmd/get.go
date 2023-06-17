@@ -16,6 +16,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 )
 
 const singularResourceRequest = 0
@@ -29,6 +30,10 @@ func NewGetCommand(parentCmd *cobra.Command) {
 
 	var outputJq = ""
 	var noBodyPrint = false
+
+	var retryWhileJQ = ""
+
+	var retryWhileJQMaxAttempts = uint16(1200)
 
 	var getCmd = &cobra.Command{
 		Use:          "get",
@@ -83,7 +88,42 @@ func NewGetCommand(parentCmd *cobra.Command) {
 				Args:    GetArgFunctionForUrl(resourceName, resourceUrl),
 				RunE: func(cmd *cobra.Command, args []string) error {
 
-					body, err := getInternal(context.Background(), overrides, append([]string{resourceName}, args...))
+					var body string
+					var err error
+					if retryWhileJQMaxAttempts == 0 {
+						return fmt.Errorf("--retry-while-jq-max-attempts must be greater than 0")
+					}
+
+					retriesFailedError := fmt.Errorf("Maximum number of retries hit %d and condition [%s] always true", retryWhileJQMaxAttempts, retryWhileJQ)
+
+					for attempt := uint16(0); attempt < retryWhileJQMaxAttempts; attempt++ {
+						body, err = getInternal(context.Background(), overrides, append([]string{resourceName}, args...))
+						if retryWhileJQ == "" {
+							retriesFailedError = nil
+							break
+						}
+
+						resultOfRetryWhileJQ, err := json.RunJQOnStringWithArray(retryWhileJQ, body)
+
+						if err != nil {
+							break
+						}
+
+						if len(resultOfRetryWhileJQ) > 0 {
+							if result, ok := resultOfRetryWhileJQ[0].(bool); ok {
+								if result {
+									time.Sleep(3 * time.Second)
+									continue
+								}
+							}
+						}
+
+						log.Infof("Result of JQ [%s] was: %v, retries complete", retryWhileJQ, resultOfRetryWhileJQ)
+						retriesFailedError = nil
+						break
+
+					}
+
 					if err != nil {
 						return err
 					}
@@ -108,13 +148,19 @@ func NewGetCommand(parentCmd *cobra.Command) {
 							}
 						}
 
-						return nil
+						return retriesFailedError
 					}
 
 					if noBodyPrint {
-						return nil
+						return retriesFailedError
 					} else {
-						return json.PrintJson(body)
+						printError := json.PrintJson(body)
+
+						if retriesFailedError != nil {
+							return retriesFailedError
+						}
+
+						return printError
 					}
 
 				},
@@ -175,6 +221,8 @@ func NewGetCommand(parentCmd *cobra.Command) {
 			newCmd.PersistentFlags().StringVar(&overrides.OverrideUrlPath, "override-url-path", "", "Override the URL that will be used for the Request")
 			newCmd.PersistentFlags().StringSliceVarP(&overrides.QueryParameters, "query-parameters", "q", []string{}, "Pass in key=value an they will be added as query parameters")
 			newCmd.PersistentFlags().StringVarP(&outputJq, "output-jq", "", "", "A jq expression, if set we will restrict output to only this")
+			newCmd.PersistentFlags().StringVarP(&retryWhileJQ, "retry-while-jq", "", "", "A jq expression, if set and returns true we will retry the get command (see manual for examples)")
+			newCmd.PersistentFlags().Uint16VarP(&retryWhileJQMaxAttempts, "retry-while-jq-max-attempts", "", 1200, "The maximum number of attempts we will retry with jq")
 			_ = newCmd.RegisterFlagCompletionFunc("output-jq", jqCompletionFunc)
 
 			getCmd.AddCommand(newCmd)

@@ -25,7 +25,7 @@ actions:
         epcc create pcm-product-price name=Preferred_Pricing currencies.USD.amount 350000 currencies.USD.includes_tax false currencies.GBP.amount 300000 currencies.GBP.includes_tax false sku BE-Gas-Range-2b2b
       - epcc create pcm-catalog name "Ranges Catalog" description "Ranges Catalog" pricebook_id name=Preferred_Pricing hierarchy_ids[0] name=Major_Appliances
       # TODO wait for publishing
-      - epcc create pcm-catalog-releases name=Ranges_Catalog
+      - epcc create pcm-catalog-release name=Ranges_Catalog
       - epcc get pcm-catalog-releases name=Ranges_Catalog
   create-order:
     description:
@@ -66,8 +66,8 @@ actions:
       - |
         epcc delete customer name=Ron_Swanson
         epcc delete currency code=GBP
-        epcc delete pcm-catalog-releases name=Ranges_Catalog name=Ranges_Catalog
-        epcc delete pcm-catalog-releases name=Ranges_Catalog_for_Special_Customers name=Ranges_Catalog_for_Special_Customers
+        epcc delete pcm-catalog-release name=Ranges_Catalog name=Ranges_Catalog
+        epcc delete pcm-catalog-release name=Ranges_Catalog_for_Special_Customers name=Ranges_Catalog_for_Special_Customers
         epcc delete pcm-catalog-rule name=Catalog_Rule_for_Civil_Servants    
         epcc delete pcm-product name=BestEver_Gas_Range
         epcc delete pcm-product name=BestEver_Electric_Range
