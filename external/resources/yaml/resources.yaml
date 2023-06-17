@@ -1157,7 +1157,7 @@ pcm-catalogs:
     pricebook_id:
       type: RESOURCE_ID:pcm-pricebooks
 pcm-catalog-releases:
-  singular-name: "pcm-catalog-releases"
+  singular-name: "pcm-catalog-release"
   json-api-type: "catalog-release"
   json-api-format: "compliant"
   docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/catalogs/index.html"
