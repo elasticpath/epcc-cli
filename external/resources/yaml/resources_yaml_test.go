@@ -6,11 +6,17 @@ import (
 	"github.com/elasticpath/epcc-cli/external/resources"
 	"github.com/santhosh-tekuri/jsonschema/v4"
 	log "github.com/sirupsen/logrus"
+	"github.com/stretchr/testify/assert"
 	"github.com/yosida95/uritemplate/v3"
 	"gopkg.in/yaml.v3"
+	"io"
+	"net/http"
+	"net/url"
 	"os"
 	"regexp"
+	"sort"
 	"strings"
+	"sync"
 	"testing"
 )
 
@@ -164,43 +170,172 @@ func TestJsonSchemaValidate(t *testing.T) {
 	}
 }
 
-//func TestResourceDocsExist(t *testing.T) {
-//	const httpStatusCodeOk = 200
-//
-//	Resources := resources.GetPluralResources()
-//	linksReferenceCount := make(map[string]int, len(Resources))
-//
-//	for resource := range Resources {
-//		linksReferenceCount[Resources[resource].Docs]++
-//		if Resources[resource].GetCollectionInfo != nil {
-//			linksReferenceCount[Resources[resource].GetCollectionInfo.Docs]++
-//		}
-//		if Resources[resource].CreateEntityInfo != nil {
-//			linksReferenceCount[Resources[resource].CreateEntityInfo.Docs]++
-//		}
-//		if Resources[resource].GetEntityInfo != nil {
-//			linksReferenceCount[Resources[resource].GetEntityInfo.Docs]++
-//		}
-//		if Resources[resource].UpdateEntityInfo != nil {
-//			linksReferenceCount[Resources[resource].UpdateEntityInfo.Docs]++
-//		}
-//		if Resources[resource].DeleteEntityInfo != nil {
-//			linksReferenceCount[Resources[resource].DeleteEntityInfo.Docs]++
-//		}
-//	}
-//
-//	for link := range linksReferenceCount {
-//		response, err := http.DefaultClient.Head(link)
-//		if err != nil {
-//			t.Errorf("Error Retrieving Link\nLink: %s\nError Message: %s\nReference Count: %d", link, err, linksReferenceCount[link])
-//		} else {
-//			if response.StatusCode != httpStatusCodeOk {
-//				t.Errorf("Unexpected Response\nLink: %s\nExpected Status Code: %d\nActual Status Code: %d\nReference Count: %d",
-//					link, httpStatusCodeOk, response.StatusCode, linksReferenceCount[link])
-//			}
-//			if err := response.Body.Close(); err != nil {
-//				t.Errorf("Error Closing Reponse Body\nError Message: %s", err)
-//			}
-//		}
-//	}
-//}
+var redirectRegex = regexp.MustCompile(`window\.location\.href\s*=\s*'([^']+)'`)
+var titleRegex = regexp.MustCompile(`<title[^>]*>([^<]*)</title`)
+
+func TestResourceDocsExist(t *testing.T) {
+	const httpStatusCodeOk = 200
+
+	Resources := resources.GetPluralResources()
+	linksReferenceCount := make(map[string]int, len(Resources))
+
+	for resource := range Resources {
+		linksReferenceCount[Resources[resource].Docs]++
+		if Resources[resource].GetCollectionInfo != nil {
+			linksReferenceCount[Resources[resource].GetCollectionInfo.Docs]++
+		}
+		if Resources[resource].CreateEntityInfo != nil {
+			linksReferenceCount[Resources[resource].CreateEntityInfo.Docs]++
+		}
+		if Resources[resource].GetEntityInfo != nil {
+			linksReferenceCount[Resources[resource].GetEntityInfo.Docs]++
+		}
+		if Resources[resource].UpdateEntityInfo != nil {
+			linksReferenceCount[Resources[resource].UpdateEntityInfo.Docs]++
+		}
+		if Resources[resource].DeleteEntityInfo != nil {
+			linksReferenceCount[Resources[resource].DeleteEntityInfo.Docs]++
+		}
+	}
+
+	mutex := &sync.Mutex{}
+
+	var rewriteUrlOne string = ""
+	client := http.Client{
+		Transport: nil,
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+
+			mutex.Lock()
+			rewriteUrlOne = via[0].URL.String()
+			defer mutex.Unlock()
+			return nil
+		},
+		Jar:     nil,
+		Timeout: 0,
+	}
+
+	links := []string{}
+
+	for link := range linksReferenceCount {
+		links = append(links, link)
+	}
+
+	sort.Strings(links)
+
+	os.Mkdir("build", 0755)
+
+	pageNotFound := 0
+	oldDomain := 0
+	brokenRedirectToRoot := 0
+
+	for _, link := range links {
+
+		if link == "n/a" {
+			continue
+		}
+
+		rewriteUrlOne = ""
+		response, err := client.Get(link)
+
+		if err != nil {
+			t.Errorf("Error Retrieving Link\nLink: %s\nError Message: %s\nReference Count: %d", link, err, linksReferenceCount[link])
+		} else {
+			resp, err := io.ReadAll(response.Body)
+			if err != nil {
+				t.Errorf("Unexpected error reading response body")
+			}
+
+			if response.StatusCode != httpStatusCodeOk {
+
+				//fmt.Printf("%s => %d\n", link, response.StatusCode)
+				//t.Errorf("Unexpected Response\nLink: %s\nExpected Status Code: %d\nActual Status Code: %d\nReference Count: %d",
+				//	link, httpStatusCodeOk, response.StatusCode, linksReferenceCount[link])
+			}
+
+			respString := string(resp)
+
+			if strings.Index(respString, "Your Docusaurus site did not load properly") > 0 {
+				fmt.Printf(" %s => ERROR (Page Not Found (Maybe))\n", link)
+				pageNotFound++
+				continue
+			}
+
+			matches := redirectRegex.FindStringSubmatch(respString)
+
+			if len(matches) >= 2 {
+				if matches[1] != "/" && matches[1] != "/guides/Getting-Started/includes" {
+					//fmt.Printf("\t Further Redirect to %s =>  %s \n", rewriteUrlOne, matches[1])
+					//fmt.Printf("Rewrite %s => https://elasticpath.dev%s\n", link, matches[1])
+					fmt.Printf("# %s => https://elasticpath.dev%s\n", link, matches[1])
+					fmt.Printf("sed -E -i 's@%s@https://elasticpath.dev%s@g' resources.yaml\n", link, matches[1])
+				} else if matches[1] == "/" {
+					fmt.Printf("\t Broken Redirect to =>  %s \n", matches[1])
+					brokenRedirectToRoot++
+				} else {
+					fmt.Printf("\t Broken Redirect to unknown =>  %s \n", matches[1])
+					brokenRedirectToRoot++
+				}
+			} else if rewriteUrlOne != "" {
+				mutex.Lock()
+				// Rewrite
+				fmt.Printf("# %s => %s\n", link, rewriteUrlOne)
+				fmt.Printf("sed  -E -i 's@%s@%s@g resources.yaml'\n", link, rewriteUrlOne)
+				mutex.Unlock()
+
+			}
+
+			if strings.Index(link, "documentation.elasticpath.com") > 0 {
+				//fmt.Printf(" %s => FAIL (old link)", link)
+				if rewriteUrlOne != "" {
+					fmt.Printf("  Should Be => %s\n", rewriteUrlOne)
+				} else {
+					fmt.Printf("\n")
+				}
+				oldDomain++
+			}
+
+			matches = titleRegex.FindStringSubmatch(respString)
+			if len(matches) >= 2 {
+				fmt.Printf("%s => OK (%s)\n", link, matches[1])
+			} else if strings.Index(respString, "openapi__method-endpoint") > 0 {
+				fmt.Printf("%s => OK\n", link)
+				continue
+			} else {
+				fmt.Printf("%s => ???\n", link)
+			}
+
+			if err := response.Body.Close(); err != nil {
+			}
+
+			fname, _ := sanitizeFilename(link)
+			err = os.WriteFile("build/"+fname, resp, 0644)
+
+			if err != nil {
+				t.Errorf("Error writing file\nError Message: %s", err)
+			}
+		}
+	}
+
+	assert.Zerof(t, pageNotFound, "Page Not Found Count: %d", pageNotFound)
+	assert.Zerof(t, oldDomain, "Old Domain Count: %d", oldDomain)
+	assert.Zerof(t, brokenRedirectToRoot, "Broken Redirects: %d", brokenRedirectToRoot)
+
+}
+
+// sanitizeFilename converts a URL into a safe filename by replacing unsafe characters with dashes
+func sanitizeFilename(rawURL string) (string, error) {
+	parsedURL, err := url.Parse(rawURL)
+	if err != nil {
+		return "", err
+	}
+
+	// Construct the base filename from host and path
+	base := parsedURL.Host + parsedURL.Path
+
+	// Replace all non-alphanumeric, non-dash, and non-dot characters with a dash
+	re := regexp.MustCompile(`[^a-zA-Z0-9.-]+`)
+	safeFilename := re.ReplaceAllString(base, "-")
+
+	// Ensure it has an .html suffix
+	return safeFilename + ".html", nil
+}

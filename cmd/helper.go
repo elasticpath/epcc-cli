@@ -266,7 +266,7 @@ func GetGetLong(resourceName string, resourceUrl string, usageGetType string, co
 
 func GetJsonSyntaxExample(resource resources.Resource, verb string, id string) string {
 	return fmt.Sprintf(`
-Key and value pairs passed in will be converted to JSON with a jq like syntax.
+Key Value pairs passed in will be converted to JSON with a jq like syntax.
 
 The EPCC CLI will automatically determine appropriate wrapping (i.e., wrap the values in a data key or attributes key)
 

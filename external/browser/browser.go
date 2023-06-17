@@ -10,6 +10,9 @@ func OpenUrl(url string) error {
 	if url == "" {
 		return fmt.Errorf("No url available")
 	}
+	if url == "n/a" {
+		return fmt.Errorf("No documentation available for this resource")
+	}
 	switch runtime.GOOS {
 	case "linux":
 		exec.Command("xdg-open", url).Start()
