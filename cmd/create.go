@@ -35,6 +35,8 @@ func NewCreateCommand(parentCmd *cobra.Command) {
 		var noBodyPrint = false
 
 		var outputJq = ""
+
+		var setAlias = ""
 		overrides := &httpclient.HttpParameterOverrides{
 			QueryParameters: nil,
 			OverrideUrlPath: "",
@@ -54,7 +56,7 @@ func NewCreateCommand(parentCmd *cobra.Command) {
 			Example: GetCreateExample(resource),
 			Args:    GetArgFunctionForCreate(resource),
 			RunE: func(cmd *cobra.Command, args []string) error {
-				body, err := createInternal(context.Background(), overrides, append([]string{resourceName}, args...), autoFillOnCreate)
+				body, err := createInternal(context.Background(), overrides, append([]string{resourceName}, args...), autoFillOnCreate, setAlias)
 
 				if err != nil {
 					return err
@@ -160,6 +162,7 @@ func NewCreateCommand(parentCmd *cobra.Command) {
 		createResourceCmd.PersistentFlags().BoolVarP(&noBodyPrint, "silent", "s", false, "Don't print the body on success")
 		createResourceCmd.PersistentFlags().StringSliceVarP(&overrides.QueryParameters, "query-parameters", "q", []string{}, "Pass in key=value an they will be added as query parameters")
 		createResourceCmd.PersistentFlags().StringVarP(&outputJq, "output-jq", "", "", "A jq expression, if set we will restrict output to only this")
+		createResourceCmd.PersistentFlags().StringVarP(&setAlias, "save-as-alias", "", "", "A name to save the created resource as")
 
 		_ = createResourceCmd.RegisterFlagCompletionFunc("output-jq", jqCompletionFunc)
 
@@ -169,7 +172,7 @@ func NewCreateCommand(parentCmd *cobra.Command) {
 	parentCmd.AddCommand(create)
 }
 
-func createInternal(ctx context.Context, overrides *httpclient.HttpParameterOverrides, args []string, autoFillOnCreate bool) (string, error) {
+func createInternal(ctx context.Context, overrides *httpclient.HttpParameterOverrides, args []string, autoFillOnCreate bool, aliasName string) (string, error) {
 	crud.OutstandingRequestCounter.Add(1)
 	defer crud.OutstandingRequestCounter.Done()
 
@@ -277,6 +280,10 @@ func createInternal(ctx context.Context, overrides *httpclient.HttpParameterOver
 		// 204 is no content, so we will skip it.
 		if resp.StatusCode != 204 {
 			aliases.SaveAliasesForResources(string(resBody))
+		}
+
+		if aliasName != "" {
+			aliases.SetAliasForResource(string(resBody), aliasName)
 		}
 		return string(resBody), nil
 	} else {
