@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/elasticpath/epcc-cli/external/aliases"
 	"github.com/elasticpath/epcc-cli/external/httpclient"
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/require"
@@ -12,9 +13,14 @@ func TestCrudOnAResource(t *testing.T) {
 	httpclient.Initialize(1, 60)
 
 	cmd := getTestCommand()
-	cmd.SetArgs([]string{"create", "account", "name", "Test", "legal_name", "Test", "--output-jq", ".data.id"})
+	cmd.SetArgs([]string{"create", "account", "name", "Test", "legal_name", "Test", "--output-jq", ".data.id", "--save-as-alias", "my_test_alias"})
 	err := cmd.Execute()
 	require.NoError(t, err)
+
+	foo := aliases.GetAliasesForJsonApiTypeAndAlternates("account", []string{})
+	_, ok := foo["my_test_alias"]
+
+	require.True(t, ok, "Expected that my_test_alias exists in the set of aliases :(")
 
 	cmd = getTestCommand()
 	cmd.SetArgs([]string{"get", "account", "name=Test", "--output-jq", ".data.name"})

@@ -104,7 +104,7 @@ func getAliasesForSingleJsonApiType(jsonApiType string) map[string]*id.IdableAtt
 		if err != nil {
 			log.Debugf("Could not unmarshall existing file %s, error %s", data, err)
 		} else {
-			log.Debugf("Aliases for type [%s] loaded, with %d aliases", jsonApiType, len(aliasMap))
+			log.Tracef("Aliases for type [%s] loaded, with %d aliases", jsonApiType, len(aliasMap))
 		}
 
 	} else {
@@ -165,6 +165,69 @@ func SaveAliasesForResources(jsonTxt string) {
 		saveAliasesForResource(resourceType, foundAliases)
 	}
 
+}
+
+func SetAliasForResource(jsonTxt string, name string) {
+	if SkipAliasProcessing {
+		return
+	}
+	var jsonResult = map[string]interface{}{}
+	err := json.Unmarshal([]byte(jsonTxt), &jsonResult)
+	if err != nil {
+		log.Warnf("Response was not JSON so not scanning for aliases")
+		return
+	}
+
+	results := map[string]map[string]*id.IdableAttributes{}
+
+	if dataRaw, dataKeyExists := jsonResult["data"]; dataKeyExists {
+		if data, ok := dataRaw.(map[string]interface{}); ok {
+			if typeObj, typeKeyExists := data["type"]; typeKeyExists {
+				if idObj, idKeyExists := data["id"]; idKeyExists {
+					if typeKeyValue, typeKeyIsString := typeObj.(string); typeKeyIsString {
+						if idKeyValue, idKeyIsString := idObj.(string); idKeyIsString {
+
+							aliases := generateAliasesForStruct("", "", map[string]*id.IdableAttributes{}, typeKeyValue, idKeyValue, data)
+
+							log.Tracef("Found a type and id pair %s => %s under prefix %s, aliases %v", typeKeyValue, idKeyValue, "", aliases)
+
+							if _, ok := results[typeKeyValue]; !ok {
+								results[typeKeyValue] = make(map[string]*id.IdableAttributes)
+							}
+
+							for aliasKey, aliasValue := range aliases {
+								results[typeKeyValue][aliasKey] = aliasValue
+							}
+						}
+					}
+				} else {
+					log.Warnf("Could not find `id` attribute in response, so could not create alias: %s", name)
+					return
+				}
+			} else {
+				log.Warnf("Could not find `type` attribute in response, so could not create alias: %s", name)
+				return
+			}
+		} else {
+			log.Warnf("The `data` attribute in response is not a JSON object, so could not create alias: %s", name)
+			return
+		}
+	} else {
+		log.Warnf("Could not find `data` attribute in response, so could not create alias: %s", name)
+		return
+	}
+	log.Tracef("All aliases found in JSON: %v", results)
+
+	for resourceType, foundAliases := range results {
+		for _, v := range foundAliases {
+			// We may have found multiple aliases, but lets just save one
+			saveAliasesForResource(resourceType, map[string]*id.IdableAttributes{
+				name: v,
+			})
+			return
+		}
+		log.Warnf("No aliases found to save, this is likely a bug: %s", name)
+	}
 }
 
 func DeleteAliasesById(idStr string, jsonApiType string) {
