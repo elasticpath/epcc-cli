@@ -24,9 +24,8 @@ actions:
         epcc create pcm-product-price name=Preferred_Pricing currencies.USD.amount 300000 currencies.USD.includes_tax false currencies.GBP.amount 250000 currencies.GBP.includes_tax false sku BE-Electric-Range-1a1a
         epcc create pcm-product-price name=Preferred_Pricing currencies.USD.amount 350000 currencies.USD.includes_tax false currencies.GBP.amount 300000 currencies.GBP.includes_tax false sku BE-Gas-Range-2b2b
       - epcc create pcm-catalog name "Ranges Catalog" description "Ranges Catalog" pricebook_id name=Preferred_Pricing hierarchy_ids[0] name=Major_Appliances
-      # TODO wait for publishing
-      - epcc create pcm-catalog-release name=Ranges_Catalog
-      - epcc get pcm-catalog-releases name=Ranges_Catalog
+      - epcc create pcm-catalog-release --save-as-alias manual-gateway-how-to-create-catalog-and-publish-release name=Ranges_Catalog
+      - epcc get pcm-catalog-release --retry-while-jq '.data.meta.release_status != "PUBLISHED"' name=Ranges_Catalog manual-gateway-how-to-create-catalog-and-publish-release
   create-order:
     description:
       short: "Create an order"

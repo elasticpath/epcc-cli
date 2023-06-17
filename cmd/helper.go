@@ -272,6 +272,9 @@ epcc %s %s%s key 1 => %s
 # If a value *must* be a string, you should wrap it in quotes, be mindful that your shell may require you to quote quotes :)
 epcc %s %s%s key '"1"' => %s
 
+# If a value starts with a -, you should place a -- somewhere in the string before hand, this will turn off flag intepretation
+epcc %s %s%s key -- -value => %s 
+
 # Boolean types work similarly
 epcc %s %s%s key true => %s
 
@@ -293,6 +296,7 @@ epcc %s %s%s key.some.child hello key.some.other goodbye => %s
 		verb, resource.SingularName, id, toJsonExample([]string{"key", "b"}, resource),
 		verb, resource.SingularName, id, toJsonExample([]string{"key", "1"}, resource),
 		verb, resource.SingularName, id, toJsonExample([]string{"key", "\"1\""}, resource),
+		verb, resource.SingularName, id, toJsonExample([]string{"key", "-value"}, resource),
 		verb, resource.SingularName, id, toJsonExample([]string{"key", "true"}, resource),
 		verb, resource.SingularName, id, toJsonExample([]string{"key", "null"}, resource),
 		verb, resource.SingularName, id, toJsonExample([]string{"key", "\"null\""}, resource),

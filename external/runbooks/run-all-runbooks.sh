@@ -10,8 +10,19 @@ epcc reset-store .+
 echo "Starting Misc Runbook"
 epcc runbooks run misc get-store-info
 
-echo "Starting Hello World"
+echo "Starting pxm how to"
+epcc reset-store .+
 
+epcc runbooks run pxm-how-to create-catalog-and-publish
+epcc runbooks run pxm-how-to create-catalog-rule
+epcc runbooks run pxm-how-to products-with-custom-data
+epcc runbooks run pxm-how-to products-with-variations
+epcc runbooks run pxm-how-to publish-catalog-with-bundles
+epcc runbooks run pxm-how-to reset
+
+
+echo "Starting Hello World"
+epcc reset-store .+
 epcc runbooks run hello-world create-customer
 epcc runbooks run hello-world create-10-customers
 
@@ -23,10 +34,10 @@ epcc runbooks run hello-world reset
 echo "Starting Extend Customer Resources"
 # We don't reset here, because we shouldn't need to
 
-epcc runbooks run extend-customer-resources create-flow-and-field
-epcc runbooks run extend-customer-resources create-example-customer
-epcc runbooks run extend-customer-resources update-example-customer
-epcc runbooks run extend-customer-resources reset
+epcc runbooks run extend-customer-resources-how-to create-flow-and-field
+epcc runbooks run extend-customer-resources-how-to create-example-customer
+epcc runbooks run extend-customer-resources-how-to update-example-customer
+epcc runbooks run extend-customer-resources-how-to reset
 
 
 echo "Starting Account Management Runbook"
@@ -48,7 +59,6 @@ epcc runbooks run manual-gateway-how-to reset-cart
 epcc runbooks run manual-gateway-how-to reset
 
 
-echo "Starting manual gateway how-to"
 
 echo "SUCCESS"
 

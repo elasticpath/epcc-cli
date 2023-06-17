@@ -15,7 +15,7 @@ func init() {
 func TestErrorMessageWhenOddNumberOfValuesPassed(t *testing.T) {
 	// Fixture Setup
 	input := []string{"[0]"}
-	expected := fmt.Errorf("the number arguments 1 supplied isn't even, json should be passed in key value pairs")
+	expected := fmt.Errorf("the number of arguments 1 supplied isn't even, json should be passed in key value pairs. Do you have an extra/missing id?")
 
 	// Execute SUT
 	_, actual := ToJson(input, false, true, map[string]*resources.CrudEntityAttribute{})

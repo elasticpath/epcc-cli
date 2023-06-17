@@ -10,7 +10,7 @@ import (
 
 func ToMultiPartEncoding(args []string, noWrapping bool, compliant bool, attributes map[string]*resources.CrudEntityAttribute) (*bytes.Buffer, string, error) {
 	if len(args)%2 == 1 {
-		return nil, "", fmt.Errorf("the number arguments %d supplied isn't even, json should be passed in key value pairs", len(args))
+		return nil, "", fmt.Errorf("the number of arguments %d supplied isn't even, json should be passed in key value pairs. Do you have an extra/missing id?", len(args))
 	}
 
 	values := map[string]string{}

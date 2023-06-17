@@ -31,6 +31,13 @@ func NewUpdateCommand(parentCmd *cobra.Command) {
 		Use:          "update",
 		Short:        "Updates a resource",
 		SilenceUsage: false,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if len(args) == 0 {
+				return fmt.Errorf("please specify a resource, epcc update [RESOURCE], see epcc update --help")
+			} else {
+				return fmt.Errorf("invalid resource [%s] specified, see all with epcc update --help", args[0])
+			}
+		},
 	}
 	for _, resource := range resources.GetPluralResources() {
 		resource := resource
