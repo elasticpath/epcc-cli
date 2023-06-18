@@ -153,6 +153,7 @@ func initRunbookRunCommands() *cobra.Command {
 						stepIdx := stepIdx
 						rawCmd := rawCmd
 
+						log.Infof("Executing> %s", rawCmd)
 						templateName := fmt.Sprintf("Runbook: %s Action: %s Step: %d", runbook.Name, runbookAction.Name, stepIdx)
 						rawCmdLines, err := runbooks.RenderTemplates(templateName, rawCmd, runbookStringArguments, runbookAction.Variables)
 

@@ -154,7 +154,7 @@ func doRequestInternal(ctx context.Context, method string, contentType string, p
 			noApiEndpointUrlWarningMessageMutex.RUnlock()
 			noApiEndpointUrlWarningMessageMutex.Lock()
 			if !noApiEndpointUrlWarningMessageLogged {
-				log.Infof("No API endpoint set in profile or environment variables, defaulting to \"%s\". To change this set the EPCC_API_BASE_URL environment variable.", config.DefaultUrl)
+				log.Infof("No API endpoint set in profile or environment variables, defaulting to \"%s\". To change this set the EPCC_API_BASE_URL environment variable (1).", config.DefaultUrl)
 				noApiEndpointUrlWarningMessageLogged = true
 			}
 			noApiEndpointUrlWarningMessageMutex.Unlock()
