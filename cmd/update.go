@@ -27,6 +27,9 @@ func NewUpdateCommand(parentCmd *cobra.Command) {
 
 	var noBodyPrint = false
 
+	var ifAliasExists = ""
+	var ifAliasDoesNotExist = ""
+
 	var update = &cobra.Command{
 		Use:          "update",
 		Short:        "Updates a resource",
@@ -53,6 +56,26 @@ func NewUpdateCommand(parentCmd *cobra.Command) {
 			Example: GetUpdateExample(resource),
 			Args:    GetArgFunctionForUpdate(resource),
 			RunE: func(cmd *cobra.Command, args []string) error {
+
+				if ifAliasExists != "" {
+					aliasId := aliases.ResolveAliasValuesOrReturnIdentity(resource.JsonApiType, resource.AlternateJsonApiTypesForAliases, ifAliasExists, "id")
+
+					if aliasId == ifAliasExists {
+						// If the aliasId is the same as requested, it means an alias did not exist.
+						log.Infof("Alias [%s] does not exist, not continuing run", ifAliasExists)
+						return nil
+					}
+				}
+
+				if ifAliasDoesNotExist != "" {
+					aliasId := aliases.ResolveAliasValuesOrReturnIdentity(resource.JsonApiType, resource.AlternateJsonApiTypesForAliases, ifAliasDoesNotExist, "id")
+
+					if aliasId != ifAliasDoesNotExist {
+						// If the aliasId is different than the request then it does exist.
+						log.Infof("Alias [%s] does exist (value: %s), not continuing run", ifAliasDoesNotExist, aliasId)
+						return nil
+					}
+				}
 
 				body, err := updateInternal(context.Background(), overrides, append([]string{resourceName}, args...))
 
@@ -143,6 +166,9 @@ func NewUpdateCommand(parentCmd *cobra.Command) {
 		updateResourceCmd.Flags().StringSliceVarP(&overrides.QueryParameters, "query-parameters", "q", []string{}, "Pass in key=value an they will be added as query parameters")
 		updateResourceCmd.PersistentFlags().BoolVarP(&noBodyPrint, "silent", "s", false, "Don't print the body on success")
 		updateResourceCmd.Flags().StringVarP(&outputJq, "output-jq", "", "", "A jq expression, if set we will restrict output to only this")
+		updateResourceCmd.PersistentFlags().StringVarP(&ifAliasExists, "if-alias-exists", "", "", "If the alias exists we will run this command, otherwise exit with no error")
+		updateResourceCmd.PersistentFlags().StringVarP(&ifAliasDoesNotExist, "if-alias-does-not-exist", "", "", "If the alias does not exist we will run this command, otherwise exit with no error")
+		updateResourceCmd.MarkFlagsMutuallyExclusive("if-alias-exists", "if-alias-does-not-exist")
 		_ = updateResourceCmd.RegisterFlagCompletionFunc("output-jq", jqCompletionFunc)
 
 		update.AddCommand(updateResourceCmd)

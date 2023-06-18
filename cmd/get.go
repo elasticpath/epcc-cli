@@ -35,6 +35,9 @@ func NewGetCommand(parentCmd *cobra.Command) {
 
 	var retryWhileJQMaxAttempts = uint16(1200)
 
+	var ifAliasExists = ""
+	var ifAliasDoesNotExist = ""
+
 	var getCmd = &cobra.Command{
 		Use:          "get",
 		Short:        "Retrieves either a single or all resources",
@@ -94,6 +97,26 @@ func NewGetCommand(parentCmd *cobra.Command) {
 				Example: GetGetExample(resourceName, resourceUrl, usageGetType, completionVerb, urlInfo, resource),
 				Args:    GetArgFunctionForUrl(resourceName, resourceUrl),
 				RunE: func(cmd *cobra.Command, args []string) error {
+
+					if ifAliasExists != "" {
+						aliasId := aliases.ResolveAliasValuesOrReturnIdentity(resource.JsonApiType, resource.AlternateJsonApiTypesForAliases, ifAliasExists, "id")
+
+						if aliasId == ifAliasExists {
+							// If the aliasId is the same as requested, it means an alias did not exist.
+							log.Infof("Alias [%s] does not exist, not continuing run", ifAliasExists)
+							return nil
+						}
+					}
+
+					if ifAliasDoesNotExist != "" {
+						aliasId := aliases.ResolveAliasValuesOrReturnIdentity(resource.JsonApiType, resource.AlternateJsonApiTypesForAliases, ifAliasDoesNotExist, "id")
+
+						if aliasId != ifAliasDoesNotExist {
+							// If the aliasId is different than the request then it does exist.
+							log.Infof("Alias [%s] does exist (value: %s), not continuing run", ifAliasDoesNotExist, aliasId)
+							return nil
+						}
+					}
 
 					var body string
 					var err error
@@ -230,6 +253,9 @@ func NewGetCommand(parentCmd *cobra.Command) {
 			newCmd.PersistentFlags().StringVarP(&outputJq, "output-jq", "", "", "A jq expression, if set we will restrict output to only this")
 			newCmd.PersistentFlags().StringVarP(&retryWhileJQ, "retry-while-jq", "", "", "A jq expression, if set and returns true we will retry the get command (see manual for examples)")
 			newCmd.PersistentFlags().Uint16VarP(&retryWhileJQMaxAttempts, "retry-while-jq-max-attempts", "", 1200, "The maximum number of attempts we will retry with jq")
+			newCmd.PersistentFlags().StringVarP(&ifAliasExists, "if-alias-exists", "", "", "If the alias exists we will run this command, otherwise exit with no error")
+			newCmd.PersistentFlags().StringVarP(&ifAliasDoesNotExist, "if-alias-does-not-exist", "", "", "If the alias does not exist we will run this command, otherwise exit with no error")
+			newCmd.MarkFlagsMutuallyExclusive("if-alias-exists", "if-alias-does-not-exist")
 			_ = newCmd.RegisterFlagCompletionFunc("output-jq", jqCompletionFunc)
 
 			getCmd.AddCommand(newCmd)

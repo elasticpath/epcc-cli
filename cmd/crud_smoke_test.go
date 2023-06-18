@@ -17,8 +17,8 @@ func TestCrudOnAResource(t *testing.T) {
 	err := cmd.Execute()
 	require.NoError(t, err)
 
-	foo := aliases.GetAliasesForJsonApiTypeAndAlternates("account", []string{})
-	_, ok := foo["my_test_alias"]
+	aliasesForAccounts := aliases.GetAliasesForJsonApiTypeAndAlternates("account", []string{})
+	_, ok := aliasesForAccounts["my_test_alias"]
 
 	require.True(t, ok, "Expected that my_test_alias exists in the set of aliases :(")
 
@@ -41,6 +41,11 @@ func TestCrudOnAResource(t *testing.T) {
 	cmd.SetArgs([]string{"delete", "account", "name=Test"})
 	err = cmd.Execute()
 	require.NoError(t, err)
+
+	aliasesForAccounts = aliases.GetAliasesForJsonApiTypeAndAlternates("account", []string{})
+	_, ok = aliasesForAccounts["my_test_alias"]
+
+	require.False(t, ok, "Expected that my_test_alias does not exist in the set of aliases :(")
 
 	// Error because this UUID doesn't exist
 	cmd = getTestCommand()

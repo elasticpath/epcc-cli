@@ -43,6 +43,9 @@ func NewDeleteCommand(parentCmd *cobra.Command) {
 
 		var allow404 = false
 
+		var ifAliasExists = ""
+		var ifAliasDoesNotExist = ""
+
 		resource := resource
 		resourceName := resource.SingularName
 
@@ -53,6 +56,26 @@ func NewDeleteCommand(parentCmd *cobra.Command) {
 			Example: GetDeleteExample(resource),
 			Args:    GetArgFunctionForDelete(resource),
 			RunE: func(cmd *cobra.Command, args []string) error {
+
+				if ifAliasExists != "" {
+					aliasId := aliases.ResolveAliasValuesOrReturnIdentity(resource.JsonApiType, resource.AlternateJsonApiTypesForAliases, ifAliasExists, "id")
+
+					if aliasId == ifAliasExists {
+						// If the aliasId is the same as requested, it means an alias did not exist.
+						log.Infof("Alias [%s] does not exist, not continuing run", ifAliasExists)
+						return nil
+					}
+				}
+
+				if ifAliasDoesNotExist != "" {
+					aliasId := aliases.ResolveAliasValuesOrReturnIdentity(resource.JsonApiType, resource.AlternateJsonApiTypesForAliases, ifAliasDoesNotExist, "id")
+
+					if aliasId != ifAliasDoesNotExist {
+						// If the aliasId is different than the request then it does exist.
+						log.Infof("Alias [%s] does exist (value: %s), not continuing run", ifAliasDoesNotExist, aliasId)
+						return nil
+					}
+				}
 
 				body, err := deleteInternal(context.Background(), overrides, allow404, append([]string{resourceName}, args...))
 
@@ -127,6 +150,9 @@ func NewDeleteCommand(parentCmd *cobra.Command) {
 		deleteResourceCommand.Flags().StringVar(&overrides.OverrideUrlPath, "override-url-path", "", "Override the URL that will be used for the Request")
 		deleteResourceCommand.Flags().StringSliceVarP(&overrides.QueryParameters, "query-parameters", "q", []string{}, "Pass in key=value an they will be added as query parameters")
 		deleteResourceCommand.Flags().BoolVar(&allow404, "allow-404", allow404, "If set 404's will not be treated as errors")
+		deleteResourceCommand.PersistentFlags().StringVarP(&ifAliasExists, "if-alias-exists", "", "", "If the alias exists we will run this command, otherwise exit with no error")
+		deleteResourceCommand.PersistentFlags().StringVarP(&ifAliasDoesNotExist, "if-alias-does-not-exist", "", "", "If the alias does not exist we will run this command, otherwise exit with no error")
+		deleteResourceCommand.MarkFlagsMutuallyExclusive("if-alias-exists", "if-alias-does-not-exist")
 		deleteCmd.AddCommand(deleteResourceCommand)
 	}
 
@@ -150,7 +176,7 @@ func deleteInternal(ctx context.Context, overrides *httpclient.HttpParameterOver
 		return "", fmt.Errorf("got nil response")
 	}
 
-	idToDelete := aliases.ResolveAliasValuesOrReturnIdentity(resource.JsonApiType, resource.AlternateJsonApiTypesForAliases, "id", args[len(args)-1])
+	idToDelete := aliases.ResolveAliasValuesOrReturnIdentity(resource.JsonApiType, resource.AlternateJsonApiTypesForAliases, args[len(args)-1], "id")
 	aliases.DeleteAliasesById(idToDelete, resource.JsonApiType)
 
 	if resp.Body != nil {
