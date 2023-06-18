@@ -13,6 +13,7 @@ import (
 	"net/url"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 )
 
@@ -28,7 +29,7 @@ var HttpClient = &http.Client{
 	Timeout: time.Second * 60,
 }
 
-var bearerToken *ApiTokenResponse = nil
+var bearerToken atomic.Pointer[ApiTokenResponse]
 
 var noTokenWarningMutex = sync.RWMutex{}
 
@@ -39,13 +40,15 @@ var getTokenMutex = sync.Mutex{}
 func GetAuthenticationToken(useTokenFromProfileDir bool, valuesOverride *url.Values) (*ApiTokenResponse, error) {
 
 	if useTokenFromProfileDir {
-		bearerToken = GetApiToken()
+		bearerToken.Store(GetApiToken())
 	}
 
-	if bearerToken != nil {
-		if time.Now().Unix()+60 < bearerToken.Expires {
+	bearerTokenVal := bearerToken.Load()
+
+	if bearerTokenVal != nil {
+		if time.Now().Unix()+60 < bearerTokenVal.Expires {
 			// Use cached authentication (but clone first)
-			bearerCopy := *bearerToken
+			bearerCopy := *bearerTokenVal
 			return &bearerCopy, nil
 		}
 	}
@@ -53,17 +56,18 @@ func GetAuthenticationToken(useTokenFromProfileDir bool, valuesOverride *url.Val
 	getTokenMutex.Lock()
 	defer getTokenMutex.Unlock()
 
-	if bearerToken != nil {
-		if time.Now().Unix()+60 < bearerToken.Expires {
+	if bearerTokenVal != nil {
+		if time.Now().Unix()+60 < bearerTokenVal.Expires {
 			// Use cached authentication (but clone first)
-			bearerCopy := *bearerToken
+			bearerCopy := *bearerTokenVal
 			return &bearerCopy, nil
 		} else {
 			// TODO This will also happen a bunch of times in concurrent goroutines
-			log.Infof("Existing token has expired (or will very soon), refreshing. Token expiry is at %s", time.Unix(bearerToken.Expires, 0).Format(time.RFC1123Z))
+			log.Infof("Existing token has expired (or will very soon), refreshing. Token expiry is at %s", time.Unix(bearerTokenVal.Expires, 0).Format(time.RFC1123Z))
 		}
 	}
 
+	env := config.GetEnv()
 	requestValues := valuesOverride
 	if requestValues == nil {
 		if IsAutoLoginEnabled() {
@@ -71,7 +75,7 @@ func GetAuthenticationToken(useTokenFromProfileDir bool, valuesOverride *url.Val
 			var grantType string
 
 			// Autologin using env vars
-			if config.Envs.EPCC_CLIENT_ID == "" {
+			if env.EPCC_CLIENT_ID == "" {
 				noTokenWarningMutex.RLock()
 				// Double check lock, read once with read lock, then once again with write lock
 				if noTokenWarningMessageLogged == false {
@@ -80,7 +84,7 @@ func GetAuthenticationToken(useTokenFromProfileDir bool, valuesOverride *url.Val
 					defer noTokenWarningMutex.Unlock()
 					if noTokenWarningMessageLogged == false {
 						noTokenWarningMessageLogged = true
-						if !config.Envs.EPCC_CLI_SUPPRESS_NO_AUTH_MESSAGES {
+						if !env.EPCC_CLI_SUPPRESS_NO_AUTH_MESSAGES {
 							log.Warn("No client id set in profile or env var, no authentication will be used for API request. To get started, set the EPCC_CLIENT_ID and (optionally) EPCC_CLIENT_SECRET environment variables")
 						}
 
@@ -92,11 +96,12 @@ func GetAuthenticationToken(useTokenFromProfileDir bool, valuesOverride *url.Val
 				return nil, nil
 			}
 
-			values.Set("client_id", config.Envs.EPCC_CLIENT_ID)
+			values.Set("client_id", env.EPCC_CLIENT_ID)
 			grantType = "implicit"
 
-			if config.Envs.EPCC_CLIENT_SECRET != "" {
-				values.Set("client_secret", config.Envs.EPCC_CLIENT_SECRET)
+			clientSecret := env.EPCC_CLIENT_SECRET
+			if clientSecret != "" {
+				values.Set("client_secret", clientSecret)
 				grantType = "client_credentials"
 			}
 
@@ -113,7 +118,7 @@ func GetAuthenticationToken(useTokenFromProfileDir bool, valuesOverride *url.Val
 				defer noTokenWarningMutex.Unlock()
 				if noTokenWarningMessageLogged == false {
 					noTokenWarningMessageLogged = true
-					if !config.Envs.EPCC_CLI_SUPPRESS_NO_AUTH_MESSAGES {
+					if !config.GetEnv().EPCC_CLI_SUPPRESS_NO_AUTH_MESSAGES {
 						log.Infof("Automatic login is disabled, re-enable by using `epcc login client_credentials`")
 					}
 				}
@@ -140,16 +145,17 @@ func GetAuthenticationToken(useTokenFromProfileDir bool, valuesOverride *url.Val
 		return nil, err
 	}
 
-	bearerToken = token
+	bearerToken.Store(token)
 
-	SaveApiToken(bearerToken)
-	return bearerToken, nil
+	SaveApiToken(token)
+
+	return token, nil
 }
 
 // fetchNewAuthenticationToken returns an AccessToken or an Error
 func fetchNewAuthenticationToken(values url.Values) (*ApiTokenResponse, error) {
 
-	reqURL, err := url.Parse(config.Envs.EPCC_API_BASE_URL)
+	reqURL, err := url.Parse(config.GetEnv().EPCC_API_BASE_URL)
 	if err != nil {
 		return nil, err
 	}

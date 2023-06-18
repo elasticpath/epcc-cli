@@ -287,7 +287,7 @@ func createInternal(ctx context.Context, overrides *httpclient.HttpParameterOver
 	if err != nil {
 		return "", fmt.Errorf("got error %s", err.Error())
 	} else if resp == nil {
-		return "", fmt.Errorf("got nil response")
+		return "", fmt.Errorf("got nil response with request: %s", resourceURL)
 	}
 
 	if resp.Body != nil {

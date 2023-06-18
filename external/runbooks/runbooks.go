@@ -58,9 +58,10 @@ func init() {
 
 func InitializeBuiltInRunbooks() {
 	LoadBuiltInRunbooks(embeddedRunbooks)
-	if config.Envs.EPCC_RUNBOOK_DIRECTORY != "" {
-		if loadedRunbookCount := LoadRunbooksFromDirectory(config.Envs.EPCC_RUNBOOK_DIRECTORY); loadedRunbookCount == 0 {
-			log.Warnf("EPCC_RUNBOOK_DIRECTORY set as %s but no files found, runbooks should end in .epcc.yml", config.Envs.EPCC_RUNBOOK_DIRECTORY)
+	env := config.GetEnv()
+	if env.EPCC_RUNBOOK_DIRECTORY != "" {
+		if loadedRunbookCount := LoadRunbooksFromDirectory(env.EPCC_RUNBOOK_DIRECTORY); loadedRunbookCount == 0 {
+			log.Warnf("EPCC_RUNBOOK_DIRECTORY set as %s but no files found, runbooks should end in .epcc.yml", env.EPCC_RUNBOOK_DIRECTORY)
 		}
 	}
 }

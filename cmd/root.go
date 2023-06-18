@@ -53,12 +53,15 @@ var jqCompletionFunc = func(cmd *cobra.Command, args []string, toComplete string
 	}, cobra.ShellCompDirectiveNoSpace
 }
 
+var profileNameFromCommandLine = "default"
+
 func InitializeCmd() {
 	cobra.OnInitialize(initConfig)
 	initConfig()
 
-	if err := env.Parse(config.Envs); err != nil {
-		panic("Could not parse environment variables")
+	e := &config.Env{}
+	if err := env.Parse(e); err != nil {
+		log.Fatalf("Could not parse environment variables %v", err)
 	}
 
 	applyLogLevelEarlyDetectionHack()
@@ -92,7 +95,7 @@ func InitializeCmd() {
 
 	RootCmd.PersistentFlags().BoolVarP(&json.MonochromeOutput, "monochrome-output", "M", false, "By default, epcc will output using colors if the terminal supports this. Use this option to disable it.")
 	RootCmd.PersistentFlags().StringSliceVarP(&httpclient.RawHeaders, "header", "H", []string{}, "Extra headers and values to include in the request when sending HTTP to a server. You may specify any number of extra headers.")
-	RootCmd.PersistentFlags().StringVarP(&profiles.ProfileName, "profile", "P", profiles.ProfileName, "overrides the current EPCC_PROFILE var to run the command with the chosen profile.")
+	RootCmd.PersistentFlags().StringVarP(&profileNameFromCommandLine, "profile", "P", "", "overrides the current EPCC_PROFILE var to run the command with the chosen profile.")
 	RootCmd.PersistentFlags().Uint16VarP(&rateLimit, "rate-limit", "", 10, "Request limit per second")
 	RootCmd.PersistentFlags().BoolVarP(&httpclient.Retry5xx, "retry-5xx", "", false, "Whether we should retry requests with HTTP 5xx response code")
 	RootCmd.PersistentFlags().BoolVarP(&httpclient.Retry429, "retry-429", "", false, "Whether we should retry requests with HTTP 429 response code")
@@ -178,8 +181,9 @@ Environment Variables
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		log.SetLevel(logger.Loglevel)
 
-		if config.Envs.EPCC_RATE_LIMIT != 0 {
-			rateLimit = config.Envs.EPCC_RATE_LIMIT
+		env := config.GetEnv()
+		if env.EPCC_RATE_LIMIT != 0 {
+			rateLimit = env.EPCC_RATE_LIMIT
 		}
 		log.Debugf("Rate limit set to %d request per second ", rateLimit)
 		httpclient.Initialize(rateLimit, requestTimeout)
@@ -251,14 +255,22 @@ func Execute() {
 }
 
 func initConfig() {
+
 	envProfileName, ok := os.LookupEnv("EPCC_PROFILE")
 	if ok {
-		profiles.ProfileName = envProfileName
+		profiles.SetProfileName(envProfileName)
 	}
-	config.Envs = profiles.GetProfile(profiles.ProfileName)
+
+	if profileNameFromCommandLine != "" {
+		profiles.SetProfileName(profileNameFromCommandLine)
+	}
+
+	e := profiles.GetProfile(profiles.GetProfileName())
 
 	// Override profile configuration with environment variables
-	if err := env.Parse(config.Envs); err != nil {
+	if err := env.Parse(e); err != nil {
 		panic("Could not parse environment variables")
 	}
+
+	config.SetEnv(e)
 }

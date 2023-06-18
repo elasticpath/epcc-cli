@@ -39,10 +39,12 @@ var loginInfo = &cobra.Command{
 
 		apiTokenResponse := authentication.GetApiToken()
 
-		if config.Envs.EPCC_BETA_API_FEATURES == "" {
+		env := config.GetEnv()
+
+		if env.EPCC_BETA_API_FEATURES == "" {
 			log.Infof("We have no configured API endpoint, will use default endpoint")
 		} else {
-			log.Infof("We are currently using API endpoint: %s", config.Envs.EPCC_API_BASE_URL)
+			log.Infof("We are currently using API endpoint: %s", env.EPCC_API_BASE_URL)
 		}
 
 		if apiTokenResponse != nil {
@@ -88,7 +90,7 @@ var loginInfo = &cobra.Command{
 		}
 
 		if authentication.IsAutoLoginEnabled() {
-			if config.Envs.EPCC_CLIENT_SECRET != "" {
+			if env.EPCC_CLIENT_SECRET != "" {
 				log.Infof("Auto login is enabled and we will (attempt to) login with client_credentials")
 			} else {
 				log.Infof("Auto login is enabled and we will (attempt to) login with implicit, as no client_secret is available")
@@ -171,10 +173,12 @@ var loginClientCredentials = &cobra.Command{
 		values := url.Values{}
 		values.Set("grant_type", "client_credentials")
 
+		env := config.GetEnv()
+
 		if len(args) == 0 {
 			log.Debug("Arguments have been passed, not using profile EPCC_CLIENT_ID and EPCC_CLIENT_SECRET")
-			values.Set("client_id", config.Envs.EPCC_CLIENT_ID)
-			values.Set("client_secret", config.Envs.EPCC_CLIENT_SECRET)
+			values.Set("client_id", env.EPCC_CLIENT_ID)
+			values.Set("client_secret", env.EPCC_CLIENT_SECRET)
 		}
 
 		if len(args)%2 != 0 {
@@ -240,9 +244,10 @@ var loginImplicit = &cobra.Command{
 		values := url.Values{}
 		values.Set("grant_type", "implicit")
 
+		env := config.GetEnv()
 		if len(args) == 0 {
 			log.Debug("Arguments have been passed, not using profile EPCC_CLIENT_ID")
-			values.Set("client_id", config.Envs.EPCC_CLIENT_ID)
+			values.Set("client_id", env.EPCC_CLIENT_ID)
 		}
 
 		if len(args)%2 != 0 {

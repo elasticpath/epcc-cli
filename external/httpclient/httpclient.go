@@ -142,7 +142,9 @@ func doRequestInternal(ctx context.Context, method string, contentType string, p
 		return nil, fmt.Errorf("Shutting down")
 	}
 
-	reqURL, err := url.Parse(config.Envs.EPCC_API_BASE_URL)
+	env := config.GetEnv()
+
+	reqURL, err := url.Parse(env.EPCC_API_BASE_URL)
 	if err != nil {
 		return nil, err
 	}
@@ -206,8 +208,8 @@ func doRequestInternal(ctx context.Context, method string, contentType string, p
 
 	req.Header.Add("User-Agent", UserAgent)
 
-	if len(config.Envs.EPCC_BETA_API_FEATURES) > 0 {
-		req.Header.Add("EP-Beta-Features", config.Envs.EPCC_BETA_API_FEATURES)
+	if len(env.EPCC_BETA_API_FEATURES) > 0 {
+		req.Header.Add("EP-Beta-Features", env.EPCC_BETA_API_FEATURES)
 	}
 
 	if err = AddAdditionalHeadersSpecifiedByFlag(req); err != nil {
@@ -221,6 +223,7 @@ func doRequestInternal(ctx context.Context, method string, contentType string, p
 
 	start := time.Now()
 
+	log.Tracef("Waiting for rate limiter")
 	if err := Limit.Wait(ctx); err != nil {
 		return nil, fmt.Errorf("Rate limiter returned error %v, %w", err, err)
 	}
@@ -229,6 +232,7 @@ func doRequestInternal(ctx context.Context, method string, contentType string, p
 	resp, err := HttpClient.Do(req)
 	requestTime := time.Since(start)
 
+	log.Tracef("Waiting for stats lock")
 	statsLock.Lock()
 	stats.totalRequests += 1
 	if rateLimitTime.Milliseconds() > 50 {
@@ -323,8 +327,9 @@ func doRequestInternal(ctx context.Context, method string, contentType string, p
 		log.Error(err)
 	}
 
+	log.Tracef("Starting log to disk")
 	profiles.LogRequestToDisk(method, path, dumpReq, dumpRes, resp.StatusCode)
-
+	log.Tracef("Done log to disk")
 	if resp.StatusCode == 429 && Retry429 {
 		return doRequestInternal(ctx, method, contentType, path, query, &bodyBuf)
 	} else if resp.StatusCode >= 500 && Retry5xx {
