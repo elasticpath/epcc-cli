@@ -23,9 +23,15 @@ import (
 func NewCreateCommand(parentCmd *cobra.Command) {
 
 	var create = &cobra.Command{
-		Use:          "create",
-		Short:        "Creates a resource",
-		SilenceUsage: false,
+		Use:   "create",
+		Short: "Creates a resource",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if len(args) == 0 {
+				return fmt.Errorf("please specify a resource, epcc create [RESOURCE], see epcc create --help")
+			} else {
+				return fmt.Errorf("invalid resource [%s] specified, see all with epcc create --help", args[0])
+			}
+		},
 	}
 
 	for _, resource := range resources.GetPluralResources() {

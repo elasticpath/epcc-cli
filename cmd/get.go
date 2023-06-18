@@ -39,6 +39,13 @@ func NewGetCommand(parentCmd *cobra.Command) {
 		Use:          "get",
 		Short:        "Retrieves either a single or all resources",
 		SilenceUsage: false,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if len(args) == 0 {
+				return fmt.Errorf("please specify a resource, epcc get [RESOURCE], see epcc get --help")
+			} else {
+				return fmt.Errorf("invalid resource [%s] specified, see all with epcc get --help", args[0])
+			}
+		},
 	}
 
 	for _, resource := range resources.GetPluralResources() {

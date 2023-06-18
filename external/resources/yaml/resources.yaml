@@ -1417,7 +1417,7 @@ payment-gateways-stripe-connect:
       type: BOOL
   suppress-reset-warning: true
 payment-gateways-stripe-payment-intents:
-  singular-name: "payment-gateway-stripe-payment-intents"
+  singular-name: "payment-gateway-stripe-payment-intent"
   json-api-type: "gateway"
   json-api-format: "legacy"
   docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/gateways/configure-stripe-payment-intents.html"
@@ -1793,7 +1793,7 @@ pcm-variations:
     id:
       type: RESOURCE_ID:pcm-variations
 pcm-variation-options:
-  singular-name: "pcm-variation-options"
+  singular-name: "pcm-variation-option"
   json-api-type: "product-variation-option"
   json-api-format: "compliant"
   docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/options/get-all-options.html"

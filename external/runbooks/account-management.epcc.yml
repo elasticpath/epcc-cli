@@ -105,12 +105,13 @@ actions:
       - |
         epcc create pcm-catalog name "Account 1 Catalog" description "Account 1 Catalog" pricebook_id name=Account_1_Pricebook hierarchy_ids[0] name=Hierarchy_For_Account_1
         epcc create pcm-catalog name "Account 2 Catalog" description "Account 2 Catalog" pricebook_id name=Account_2_Pricebook hierarchy_ids[0] name=Hierarchy_For_Account_2
-      - epcc create pcm-catalog-release name=Account_1_Catalog
-      # Don't hammer the catalog publishing endpoint, might get rate limited
-      # TODO Wait for catalog to be published
-      - sleep 2
-      - epcc create pcm-catalog-release name=Account_2_Catalog
-      - sleep 5
+      - |
+         epcc create pcm-catalog-release name=Account_1_Catalog --save-as-alias account-management-catalog-rule-account-1-catalog
+         epcc create pcm-catalog-release name=Account_2_Catalog --save-as-alias account-management-catalog-rule-account-2-catalog
+      # Wait for Catalogs to be Published
+      - | 
+        epcc get pcm-catalog-release --retry-while-jq '.data.meta.release_status != "PUBLISHED"' name=Account_1_Catalog account-management-catalog-rule-account-1-catalog
+        epcc get pcm-catalog-release --retry-while-jq '.data.meta.release_status != "PUBLISHED"' name=Account_2_Catalog account-management-catalog-rule-account-2-catalog
       - epcc get pcm-catalog-releases name=Account_1_Catalog
       - epcc get pcm-catalog-releases name=Account_2_Catalog
       - epcc create pcm-catalog-rule name "Account 1 Rule" description "Rule for Account 1" account_ids[0] name=Account_1 catalog_id name=Account_1_Catalog
