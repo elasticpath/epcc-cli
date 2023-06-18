@@ -8,7 +8,7 @@
 ```shell
 export EPCC_CLIENT_ID=<CLIENT_ID>
 export EPCC_CLIENT_SECRET=<CLIENT_SECRET>
-export EPCC_API_BASE_URL=https://api.moltin.com
+export EPCC_API_BASE_URL=https://useast.api.elasticpath.com
 ```
 
 2. Add epcc to your path:
@@ -25,15 +25,15 @@ export PATH=$PATH:($PWD)
 
 ```shell
 $epcc get customers
-INFO[0000] (0001) GET https://api.moltin.com/v2/customers ==> HTTP/2.0 200 OK 
+INFO[0000] (0001) GET https://useast.api.elasticpath.com/v2/customers ==> HTTP/2.0 200 OK 
 {
   "data": [],
   "links": {
-    "current": "https://api.moltin.com/v2/customers?page[offset]=0",
-    "first": "https://api.moltin.com/v2/customers?page[offset]=0",
-    "last": "https://api.moltin.com/v2/customers?page[offset]=-100",
-    "next": "https://api.moltin.com/v2/customers?page[offset]=-1",
-    "prev": "https://api.moltin.com/v2/customers?page[offset]=0"
+    "current": "https://useast.api.elasticpath.com/v2/customers?page[offset]=0",
+    "first": "https://useast.api.elasticpath.com/v2/customers?page[offset]=0",
+    "last": "https://useast.api.elasticpath.com/v2/customers?page[offset]=-100",
+    "next": "https://useast.api.elasticpath.com/v2/customers?page[offset]=-1",
+    "prev": "https://useast.api.elasticpath.com/v2/customers?page[offset]=0"
   },
   "meta": {
     "page": {
@@ -56,17 +56,19 @@ INFO[0000] (0001) GET https://api.moltin.com/v2/customers ==> HTTP/2.0 200 OK
 2. Hit **TAB** (Twice depending on the shell) after `epcc create ` and you should see a list of resources that can be created in epcc.
 
 ```text
-account                                    cart-product-item                          file                                       order-payment                              pcm-node                                   personal-data-erasure-request              v2-collection
-account-address                            currency                                   file-entity-relationship                   order-transaction                          pcm-node-product                           promotion                                  v2-collection-entity-relationship
-account-entity-relationship                currency-entity-relationship               flow                                       order-transaction-capture                  pcm-pricebook                              promotion-code                             v2-modifier
-account-management-authentication-token    customer                                   flow-entity-relationship                   order-transaction-refund                   pcm-product                                promotion-entity-relationship              v2-product
-account-member-entity-relationship         customer-address                           integration                                password-profile                           pcm-product-main-image                     user-authentication-info                   v2-product-entity-relationship
-account-membership                         customer-entity-relationship               integration-entity-relationship            pcm-catalog                                pcm-product-price                          user-authentication-oidc-profile-info      v2-variation
-application-key                            customer-token                             inventory                                  pcm-catalog-releases                       pcm-product-template                       user-authentication-password-profile-info  v2-variation-entity-relationship
-authentication-realm-entity-relationship   entry                                      inventory-entity-relationship              pcm-catalog-rule                           pcm-product-variation                      v2-brand                                   v2-variation-option
-cart                                       entry-relationship                         inventory-transaction                      pcm-child-product                          pcm-variation                              v2-brand-entity-relationship               
-cart-checkout                              field                                      oidc-profile                               pcm-entry                                  pcm-variation-modifier                     v2-category                                
-cart-entity-relationship                   field-entity-relationship                  order-entity-relationship                  pcm-hierarchy                              pcm-variation-options                      v2-category-entity-relationship            
+$epcc create 
+account-address                            (Calls POST /v2/accounts/:accountId/addresses)
+account                                    (Calls POST /v2/accounts)
+account-entity-relationship                (Calls POST /v2/accounts/:accountId/relationships/:fieldId)
+account-management-authentication-token    (Calls POST /v2/account-members/tokens)
+account-member-entity-relationship         (Calls POST /v2/account-members/:accountMemberId/relationships/:fieldId)
+account-membership                         (Calls POST /v2/accounts/:accountId/account-memberships)
+application-key                            (Calls POST /v2/application-keys)
+authentication-realm                       (Calls POST /v2/authentication-realms/)
+authentication-realm-entity-relationship   (Calls POST /v2/authentication-realms/:authenticationRealmId/relationships/:fieldId)
+cart                                       (Calls POST /v2/carts)
+cart-checkout                              (Calls POST /v2/carts/:cartId/checkout)
+...
 ```
 
 in some cases the name of the resource matches the type in the JSON API (e.g., `customer`) and in some cases they differ (e.g., `v2-product`, `pcm-product`).
@@ -74,7 +76,7 @@ Let's create a customer, type the following `` (using auto-complete) and hit **E
 
 ```shell
 $epcc create customer
-WARN[0000] (0001) POST https://api.moltin.com/v2/customers 
+WARN[0000] (0001) POST https://useast.api.elasticpath.com/v2/customers 
 {
   "data": {
     "type": "customer"
@@ -97,19 +99,53 @@ Error: 422 Unprocessable Entity
 ERRO[0000] Error occurred while processing command: 422 Unprocessable Entity
 ```
 
-3. In the above you will see some JSON returned from the API. In some cases the error messages from the API might be enough to tell you exactly what fields you need and the right casing,
-   but some services don't give enough information. In any event, auto-completion will come to the rescue. Try typing `epcc create customer` and hit **TAB** a few times.
+3. We aren't sure what all the necessary options for a customer can be, but you can use `epcc create customer --help` which will provide more details, there is a fair bit of detail including showing examples of how JSON encoding works, a link to the documentation allowed arguments, and some sample URL calls.
+```shell
+$epcc create customer --help
+Creates a customer in a store/organization by calling /v2/customers.
+
+Key and value pairs passed in will be converted to JSON with a jq like syntax.
+
+The EPCC CLI will automatically determine appropriate wrapping (i.e., wrap the values in a data key or attributes key)
+
+# Simple type with key and value 
+epcc create customer key value => {"data":{"key":"b","type":"customer"}}
+
+# Numeric types will be encoded as json numbers
+epcc create customer key 1 => {"data":{"key":1,"type":"customer"}}
+...
+Documentation:
+ https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/customers/create-a-customer.html
+
+Usage:
+  epcc create customer [name NAME] [email EMAIL] [password PASSWORD] [flags]
+
+Examples:
+ ...
+
+ # Create a customer passing in an argument
+   epcc create customer name "Hello World"
+ > POST /v2/customers
+ > {
+ >  "data": {
+ >    "name": "Hello World",
+ >    "type": "customer"
+ >  }
+
+```
+
+4. In some cases the error messages from the API might be enough to tell you exactly what fields you need and the right casing but some endpoints don't give the clearest indication of the JSON required, or may not tell you the right value, another **highly recommended** option is to allow auto-completion will come to the rescue. Try typing `epcc create customer` and hit **TAB** a few times.
 
 ```text
 email     name      password
 ```
 
-4. The parameters needed for the customers call are `email`, `name`, and `password`.
+5. The parameters needed for the customers call are `email`, `name`, and `password`.
    The epcc cli is a **thin client**, and designed to make exploring the API more seamless and reduce the boilerplate, but still should feel like a JSON API.
    The syntax to supply the json is to use space separated key and values. So try typing `epcc create customer name "John Smith" password "hello123"` and hit enter.
 
 ```shell
-WARN[0000] POST https://api.moltin.com/v2/customers 
+WARN[0000] POST https://useast.api.elasticpath.com/v2/customers 
 {
   "data": {
     "type": "customer",
@@ -128,12 +164,12 @@ WARN[0000] POST https://api.moltin.com/v2/customers
 ERRO[0000] Error occured while processing command 422 Unprocessable Entity
 ```
 
-5. When the response code is not a `2xx`, `epcc` will output the sending JSON to help you debug what is being sent. In the above we are still missing an e-mail address so let's create it now `epcc create customers name "John Smith" password hello123 email test@test.com`
+6. When the response code is not a `2xx`, `epcc` will output the sending JSON to help you debug what is being sent. In the above we are still missing an e-mail address so let's create it now `epcc create customers name "John Smith" password hello123 email test@test.com`
 
 - Quotes are needed only to follow the standard rules of shell escaping (and a few other cases).
 
 ```shell
-INFO[0001] POST https://api.moltin.com/v2/customers ==> HTTP/1.1 201 Created 
+INFO[0001] POST https://useast.api.elasticpath.com/v2/customers ==> HTTP/1.1 201 Created 
 {
   "data": {
     "type": "customer",
@@ -145,7 +181,7 @@ INFO[0001] POST https://api.moltin.com/v2/customers ==> HTTP/1.1 201 Created
   }
 }
 ```
-6. To update a customer you use essentially the same syntax as create except with the `epcc update`, but now you need an id. With `epcc` ids are the first position arguments after the resource, so to update a customer you can use `epcc update customer <ID>`. However, this likely means copying and pasting data, and so we will leverage **aliases**. To see a list of aliases you can run `epcc aliases list` and you should see a set of aliases like so:
+7. To update a customer you use essentially the same syntax as create except with the `epcc update`, but now you need an id. With `epcc` ids are the first position arguments after the resource, so to update a customer you can use `epcc update customer <ID>`. However, this likely means copying and pasting data, and so we will leverage **aliases**. To see a list of aliases you can run `epcc aliases list` and you should see a set of aliases like so:
 ```shell
   Resource Type ||                              Alias Name || Values
    customer                            email=test@test.com => ID: ecaee2c4-06db-48a3-a709-6049ee4cb9e2
@@ -153,29 +189,37 @@ INFO[0001] POST https://api.moltin.com/v2/customers ==> HTTP/1.1 201 Created
    customer                               last_read=entity => ID: ecaee2c4-06db-48a3-a709-6049ee4cb9e2
    customer                                name=John_Smith => ID: ecaee2c4-06db-48a3-a709-6049ee4cb9e2
 ```
-7. All of the following commands can be used to update the previous customer, you can of course pass in an id, but aliases support auto-completion and are predictable so when writing scripts an alias can be much simpler and help avoid the need to parse JSON.  Aliases are created based on the attributes `sku`, `slug`,`name`,`code`,`email` and `id` on seen resources.
+8. All of the following commands can be used to update the previous customer, you can of course pass in an id, but aliases support auto-completion and are predictable so when writing scripts an alias can be much simpler and help avoid the need to parse JSON.  Aliases are created based on the attributes `sku`, `slug`,`name`,`code`,`email` and `id` on seen resources.
    * epcc update customer name=John_Smith name "Jake Smith"  
    * epcc update customer email=test@test.com name "James Smith"
    * epcc update customer last_read=entity name "Jacob Smith"
 
-8. The alias `last_read=entity` is a special one, and it refers to the last entity with type `customer` that the EPCC CLI saw, similarly when you get a list of all entities (i.e., epcc get customers), you will see aliases like `last_read=array[0]` which is the first element in the last array it was seen. Other aliases may exist as well, so use the `epcc aliases list <resource_type>` to see them.
+9. The alias `last_read=entity` is a special one, and it refers to the last entity with type `customer` that the EPCC CLI saw, similarly when you get a list of all entities (i.e., epcc get customers), you will see aliases like `last_read=array[0]` which is the first element in the last array it was seen. Other aliases may exist as well, so use the `epcc aliases list <resource_type>` to see them.
    - Some resources require other resource IDs at creation to tie related components together (for example, when adding components to bundles).  In these cases, the generated ID might not be immediately available for entry, though aliases for the required components exist.  To solve this, use the pattern `<target_id_key> alias/<resource>/name=<alias_name>/id`.  This syntax tells the system to extract the ID field from the resource identified by the alias.
    - For example, the `publish-catalog-with-bundles` action under the `pxm-how-to.yml` runbook includes the line `components.dogbed.options[0].id alias/product/name=Fluffy_Bed/id`.  This command says that the `dogbed` component ID (under `options`) should use the ID from the product aliased with the name `Fluffy_Bed`.
+   - For create you can use the `--save-as-alias` to create a specific alias for a resource, this might make it easier to use in your script.
 
-9. The output of the epcc cli contains a lot of output, however almost all the output is on [standard error](https://en.wikipedia.org/wiki/Standard_streams#Standard_error_(stderr)), and the only thing *for crud commands* that is output is the JSON response, this means you can pipe the output to a JSON processing library like so:
+10. The output of the epcc cli contains a lot of output, however almost all the output is on [standard error](https://en.wikipedia.org/wiki/Standard_streams#Standard_error_(stderr)), and the only thing *for crud commands* that is output is the JSON response, this means you can pipe the output to a JSON processing library like so:
 ```shell
 $epcc get customer name=John_Smith  | jq .data.email
-INFO[0000] (0001) GET https://api.moltin.com/v2/customers/ecaee2c4-06db-48a3-a709-6049ee4cb9e2 ==> HTTP/2.0 200 OK 
+INFO[0000] (0001) GET https://useast.api.elasticpath.com/v2/customers/ecaee2c4-06db-48a3-a709-6049ee4cb9e2 ==> HTTP/2.0 200 OK 
 "test@test.com"
-```
 
+
+11. That said, you can also use the --output-jq argument to process JQ without installing jq directly (Although this is based on [GoJQ which has a number of differences](https://github.com/itchyny/gojq#difference-to-jq).)
+```shell
+epcc get customer name=John_Smith --output-jq  ".data.email"
+INFO[0000] (0001) GET https://useast.api.elasticpath.com/v2/customers/c22ef03d-fe3d-4042-9a60-acce4811660c ==> HTTP/1.1 200 OK 
+"test@test.com"
+
+```
 
 ## Advanced Features
 
 1. If you try and create a customer address, you will notice that there is a lot of things required:
 ```shell
-epcc create customer-address name=John_Smith 
-WARN[0000] (0001) POST https://api.moltin.com/v2/customers/ecaee2c4-06db-48a3-a709-6049ee4cb9e2/addresses 
+$epcc create customer-address name=John_Smith 
+WARN[0000] (0001) POST https://useast.api.elasticpath.com/v2/customers/ecaee2c4-06db-48a3-a709-6049ee4cb9e2/addresses 
 {
   "data": {
     "type": "address"
@@ -228,7 +272,7 @@ WARN[0000] HTTP/2.0 400 Bad Request
 3. Many resources support simply having *auto-filled values* for when you need the resource created but don't care about values. To create an address for the above customer, with a name "My New Address", and a region "WA" use the following:
 ```shell
 $epcc create customer-address name=John_Smith --auto-fill name "My New Address" region "WA"
-INFO[0000] (0001) POST https://api.moltin.com/v2/customers/ecaee2c4-06db-48a3-a709-6049ee4cb9e2/addresses ==> HTTP/2.0 201 Created 
+INFO[0000] (0001) POST https://useast.api.elasticpath.com/v2/customers/ecaee2c4-06db-48a3-a709-6049ee4cb9e2/addresses ==> HTTP/2.0 201 Created 
 {
   "data": {
     "type": "address",
@@ -243,7 +287,7 @@ INFO[0000] (0001) POST https://api.moltin.com/v2/customers/ecaee2c4-06db-48a3-a7
     "line_1": "207 New Isle furt",
     "line_2": "",
     "links": {
-      "self": "https://api.moltin.com/v2/addresses/809b64a5-ec25-403e-a14d-e256a6a969d9"
+      "self": "https://useast.api.elasticpath.com/v2/addresses/809b64a5-ec25-403e-a14d-e256a6a969d9"
     },
     "name": "My New Address",
     "phone_number": "329.987.9543",
@@ -258,8 +302,16 @@ INFO[0000] (0001) POST https://api.moltin.com/v2/customers/ecaee2c4-06db-48a3-a7
   }
 }
 ```
+4. If you want to turn down the verbosity of the output, you can use `-s` which will not print the output, but you can also print friendly output with some advanced JQ.
+```shell
+$epcc create customer-address name=John_Smith --auto-fill name "My New Address" region "WA" -s
+INFO[0000] (0001) POST https://useast.api.elasticpath.com/v2/customers/c22ef03d-fe3d-4042-9a60-acce4811660c/addresses ==> HTTP/1.1 201 Created 
+$epcc create customer-address name=John_Smith --auto-fill name "My New Address" region "WA" --output-jq '.data | "Address ID:\(.id) created in city: \(.city), country: \(.country)"'
+INFO[0000] (0001) POST https://useast.api.elasticpath.com/v2/customers/c22ef03d-fe3d-4042-9a60-acce4811660c/addresses ==> HTTP/1.1 201 Created 
+"Address ID:d4fadda0-df21-4304-894b-70a85fd1ccf0 created in city: Irvine, country: CR"
+```
 
-4. You can see the set of API calls that were made with the `epcc logs list` command, and see the full HTTP request and response with `epcc logs show <ID>`, a negative id like -2 would show the second last request.
+5. You can see the set of API calls that were made with the `epcc logs list` command, and see the full HTTP request and response with `epcc logs show <ID>`, a negative id like -2 would show the second last request.
 
 ```shell
 $epcc logs list
@@ -270,7 +322,7 @@ $epcc logs list
 
 $epcc logs show 394
 POST /v2/customers/ecaee2c4-06db-48a3-a709-6049ee4cb9e2/addresses HTTP/1.1
-Host: api.moltin.com
+Host: useast.api.elasticpath.com
 Transfer-Encoding: chunked
 Content-Type: application/json
 Accept-Encoding: gzip
@@ -286,10 +338,52 @@ Date: Sat, 03 Dec 2022 15:10:00 GMT
 Strict-Transport-Security: max-age=31557600
 Via: 1.1 varnish
 
-{"data":{"id":"809b64a5-ec25-403e-a14d-e256a6a969d9","type":"address","name":"My New Address","first_name":"Casimir","last_name":"Bahringer","company_name":"USSearch","phone_number":"329.987.9543","line_1":"207 New Isle furt","line_2":"","city":"Pittsburgh","postcode":"64153","county":"IL","region":"WA","country":"MO","instructions":"guess what","links":{"self":"https://api.moltin.com/v2/addresses/809b64a5-ec25-403e-a14d-e256a6a969d9"},"meta":{"timestamps":{"created_at":"2022-12-03T15:10:00.487679744Z","updated_at":"2022-12-03T15:10:00.487679744Z"}}}}
+{"data":{"id":"809b64a5-ec25-403e-a14d-e256a6a969d9","type":"address","name":"My New Address","first_name":"Casimir","last_name":"Bahringer","company_name":"USSearch","phone_number":"329.987.9543","line_1":"207 New Isle furt","line_2":"","city":"Pittsburgh","postcode":"64153","county":"IL","region":"WA","country":"MO","instructions":"guess what","links":{"self":"https://useast.api.elasticpath.com/v2/addresses/809b64a5-ec25-403e-a14d-e256a6a969d9"},"meta":{"timestamps":{"created_at":"2022-12-03T15:10:00.487679744Z","updated_at":"2022-12-03T15:10:00.487679744Z"}}}}
 ```
 
-5. You can open commerce manager with the command `epcc commerce-manager` which will open the correct commerce manager based on which API endpoint you are using.
+6. You can open commerce manager with the command `epcc commerce-manager` which will open the correct commerce manager based on which API endpoint you are using.
+
+7. If you need to wait for a condition to occur (i.e., a catalog publication) the `--retry-while-jq` option can help, it will retry the request until the jq supplied returns `true`. For example:
+```shell
+  epcc get pcm-catalog-release --retry-while-jq '.data.meta.release_status != "PUBLISHED"' name=Ranges_Catalog pxm-how-to-create-catalog-and-publish-release
+```
+
+8. If you want to conditionally do something (i.e., create a currency which should only be done once, the `--if-alias-exists` and `--if-alias-does-not-exist` command can help), this can improve idempotency of scripts. 
+```shell
+$epcc create currency --if-alias-does-not-exist code=GBP code GBP exchange_rate 1 format £{price} decimal_point "." thousand_separator , decimal_places 2 default false enabled true
+INFO[0001] (0001) POST https://useast.api.elasticpath.com/v2/currencies ==> HTTP/1.1 201 Created 
+{
+  "data": {
+    "type": "currency",
+    "id": "374de533-0964-479b-bd34-4664180f606b",
+    "code": "GBP",
+    "decimal_places": 2,
+    "decimal_point": ".",
+    "default": false,
+    "enabled": true,
+    "exchange_rate": 1,
+    "format": "£{price}",
+    "thousand_separator": ",",
+    "links": {
+      "self": "https://useast.api.elasticpath.com/currencies/374de533-0964-479b-bd34-4664180f606b"
+    },
+    "meta": {
+      "owner": "store",
+      "timestamps": {
+        "created_at": "2023-06-18T16:15:30.045693431Z",
+        "updated_at": "2023-06-18T16:15:30.045694681Z"
+      }
+    }
+  }
+}
+$epcc create currency --if-alias-does-not-exist code=GBP code GBP exchange_rate 1 format £{price} decimal_point "." thousand_separator , decimal_places 2 default false enabled true
+INFO[0000] Alias [code=GBP] does exist (value: 374de533-0964-479b-bd34-4664180f606b), not continuing run 
+$epcc delete currency --if-alias-exists code=GBP code=GBP
+INFO[0001] (0001) DELETE https://useast.api.elasticpath.com/v2/currencies/374de533-0964-479b-bd34-4664180f606b ==> HTTP/1.1 204 No Content 
+null
+$epcc delete currency --if-alias-exists code=GBP code=GBP
+INFO[0000] Alias [code=GBP] does not exist, not continuing run
+```
 
 ### Advanced JSON Encoding
 
@@ -452,21 +546,21 @@ epcc get pcm-catalog-releases name=Ranges_Catalog
 4. Runbooks can be run with `epcc runbooks run pxm-how-to create-catalog-and-publish`
 ```shell
 epcc runbooks run pxm-how-to create-catalog-and-publish 
-INFO[0000] (0001) POST https://api.moltin.com/pcm/hierarchies ==> HTTP/2.0 201 Created 
-INFO[0001] (0002) POST https://api.moltin.com/pcm/hierarchies/1777c591-dee5-4a6a-a2d9-72b8af2e582c/nodes ==> HTTP/2.0 201 Created 
-INFO[0001] (0003) POST https://api.moltin.com/pcm/hierarchies/1777c591-dee5-4a6a-a2d9-72b8af2e582c/nodes ==> HTTP/2.0 201 Created 
-INFO[0001] (0004) POST https://api.moltin.com/pcm/hierarchies/1777c591-dee5-4a6a-a2d9-72b8af2e582c/nodes ==> HTTP/2.0 201 Created 
-INFO[0002] (0005) POST https://api.moltin.com/pcm/products ==> HTTP/2.0 201 Created 
-INFO[0002] (0006) POST https://api.moltin.com/pcm/hierarchies/1777c591-dee5-4a6a-a2d9-72b8af2e582c/nodes/e22cdcf1-3d99-4bf6-bb0e-04be9d04e6d8/relationships/products ==> HTTP/2.0 201 Created 
-INFO[0002] (0007) POST https://api.moltin.com/pcm/products ==> HTTP/2.0 201 Created 
-INFO[0003] (0008) POST https://api.moltin.com/pcm/hierarchies/1777c591-dee5-4a6a-a2d9-72b8af2e582c/nodes/84412f8d-053a-4a6e-9617-2f53e24d1a20/relationships/products ==> HTTP/2.0 201 Created 
-INFO[0003] (0009) POST https://api.moltin.com/v2/currencies ==> HTTP/2.0 201 Created 
-INFO[0003] (0010) POST https://api.moltin.com/pcm/pricebooks ==> HTTP/2.0 201 Created 
-INFO[0003] (0011) POST https://api.moltin.com/pcm/pricebooks/cc0eaf11-d4e7-44fd-92e4-d26733548a32/prices ==> HTTP/2.0 201 Created 
-INFO[0003] (0012) POST https://api.moltin.com/pcm/pricebooks/cc0eaf11-d4e7-44fd-92e4-d26733548a32/prices ==> HTTP/2.0 201 Created 
-INFO[0004] (0013) POST https://api.moltin.com/pcm/catalogs ==> HTTP/2.0 201 Created 
-INFO[0004] (0014) POST https://api.moltin.com/pcm/catalogs/2b3ae101-75cc-4cdd-9537-b2638120cdc5/releases ==> HTTP/2.0 201 Created 
-INFO[0004] (0015) GET https://api.moltin.com/pcm/catalogs/2b3ae101-75cc-4cdd-9537-b2638120cdc5/releases ==> HTTP/2.0 200 OK
+INFO[0000] (0001) POST https://useast.api.elasticpath.com/pcm/hierarchies ==> HTTP/2.0 201 Created 
+INFO[0001] (0002) POST https://useast.api.elasticpath.com/pcm/hierarchies/1777c591-dee5-4a6a-a2d9-72b8af2e582c/nodes ==> HTTP/2.0 201 Created 
+INFO[0001] (0003) POST https://useast.api.elasticpath.com/pcm/hierarchies/1777c591-dee5-4a6a-a2d9-72b8af2e582c/nodes ==> HTTP/2.0 201 Created 
+INFO[0001] (0004) POST https://useast.api.elasticpath.com/pcm/hierarchies/1777c591-dee5-4a6a-a2d9-72b8af2e582c/nodes ==> HTTP/2.0 201 Created 
+INFO[0002] (0005) POST https://useast.api.elasticpath.com/pcm/products ==> HTTP/2.0 201 Created 
+INFO[0002] (0006) POST https://useast.api.elasticpath.com/pcm/hierarchies/1777c591-dee5-4a6a-a2d9-72b8af2e582c/nodes/e22cdcf1-3d99-4bf6-bb0e-04be9d04e6d8/relationships/products ==> HTTP/2.0 201 Created 
+INFO[0002] (0007) POST https://useast.api.elasticpath.com/pcm/products ==> HTTP/2.0 201 Created 
+INFO[0003] (0008) POST https://useast.api.elasticpath.com/pcm/hierarchies/1777c591-dee5-4a6a-a2d9-72b8af2e582c/nodes/84412f8d-053a-4a6e-9617-2f53e24d1a20/relationships/products ==> HTTP/2.0 201 Created 
+INFO[0003] (0009) POST https://useast.api.elasticpath.com/v2/currencies ==> HTTP/2.0 201 Created 
+INFO[0003] (0010) POST https://useast.api.elasticpath.com/pcm/pricebooks ==> HTTP/2.0 201 Created 
+INFO[0003] (0011) POST https://useast.api.elasticpath.com/pcm/pricebooks/cc0eaf11-d4e7-44fd-92e4-d26733548a32/prices ==> HTTP/2.0 201 Created 
+INFO[0003] (0012) POST https://useast.api.elasticpath.com/pcm/pricebooks/cc0eaf11-d4e7-44fd-92e4-d26733548a32/prices ==> HTTP/2.0 201 Created 
+INFO[0004] (0013) POST https://useast.api.elasticpath.com/pcm/catalogs ==> HTTP/2.0 201 Created 
+INFO[0004] (0014) POST https://useast.api.elasticpath.com/pcm/catalogs/2b3ae101-75cc-4cdd-9537-b2638120cdc5/releases ==> HTTP/2.0 201 Created 
+INFO[0004] (0015) GET https://useast.api.elasticpath.com/pcm/catalogs/2b3ae101-75cc-4cdd-9537-b2638120cdc5/releases ==> HTTP/2.0 200 OK
 ```
 
 5. Runbooks can optionally take command line arguments as well, but that is outside the scope of this tutorial. For creating your own runbooks see [Runbook Development](runbook-development.md)
@@ -481,9 +575,9 @@ Assuming you have created the customer above, and run the create catalog and pub
 
 ```shell
 epcc login customer email test@test.com password hello123
-INFO[0001] (0001) POST https://api.moltin.com/v2/customers/tokens ==> HTTP/2.0 200 OK 
+INFO[0001] (0001) POST https://useast.api.elasticpath.com/v2/customers/tokens ==> HTTP/2.0 200 OK 
 WARN[0001] You are current logged in with client_credentials, please switch to implicit with `epcc login implicit` to use customer token correctly. Mixing client_credentials and customer token can lead to unintended results. 
-INFO[0001] (0002) GET https://api.moltin.com/v2/customers/ecaee2c4-06db-48a3-a709-6049ee4cb9e2 ==> HTTP/2.0 200 OK 
+INFO[0001] (0002) GET https://useast.api.elasticpath.com/v2/customers/ecaee2c4-06db-48a3-a709-6049ee4cb9e2 ==> HTTP/2.0 200 OK 
 INFO[0001] Successfully authenticated as customer John Smith <test@test.com>, session expires Sun, 04 Dec 2022 07:48:47 -0800 
 {
   "data": {
@@ -500,21 +594,21 @@ INFO[0001] Successfully authenticated as customer John Smith <test@test.com>, se
 
 ```shell
 epcc login implicit
-INFO[0000] POST https://api.moltin.com/oauth/access_token ==> HTTP/2.0 200 OK 
+INFO[0000] POST https://useast.api.elasticpath.com/oauth/access_token ==> HTTP/2.0 200 OK 
 INFO[0000] Successfully authenticated with implicit token, session expires Sat, 03 Dec 2022 08:50:51 -0800 
 ```
 
 3. We can create a cart as follows:
 ```shell
 $epcc create cart name "My Cart" description "Cart"
-INFO[0000] (0001) POST https://api.moltin.com/v2/carts ==> HTTP/2.0 201 Created 
+INFO[0000] (0001) POST https://useast.api.elasticpath.com/v2/carts ==> HTTP/2.0 201 Created 
 {
   "data": {
     "type": "cart",
     "id": "3f81126c-723c-4f49-9fee-5fb0466aeb5c",
     "description": "Cart",
     "links": {
-      "self": "https://api.moltin.com/v2/carts/3f81126c-723c-4f49-9fee-5fb0466aeb5c"
+      "self": "https://useast.api.elasticpath.com/v2/carts/3f81126c-723c-4f49-9fee-5fb0466aeb5c"
     },
     "name": "My Cart",
     "relationships": {
@@ -571,7 +665,7 @@ INFO[0000] (0001) POST https://api.moltin.com/v2/carts ==> HTTP/2.0 201 Created
 4. We can add an item to the cart as follows:
 ```shell
 epcc create cart-product-item name=My_Cart sku sku=BE-Gas-Range-2b2b quantity 1
-INFO[0000] (0001) POST https://api.moltin.com/v2/carts/3f81126c-723c-4f49-9fee-5fb0466aeb5c/items ==> HTTP/2.0 201 Created 
+INFO[0000] (0001) POST https://useast.api.elasticpath.com/v2/carts/3f81126c-723c-4f49-9fee-5fb0466aeb5c/items ==> HTTP/2.0 201 Created 
 {
   "data": [
     {
@@ -586,7 +680,7 @@ INFO[0000] (0001) POST https://api.moltin.com/v2/carts/3f81126c-723c-4f49-9fee-5
         "mime_type": ""
       },
       "links": {
-        "product": "https://api.moltin.com/v2/products/87132b87-ae32-4cbc-a3c8-7875923c7217"
+        "product": "https://useast.api.elasticpath.com/v2/products/87132b87-ae32-4cbc-a3c8-7875923c7217"
       },
       "manage_stock": false,
       "name": "BestEver Gas Range",
@@ -715,7 +809,7 @@ INFO[0000] (0001) POST https://api.moltin.com/v2/carts/3f81126c-723c-4f49-9fee-5
 
 ```shell
 epcc create --auto-fill cart-checkout name=My_Cart 
-WARN[0000] (0001) POST https://api.moltin.com/v2/carts/3f81126c-723c-4f49-9fee-5fb0466aeb5c/checkout 
+WARN[0000] (0001) POST https://useast.api.elasticpath.com/v2/carts/3f81126c-723c-4f49-9fee-5fb0466aeb5c/checkout 
 {
   "data": {
     "type": "checkout",
@@ -762,7 +856,7 @@ ERRO[0000] Error occurred while processing command: 400 Bad Request
 
 ```bash
 epcc create --auto-fill cart-checkout name=My_Cart customer.name "John Smith" customer.email "test@test.com"
-INFO[0000] (0001) POST https://api.moltin.com/v2/carts/3f81126c-723c-4f49-9fee-5fb0466aeb5c/checkout ==> HTTP/2.0 201 Created 
+INFO[0000] (0001) POST https://useast.api.elasticpath.com/v2/carts/3f81126c-723c-4f49-9fee-5fb0466aeb5c/checkout ==> HTTP/2.0 201 Created 
 {
   "data": {
     "type": "order",
@@ -971,30 +1065,30 @@ INFO[0000] (0001) POST https://api.moltin.com/v2/carts/3f81126c-723c-4f49-9fee-5
 ```shell
 epcc login client_credentials 
 INFO[0000] Destroying Customer Token as it should only be used with implicit tokens. 
-INFO[0000] POST https://api.moltin.com/oauth/access_token ==> HTTP/2.0 200 OK 
+INFO[0000] POST https://useast.api.elasticpath.com/oauth/access_token ==> HTTP/2.0 200 OK 
 INFO[0000] Successfully authenticated with client_credentials, session expires Sat, 03 Dec 2022 08:59:59 -0800 
 ```
 2. To clean up the data in pxm, we can use the following command:
 ```shell
 epcc runbooks run pxm-how-to reset 
-INFO[0000] (0001) DELETE https://api.moltin.com/pcm/products/sku=shirt ==> HTTP/2.0 204 No Content 
-INFO[0000] (0002) DELETE https://api.moltin.com/pcm/variations/name=Shirt_Size ==> HTTP/2.0 204 No Content 
-INFO[0001] (0003) DELETE https://api.moltin.com/pcm/products/87132b87-ae32-4cbc-a3c8-7875923c7217 ==> HTTP/2.0 204 No Content 
-WARN[0001] (0004) DELETE https://api.moltin.com/v2/customers/name=Leslie_Knope ==> HTTP/2.0 404 Not Found 
-WARN[0001] (0005) DELETE https://api.moltin.com/v2/customers/name=Ron_Swanson ==> HTTP/2.0 404 Not Found 
-INFO[0001] (0006) DELETE https://api.moltin.com/pcm/catalogs/name=Ranges_Catalog_for_Special_Customers/releases/name=Ranges_Catalog_for_Special_Customers ==> HTTP/2.0 204 No Content 
-INFO[0001] (0007) DELETE https://api.moltin.com/pcm/catalogs/2b3ae101-75cc-4cdd-9537-b2638120cdc5/releases/ea868362-8e63-45d4-aa0a-9b7fe42c6ecc ==> HTTP/2.0 204 No Content 
-INFO[0001] (0008) DELETE https://api.moltin.com/pcm/products/837ab51c-559b-4822-816a-5b173d856a2e ==> HTTP/2.0 204 No Content 
-INFO[0001] (0009) DELETE https://api.moltin.com/pcm/catalogs/rules/name=Catalog_Rule_for_Civil_Servants ==> HTTP/2.0 204 No Content 
-INFO[0002] (0010) DELETE https://api.moltin.com/pcm/hierarchies/1777c591-dee5-4a6a-a2d9-72b8af2e582c ==> HTTP/2.0 204 No Content 
-INFO[0002] (0011) DELETE https://api.moltin.com/pcm/pricebooks/name=Loyal_Civil_Servants_Pricing ==> HTTP/2.0 204 No Content 
-INFO[0002] (0012) DELETE https://api.moltin.com/v2/currencies/ce16a0ed-8b11-42a6-ab4e-c9f25501bb7b ==> HTTP/2.0 204 No Content 
-INFO[0002] (0013) DELETE https://api.moltin.com/pcm/pricebooks/cc0eaf11-d4e7-44fd-92e4-d26733548a32 ==> HTTP/2.0 204 No Content 
-INFO[0002] (0014) DELETE https://api.moltin.com/pcm/catalogs/2b3ae101-75cc-4cdd-9537-b2638120cdc5 ==> HTTP/2.0 204 No Content 
-INFO[0002] (0015) DELETE https://api.moltin.com/pcm/catalogs/name=Ranges_Catalog_for_Special_Customers ==> HTTP/2.0 204 No Content 
-INFO[0002] (0016) DELETE https://api.moltin.com/pcm/products/sku=to-kill-a-mockingbird ==> HTTP/2.0 204 No Content 
-WARN[0002] (0017) DELETE https://api.moltin.com/v2/flows/name=Book ==> HTTP/2.0 404 Not Found 
-WARN[0002] (0018) DELETE https://api.moltin.com/v2/flows/name=Condition ==> HTTP/2.0 404 Not Found 
+INFO[0000] (0001) DELETE https://useast.api.elasticpath.com/pcm/products/sku=shirt ==> HTTP/2.0 204 No Content 
+INFO[0000] (0002) DELETE https://useast.api.elasticpath.com/pcm/variations/name=Shirt_Size ==> HTTP/2.0 204 No Content 
+INFO[0001] (0003) DELETE https://useast.api.elasticpath.com/pcm/products/87132b87-ae32-4cbc-a3c8-7875923c7217 ==> HTTP/2.0 204 No Content 
+WARN[0001] (0004) DELETE https://useast.api.elasticpath.com/v2/customers/name=Leslie_Knope ==> HTTP/2.0 404 Not Found 
+WARN[0001] (0005) DELETE https://useast.api.elasticpath.com/v2/customers/name=Ron_Swanson ==> HTTP/2.0 404 Not Found 
+INFO[0001] (0006) DELETE https://useast.api.elasticpath.com/pcm/catalogs/name=Ranges_Catalog_for_Special_Customers/releases/name=Ranges_Catalog_for_Special_Customers ==> HTTP/2.0 204 No Content 
+INFO[0001] (0007) DELETE https://useast.api.elasticpath.com/pcm/catalogs/2b3ae101-75cc-4cdd-9537-b2638120cdc5/releases/ea868362-8e63-45d4-aa0a-9b7fe42c6ecc ==> HTTP/2.0 204 No Content 
+INFO[0001] (0008) DELETE https://useast.api.elasticpath.com/pcm/products/837ab51c-559b-4822-816a-5b173d856a2e ==> HTTP/2.0 204 No Content 
+INFO[0001] (0009) DELETE https://useast.api.elasticpath.com/pcm/catalogs/rules/name=Catalog_Rule_for_Civil_Servants ==> HTTP/2.0 204 No Content 
+INFO[0002] (0010) DELETE https://useast.api.elasticpath.com/pcm/hierarchies/1777c591-dee5-4a6a-a2d9-72b8af2e582c ==> HTTP/2.0 204 No Content 
+INFO[0002] (0011) DELETE https://useast.api.elasticpath.com/pcm/pricebooks/name=Loyal_Civil_Servants_Pricing ==> HTTP/2.0 204 No Content 
+INFO[0002] (0012) DELETE https://useast.api.elasticpath.com/v2/currencies/ce16a0ed-8b11-42a6-ab4e-c9f25501bb7b ==> HTTP/2.0 204 No Content 
+INFO[0002] (0013) DELETE https://useast.api.elasticpath.com/pcm/pricebooks/cc0eaf11-d4e7-44fd-92e4-d26733548a32 ==> HTTP/2.0 204 No Content 
+INFO[0002] (0014) DELETE https://useast.api.elasticpath.com/pcm/catalogs/2b3ae101-75cc-4cdd-9537-b2638120cdc5 ==> HTTP/2.0 204 No Content 
+INFO[0002] (0015) DELETE https://useast.api.elasticpath.com/pcm/catalogs/name=Ranges_Catalog_for_Special_Customers ==> HTTP/2.0 204 No Content 
+INFO[0002] (0016) DELETE https://useast.api.elasticpath.com/pcm/products/sku=to-kill-a-mockingbird ==> HTTP/2.0 204 No Content 
+WARN[0002] (0017) DELETE https://useast.api.elasticpath.com/v2/flows/name=Book ==> HTTP/2.0 404 Not Found 
+WARN[0002] (0018) DELETE https://useast.api.elasticpath.com/v2/flows/name=Condition ==> HTTP/2.0 404 Not Found 
 INFO[0002] Sleeping for 2 seconds                       
 INFO[0004] Total requests 18, and total rate limiting time 5893 ms, and total processing time 6888 ms. Response Code Count: 204:14, 404:4,
 ```
@@ -1003,28 +1097,28 @@ INFO[0004] Total requests 18, and total rate limiting time 5893 ms, and total pr
 ```shell
 $epcc delete-all  customers
 INFO[0000] Resource customers is a top level resource need to scan only one path to delete all resources 
-INFO[0000] (0001) GET https://api.moltin.com/v2/customers?page[limit]=25 ==> HTTP/2.0 200 OK 
+INFO[0000] (0001) GET https://useast.api.elasticpath.com/v2/customers?page[limit]=25 ==> HTTP/2.0 200 OK 
 INFO[0000] Total number of customers in /v2/customers is 1 
-INFO[0001] (0002) DELETE https://api.moltin.com/v2/customers/ecaee2c4-06db-48a3-a709-6049ee4cb9e2 ==> HTTP/2.0 204 No Content 
-INFO[0001] (0003) GET https://api.moltin.com/v2/customers?page[limit]=25 ==> HTTP/2.0 200 OK 
+INFO[0001] (0002) DELETE https://useast.api.elasticpath.com/v2/customers/ecaee2c4-06db-48a3-a709-6049ee4cb9e2 ==> HTTP/2.0 204 No Content 
+INFO[0001] (0003) GET https://useast.api.elasticpath.com/v2/customers?page[limit]=25 ==> HTTP/2.0 200 OK 
 INFO[0001] Total ids retrieved for customers in /v2/customers is 0, we are done
 ```
 4. To reset the store in it's entirety (although some things like orders cannot be deleted), you can use the `epcc reset-store <STORE_ID>` like follows:
 ```shell
 $epcc reset-store e15a21a0-cce7-48f3-bfab-5cd265055af1
-INFO[0000] (0001) GET https://api.moltin.com/v2/settings ==> HTTP/2.0 200 OK 
-INFO[0000] (0002) GET https://api.moltin.com/v2/settings/customer-authentication ==> HTTP/2.0 200 OK 
-INFO[0000] (0003) GET https://api.moltin.com/v2/settings/account-authentication ==> HTTP/2.0 200 OK 
-INFO[0000] (0004) GET https://api.moltin.com/v2/merchant-realm-mappings ==> HTTP/2.0 200 OK 
-INFO[0001] (0005) GET https://api.moltin.com/v2/authentication-realms ==> HTTP/2.0 200 OK 
-INFO[0001] (0006) PUT https://api.moltin.com/v2/gateways/adyen ==> HTTP/2.0 200 OK 
+INFO[0000] (0001) GET https://useast.api.elasticpath.com/v2/settings ==> HTTP/2.0 200 OK 
+INFO[0000] (0002) GET https://useast.api.elasticpath.com/v2/settings/customer-authentication ==> HTTP/2.0 200 OK 
+INFO[0000] (0003) GET https://useast.api.elasticpath.com/v2/settings/account-authentication ==> HTTP/2.0 200 OK 
+INFO[0000] (0004) GET https://useast.api.elasticpath.com/v2/merchant-realm-mappings ==> HTTP/2.0 200 OK 
+INFO[0001] (0005) GET https://useast.api.elasticpath.com/v2/authentication-realms ==> HTTP/2.0 200 OK 
+INFO[0001] (0006) PUT https://useast.api.elasticpath.com/v2/gateways/adyen ==> HTTP/2.0 200 OK 
 ...
 INFO[0021] Resource v2-products is a top level resource need to scan only one path to delete all resources 
-INFO[0022] (0100) GET https://api.moltin.com/v2/products?page[limit]=25 ==> HTTP/2.0 200 OK 
+INFO[0022] (0100) GET https://useast.api.elasticpath.com/v2/products?page[limit]=25 ==> HTTP/2.0 200 OK 
 INFO[0022] Total ids retrieved for v2-products in /v2/products is 0, we are done 
 INFO[0022] Processing resource v2-variations            
 INFO[0022] Resource v2-variations is a top level resource need to scan only one path to delete all resources 
-INFO[0023] (0101) GET https://api.moltin.com/v2/variations?page[limit]=25 ==> HTTP/2.0 200 OK 
+INFO[0023] (0101) GET https://useast.api.elasticpath.com/v2/variations?page[limit]=25 ==> HTTP/2.0 200 OK 
 INFO[0023] Total ids retrieved for v2-variations in /v2/variations is 0, we are done 
 INFO[0023] The following 7 resources were not deleted because we have no way to get a collection: cart-checkout, cart-product-items, entries-relationship, order-payments, order-transaction-capture, order-transaction-refund, pcm-nodes 
 INFO[0023] The following 10 resources were not deleted because we have no way to delete an element: authentication-realms, inventory-transactions, log-ttl-settings, merchant-realm-mappings, order-transactions, orders, pcm-child-products, pcm-node-products, pcm-product-templates, personal-data-erasure-requests 

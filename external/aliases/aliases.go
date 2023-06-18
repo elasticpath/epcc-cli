@@ -114,15 +114,15 @@ func getAliasesForSingleJsonApiType(jsonApiType string) map[string]*id.IdableAtt
 	return aliasMap
 }
 
-func ResolveAliasValuesOrReturnIdentity(jsonApiType string, alternateJsonApiTypes []string, value string, attribute string) string {
-	splitAlias := strings.Split(value, "/")
+func ResolveAliasValuesOrReturnIdentity(jsonApiType string, alternateJsonApiTypes []string, aliasName string, attribute string) string {
+	splitAlias := strings.Split(aliasName, "/")
 
 	if len(splitAlias) == 2 {
 		alternateJsonApiTypes = append(alternateJsonApiTypes, splitAlias[0])
-		value = splitAlias[1]
+		aliasName = splitAlias[1]
 	}
 
-	if result, ok := GetAliasesForJsonApiTypeAndAlternates(jsonApiType, alternateJsonApiTypes)[value]; ok {
+	if result, ok := GetAliasesForJsonApiTypeAndAlternates(jsonApiType, alternateJsonApiTypes)[aliasName]; ok {
 
 		if attribute == "id" {
 			return result.Id
@@ -139,10 +139,10 @@ func ResolveAliasValuesOrReturnIdentity(jsonApiType string, alternateJsonApiType
 			return result.Code
 		}
 
-		log.Warnf("Alias was found for for %s, but the attribute is unknown, must be one of {id, slug, sku, code}, but got %s", value, attribute)
+		log.Warnf("Alias was found for for %s, but the attribute is unknown, must be one of {id, slug, sku, code}, but got %s", aliasName, attribute)
 
 	}
-	return value
+	return aliasName
 }
 
 func SaveAliasesForResources(jsonTxt string) {

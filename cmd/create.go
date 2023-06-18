@@ -43,6 +43,10 @@ func NewCreateCommand(parentCmd *cobra.Command) {
 		var outputJq = ""
 
 		var setAlias = ""
+
+		var ifAliasExists = ""
+		var ifAliasDoesNotExist = ""
+
 		overrides := &httpclient.HttpParameterOverrides{
 			QueryParameters: nil,
 			OverrideUrlPath: "",
@@ -62,6 +66,27 @@ func NewCreateCommand(parentCmd *cobra.Command) {
 			Example: GetCreateExample(resource),
 			Args:    GetArgFunctionForCreate(resource),
 			RunE: func(cmd *cobra.Command, args []string) error {
+
+				if ifAliasExists != "" {
+					aliasId := aliases.ResolveAliasValuesOrReturnIdentity(resource.JsonApiType, resource.AlternateJsonApiTypesForAliases, ifAliasExists, "id")
+
+					if aliasId == ifAliasExists {
+						// If the aliasId is the same as requested, it means an alias did not exist.
+						log.Infof("Alias [%s] does not exist, not continuing run", ifAliasExists)
+						return nil
+					}
+				}
+
+				if ifAliasDoesNotExist != "" {
+					aliasId := aliases.ResolveAliasValuesOrReturnIdentity(resource.JsonApiType, resource.AlternateJsonApiTypesForAliases, ifAliasDoesNotExist, "id")
+
+					if aliasId != ifAliasDoesNotExist {
+						// If the aliasId is different than the request then it does exist.
+						log.Infof("Alias [%s] does exist (value: %s), not continuing run", ifAliasDoesNotExist, aliasId)
+						return nil
+					}
+				}
+
 				body, err := createInternal(context.Background(), overrides, append([]string{resourceName}, args...), autoFillOnCreate, setAlias)
 
 				if err != nil {
@@ -169,7 +194,9 @@ func NewCreateCommand(parentCmd *cobra.Command) {
 		createResourceCmd.PersistentFlags().StringSliceVarP(&overrides.QueryParameters, "query-parameters", "q", []string{}, "Pass in key=value an they will be added as query parameters")
 		createResourceCmd.PersistentFlags().StringVarP(&outputJq, "output-jq", "", "", "A jq expression, if set we will restrict output to only this")
 		createResourceCmd.PersistentFlags().StringVarP(&setAlias, "save-as-alias", "", "", "A name to save the created resource as")
-
+		createResourceCmd.PersistentFlags().StringVarP(&ifAliasExists, "if-alias-exists", "", "", "If the alias exists we will run this command, otherwise exit with no error")
+		createResourceCmd.PersistentFlags().StringVarP(&ifAliasDoesNotExist, "if-alias-does-not-exist", "", "", "If the alias does not exist we will run this command, otherwise exit with no error")
+		createResourceCmd.MarkFlagsMutuallyExclusive("if-alias-exists", "if-alias-does-not-exist")
 		_ = createResourceCmd.RegisterFlagCompletionFunc("output-jq", jqCompletionFunc)
 
 		create.AddCommand(createResourceCmd)
