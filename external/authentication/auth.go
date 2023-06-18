@@ -155,7 +155,7 @@ func fetchNewAuthenticationToken(values url.Values) (*ApiTokenResponse, error) {
 	}
 
 	if reqURL.Host == "" {
-		log.Infof("No API endpoint set in profile or environment variables, defaulting to \"%s\". To change this set the EPCC_API_BASE_URL environment variable.", config.DefaultUrl)
+		log.Infof("No API endpoint set in profile or environment variables, defaulting to \"%s\". To change this set the EPCC_API_BASE_URL environment variable. (2)", config.DefaultUrl)
 		reqURL, err = url.Parse(config.DefaultUrl)
 		if err != nil {
 			log.Fatalf("Error when parsing default host, this is a bug, %s", config.DefaultUrl)

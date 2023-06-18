@@ -43,7 +43,7 @@ jobs:
 
       - name: Build
         run: |
-          go build -o ./bin/epcc -v ./cmd/
+          go build -o ./bin/epcc -v ./
 
       - name: Unit Tests
         timeout-minutes: 15
@@ -53,6 +53,16 @@ jobs:
           EPCC_API_BASE_URL: ${{ vars.EPCC_API_BASE_URL }}
         run: |
           go test -v -cover ./cmd/ ./external/...
+
+      - name: Runbook Smoke Test
+        timeout-minutes: 15
+        env:
+          EPCC_CLIENT_ID: ${{ secrets.EPCC_CLIENT_ID }}
+          EPCC_CLIENT_SECRET: ${{ secrets.EPCC_CLIENT_SECRET }}
+          EPCC_API_BASE_URL: ${{ vars.EPCC_API_BASE_URL }}
+        run: |
+          export PATH=./bin/:$PATH
+          ./external/runbooks/run-all-runbooks.sh
 
       - name: Run GoReleaser (for Linux build and Syntax check)
         uses: goreleaser/goreleaser-action@v3
