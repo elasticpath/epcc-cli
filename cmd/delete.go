@@ -32,19 +32,20 @@ func NewDeleteCommand(parentCmd *cobra.Command) {
 		},
 	}
 
+	overrides := &httpclient.HttpParameterOverrides{
+		QueryParameters: nil,
+		OverrideUrlPath: "",
+	}
+
+	var allow404 = false
+
+	var ifAliasExists = ""
+	var ifAliasDoesNotExist = ""
+
 	for _, resource := range resources.GetPluralResources() {
 		if resource.DeleteEntityInfo == nil {
 			continue
 		}
-		overrides := &httpclient.HttpParameterOverrides{
-			QueryParameters: nil,
-			OverrideUrlPath: "",
-		}
-
-		var allow404 = false
-
-		var ifAliasExists = ""
-		var ifAliasDoesNotExist = ""
 
 		resource := resource
 		resourceName := resource.SingularName
@@ -147,15 +148,16 @@ func NewDeleteCommand(parentCmd *cobra.Command) {
 				return []string{}, cobra.ShellCompDirectiveNoFileComp
 			},
 		}
-		deleteResourceCommand.Flags().StringVar(&overrides.OverrideUrlPath, "override-url-path", "", "Override the URL that will be used for the Request")
-		deleteResourceCommand.Flags().StringSliceVarP(&overrides.QueryParameters, "query-parameters", "q", []string{}, "Pass in key=value an they will be added as query parameters")
-		deleteResourceCommand.Flags().BoolVar(&allow404, "allow-404", allow404, "If set 404's will not be treated as errors")
-		deleteResourceCommand.PersistentFlags().StringVarP(&ifAliasExists, "if-alias-exists", "", "", "If the alias exists we will run this command, otherwise exit with no error")
-		deleteResourceCommand.PersistentFlags().StringVarP(&ifAliasDoesNotExist, "if-alias-does-not-exist", "", "", "If the alias does not exist we will run this command, otherwise exit with no error")
-		deleteResourceCommand.MarkFlagsMutuallyExclusive("if-alias-exists", "if-alias-does-not-exist")
+
 		deleteCmd.AddCommand(deleteResourceCommand)
 	}
 
+	deleteCmd.PersistentFlags().StringVar(&overrides.OverrideUrlPath, "override-url-path", "", "Override the URL that will be used for the Request")
+	deleteCmd.PersistentFlags().StringSliceVarP(&overrides.QueryParameters, "query-parameters", "q", []string{}, "Pass in key=value an they will be added as query parameters")
+	deleteCmd.PersistentFlags().BoolVar(&allow404, "allow-404", allow404, "If set 404's will not be treated as errors")
+	deleteCmd.PersistentFlags().StringVarP(&ifAliasExists, "if-alias-exists", "", "", "If the alias exists we will run this command, otherwise exit with no error")
+	deleteCmd.PersistentFlags().StringVarP(&ifAliasDoesNotExist, "if-alias-does-not-exist", "", "", "If the alias does not exist we will run this command, otherwise exit with no error")
+	deleteCmd.MarkFlagsMutuallyExclusive("if-alias-exists", "if-alias-does-not-exist")
 	parentCmd.AddCommand(deleteCmd)
 }
 func deleteInternal(ctx context.Context, overrides *httpclient.HttpParameterOverrides, allow404 bool, args []string) (string, error) {

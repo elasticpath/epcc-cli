@@ -22,7 +22,7 @@ import (
 
 func NewCreateCommand(parentCmd *cobra.Command) {
 
-	var create = &cobra.Command{
+	var createCmd = &cobra.Command{
 		Use:   "create",
 		Short: "Creates a resource",
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -34,23 +34,19 @@ func NewCreateCommand(parentCmd *cobra.Command) {
 		},
 	}
 
+	var autoFillOnCreate = false
+	var noBodyPrint = false
+	var outputJq = ""
+	var setAlias = ""
+	var ifAliasExists = ""
+	var ifAliasDoesNotExist = ""
+
+	overrides := &httpclient.HttpParameterOverrides{
+		QueryParameters: nil,
+		OverrideUrlPath: "",
+	}
+
 	for _, resource := range resources.GetPluralResources() {
-
-		var autoFillOnCreate = false
-
-		var noBodyPrint = false
-
-		var outputJq = ""
-
-		var setAlias = ""
-
-		var ifAliasExists = ""
-		var ifAliasDoesNotExist = ""
-
-		overrides := &httpclient.HttpParameterOverrides{
-			QueryParameters: nil,
-			OverrideUrlPath: "",
-		}
 
 		if resource.CreateEntityInfo == nil {
 			continue
@@ -188,21 +184,20 @@ func NewCreateCommand(parentCmd *cobra.Command) {
 			},
 		}
 
-		createResourceCmd.PersistentFlags().StringVar(&overrides.OverrideUrlPath, "override-url-path", "", "Override the URL that will be used for the Request")
-		createResourceCmd.PersistentFlags().BoolVarP(&autoFillOnCreate, "auto-fill", "", false, "Auto generate value for fields")
-		createResourceCmd.PersistentFlags().BoolVarP(&noBodyPrint, "silent", "s", false, "Don't print the body on success")
-		createResourceCmd.PersistentFlags().StringSliceVarP(&overrides.QueryParameters, "query-parameters", "q", []string{}, "Pass in key=value an they will be added as query parameters")
-		createResourceCmd.PersistentFlags().StringVarP(&outputJq, "output-jq", "", "", "A jq expression, if set we will restrict output to only this")
-		createResourceCmd.PersistentFlags().StringVarP(&setAlias, "save-as-alias", "", "", "A name to save the created resource as")
-		createResourceCmd.PersistentFlags().StringVarP(&ifAliasExists, "if-alias-exists", "", "", "If the alias exists we will run this command, otherwise exit with no error")
-		createResourceCmd.PersistentFlags().StringVarP(&ifAliasDoesNotExist, "if-alias-does-not-exist", "", "", "If the alias does not exist we will run this command, otherwise exit with no error")
-		createResourceCmd.MarkFlagsMutuallyExclusive("if-alias-exists", "if-alias-does-not-exist")
-		_ = createResourceCmd.RegisterFlagCompletionFunc("output-jq", jqCompletionFunc)
-
-		create.AddCommand(createResourceCmd)
+		createCmd.AddCommand(createResourceCmd)
 	}
 
-	parentCmd.AddCommand(create)
+	parentCmd.AddCommand(createCmd)
+	createCmd.PersistentFlags().StringVar(&overrides.OverrideUrlPath, "override-url-path", "", "Override the URL that will be used for the Request")
+	createCmd.PersistentFlags().BoolVarP(&autoFillOnCreate, "auto-fill", "", false, "Auto generate value for fields")
+	createCmd.PersistentFlags().BoolVarP(&noBodyPrint, "silent", "s", false, "Don't print the body on success")
+	createCmd.PersistentFlags().StringSliceVarP(&overrides.QueryParameters, "query-parameters", "q", []string{}, "Pass in key=value an they will be added as query parameters")
+	createCmd.PersistentFlags().StringVarP(&outputJq, "output-jq", "", "", "A jq expression, if set we will restrict output to only this")
+	createCmd.PersistentFlags().StringVarP(&setAlias, "save-as-alias", "", "", "A name to save the created resource as")
+	createCmd.PersistentFlags().StringVarP(&ifAliasExists, "if-alias-exists", "", "", "If the alias exists we will run this command, otherwise exit with no error")
+	createCmd.PersistentFlags().StringVarP(&ifAliasDoesNotExist, "if-alias-does-not-exist", "", "", "If the alias does not exist we will run this command, otherwise exit with no error")
+	createCmd.MarkFlagsMutuallyExclusive("if-alias-exists", "if-alias-does-not-exist")
+	_ = createCmd.RegisterFlagCompletionFunc("output-jq", jqCompletionFunc)
 }
 
 func createInternal(ctx context.Context, overrides *httpclient.HttpParameterOverrides, args []string, autoFillOnCreate bool, aliasName string) (string, error) {
