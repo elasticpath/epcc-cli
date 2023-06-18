@@ -1,10 +1,12 @@
 package cmd
 
 import (
+	"fmt"
 	"github.com/elasticpath/epcc-cli/external/aliases"
 	"github.com/elasticpath/epcc-cli/external/httpclient"
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/require"
+	"math/rand"
 	"testing"
 )
 
@@ -12,8 +14,13 @@ func TestCrudOnAResource(t *testing.T) {
 
 	httpclient.Initialize(1, 60)
 
+	// Use a random account name to prevent collisions with other tests
+	id := rand.Int63()
+	name := fmt.Sprintf("Test_%d", id)
+	alias := fmt.Sprintf("name=Test_%d", id)
+
 	cmd := getTestCommand()
-	cmd.SetArgs([]string{"create", "account", "name", "Test", "legal_name", "Test", "--output-jq", ".data.id", "--save-as-alias", "my_test_alias"})
+	cmd.SetArgs([]string{"create", "account", "name", name, "legal_name", "Test", "--output-jq", ".data.id", "--save-as-alias", "my_test_alias"})
 	err := cmd.Execute()
 	require.NoError(t, err)
 
@@ -23,7 +30,7 @@ func TestCrudOnAResource(t *testing.T) {
 	require.True(t, ok, "Expected that my_test_alias exists in the set of aliases :(")
 
 	cmd = getTestCommand()
-	cmd.SetArgs([]string{"get", "account", "name=Test", "--output-jq", ".data.name"})
+	cmd.SetArgs([]string{"get", "account", alias, "--output-jq", ".data.name"})
 	err = cmd.Execute()
 	require.NoError(t, err)
 
@@ -33,12 +40,12 @@ func TestCrudOnAResource(t *testing.T) {
 	require.NoError(t, err)
 
 	cmd = getTestCommand()
-	cmd.SetArgs([]string{"update", "account", "name=Test", "legal_name", "Test Update", "--output-jq", ".data.legal_name"})
+	cmd.SetArgs([]string{"update", "account", alias, "legal_name", "Test Update", "--output-jq", ".data.legal_name"})
 	err = cmd.Execute()
 	require.NoError(t, err)
 
 	cmd = getTestCommand()
-	cmd.SetArgs([]string{"delete", "account", "name=Test"})
+	cmd.SetArgs([]string{"delete", "account", alias})
 	err = cmd.Execute()
 	require.NoError(t, err)
 

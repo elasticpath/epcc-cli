@@ -247,21 +247,19 @@ func NewGetCommand(parentCmd *cobra.Command) {
 				},
 			}
 
-			newCmd.PersistentFlags().BoolVarP(&noBodyPrint, "silent", "s", false, "Don't print the body on success")
-			newCmd.PersistentFlags().StringVar(&overrides.OverrideUrlPath, "override-url-path", "", "Override the URL that will be used for the Request")
-			newCmd.PersistentFlags().StringSliceVarP(&overrides.QueryParameters, "query-parameters", "q", []string{}, "Pass in key=value an they will be added as query parameters")
-			newCmd.PersistentFlags().StringVarP(&outputJq, "output-jq", "", "", "A jq expression, if set we will restrict output to only this")
-			newCmd.PersistentFlags().StringVarP(&retryWhileJQ, "retry-while-jq", "", "", "A jq expression, if set and returns true we will retry the get command (see manual for examples)")
-			newCmd.PersistentFlags().Uint16VarP(&retryWhileJQMaxAttempts, "retry-while-jq-max-attempts", "", 1200, "The maximum number of attempts we will retry with jq")
-			newCmd.PersistentFlags().StringVarP(&ifAliasExists, "if-alias-exists", "", "", "If the alias exists we will run this command, otherwise exit with no error")
-			newCmd.PersistentFlags().StringVarP(&ifAliasDoesNotExist, "if-alias-does-not-exist", "", "", "If the alias does not exist we will run this command, otherwise exit with no error")
-			newCmd.MarkFlagsMutuallyExclusive("if-alias-exists", "if-alias-does-not-exist")
-			_ = newCmd.RegisterFlagCompletionFunc("output-jq", jqCompletionFunc)
-
 			getCmd.AddCommand(newCmd)
 		}
 	}
 
+	getCmd.PersistentFlags().BoolVarP(&noBodyPrint, "silent", "s", false, "Don't print the body on success")
+	getCmd.PersistentFlags().StringVar(&overrides.OverrideUrlPath, "override-url-path", "", "Override the URL that will be used for the Request")
+	getCmd.PersistentFlags().StringSliceVarP(&overrides.QueryParameters, "query-parameters", "q", []string{}, "Pass in key=value an they will be added as query parameters")
+	getCmd.PersistentFlags().StringVarP(&outputJq, "output-jq", "", "", "A jq expression, if set we will restrict output to only this")
+	getCmd.PersistentFlags().StringVarP(&retryWhileJQ, "retry-while-jq", "", "", "A jq expression, if set and returns true we will retry the get command (see manual for examples)")
+	getCmd.PersistentFlags().Uint16VarP(&retryWhileJQMaxAttempts, "retry-while-jq-max-attempts", "", 1200, "The maximum number of attempts we will retry with jq")
+	getCmd.PersistentFlags().StringVarP(&ifAliasExists, "if-alias-exists", "", "", "If the alias exists we will run this command, otherwise exit with no error")
+	getCmd.PersistentFlags().StringVarP(&ifAliasDoesNotExist, "if-alias-does-not-exist", "", "", "If the alias does not exist we will run this command, otherwise exit with no error")
+	getCmd.MarkFlagsMutuallyExclusive("if-alias-exists", "if-alias-does-not-exist")
 	_ = getCmd.RegisterFlagCompletionFunc("output-jq", jqCompletionFunc)
 
 	parentCmd.AddCommand(getCmd)

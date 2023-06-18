@@ -30,7 +30,7 @@ func NewUpdateCommand(parentCmd *cobra.Command) {
 	var ifAliasExists = ""
 	var ifAliasDoesNotExist = ""
 
-	var update = &cobra.Command{
+	var updateCmd = &cobra.Command{
 		Use:          "update",
 		Short:        "Updates a resource",
 		SilenceUsage: false,
@@ -162,19 +162,18 @@ func NewUpdateCommand(parentCmd *cobra.Command) {
 			},
 		}
 
-		updateResourceCmd.Flags().StringVar(&overrides.OverrideUrlPath, "override-url-path", "", "Override the URL that will be used for the Request")
-		updateResourceCmd.Flags().StringSliceVarP(&overrides.QueryParameters, "query-parameters", "q", []string{}, "Pass in key=value an they will be added as query parameters")
-		updateResourceCmd.PersistentFlags().BoolVarP(&noBodyPrint, "silent", "s", false, "Don't print the body on success")
-		updateResourceCmd.Flags().StringVarP(&outputJq, "output-jq", "", "", "A jq expression, if set we will restrict output to only this")
-		updateResourceCmd.PersistentFlags().StringVarP(&ifAliasExists, "if-alias-exists", "", "", "If the alias exists we will run this command, otherwise exit with no error")
-		updateResourceCmd.PersistentFlags().StringVarP(&ifAliasDoesNotExist, "if-alias-does-not-exist", "", "", "If the alias does not exist we will run this command, otherwise exit with no error")
-		updateResourceCmd.MarkFlagsMutuallyExclusive("if-alias-exists", "if-alias-does-not-exist")
-		_ = updateResourceCmd.RegisterFlagCompletionFunc("output-jq", jqCompletionFunc)
-
-		update.AddCommand(updateResourceCmd)
+		updateCmd.AddCommand(updateResourceCmd)
 	}
 
-	parentCmd.AddCommand(update)
+	updateCmd.PersistentFlags().StringVar(&overrides.OverrideUrlPath, "override-url-path", "", "Override the URL that will be used for the Request")
+	updateCmd.PersistentFlags().StringSliceVarP(&overrides.QueryParameters, "query-parameters", "q", []string{}, "Pass in key=value an they will be added as query parameters")
+	updateCmd.PersistentFlags().BoolVarP(&noBodyPrint, "silent", "s", false, "Don't print the body on success")
+	updateCmd.PersistentFlags().StringVarP(&outputJq, "output-jq", "", "", "A jq expression, if set we will restrict output to only this")
+	updateCmd.PersistentFlags().StringVarP(&ifAliasExists, "if-alias-exists", "", "", "If the alias exists we will run this command, otherwise exit with no error")
+	updateCmd.PersistentFlags().StringVarP(&ifAliasDoesNotExist, "if-alias-does-not-exist", "", "", "If the alias does not exist we will run this command, otherwise exit with no error")
+	updateCmd.MarkFlagsMutuallyExclusive("if-alias-exists", "if-alias-does-not-exist")
+	_ = updateCmd.RegisterFlagCompletionFunc("output-jq", jqCompletionFunc)
+	parentCmd.AddCommand(updateCmd)
 
 }
 
