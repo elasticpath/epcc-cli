@@ -114,7 +114,6 @@ func initRunbookRunCommands() *cobra.Command {
 
 	execTimeoutInSeconds := runbookRunCommand.PersistentFlags().Int64("execution-timeout", 900, "How long should the script take to execute before timing out")
 	maxConcurrency := runbookRunCommand.PersistentFlags().Int64("max-concurrency", 2048, "Maximum number of commands at once")
-	semaphore := semaphore.NewWeighted(*maxConcurrency)
 
 	for _, runbook := range runbooks.GetRunbooks() {
 		// Create a copy of runbook scoped to the loop
@@ -147,6 +146,8 @@ func initRunbookRunCommands() *cobra.Command {
 
 					ctx, cancelFunc := context.WithCancel(parentCtx)
 
+					concurrentRunSemaphore := semaphore.NewWeighted(*maxConcurrency)
+
 					for stepIdx, rawCmd := range runbookAction.RawCommands {
 
 						// Create a copy of loop variables
@@ -166,6 +167,7 @@ func initRunbookRunCommands() *cobra.Command {
 
 						for commandIdx, rawCmdLine := range rawCmdLines {
 
+							commandIdx := commandIdx
 							rawCmdLine := strings.Trim(rawCmdLine, " \n")
 
 							if rawCmdLine == "" {
@@ -187,9 +189,13 @@ func initRunbookRunCommands() *cobra.Command {
 
 							funcs = append(funcs, func() {
 
+								log.Tracef("(Step %d/%d Command %d/%d) Building Commmand", stepIdx+1, numSteps, commandIdx+1, len(funcs))
+
 								stepCmd := generateRunbookCmd()
 								stepCmd.SetArgs(rawCmdArguments[1:])
+								log.Tracef("(Step %d/%d Command %d/%d) Starting Command", stepIdx+1, numSteps, commandIdx+1, len(funcs))
 								err := stepCmd.ExecuteContext(ctx)
+								log.Tracef("(Step %d/%d Command %d/%d) Complete Command", stepIdx+1, numSteps, commandIdx+1, len(funcs))
 								commandResult := &commandResult{
 									stepIdx:     stepIdx,
 									commandIdx:  commandIdx,
@@ -210,6 +216,7 @@ func initRunbookRunCommands() *cobra.Command {
 						// Start processing all the functions
 						go func() {
 							for idx, fn := range funcs {
+								idx := idx
 								if shutdown.ShutdownFlag.Load() {
 									log.Infof("Aborting runbook execution, after %d scheduled executions", idx)
 									cancelFunc()
@@ -217,11 +224,15 @@ func initRunbookRunCommands() *cobra.Command {
 								}
 
 								fn := fn
-								if err := semaphore.Acquire(ctx, 1); err == nil {
+								log.Tracef("Run %d is waiting on semaphore", idx)
+								if err := concurrentRunSemaphore.Acquire(ctx, 1); err == nil {
 									go func() {
-										defer semaphore.Release(1)
+										log.Tracef("Run %d is starting", idx)
+										defer concurrentRunSemaphore.Release(1)
 										fn()
 									}()
+								} else {
+									log.Warnf("Run %d failed to get semaphore %v", idx, err)
 								}
 							}
 						}()

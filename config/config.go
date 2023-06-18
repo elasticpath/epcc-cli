@@ -1,5 +1,7 @@
 package config
 
+import "sync/atomic"
+
 type Env struct {
 	EPCC_API_BASE_URL                  string `env:"EPCC_API_BASE_URL"`
 	EPCC_CLIENT_ID                     string `env:"EPCC_CLIENT_ID"`
@@ -10,6 +12,21 @@ type Env struct {
 	EPCC_RUNBOOK_DIRECTORY             string `env:"EPCC_RUNBOOK_DIRECTORY"`
 }
 
-var Envs = &Env{}
+var env = atomic.Pointer[Env]{}
+
+func init() {
+	SetEnv(&Env{})
+}
+
+func SetEnv(v *Env) {
+	// Store a copy
+	copyEnv := *v
+	env.Store(&copyEnv)
+}
+
+func GetEnv() *Env {
+	v := *env.Load()
+	return &v
+}
 
 const DefaultUrl = "https://api.moltin.com"

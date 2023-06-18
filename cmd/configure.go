@@ -78,7 +78,7 @@ var configure = &cobra.Command{
 			log.Errorf("error writing to file %s, error: %v", configPath, err)
 			os.Exit(1)
 		}
-		config.Envs = &newProfile
+		config.SetEnv(&newProfile)
 	},
 }
 

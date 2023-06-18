@@ -6,11 +6,25 @@ import (
 	"gopkg.in/ini.v1"
 	"os"
 	"path/filepath"
+	"sync/atomic"
 )
 
 //profile name is set to config.Profile in InitConfig
 
-var ProfileName = "default"
+var profileName = atomic.Pointer[string]{}
+
+func init() {
+	var defaultName = "default"
+	profileName.Store(&defaultName)
+}
+
+func GetProfileName() string {
+	return *profileName.Load()
+}
+
+func SetProfileName(s string) {
+	profileName.Store(&s)
+}
 
 func GetProfileDirectory() string {
 	home, err := os.UserHomeDir()
@@ -30,7 +44,7 @@ func GetProfileDirectory() string {
 
 func GetProfileDataDirectory() string {
 	profileDirectory := GetProfileDirectory()
-	profileDataDirectory := filepath.Clean(filepath.FromSlash(profileDirectory + "/" + ProfileName + "/data"))
+	profileDataDirectory := filepath.Clean(filepath.FromSlash(profileDirectory + "/" + GetProfileName() + "/data"))
 	//built in check if dir exists
 	if err := os.MkdirAll(profileDataDirectory, 0700); err != nil {
 		log.Errorf("could not make directory")
