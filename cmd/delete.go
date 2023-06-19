@@ -218,7 +218,7 @@ func deleteResource(ctx context.Context, overrides *httpclient.HttpParameterOver
 	}
 
 	// Replace ids with args in resourceURL
-	resourceURL, err := resources.GenerateUrl(resource.DeleteEntityInfo, args[1:])
+	resourceURL, err := resources.GenerateUrl(resource.DeleteEntityInfo, args[1:], true)
 
 	if err != nil {
 		return nil, err
@@ -250,7 +250,7 @@ func deleteResource(ctx context.Context, overrides *httpclient.HttpParameterOver
 
 	var payload io.Reader = nil
 	if len(jsonArgs) > 0 {
-		body, err := json.ToJson(jsonArgs, resource.NoWrapping, resource.JsonApiFormat == "compliant", resource.Attributes)
+		body, err := json.ToJson(jsonArgs, resource.NoWrapping, resource.JsonApiFormat == "compliant", resource.Attributes, true)
 
 		if err != nil {
 			return nil, err

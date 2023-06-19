@@ -212,7 +212,7 @@ func FillUrlWithIds(urlInfo *resources.CrudEntityInfo, uuids []string) string {
 		ids = append(ids, uuids[i])
 	}
 
-	url, err := resources.GenerateUrl(urlInfo, ids)
+	url, err := resources.GenerateUrl(urlInfo, ids, false)
 
 	if err != nil {
 		log.Errorf("error generating help screen %v", err)
@@ -312,7 +312,7 @@ func toJsonExample(in []string, resource resources.Resource) string {
 		in = append([]string{"type", resource.JsonApiType}, in...)
 	}
 
-	jsonTxt, err := json.ToJson(in, resource.NoWrapping, resource.JsonApiFormat == "compliant", resource.Attributes)
+	jsonTxt, err := json.ToJson(in, resource.NoWrapping, resource.JsonApiFormat == "compliant", resource.Attributes, false)
 
 	if err != nil {
 		return fmt.Sprintf("Could not get json: %s", err)
@@ -627,7 +627,7 @@ func GetCreateExample(resource resources.Resource) string {
 		baseJsonArgs = append(baseJsonArgs, "type", resource.JsonApiType)
 	}
 
-	emptyJson, _ := json.ToJson(baseJsonArgs, resource.NoWrapping, resource.JsonApiFormat == "compliant", resource.Attributes)
+	emptyJson, _ := json.ToJson(baseJsonArgs, resource.NoWrapping, resource.JsonApiFormat == "compliant", resource.Attributes, false)
 
 	examples := GetJsonExample(fmt.Sprintf("# Create a %s", resource.SingularName), exampleWithIds, fmt.Sprintf("> POST %s", FillUrlWithIds(resource.CreateEntityInfo, uuids)), emptyJson)
 
@@ -648,6 +648,7 @@ func GetCreateExample(resource resources.Resource) string {
 				Verb:       completion.Create,
 				Attribute:  k,
 				ToComplete: "",
+				NoAliases:  true,
 			})
 
 			arg := `"Hello World"`
@@ -660,14 +661,14 @@ func GetCreateExample(resource resources.Resource) string {
 
 			// Don't try and use more than one key as some are mutually exclusive and the JSON will crash.
 			// Resources that are heterogenous and can have array or object fields at some level (i.e., data[n].id and data.id) are examples
-			jsonTxt, _ := json.ToJson(extendedArgs, resource.NoWrapping, resource.JsonApiFormat == "compliant", resource.Attributes)
+			jsonTxt, _ := json.ToJson(extendedArgs, resource.NoWrapping, resource.JsonApiFormat == "compliant", resource.Attributes, false)
 			examples += GetJsonExample(fmt.Sprintf("# Create a %s passing in an argument", resourceName), fmt.Sprintf("%s %s %s", exampleWithAliases, k, arg), fmt.Sprintf("> POST %s", FillUrlWithIds(resource.CreateEntityInfo, uuids)), jsonTxt)
 
 			autofilledData := autofill.GetJsonArrayForResource(&resource)
 
 			extendedArgs = append(autofilledData, extendedArgs...)
 
-			jsonTxt, _ = json.ToJson(extendedArgs, resource.NoWrapping, resource.JsonApiFormat == "compliant", resource.Attributes)
+			jsonTxt, _ = json.ToJson(extendedArgs, resource.NoWrapping, resource.JsonApiFormat == "compliant", resource.Attributes, false)
 			examples += GetJsonExample(fmt.Sprintf("# Create a %s (using --auto-fill) and passing in an argument", resourceName), fmt.Sprintf("%s --auto-fill %s %s", exampleWithAliases, k, arg), fmt.Sprintf("> POST %s", FillUrlWithIds(resource.CreateEntityInfo, uuids)), jsonTxt)
 
 			break
@@ -704,7 +705,7 @@ func GetUpdateExample(resource resources.Resource) string {
 		baseJsonArgs = append(baseJsonArgs, "type", resource.JsonApiType)
 	}
 
-	emptyJson, _ := json.ToJson(baseJsonArgs, resource.NoWrapping, resource.JsonApiFormat == "compliant", resource.Attributes)
+	emptyJson, _ := json.ToJson(baseJsonArgs, resource.NoWrapping, resource.JsonApiFormat == "compliant", resource.Attributes, false)
 
 	examples := GetJsonExample(fmt.Sprintf("# Update a %s", resource.SingularName), exampleWithIds, fmt.Sprintf("> PUT %s", FillUrlWithIds(resource.UpdateEntityInfo, uuids)), emptyJson)
 
@@ -725,6 +726,7 @@ func GetUpdateExample(resource resources.Resource) string {
 				Verb:       completion.Update,
 				Attribute:  k,
 				ToComplete: "",
+				NoAliases:  true,
 			})
 
 			arg := `"Hello World"`
@@ -737,7 +739,7 @@ func GetUpdateExample(resource resources.Resource) string {
 
 			// Don't try and use more than one key as some are mutually exclusive and the JSON will crash.
 			// Resources that are heterogenous and can have array or object fields at some level (i.e., data[n].id and data.id) are examples
-			jsonTxt, _ := json.ToJson(extendedArgs, resource.NoWrapping, resource.JsonApiFormat == "compliant", resource.Attributes)
+			jsonTxt, _ := json.ToJson(extendedArgs, resource.NoWrapping, resource.JsonApiFormat == "compliant", resource.Attributes, false)
 			examples += GetJsonExample(fmt.Sprintf("# update a %s passing in an argument", resourceName), fmt.Sprintf("%s %s %s", exampleWithAliases, k, arg), fmt.Sprintf("> PUT %s", FillUrlWithIds(resource.UpdateEntityInfo, uuids)), jsonTxt)
 
 			break
@@ -772,7 +774,7 @@ func GetDeleteExample(resource resources.Resource) string {
 		baseJsonArgs = append(baseJsonArgs, "type", resource.JsonApiType)
 	}
 
-	emptyJson, _ := json.ToJson(baseJsonArgs, resource.NoWrapping, resource.JsonApiFormat == "compliant", resource.Attributes)
+	emptyJson, _ := json.ToJson(baseJsonArgs, resource.NoWrapping, resource.JsonApiFormat == "compliant", resource.Attributes, false)
 
 	examples := GetJsonExample(fmt.Sprintf("# Delete a %s", resource.SingularName), exampleWithIds, fmt.Sprintf("> PUT %s", FillUrlWithIds(resource.DeleteEntityInfo, uuids)), emptyJson)
 
@@ -793,6 +795,7 @@ func GetDeleteExample(resource resources.Resource) string {
 				Verb:       completion.Delete,
 				Attribute:  k,
 				ToComplete: "",
+				NoAliases:  true,
 			})
 
 			arg := `"Hello World"`
@@ -805,7 +808,7 @@ func GetDeleteExample(resource resources.Resource) string {
 
 			// Don't try and use more than one key as some are mutually exclusive and the JSON will crash.
 			// Resources that are heterogenous and can have array or object fields at some level (i.e., data[n].id and data.id) are examples
-			jsonTxt, _ := json.ToJson(extendedArgs, resource.NoWrapping, resource.JsonApiFormat == "compliant", resource.Attributes)
+			jsonTxt, _ := json.ToJson(extendedArgs, resource.NoWrapping, resource.JsonApiFormat == "compliant", resource.Attributes, false)
 			examples += GetJsonExample(fmt.Sprintf("# delete a %s passing in an argument", resourceName), fmt.Sprintf("%s %s %s", exampleWithAliases, k, arg), fmt.Sprintf("> DELETE %s", FillUrlWithIds(resource.DeleteEntityInfo, uuids)), jsonTxt)
 
 			break

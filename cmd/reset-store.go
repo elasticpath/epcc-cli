@@ -115,7 +115,7 @@ func getStoreId(ctx context.Context, args []string) (string, error) {
 		return "", fmt.Errorf("could not find resource %s, we need it to determine the store id.", args[0])
 	}
 
-	resourceURL, err := resources.GenerateUrl(resource.GetCollectionInfo, make([]string, 0))
+	resourceURL, err := resources.GenerateUrl(resource.GetCollectionInfo, make([]string, 0), true)
 
 	if err != nil {
 		return "", err

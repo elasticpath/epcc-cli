@@ -224,7 +224,7 @@ func createInternal(ctx context.Context, overrides *httpclient.HttpParameterOver
 	}
 
 	// Replace ids with args in resourceURL
-	resourceURL, err = resources.GenerateUrl(resource.CreateEntityInfo, args[1:])
+	resourceURL, err = resources.GenerateUrl(resource.CreateEntityInfo, args[1:], true)
 
 	if overrides.OverrideUrlPath != "" {
 		log.Warnf("Overriding URL Path from %s to %s", resourceURL, overrides.OverrideUrlPath)
@@ -273,7 +273,7 @@ func createInternal(ctx context.Context, overrides *httpclient.HttpParameterOver
 			jsonArgs = append(autofilledData, jsonArgs...)
 		}
 
-		body, err := json.ToJson(jsonArgs, resource.NoWrapping, resource.JsonApiFormat == "compliant", resource.Attributes)
+		body, err := json.ToJson(jsonArgs, resource.NoWrapping, resource.JsonApiFormat == "compliant", resource.Attributes, true)
 
 		if err != nil {
 			return "", err

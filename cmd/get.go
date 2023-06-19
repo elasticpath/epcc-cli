@@ -338,7 +338,7 @@ func getResource(ctx context.Context, overrides *httpclient.HttpParameterOverrid
 	}
 
 	// Replace ids with args in resourceURL
-	resourceURL, err := resources.GenerateUrl(resourceUrlInfo, args[1:])
+	resourceURL, err := resources.GenerateUrl(resourceUrlInfo, args[1:], true)
 
 	if err != nil {
 		return nil, err
