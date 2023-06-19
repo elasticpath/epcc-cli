@@ -26,7 +26,6 @@ var typeToAliasNameToIdMap = map[string]map[string]*id.IdableAttributes{}
 var dirtyAliases = map[string]bool{}
 
 var SkipAliasProcessing = false
-
 var typeToIdToAliasNamesMap = map[string]map[string]map[string]bool{}
 
 func ClearAllAliasesForJsonApiType(jsonApiType string) error {
@@ -46,7 +45,6 @@ var arrayPathPattern = regexp.MustCompile("^\\.data\\[([0-9]+)]$")
 var relationshipPattern = regexp.MustCompile("^\\.data(?:\\[[0-9]+])?\\.relationships\\.([^.]+)\\.data")
 
 func GetAliasesForJsonApiTypeAndAlternates(jsonApiType string, alternateJsonApiTypes []string) map[string]*id.IdableAttributes {
-
 	aliases := map[string]*id.IdableAttributes{}
 
 	for k, v := range getAliasesForSingleJsonApiType(jsonApiType) {

@@ -199,7 +199,7 @@ func updateInternal(ctx context.Context, overrides *httpclient.HttpParameterOver
 	}
 
 	// Replace ids with args in resourceURL
-	resourceURL, err := resources.GenerateUrl(resourceUrlInfo, args[1:])
+	resourceURL, err := resources.GenerateUrl(resourceUrlInfo, args[1:], true)
 	if err != nil {
 		return "", err
 	}
@@ -211,7 +211,7 @@ func updateInternal(ctx context.Context, overrides *httpclient.HttpParameterOver
 
 	args = append(args, "type", resource.JsonApiType)
 	// Create the body from remaining args
-	body, err := json.ToJson(args[(idCount+1):], resource.NoWrapping, resource.JsonApiFormat == "compliant", resource.Attributes)
+	body, err := json.ToJson(args[(idCount+1):], resource.NoWrapping, resource.JsonApiFormat == "compliant", resource.Attributes, true)
 	if err != nil {
 		return "", err
 	}

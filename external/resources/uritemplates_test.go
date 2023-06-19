@@ -208,7 +208,7 @@ func TestGenerateUrlHappyPathWithSlugParentResourceValueOverride(t *testing.T) {
 
 	// Execute SUT
 
-	actualUrl, err := GenerateUrl(&crudEntityInfo, []string{"slug=test"})
+	actualUrl, err := GenerateUrl(&crudEntityInfo, []string{"slug=test"}, true)
 
 	// Verification
 
@@ -247,7 +247,46 @@ func TestGenerateUrlHappyPathWithNoParentResourceValueOverride(t *testing.T) {
 
 	// Execute SUT
 
-	actualUrl, err := GenerateUrl(&crudEntityInfo, []string{"name=Ron_Swanson"})
+	actualUrl, err := GenerateUrl(&crudEntityInfo, []string{"name=Ron_Swanson"}, true)
+
+	// Verification
+
+	if err != nil {
+		t.Errorf("Should not have gotten error when generating URL.")
+	}
+
+	if actualUrl != expectedUrlWithId {
+		t.Errorf("Url should have been %s but got %s", expectedUrlWithId, actualUrl)
+	}
+}
+
+func TestGenerateUrlHappyPathWithNoParentResourceValueOverrideAndNoAliasSubstitution(t *testing.T) {
+	// Fixture Setup
+
+	err := aliases.ClearAllAliases()
+	if err != nil {
+		t.Errorf("Couldn't create test fixtures, error while cleaning aliases, %v", err)
+	}
+
+	crudEntityInfo := getValidCrudEntityInfo()
+	crudEntityInfo.Url = "/v2/customers/{customers}"
+	crudEntityInfo.ParentResourceValueOverrides = map[string]string{}
+
+	flowExample := `{
+	"data": {
+		"id": "123",
+		"type": "customer",
+		"name": "Ron Swanson"
+	}
+}`
+
+	aliases.SaveAliasesForResources(flowExample)
+
+	expectedUrlWithId := "/v2/customers/name=Ron_Swanson"
+
+	// Execute SUT
+
+	actualUrl, err := GenerateUrl(&crudEntityInfo, []string{"name=Ron_Swanson"}, false)
 
 	// Verification
 

@@ -42,6 +42,7 @@ type Request struct {
 	Attribute  string
 	QueryParam string
 	ToComplete string
+	NoAliases  bool
 }
 
 func Complete(c Request) ([]string, cobra.ShellCompDirective) {
@@ -216,29 +217,34 @@ func Complete(c Request) ([]string, cobra.ShellCompDirective) {
 
 						case 3, 4:
 							if aliasType, ok := resources.GetResourceByName(fullyQualifiedAlias[1]); ok {
-								for alias := range aliases.GetAliasesForJsonApiTypeAndAlternates(aliasType.JsonApiType, aliasType.AlternateJsonApiTypesForAliases) {
-									results = append(results, "alias/"+aliasType.JsonApiType+"/"+alias+"/id")
+								if !c.NoAliases {
+									for alias := range aliases.GetAliasesForJsonApiTypeAndAlternates(aliasType.JsonApiType, aliasType.AlternateJsonApiTypesForAliases) {
+										results = append(results, "alias/"+aliasType.JsonApiType+"/"+alias+"/id")
 
-									if _, ok2 := aliasType.Attributes["sku"]; ok2 {
-										results = append(results, "alias/"+aliasType.JsonApiType+"/"+alias+"/sku")
+										if _, ok2 := aliasType.Attributes["sku"]; ok2 {
+											results = append(results, "alias/"+aliasType.JsonApiType+"/"+alias+"/sku")
+										}
+
+										if _, ok2 := aliasType.Attributes["slug"]; ok2 {
+											results = append(results, "alias/"+aliasType.JsonApiType+"/"+alias+"/slug")
+										}
+
+										if _, ok2 := aliasType.Attributes["code"]; ok2 {
+											results = append(results, "alias/"+aliasType.JsonApiType+"/"+alias+"/code")
+										}
+
 									}
-
-									if _, ok2 := aliasType.Attributes["slug"]; ok2 {
-										results = append(results, "alias/"+aliasType.JsonApiType+"/"+alias+"/slug")
-									}
-
-									if _, ok2 := aliasType.Attributes["code"]; ok2 {
-										results = append(results, "alias/"+aliasType.JsonApiType+"/"+alias+"/code")
-									}
-
 								}
 							}
 
 						}
 
 					} else if aliasType, ok := resources.GetResourceByName(resourceType); ok {
-						for alias := range aliases.GetAliasesForJsonApiTypeAndAlternates(aliasType.JsonApiType, aliasType.AlternateJsonApiTypesForAliases) {
-							results = append(results, alias)
+
+						if !c.NoAliases {
+							for alias := range aliases.GetAliasesForJsonApiTypeAndAlternates(aliasType.JsonApiType, aliasType.AlternateJsonApiTypesForAliases) {
+								results = append(results, alias)
+							}
 						}
 					}
 				} else if attribute.Type == "SINGULAR_RESOURCE_TYPE" {
@@ -327,10 +333,12 @@ func Complete(c Request) ([]string, cobra.ShellCompDirective) {
 
 	if c.Type&CompleteAlias > 0 {
 		jsonApiType := c.Resource.JsonApiType
-		aliasesForJsonApiType := aliases.GetAliasesForJsonApiTypeAndAlternates(jsonApiType, c.Resource.AlternateJsonApiTypesForAliases)
+		if !c.NoAliases {
+			aliasesForJsonApiType := aliases.GetAliasesForJsonApiTypeAndAlternates(jsonApiType, c.Resource.AlternateJsonApiTypesForAliases)
 
-		for alias := range aliasesForJsonApiType {
-			results = append(results, alias)
+			for alias := range aliasesForJsonApiType {
+				results = append(results, alias)
+			}
 		}
 	}
 

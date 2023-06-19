@@ -15,7 +15,7 @@ var segmentRegex = regexp.MustCompile("(.+?)(\\[[0-9]+])?$")
 
 var attributeWithArrayIndex = regexp.MustCompile("\\[[0-9]+]")
 
-func ToJson(args []string, noWrapping bool, compliant bool, attributes map[string]*resources.CrudEntityAttribute) (string, error) {
+func ToJson(args []string, noWrapping bool, compliant bool, attributes map[string]*resources.CrudEntityAttribute, useAliases bool) (string, error) {
 
 	if len(args)%2 == 1 {
 		return "", fmt.Errorf("the number of arguments %d supplied isn't even, json should be passed in key value pairs. Do you have an extra/missing id?", len(args))
@@ -37,13 +37,13 @@ func ToJson(args []string, noWrapping bool, compliant bool, attributes map[strin
 	}
 
 	if firstArrayKeyIdx >= 0 {
-		return toJsonArray(args, noWrapping, compliant, attributes)
+		return toJsonArray(args, noWrapping, compliant, attributes, useAliases)
 	} else {
-		return toJsonObject(args, noWrapping, compliant, attributes)
+		return toJsonObject(args, noWrapping, compliant, attributes, useAliases)
 	}
 }
 
-func toJsonObject(args []string, noWrapping bool, compliant bool, attributes map[string]*resources.CrudEntityAttribute) (string, error) {
+func toJsonObject(args []string, noWrapping bool, compliant bool, attributes map[string]*resources.CrudEntityAttribute, useAliases bool) (string, error) {
 
 	var result interface{} = make(map[string]interface{})
 
@@ -96,7 +96,9 @@ func toJsonObject(args []string, noWrapping bool, compliant bool, attributes map
 				}
 
 				if aliasType, ok := resources.GetResourceByName(resourceType); ok {
-					val = aliases.ResolveAliasValuesOrReturnIdentity(aliasType.JsonApiType, aliasType.AlternateJsonApiTypesForAliases, val, aliasAttributeToUse)
+					if useAliases {
+						val = aliases.ResolveAliasValuesOrReturnIdentity(aliasType.JsonApiType, aliasType.AlternateJsonApiTypesForAliases, val, aliasAttributeToUse)
+					}
 				} else {
 					log.Warnf("Could not find a resource for %s, this is a bug.", resourceType)
 				}
@@ -106,7 +108,9 @@ func toJsonObject(args []string, noWrapping bool, compliant bool, attributes map
 
 			if len(splitAlias) == 4 {
 				if splitAlias[0] == "alias" {
-					val = aliases.ResolveAliasValuesOrReturnIdentity(splitAlias[1], []string{}, splitAlias[2], splitAlias[3])
+					if useAliases {
+						val = aliases.ResolveAliasValuesOrReturnIdentity(splitAlias[1], []string{}, splitAlias[2], splitAlias[3])
+					}
 				}
 			}
 		}
@@ -138,7 +142,7 @@ func toJsonObject(args []string, noWrapping bool, compliant bool, attributes map
 
 }
 
-func toJsonArray(args []string, noWrapping bool, compliant bool, attributes map[string]*resources.CrudEntityAttribute) (string, error) {
+func toJsonArray(args []string, noWrapping bool, compliant bool, attributes map[string]*resources.CrudEntityAttribute, useAliases bool) (string, error) {
 
 	var result interface{} = make([]interface{}, 0)
 

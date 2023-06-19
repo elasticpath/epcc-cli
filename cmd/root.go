@@ -53,9 +53,10 @@ var jqCompletionFunc = func(cmd *cobra.Command, args []string, toComplete string
 	}, cobra.ShellCompDirectiveNoSpace
 }
 
-var profileNameFromCommandLine = "default"
+var profileNameFromCommandLine = ""
 
 func InitializeCmd() {
+
 	cobra.OnInitialize(initConfig)
 	initConfig()
 
