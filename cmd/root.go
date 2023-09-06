@@ -247,10 +247,14 @@ func Execute() {
 
 	<-shutdownHandlerDone
 
+	log.Infof("Total processing time %d ms, http time: %d ms, post processing: %d ms, runbook build time: %d ms, runbook execute time: %d ms", TotalProcessingTime.Load(), TotalHttpTime.Load(), TotalPostProcessingTime.Load(), CommandBuildTime.Load(), CommandRunTime.Load())
+
 	if err != nil {
 		log.Errorf("Error occurred while processing command: %s", err)
+
 		os.Exit(1)
 	} else {
+
 		os.Exit(0)
 	}
 }

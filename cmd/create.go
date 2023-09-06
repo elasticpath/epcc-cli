@@ -18,9 +18,16 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"sync/atomic"
+	"time"
 )
 
-func NewCreateCommand(parentCmd *cobra.Command) {
+var TotalProcessingTime = &atomic.Int64{}
+var TotalHttpTime = &atomic.Int64{}
+
+var TotalPostProcessingTime = &atomic.Int64{}
+
+func NewCreateCommand(parentCmd *cobra.Command) func() {
 
 	var createCmd = &cobra.Command{
 		Use:   "create",
@@ -34,6 +41,12 @@ func NewCreateCommand(parentCmd *cobra.Command) {
 		},
 	}
 
+	overrides := &httpclient.HttpParameterOverrides{
+		QueryParameters: nil,
+		OverrideUrlPath: "",
+	}
+
+	// Ensure that any new options here are added to the resetFunc
 	var autoFillOnCreate = false
 	var noBodyPrint = false
 	var outputJq = ""
@@ -41,9 +54,15 @@ func NewCreateCommand(parentCmd *cobra.Command) {
 	var ifAliasExists = ""
 	var ifAliasDoesNotExist = ""
 
-	overrides := &httpclient.HttpParameterOverrides{
-		QueryParameters: nil,
-		OverrideUrlPath: "",
+	resetFunc := func() {
+		autoFillOnCreate = false
+		noBodyPrint = false
+		outputJq = ""
+		setAlias = ""
+		ifAliasExists = ""
+		ifAliasDoesNotExist = ""
+		overrides.OverrideUrlPath = ""
+		overrides.QueryParameters = nil
 	}
 
 	for _, resource := range resources.GetPluralResources() {
@@ -198,12 +217,15 @@ func NewCreateCommand(parentCmd *cobra.Command) {
 	createCmd.PersistentFlags().StringVarP(&ifAliasDoesNotExist, "if-alias-does-not-exist", "", "", "If the alias does not exist we will run this command, otherwise exit with no error")
 	createCmd.MarkFlagsMutuallyExclusive("if-alias-exists", "if-alias-does-not-exist")
 	_ = createCmd.RegisterFlagCompletionFunc("output-jq", jqCompletionFunc)
+
+	return resetFunc
 }
 
 func createInternal(ctx context.Context, overrides *httpclient.HttpParameterOverrides, args []string, autoFillOnCreate bool, aliasName string) (string, error) {
 	crud.OutstandingRequestCounter.Add(1)
 	defer crud.OutstandingRequestCounter.Done()
 
+	preProcessingStart := time.Now().UnixMilli()
 	// Find Resource
 	resource, ok := resources.GetResourceByName(args[0])
 	if !ok {
@@ -280,9 +302,14 @@ func createInternal(ctx context.Context, overrides *httpclient.HttpParameterOver
 		}
 
 		// Submit request
+		TotalProcessingTime.Add(time.Now().UnixMilli() - preProcessingStart)
+		httpProcessingStart := time.Now().UnixMilli()
 		resp, err = httpclient.DoRequest(ctx, "POST", resourceURL, params.Encode(), strings.NewReader(body))
 
+		TotalHttpTime.Add(time.Now().UnixMilli() - httpProcessingStart)
 	}
+
+	totalPostProcessingTimeStart := time.Now().UnixMilli()
 
 	if err != nil {
 		return "", fmt.Errorf("got error %s", err.Error())
@@ -313,6 +340,7 @@ func createInternal(ctx context.Context, overrides *httpclient.HttpParameterOver
 		if aliasName != "" {
 			aliases.SetAliasForResource(string(resBody), aliasName)
 		}
+		TotalPostProcessingTime.Add(time.Now().UnixMilli() - totalPostProcessingTimeStart)
 		return string(resBody), nil
 	} else {
 		return "", nil

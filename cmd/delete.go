@@ -17,7 +17,7 @@ import (
 	"strings"
 )
 
-func NewDeleteCommand(parentCmd *cobra.Command) {
+func NewDeleteCommand(parentCmd *cobra.Command) func() {
 
 	var deleteCmd = &cobra.Command{
 		Use:          "delete",
@@ -37,10 +37,18 @@ func NewDeleteCommand(parentCmd *cobra.Command) {
 		OverrideUrlPath: "",
 	}
 
+	// Ensure that any new options here are added to the resetFunc
 	var allow404 = false
-
 	var ifAliasExists = ""
 	var ifAliasDoesNotExist = ""
+
+	resetFunc := func() {
+		overrides.QueryParameters = nil
+		overrides.OverrideUrlPath = ""
+		allow404 = false
+		ifAliasExists = ""
+		ifAliasDoesNotExist = ""
+	}
 
 	for _, resource := range resources.GetPluralResources() {
 		if resource.DeleteEntityInfo == nil {
@@ -159,6 +167,8 @@ func NewDeleteCommand(parentCmd *cobra.Command) {
 	deleteCmd.PersistentFlags().StringVarP(&ifAliasDoesNotExist, "if-alias-does-not-exist", "", "", "If the alias does not exist we will run this command, otherwise exit with no error")
 	deleteCmd.MarkFlagsMutuallyExclusive("if-alias-exists", "if-alias-does-not-exist")
 	parentCmd.AddCommand(deleteCmd)
+
+	return resetFunc
 }
 func deleteInternal(ctx context.Context, overrides *httpclient.HttpParameterOverrides, allow404 bool, args []string) (string, error) {
 	crud.OutstandingRequestCounter.Add(1)

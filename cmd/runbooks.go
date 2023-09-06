@@ -9,6 +9,7 @@ import (
 	"github.com/elasticpath/epcc-cli/external/runbooks"
 	_ "github.com/elasticpath/epcc-cli/external/runbooks"
 	"github.com/elasticpath/epcc-cli/external/shutdown"
+	"github.com/jolestar/go-commons-pool/v2"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"golang.org/x/sync/semaphore"
@@ -24,6 +25,10 @@ var runbookGlobalCmd = &cobra.Command{
 	SilenceUsage: false,
 	//Hidden:       false,
 }
+
+var CommandBuildTime = &atomic.Int64{}
+
+var CommandRunTime = &atomic.Int64{}
 
 func initRunbookCommands() {
 	runbooks.InitializeBuiltInRunbooks()
@@ -113,7 +118,7 @@ func initRunbookRunCommands() *cobra.Command {
 	}
 
 	execTimeoutInSeconds := runbookRunCommand.PersistentFlags().Int64("execution-timeout", 900, "How long should the script take to execute before timing out")
-	maxConcurrency := runbookRunCommand.PersistentFlags().Int64("max-concurrency", 2048, "Maximum number of commands at once")
+	maxConcurrency := runbookRunCommand.PersistentFlags().Int("max-concurrency", 50, "Maximum number of commands at once")
 
 	for _, runbook := range runbooks.GetRunbooks() {
 		// Create a copy of runbook scoped to the loop
@@ -146,8 +151,17 @@ func initRunbookRunCommands() *cobra.Command {
 
 					ctx, cancelFunc := context.WithCancel(parentCtx)
 
-					concurrentRunSemaphore := semaphore.NewWeighted(*maxConcurrency)
+					concurrentRunSemaphore := semaphore.NewWeighted(int64(*maxConcurrency))
+					factory := pool.NewPooledObjectFactorySimple(
+						func(ctx2 context.Context) (interface{}, error) {
+							log.Infof("Creating Object")
+							return generateRunbookCmd(), nil
+						})
 
+					objectPool := pool.NewObjectPool(ctx, factory, &pool.ObjectPoolConfig{
+						MaxTotal: *maxConcurrency,
+						MaxIdle:  *maxConcurrency,
+					})
 					for stepIdx, rawCmd := range runbookAction.RawCommands {
 
 						// Create a copy of loop variables
@@ -189,13 +203,29 @@ func initRunbookRunCommands() *cobra.Command {
 
 							funcs = append(funcs, func() {
 
+								buildingCommandStartTime := time.Now().UnixMilli()
+
 								log.Tracef("(Step %d/%d Command %d/%d) Building Commmand", stepIdx+1, numSteps, commandIdx+1, len(funcs))
 
-								stepCmd := generateRunbookCmd()
-								stepCmd.SetArgs(rawCmdArguments[1:])
-								log.Tracef("(Step %d/%d Command %d/%d) Starting Command", stepIdx+1, numSteps, commandIdx+1, len(funcs))
-								err := stepCmd.ExecuteContext(ctx)
-								log.Tracef("(Step %d/%d Command %d/%d) Complete Command", stepIdx+1, numSteps, commandIdx+1, len(funcs))
+								stepCmdObject, err := objectPool.BorrowObject(ctx)
+								defer objectPool.ReturnObject(ctx, stepCmdObject)
+
+								if err == nil {
+									commandAndResetFunc := stepCmdObject.(*CommandAndReset)
+									commandAndResetFunc.reset()
+									stepCmd := commandAndResetFunc.cmd
+
+									stepCmd.SetArgs(rawCmdArguments[1:])
+									log.Tracef("(Step %d/%d Command %d/%d) Starting Command", stepIdx+1, numSteps, commandIdx+1, len(funcs))
+
+									CommandBuildTime.Add(time.Now().UnixMilli() - buildingCommandStartTime)
+									executionStartTime := time.Now().UnixMilli()
+									stepCmd.ResetFlags()
+									err = stepCmd.ExecuteContext(ctx)
+									CommandRunTime.Add(time.Now().UnixMilli() - executionStartTime)
+									log.Tracef("(Step %d/%d Command %d/%d) Complete Command", stepIdx+1, numSteps, commandIdx+1, len(funcs))
+								}
+
 								commandResult := &commandResult{
 									stepIdx:     stepIdx,
 									commandIdx:  commandIdx,
@@ -314,20 +344,36 @@ func processRunbookVariablesOnCommand(runbookActionRunActionCommand *cobra.Comma
 
 // Creates a new instance of a cobra.Command
 // We use a new instance for each step so that we can benefit from flags in runbooks
-func generateRunbookCmd() *cobra.Command {
+
+type CommandAndReset struct {
+	cmd   *cobra.Command
+	reset func()
+}
+
+func generateRunbookCmd() *CommandAndReset {
 	root := &cobra.Command{
 		Use:          "epcc",
 		SilenceUsage: true,
 	}
 
-	NewCreateCommand(root)
-	NewUpdateCommand(root)
-	NewDeleteCommand(root)
-	NewGetCommand(root)
-	NewDeleteAllCommand(root)
+	resetCreateCmd := NewCreateCommand(root)
+	resetUpdateCmd := NewUpdateCommand(root)
+	resetDeleteCmd := NewDeleteCommand(root)
+	resetGetCmd := NewGetCommand(root)
+	resetDeleteAllCmd := NewDeleteAllCommand(root)
 	getDevCommands(root)
 
-	return root
+	return &CommandAndReset{
+		root,
+		func() {
+			// We need to reset the state of all commands since we are reusing the objects
+			resetCreateCmd()
+			resetUpdateCmd()
+			resetDeleteCmd()
+			resetGetCmd()
+			resetDeleteAllCmd()
+		},
+	}
 }
 
 func initRunbookDevCommands() *cobra.Command {

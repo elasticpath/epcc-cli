@@ -17,7 +17,7 @@ import (
 	"sync"
 )
 
-func NewDeleteAllCommand(parentCmd *cobra.Command) {
+func NewDeleteAllCommand(parentCmd *cobra.Command) func() {
 
 	var deleteAll = &cobra.Command{
 		Use:          "delete-all",
@@ -53,6 +53,7 @@ func NewDeleteAllCommand(parentCmd *cobra.Command) {
 		deleteAll.AddCommand(deleteAllResourceCmd)
 	}
 	parentCmd.AddCommand(deleteAll)
+	return func() {}
 
 }
 func deleteAllInternal(ctx context.Context, args []string) error {
