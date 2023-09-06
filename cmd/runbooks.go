@@ -154,7 +154,6 @@ func initRunbookRunCommands() *cobra.Command {
 					concurrentRunSemaphore := semaphore.NewWeighted(int64(*maxConcurrency))
 					factory := pool.NewPooledObjectFactorySimple(
 						func(ctx2 context.Context) (interface{}, error) {
-							log.Infof("Creating Object")
 							return generateRunbookCmd(), nil
 						})
 

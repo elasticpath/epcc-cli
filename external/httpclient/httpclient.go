@@ -112,7 +112,11 @@ func LogStats() {
 	counts := ""
 
 	for _, k := range keys {
-		counts += fmt.Sprintf("%d:%d, ", k, stats.respCodes[k])
+		if k == 0 {
+			counts += fmt.Sprintf("%d:%d, ", k, stats.respCodes[k])
+		} else {
+			counts += fmt.Sprintf("CONN_ERROR:%d, ", stats.respCodes[k])
+		}
 	}
 
 	if stats.totalRequests > 3 {
@@ -244,6 +248,8 @@ func doRequestInternal(ctx context.Context, method string, contentType string, p
 
 	if resp != nil {
 		stats.respCodes[resp.StatusCode] = stats.respCodes[resp.StatusCode] + 1
+	} else {
+		stats.respCodes[0] = stats.respCodes[0] + 1
 	}
 
 	requestNumber := stats.totalRequests
