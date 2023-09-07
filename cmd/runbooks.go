@@ -26,10 +26,6 @@ var runbookGlobalCmd = &cobra.Command{
 	//Hidden:       false,
 }
 
-var CommandBuildTime = &atomic.Int64{}
-
-var CommandRunTime = &atomic.Int64{}
-
 func initRunbookCommands() {
 	runbooks.InitializeBuiltInRunbooks()
 
@@ -118,7 +114,7 @@ func initRunbookRunCommands() *cobra.Command {
 	}
 
 	execTimeoutInSeconds := runbookRunCommand.PersistentFlags().Int64("execution-timeout", 900, "How long should the script take to execute before timing out")
-	maxConcurrency := runbookRunCommand.PersistentFlags().Int("max-concurrency", 50, "Maximum number of commands at once")
+	maxConcurrency := runbookRunCommand.PersistentFlags().Int("max-concurrency", 20, "Maximum number of commands that can run simultaneously")
 
 	for _, runbook := range runbooks.GetRunbooks() {
 		// Create a copy of runbook scoped to the loop
@@ -202,8 +198,6 @@ func initRunbookRunCommands() *cobra.Command {
 
 							funcs = append(funcs, func() {
 
-								buildingCommandStartTime := time.Now().UnixMilli()
-
 								log.Tracef("(Step %d/%d Command %d/%d) Building Commmand", stepIdx+1, numSteps, commandIdx+1, len(funcs))
 
 								stepCmdObject, err := objectPool.BorrowObject(ctx)
@@ -217,11 +211,8 @@ func initRunbookRunCommands() *cobra.Command {
 									stepCmd.SetArgs(rawCmdArguments[1:])
 									log.Tracef("(Step %d/%d Command %d/%d) Starting Command", stepIdx+1, numSteps, commandIdx+1, len(funcs))
 
-									CommandBuildTime.Add(time.Now().UnixMilli() - buildingCommandStartTime)
-									executionStartTime := time.Now().UnixMilli()
 									stepCmd.ResetFlags()
 									err = stepCmd.ExecuteContext(ctx)
-									CommandRunTime.Add(time.Now().UnixMilli() - executionStartTime)
 									log.Tracef("(Step %d/%d Command %d/%d) Complete Command", stepIdx+1, numSteps, commandIdx+1, len(funcs))
 								}
 

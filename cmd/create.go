@@ -18,14 +18,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-	"sync/atomic"
-	"time"
 )
-
-var TotalProcessingTime = &atomic.Int64{}
-var TotalHttpTime = &atomic.Int64{}
-
-var TotalPostProcessingTime = &atomic.Int64{}
 
 func NewCreateCommand(parentCmd *cobra.Command) func() {
 
@@ -225,7 +218,6 @@ func createInternal(ctx context.Context, overrides *httpclient.HttpParameterOver
 	crud.OutstandingRequestCounter.Add(1)
 	defer crud.OutstandingRequestCounter.Done()
 
-	preProcessingStart := time.Now().UnixMilli()
 	// Find Resource
 	resource, ok := resources.GetResourceByName(args[0])
 	if !ok {
@@ -302,14 +294,9 @@ func createInternal(ctx context.Context, overrides *httpclient.HttpParameterOver
 		}
 
 		// Submit request
-		TotalProcessingTime.Add(time.Now().UnixMilli() - preProcessingStart)
-		httpProcessingStart := time.Now().UnixMilli()
 		resp, err = httpclient.DoRequest(ctx, "POST", resourceURL, params.Encode(), strings.NewReader(body))
 
-		TotalHttpTime.Add(time.Now().UnixMilli() - httpProcessingStart)
 	}
-
-	totalPostProcessingTimeStart := time.Now().UnixMilli()
 
 	if err != nil {
 		return "", fmt.Errorf("got error %s", err.Error())
@@ -340,7 +327,7 @@ func createInternal(ctx context.Context, overrides *httpclient.HttpParameterOver
 		if aliasName != "" {
 			aliases.SetAliasForResource(string(resBody), aliasName)
 		}
-		TotalPostProcessingTime.Add(time.Now().UnixMilli() - totalPostProcessingTimeStart)
+
 		return string(resBody), nil
 	} else {
 		return "", nil
