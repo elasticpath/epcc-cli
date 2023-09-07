@@ -112,7 +112,11 @@ func LogStats() {
 	counts := ""
 
 	for _, k := range keys {
-		counts += fmt.Sprintf("%d:%d, ", k, stats.respCodes[k])
+		if k == 0 {
+			counts += fmt.Sprintf("%d:%d, ", k, stats.respCodes[k])
+		} else {
+			counts += fmt.Sprintf("CONN_ERROR:%d, ", stats.respCodes[k])
+		}
 	}
 
 	if stats.totalRequests > 3 {
@@ -225,7 +229,7 @@ func doRequestInternal(ctx context.Context, method string, contentType string, p
 
 	log.Tracef("Waiting for rate limiter")
 	if err := Limit.Wait(ctx); err != nil {
-		return nil, fmt.Errorf("Rate limiter returned error %v, %w", err, err)
+		return nil, fmt.Errorf("rate limiter returned error %v, %w", err, err)
 	}
 
 	rateLimitTime := time.Since(start)
@@ -237,13 +241,15 @@ func doRequestInternal(ctx context.Context, method string, contentType string, p
 	stats.totalRequests += 1
 	if rateLimitTime.Milliseconds() > 50 {
 		// Only count rate limit time if it took us longer than 50 ms to get here.
-		stats.totalRateLimitedTimeInMs += int64(rateLimitTime.Milliseconds())
+		stats.totalRateLimitedTimeInMs += rateLimitTime.Milliseconds()
 	}
 
-	stats.totalHttpRequestProcessingTime += int64(requestTime.Milliseconds()) - int64(rateLimitTime.Milliseconds())
+	stats.totalHttpRequestProcessingTime += requestTime.Milliseconds() - rateLimitTime.Milliseconds()
 
 	if resp != nil {
 		stats.respCodes[resp.StatusCode] = stats.respCodes[resp.StatusCode] + 1
+	} else {
+		stats.respCodes[0] = stats.respCodes[0] + 1
 	}
 
 	requestNumber := stats.totalRequests

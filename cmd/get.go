@@ -22,21 +22,30 @@ import (
 const singularResourceRequest = 0
 const collectionResourceRequest = 1
 
-func NewGetCommand(parentCmd *cobra.Command) {
+func NewGetCommand(parentCmd *cobra.Command) func() {
 	overrides := &httpclient.HttpParameterOverrides{
 		QueryParameters: nil,
 		OverrideUrlPath: "",
 	}
 
+	// Ensure that any new options here are added to the resetFunc
 	var outputJq = ""
 	var noBodyPrint = false
-
 	var retryWhileJQ = ""
-
 	var retryWhileJQMaxAttempts = uint16(1200)
-
 	var ifAliasExists = ""
 	var ifAliasDoesNotExist = ""
+
+	resetFunc := func() {
+		overrides.QueryParameters = nil
+		overrides.OverrideUrlPath = ""
+		outputJq = ""
+		noBodyPrint = false
+		retryWhileJQ = ""
+		retryWhileJQMaxAttempts = uint16(1200)
+		ifAliasExists = ""
+		ifAliasDoesNotExist = ""
+	}
 
 	var getCmd = &cobra.Command{
 		Use:          "get",
@@ -263,6 +272,8 @@ func NewGetCommand(parentCmd *cobra.Command) {
 	_ = getCmd.RegisterFlagCompletionFunc("output-jq", jqCompletionFunc)
 
 	parentCmd.AddCommand(getCmd)
+
+	return resetFunc
 }
 
 func getInternal(ctx context.Context, overrides *httpclient.HttpParameterOverrides, args []string) (string, error) {

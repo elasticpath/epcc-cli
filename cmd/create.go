@@ -20,7 +20,7 @@ import (
 	"strings"
 )
 
-func NewCreateCommand(parentCmd *cobra.Command) {
+func NewCreateCommand(parentCmd *cobra.Command) func() {
 
 	var createCmd = &cobra.Command{
 		Use:   "create",
@@ -34,6 +34,12 @@ func NewCreateCommand(parentCmd *cobra.Command) {
 		},
 	}
 
+	overrides := &httpclient.HttpParameterOverrides{
+		QueryParameters: nil,
+		OverrideUrlPath: "",
+	}
+
+	// Ensure that any new options here are added to the resetFunc
 	var autoFillOnCreate = false
 	var noBodyPrint = false
 	var outputJq = ""
@@ -41,9 +47,15 @@ func NewCreateCommand(parentCmd *cobra.Command) {
 	var ifAliasExists = ""
 	var ifAliasDoesNotExist = ""
 
-	overrides := &httpclient.HttpParameterOverrides{
-		QueryParameters: nil,
-		OverrideUrlPath: "",
+	resetFunc := func() {
+		autoFillOnCreate = false
+		noBodyPrint = false
+		outputJq = ""
+		setAlias = ""
+		ifAliasExists = ""
+		ifAliasDoesNotExist = ""
+		overrides.OverrideUrlPath = ""
+		overrides.QueryParameters = nil
 	}
 
 	for _, resource := range resources.GetPluralResources() {
@@ -198,6 +210,8 @@ func NewCreateCommand(parentCmd *cobra.Command) {
 	createCmd.PersistentFlags().StringVarP(&ifAliasDoesNotExist, "if-alias-does-not-exist", "", "", "If the alias does not exist we will run this command, otherwise exit with no error")
 	createCmd.MarkFlagsMutuallyExclusive("if-alias-exists", "if-alias-does-not-exist")
 	_ = createCmd.RegisterFlagCompletionFunc("output-jq", jqCompletionFunc)
+
+	return resetFunc
 }
 
 func createInternal(ctx context.Context, overrides *httpclient.HttpParameterOverrides, args []string, autoFillOnCreate bool, aliasName string) (string, error) {
@@ -313,6 +327,7 @@ func createInternal(ctx context.Context, overrides *httpclient.HttpParameterOver
 		if aliasName != "" {
 			aliases.SetAliasForResource(string(resBody), aliasName)
 		}
+
 		return string(resBody), nil
 	} else {
 		return "", nil

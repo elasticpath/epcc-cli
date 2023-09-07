@@ -249,8 +249,10 @@ func Execute() {
 
 	if err != nil {
 		log.Errorf("Error occurred while processing command: %s", err)
+
 		os.Exit(1)
 	} else {
+
 		os.Exit(0)
 	}
 }

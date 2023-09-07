@@ -17,18 +17,26 @@ import (
 	"strings"
 )
 
-func NewUpdateCommand(parentCmd *cobra.Command) {
+func NewUpdateCommand(parentCmd *cobra.Command) func() {
 	overrides := &httpclient.HttpParameterOverrides{
 		QueryParameters: nil,
 		OverrideUrlPath: "",
 	}
 
+	// Ensure that any new options here are added to the resetFunc
 	var outputJq = ""
-
 	var noBodyPrint = false
-
 	var ifAliasExists = ""
 	var ifAliasDoesNotExist = ""
+
+	resetFunc := func() {
+		overrides.QueryParameters = nil
+		overrides.OverrideUrlPath = ""
+		outputJq = ""
+		noBodyPrint = false
+		ifAliasExists = ""
+		ifAliasDoesNotExist = ""
+	}
 
 	var updateCmd = &cobra.Command{
 		Use:          "update",
@@ -174,6 +182,8 @@ func NewUpdateCommand(parentCmd *cobra.Command) {
 	updateCmd.MarkFlagsMutuallyExclusive("if-alias-exists", "if-alias-does-not-exist")
 	_ = updateCmd.RegisterFlagCompletionFunc("output-jq", jqCompletionFunc)
 	parentCmd.AddCommand(updateCmd)
+
+	return resetFunc
 
 }
 
