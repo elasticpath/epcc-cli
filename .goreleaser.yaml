@@ -38,9 +38,6 @@ nfpms:
     # ID of the nfpm config, must be unique.
     # Defaults to "default".
     package_name: "epcc-cli"
-    replacements:
-      386: i386
-      darwin: macOS
     vendor: Elastic Path Software Inc.
     homepage: https://github.com/elasticpath/epcc-cli
     maintainer: Release Engineering <rel-eng@elasticpath.com>
