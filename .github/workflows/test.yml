@@ -65,7 +65,7 @@ jobs:
           ./external/runbooks/run-all-runbooks.sh
 
       - name: Run GoReleaser (for Linux build and Syntax check)
-        uses: goreleaser/goreleaser-action@v3
+        uses: goreleaser/goreleaser-action@v5
         env:
           GOOS: linux
           GOARCH: amd64
