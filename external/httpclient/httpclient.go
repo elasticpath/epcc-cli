@@ -59,36 +59,38 @@ func init() {
 			}
 		}
 	}
-
-	go func() {
-		lastTotalRequests := uint64(0)
-
-		for {
-			time.Sleep(15 * time.Second)
-
-			statsLock.Lock()
-
-			deltaRequests := stats.totalRequests - lastTotalRequests
-			lastTotalRequests = stats.totalRequests
-			statsLock.Unlock()
-
-			if shutdown.ShutdownFlag.Load() {
-				break
-			}
-
-			if deltaRequests > 0 {
-				log.Infof("Total requests %d, requests in past 15 seconds %d, latest %d requests per second.", lastTotalRequests, deltaRequests, deltaRequests/15.0)
-			}
-
-		}
-	}()
 }
 
 var Limit *rate.Limiter = nil
 
-func Initialize(rateLimit uint16, requestTimeout float32) {
+func Initialize(rateLimit uint16, requestTimeout float32, statisticsFrequency int) {
 	Limit = rate.NewLimiter(rate.Limit(rateLimit), 1)
 	HttpClient.Timeout = time.Duration(int64(requestTimeout*1000) * int64(time.Millisecond))
+
+	if statisticsFrequency > 0 {
+		go func() {
+			lastTotalRequests := uint64(0)
+
+			for {
+				time.Sleep(time.Duration(statisticsFrequency) * time.Second)
+
+				statsLock.Lock()
+
+				deltaRequests := stats.totalRequests - lastTotalRequests
+				lastTotalRequests = stats.totalRequests
+				statsLock.Unlock()
+
+				if shutdown.ShutdownFlag.Load() {
+					break
+				}
+
+				if deltaRequests > 0 {
+					log.Infof("Total requests %d, requests in past %d seconds %d, latest %d requests per second.", lastTotalRequests, statisticsFrequency, deltaRequests, deltaRequests/uint64(statisticsFrequency))
+				}
+
+			}
+		}()
+	}
 }
 
 var Retry429 = false
@@ -113,9 +115,9 @@ func LogStats() {
 
 	for _, k := range keys {
 		if k == 0 {
-			counts += fmt.Sprintf("%d:%d, ", k, stats.respCodes[k])
-		} else {
 			counts += fmt.Sprintf("CONN_ERROR:%d, ", stats.respCodes[k])
+		} else {
+			counts += fmt.Sprintf("%d:%d, ", k, stats.respCodes[k])
 		}
 	}
 
