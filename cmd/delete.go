@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"github.com/elasticpath/epcc-cli/external/aliases"
 	"github.com/elasticpath/epcc-cli/external/completion"
-	"github.com/elasticpath/epcc-cli/external/crud"
 	"github.com/elasticpath/epcc-cli/external/httpclient"
 	"github.com/elasticpath/epcc-cli/external/json"
 	"github.com/elasticpath/epcc-cli/external/resources"
+	"github.com/elasticpath/epcc-cli/external/shutdown"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"io"
@@ -171,8 +171,8 @@ func NewDeleteCommand(parentCmd *cobra.Command) func() {
 	return resetFunc
 }
 func deleteInternal(ctx context.Context, overrides *httpclient.HttpParameterOverrides, allow404 bool, args []string) (string, error) {
-	crud.OutstandingRequestCounter.Add(1)
-	defer crud.OutstandingRequestCounter.Done()
+	shutdown.OutstandingOpCounter.Add(1)
+	defer shutdown.OutstandingOpCounter.Done()
 
 	resource, ok := resources.GetResourceByName(args[0])
 	if !ok {
