@@ -26,6 +26,8 @@ var rateLimit uint16
 
 var requestTimeout float32
 
+var statisticsFrequency uint16
+
 var jqCompletionFunc = func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	return []string{
 		".data.",
@@ -103,6 +105,7 @@ func InitializeCmd() {
 	RootCmd.PersistentFlags().BoolVarP(&httpclient.DontLog2xxs, "silence-2xx", "", false, "Whether we should silence HTTP 2xx response code logging")
 
 	RootCmd.PersistentFlags().Float32VarP(&requestTimeout, "timeout", "", 60, "Request timeout in seconds (fractional values allowed)")
+	RootCmd.PersistentFlags().Uint16VarP(&statisticsFrequency, "statistics-frequency", "", 15, "How often to print runtime statistics (0 turns them off)")
 
 	RootCmd.PersistentFlags().BoolVarP(&aliases.SkipAliasProcessing, "skip-alias-processing", "", false, "if set, we don't process the response for aliases")
 	ResetStore.PersistentFlags().BoolVarP(&DeleteApplicationKeys, "delete-application-keys", "", false, "if set, we delete application keys as well")
@@ -186,8 +189,8 @@ Environment Variables
 		if env.EPCC_RATE_LIMIT != 0 {
 			rateLimit = env.EPCC_RATE_LIMIT
 		}
-		log.Debugf("Rate limit set to %d request per second ", rateLimit)
-		httpclient.Initialize(rateLimit, requestTimeout)
+		log.Debugf("Rate limit set to %d request per second, printing statistics every %d seconds ", rateLimit, statisticsFrequency)
+		httpclient.Initialize(rateLimit, requestTimeout, int(statisticsFrequency))
 
 		for _, runFunc := range persistentPreRunFuncs {
 			err := runFunc(cmd, args)

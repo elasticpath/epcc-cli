@@ -12,7 +12,7 @@ import (
 
 func TestCrudOnAResource(t *testing.T) {
 
-	httpclient.Initialize(1, 60)
+	httpclient.Initialize(1, 60, 0)
 
 	// Use a random account name to prevent collisions with other tests
 	id := rand.Int63()

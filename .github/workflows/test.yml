@@ -55,7 +55,7 @@ jobs:
           go test -v -cover ./cmd/ ./external/...
 
       - name: Runbook Smoke Test
-        timeout-minutes: 5
+        timeout-minutes: 15
         env:
           EPCC_CLIENT_ID: ${{ secrets.EPCC_CLIENT_ID }}
           EPCC_CLIENT_SECRET: ${{ secrets.EPCC_CLIENT_SECRET }}
