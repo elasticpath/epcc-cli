@@ -7,11 +7,11 @@ import (
 	"github.com/elasticpath/epcc-cli/external/aliases"
 	"github.com/elasticpath/epcc-cli/external/autofill"
 	"github.com/elasticpath/epcc-cli/external/completion"
-	"github.com/elasticpath/epcc-cli/external/crud"
 	"github.com/elasticpath/epcc-cli/external/encoding"
 	"github.com/elasticpath/epcc-cli/external/httpclient"
 	"github.com/elasticpath/epcc-cli/external/json"
 	"github.com/elasticpath/epcc-cli/external/resources"
+	"github.com/elasticpath/epcc-cli/external/shutdown"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"io"
@@ -215,8 +215,8 @@ func NewCreateCommand(parentCmd *cobra.Command) func() {
 }
 
 func createInternal(ctx context.Context, overrides *httpclient.HttpParameterOverrides, args []string, autoFillOnCreate bool, aliasName string) (string, error) {
-	crud.OutstandingRequestCounter.Add(1)
-	defer crud.OutstandingRequestCounter.Done()
+	shutdown.OutstandingOpCounter.Add(1)
+	defer shutdown.OutstandingOpCounter.Done()
 
 	// Find Resource
 	resource, ok := resources.GetResourceByName(args[0])

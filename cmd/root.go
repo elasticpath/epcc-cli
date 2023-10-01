@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/elasticpath/epcc-cli/config"
 	"github.com/elasticpath/epcc-cli/external/aliases"
-	"github.com/elasticpath/epcc-cli/external/crud"
+	"github.com/elasticpath/epcc-cli/external/clictx"
 	"github.com/elasticpath/epcc-cli/external/httpclient"
 	"github.com/elasticpath/epcc-cli/external/logger"
 	"github.com/elasticpath/epcc-cli/external/profiles"
@@ -221,6 +221,7 @@ func Execute() {
 		case sig := <-sigs:
 			log.Warnf("Shutting down program due to signal [%v]", sig)
 			shutdown.ShutdownFlag.Store(true)
+			clictx.Cancel()
 			exit = true
 		case <-normalShutdown:
 		}
@@ -231,10 +232,10 @@ func Execute() {
 
 		go func() {
 			time.Sleep(2 * time.Second)
-			log.Infof("Waiting for all outstanding requests to finish")
+			log.Infof("Waiting for all outstanding operations to finish")
 		}()
 
-		crud.OutstandingRequestCounter.Wait()
+		shutdown.OutstandingOpCounter.Wait()
 
 		httpclient.LogStats()
 		aliases.FlushAliases()
