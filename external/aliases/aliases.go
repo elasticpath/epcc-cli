@@ -15,6 +15,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 )
 
 var mutex = &sync.RWMutex{}
@@ -72,6 +73,20 @@ func getAliasesForSingleJsonApiType(jsonApiType string) map[string]*id.IdableAtt
 		mutex.RUnlock()
 		mutex.Lock()
 		defer mutex.Unlock()
+
+		done := make(chan bool, 1)
+
+		defer close(done)
+
+		go func() {
+			select {
+			case <-done:
+				break
+			case <-time.After(2 * time.Second):
+				log.Warnf("Loading of aliases for %s has taken more than 2 seconds, if you don't need aliases consider the --skip-alias-processing argument. You can also clear aliases by using `epcc aliases clear <TYPE>`", jsonApiType)
+			}
+		}()
+
 		aliasFile := getAliasFileForJsonApiType(getAliasDataDirectory(), jsonApiType)
 
 		aliasMap = map[string]*id.IdableAttributes{}
@@ -104,6 +119,8 @@ func getAliasesForSingleJsonApiType(jsonApiType string) map[string]*id.IdableAtt
 		} else {
 			log.Tracef("Aliases for type [%s] loaded, with %d aliases", jsonApiType, len(aliasMap))
 		}
+
+		done <- true
 
 	} else {
 		mutex.RUnlock()
@@ -533,6 +550,18 @@ func FlushAliases() int {
 }
 
 func SyncAliases() int {
+	done := make(chan bool, 1)
+
+	defer close(done)
+
+	go func() {
+		select {
+		case <-done:
+			break
+		case <-time.After(1 * time.Second):
+			log.Warnf("Saving of aliases took longer than 1 seconds, if you don't need aliases consider the --skip-alias-processing argument. You can also clear aliases by using `epcc aliases clear <TYPE>")
+		}
+	}()
 
 	syncedFiles := 0
 	mutex.RLock()
@@ -553,6 +582,9 @@ func SyncAliases() int {
 		// https://github.com/golang/go/issues/20599
 		tmpFileName := aliasFile + "." + uuid.New().String()
 
+		if len(aliasesForType) > 10000 {
+			log.Warnf("There are more than 10,000 aliases for type %s, you may notice a slow down when using epcc. If you don't need aliases consider the --skip-alias-processing argument. You can also clear aliases by using `epcc aliases clear <TYPE> ", jsonApiType)
+		}
 		marshal, err := yaml.Marshal(aliasesForType)
 
 		if err != nil {
@@ -579,6 +611,7 @@ func SyncAliases() int {
 
 	log.Debugf("Syncing aliases to disk, %d files changed", syncedFiles)
 
+	done <- true
 	return syncedFiles
 
 }

@@ -51,6 +51,8 @@ func printJsonToWriter(json string, w io.Writer) error {
 
 	done := make(chan bool, 1)
 
+	defer close(done)
+
 	if !MonochromeOutput {
 		go func() {
 			select {
