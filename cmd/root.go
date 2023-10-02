@@ -7,6 +7,7 @@ import (
 	"github.com/elasticpath/epcc-cli/external/clictx"
 	"github.com/elasticpath/epcc-cli/external/httpclient"
 	"github.com/elasticpath/epcc-cli/external/logger"
+	"github.com/elasticpath/epcc-cli/external/misc"
 	"github.com/elasticpath/epcc-cli/external/profiles"
 	"github.com/elasticpath/epcc-cli/external/shutdown"
 	"github.com/elasticpath/epcc-cli/external/version"
@@ -58,6 +59,8 @@ var jqCompletionFunc = func(cmd *cobra.Command, args []string, toComplete string
 var profileNameFromCommandLine = ""
 
 func InitializeCmd() {
+
+	os.Args = misc.AddImplicitDoubleDash(os.Args)
 	if os.Args[1] == "__complete" {
 		DisableLongOutput = true
 		DisableExampleOutput = true

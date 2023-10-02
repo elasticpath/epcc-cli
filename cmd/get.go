@@ -366,17 +366,16 @@ func getResource(ctx context.Context, overrides *httpclient.HttpParameterOverrid
 		params.Add(args[i], args[i+1])
 	}
 
+	if (idCount-len(args)+1)%2 != 0 {
+		log.Warnf("Extra argument at the end of the command %s", args[len(args)-1])
+	}
+
 	for _, v := range overrides.QueryParameters {
 		keyAndValue := strings.SplitN(v, "=", 2)
 		if len(keyAndValue) != 2 {
 			return nil, fmt.Errorf("Could not parse query parameter %v, all query parameters should be a key and value format", keyAndValue)
 		}
 		params.Add(keyAndValue[0], keyAndValue[1])
-	}
-
-	// Steve doesn't understand this logic check
-	if (idCount-len(args)+1)%2 != 0 {
-		resourceURL = resourceURL + url.QueryEscape(args[len(args)-1])
 	}
 
 	// Submit request
