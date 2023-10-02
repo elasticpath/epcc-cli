@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/buildkite/shellwords"
 	"github.com/elasticpath/epcc-cli/external/completion"
+	"github.com/elasticpath/epcc-cli/external/misc"
 	"github.com/elasticpath/epcc-cli/external/resources"
 	"github.com/elasticpath/epcc-cli/external/runbooks"
 	_ "github.com/elasticpath/epcc-cli/external/runbooks"
@@ -208,7 +209,9 @@ func initRunbookRunCommands() *cobra.Command {
 									commandAndResetFunc.reset()
 									stepCmd := commandAndResetFunc.cmd
 
-									stepCmd.SetArgs(rawCmdArguments[1:])
+									tweakedArguments := misc.AddImplicitDoubleDash(rawCmdArguments)
+									stepCmd.SetArgs(tweakedArguments[1:])
+
 									log.Tracef("(Step %d/%d Command %d/%d) Starting Command", stepIdx+1, numSteps, commandIdx+1, len(funcs))
 
 									stepCmd.ResetFlags()

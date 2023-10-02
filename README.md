@@ -146,20 +146,6 @@ To load completions for each session, execute once:
 
 ## Tips
 
-### Sorting in Descending Order
-
-The EPCC CLI supports sorting in descending order however you may get an error:
-```bash
-$ epcc get customers sort -updated_at
-Error: unknown short flag: 'u' in -updated_at
-```
-
-You will need to use a bare double dash "--" before the argument, this signals that flag processing is complete and is a convention in many shells.
-
-```bash
-$ epcc get customers -- sort -updated_at
-```
-
 ### JQ Output
 
 The `--output-jq` option can post process the output of `epcc create` `epcc get` and `epcc update`, for instance the following can be used to create richer
