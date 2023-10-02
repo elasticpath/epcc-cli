@@ -18,6 +18,9 @@ import (
 	"sync"
 )
 
+var DisableLongOutput = false
+var DisableExampleOutput = false
+
 func GetSingularTypeNames(types []string) []string {
 	var ret []string
 
@@ -242,6 +245,10 @@ func GetDeleteAllShort(resource resources.Resource) string {
 
 func GetGetLong(resourceName string, resourceUrl string, usageGetType string, completionVerb int, urlInfo *resources.CrudEntityInfo, resource resources.Resource) string {
 
+	if DisableLongOutput {
+		return ""
+	}
+
 	types, err := resources.GetTypesOfVariablesNeeded(resourceUrl)
 
 	if err != nil {
@@ -322,6 +329,9 @@ func toJsonExample(in []string, resource resources.Resource) string {
 }
 
 func GetCreateLong(resource resources.Resource) string {
+	if DisableLongOutput {
+		return ""
+	}
 	resourceName := resource.SingularName
 
 	singularTypeNames, err := resources.GetSingularTypesOfVariablesNeeded(resource.CreateEntityInfo.Url)
@@ -354,6 +364,9 @@ Documentation:
 }
 
 func GetUpdateLong(resource resources.Resource) string {
+	if DisableLongOutput {
+		return ""
+	}
 	resourceName := resource.SingularName
 
 	singularTypeNames, err := resources.GetSingularTypesOfVariablesNeeded(resource.UpdateEntityInfo.Url)
@@ -386,6 +399,9 @@ Documentation:
 }
 
 func GetDeleteLong(resource resources.Resource) string {
+	if DisableLongOutput {
+		return ""
+	}
 	resourceName := resource.SingularName
 
 	singularTypeNames, err := resources.GetSingularTypesOfVariablesNeeded(resource.DeleteEntityInfo.Url)
@@ -499,6 +515,10 @@ var getExampleCache sync.Map
 
 func GetGetExample(resourceName string, resourceUrl string, usageGetType string, completionVerb int, urlInfo *resources.CrudEntityInfo, resource resources.Resource) string {
 
+	if DisableExampleOutput {
+		return ""
+	}
+
 	cacheKey := fmt.Sprintf("%s-%d", resourceName, completionVerb)
 	if example, ok := getExampleCache.Load(cacheKey); ok {
 		return example.(string)
@@ -605,6 +625,10 @@ func GetGetExample(resourceName string, resourceUrl string, usageGetType string,
 var createExampleCache sync.Map
 
 func GetCreateExample(resource resources.Resource) string {
+	if DisableExampleOutput {
+		return ""
+	}
+
 	resourceName := resource.SingularName
 
 	if v, ok := createExampleCache.Load(resourceName); ok {
@@ -685,6 +709,9 @@ func GetCreateExample(resource resources.Resource) string {
 var updateExampleCache sync.Map
 
 func GetUpdateExample(resource resources.Resource) string {
+	if DisableExampleOutput {
+		return ""
+	}
 	resourceName := resource.SingularName
 
 	if v, ok := updateExampleCache.Load(resourceName); ok {
@@ -754,6 +781,10 @@ func GetUpdateExample(resource resources.Resource) string {
 var deleteExampleCache sync.Map
 
 func GetDeleteExample(resource resources.Resource) string {
+	if DisableExampleOutput {
+		return ""
+	}
+
 	resourceName := resource.SingularName
 	if v, ok := deleteExampleCache.Load(resourceName); ok {
 		return v.(string)
