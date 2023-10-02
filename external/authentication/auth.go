@@ -37,6 +37,20 @@ var noTokenWarningMessageLogged = false
 
 var getTokenMutex = sync.Mutex{}
 
+var postAuthErrorHook = []func(r *http.Request, e error){}
+var postAuthHook = []func(r *http.Request, s *http.Response){}
+
+func AddPostAuthErrorHook(f func(r *http.Request, e error)) {
+	getTokenMutex.Lock()
+	defer getTokenMutex.Unlock()
+	postAuthErrorHook = append(postAuthErrorHook, f)
+}
+
+func AddPostAuthHook(f func(r *http.Request, s *http.Response)) {
+	getTokenMutex.Lock()
+	defer getTokenMutex.Unlock()
+	postAuthHook = append(postAuthHook, f)
+}
 func GetAuthenticationToken(useTokenFromProfileDir bool, valuesOverride *url.Values) (*ApiTokenResponse, error) {
 
 	if useTokenFromProfileDir {
@@ -189,10 +203,18 @@ func fetchNewAuthenticationToken(values url.Values) (*ApiTokenResponse, error) {
 	resp, err := HttpClient.Do(req)
 
 	if err != nil {
+		for _, f := range postAuthErrorHook {
+			f(req, err)
+		}
+
 		return nil, err
 	}
 
 	defer resp.Body.Close()
+
+	for _, f := range postAuthHook {
+		f(req, resp)
+	}
 
 	dumpRes, _ := httputil.DumpResponse(resp, true)
 
@@ -256,5 +278,6 @@ func fetchNewAuthenticationToken(values url.Values) (*ApiTokenResponse, error) {
 	}
 
 	log.Trace("Authentication successful")
+
 	return &authResponse, nil
 }
