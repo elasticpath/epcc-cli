@@ -341,6 +341,14 @@ type CommandAndReset struct {
 }
 
 func generateRunbookCmd() *CommandAndReset {
+	DisableLongOutput = true
+	DisableExampleOutput = true
+
+	defer func() {
+		DisableLongOutput = false
+		DisableExampleOutput = false
+	}()
+
 	root := &cobra.Command{
 		Use:          "epcc",
 		SilenceUsage: true,

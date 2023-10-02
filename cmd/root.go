@@ -58,6 +58,10 @@ var jqCompletionFunc = func(cmd *cobra.Command, args []string, toComplete string
 var profileNameFromCommandLine = ""
 
 func InitializeCmd() {
+	if os.Args[1] == "__complete" {
+		DisableLongOutput = true
+		DisableExampleOutput = true
+	}
 
 	cobra.OnInitialize(initConfig)
 	initConfig()
