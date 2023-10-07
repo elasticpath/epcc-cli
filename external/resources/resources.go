@@ -169,6 +169,10 @@ func AppendResourceData(newResources map[string]Resource) {
 }
 
 func init() {
+	PublicInit()
+}
+
+func PublicInit() {
 
 	resourceData, err := GenerateResourceMetadataFromYaml(resourceMetaData)
 

@@ -61,7 +61,7 @@ var profileNameFromCommandLine = ""
 func InitializeCmd() {
 
 	os.Args = misc.AddImplicitDoubleDash(os.Args)
-	if os.Args[1] == "__complete" {
+	if len(os.Args) > 1 && os.Args[1] == "__complete" {
 		DisableLongOutput = true
 		DisableExampleOutput = true
 	}
@@ -98,6 +98,7 @@ func InitializeCmd() {
 
 	Logs.AddCommand(LogsList, LogsShow, LogsClear)
 
+	testJson.ResetFlags()
 	testJson.Flags().BoolVarP(&noWrapping, "no-wrapping", "", false, "if set, we won't wrap the output the json in a data tag")
 	testJson.Flags().BoolVarP(&compliant, "compliant", "", false, "if set, we wrap most keys in an attributes tags automatically.")
 
@@ -115,6 +116,7 @@ func InitializeCmd() {
 	RootCmd.PersistentFlags().Uint16VarP(&statisticsFrequency, "statistics-frequency", "", 15, "How often to print runtime statistics (0 turns them off)")
 
 	RootCmd.PersistentFlags().BoolVarP(&aliases.SkipAliasProcessing, "skip-alias-processing", "", false, "if set, we don't process the response for aliases")
+	ResetStore.ResetFlags()
 	ResetStore.PersistentFlags().BoolVarP(&DeleteApplicationKeys, "delete-application-keys", "", false, "if set, we delete application keys as well")
 
 	aliasesCmd.AddCommand(aliasListCmd, aliasClearCmd)
@@ -170,10 +172,13 @@ func AddRootPreRunFunc(f func(cmd *cobra.Command, args []string) error) {
 	persistentPreRunFuncs = append(persistentPreRunFuncs, f)
 }
 
-var RootCmd = &cobra.Command{
-	Use:   os.Args[0],
-	Short: "A command line interface for interacting with the Elastic Path Commerce Cloud API",
-	Long: `The EPCC CLI tool provides a powerful command line interface for interacting with the Elastic Path Commerce Cloud API.
+var RootCmd = GetRootCommand()
+
+func GetRootCommand() *cobra.Command {
+	return &cobra.Command{
+		Use:   os.Args[0],
+		Short: "A command line interface for interacting with the Elastic Path Commerce Cloud API",
+		Long: `The EPCC CLI tool provides a powerful command line interface for interacting with the Elastic Path Commerce Cloud API.
 
 The EPCC CLI tool uses environment variables for configuration and in particular a tool like https://direnv.net/ which
 auto populates your shell with environment variables when you switch directories. This allows you to store a context in a folder,
@@ -189,30 +194,31 @@ Environment Variables
 - EPCC_PROFILE - The name of the profile we will use (isolates namespace, credentials, etc...)
 
 `,
-	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-		log.SetLevel(logger.Loglevel)
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			log.SetLevel(logger.Loglevel)
 
-		env := config.GetEnv()
-		if env.EPCC_RATE_LIMIT != 0 {
-			rateLimit = env.EPCC_RATE_LIMIT
-		}
-		log.Debugf("Rate limit set to %d request per second, printing statistics every %d seconds ", rateLimit, statisticsFrequency)
-		httpclient.Initialize(rateLimit, requestTimeout, int(statisticsFrequency))
-
-		for _, runFunc := range persistentPreRunFuncs {
-			err := runFunc(cmd, args)
-			if err != nil {
-				return err
+			env := config.GetEnv()
+			if env.EPCC_RATE_LIMIT != 0 {
+				rateLimit = env.EPCC_RATE_LIMIT
 			}
-		}
+			log.Debugf("Rate limit set to %d request per second, printing statistics every %d seconds ", rateLimit, statisticsFrequency)
+			httpclient.Initialize(rateLimit, requestTimeout, int(statisticsFrequency))
 
-		version.CheckVersionChangeAndLogWarning()
+			for _, runFunc := range persistentPreRunFuncs {
+				err := runFunc(cmd, args)
+				if err != nil {
+					return err
+				}
+			}
 
-		return nil
-	},
+			version.CheckVersionChangeAndLogWarning()
 
-	SilenceUsage: true,
-	Version:      fmt.Sprintf("%s (Commit %s)", version.Version, version.Commit),
+			return nil
+		},
+
+		SilenceUsage: true,
+		Version:      fmt.Sprintf("%s (Commit %s)", version.Version, version.Commit),
+	}
 }
 
 func Execute() {

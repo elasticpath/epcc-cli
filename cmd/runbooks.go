@@ -33,9 +33,40 @@ func initRunbookCommands() {
 	runbookGlobalCmd.AddCommand(initRunbookShowCommands())
 	runbookGlobalCmd.AddCommand(initRunbookRunCommands())
 	runbookGlobalCmd.AddCommand(initRunbookDevCommands())
+	runbookGlobalCmd.AddCommand(initRunbookValidateCommands())
 }
 
 var AbortRunbookExecution = atomic.Bool{}
+
+func initRunbookValidateCommands() *cobra.Command {
+	// epcc runbook validate
+	runbookValidateCommand := &cobra.Command{
+		Use:   "validate",
+		Short: "Validates all runbooks",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			errMsg := ""
+
+			for _, runbook := range runbooks.GetRunbooks() {
+				log.Debugf("Validating runbook %s", runbook.Name)
+				err := runbooks.ValidateRunbook(&runbook)
+
+				if err != nil {
+					newErr := fmt.Errorf("validation of runbook '%s' failed: %v", runbook.Name, err)
+					errMsg += newErr.Error() + "\n"
+				}
+			}
+
+			if errMsg == "" {
+				log.Infof("All runbooks are valid!")
+				return nil
+			} else {
+				return fmt.Errorf("one or more runbooks failed validation\n:%s", errMsg)
+			}
+		},
+	}
+
+	return runbookValidateCommand
+}
 
 func initRunbookShowCommands() *cobra.Command {
 
@@ -56,6 +87,24 @@ func initRunbookShowCommands() *cobra.Command {
 			Long:  runbook.Description.Long,
 			Short: runbook.Description.Short,
 		}
+
+		runbookShowRunbookCmd.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
+			err := RootCmd.PersistentPreRunE(RootCmd, args)
+
+			if err != nil {
+				return err
+			}
+
+			log.Debugf("Validating runbook %s", runbook.Name)
+			err = runbooks.ValidateRunbook(&runbook)
+
+			if err != nil {
+				return fmt.Errorf("validation of runbook '%s' failed: %v", runbook.Name, err)
+			}
+
+			return nil
+		}
+
 		runbookShowCommand.AddCommand(runbookShowRunbookCmd)
 
 		for _, runbookAction := range runbook.RunbookActions {
@@ -70,6 +119,7 @@ func initRunbookShowCommands() *cobra.Command {
 				Long:  runbookAction.Description.Long,
 				Short: runbookAction.Description.Short,
 				RunE: func(cmd *cobra.Command, args []string) error {
+
 					for stepIdx, cmd := range runbookAction.RawCommands {
 						templateName := fmt.Sprintf("Runbook: %s Action: %s Step: %d", runbook.Name, runbookAction.Name, stepIdx)
 
@@ -126,6 +176,22 @@ func initRunbookRunCommands() *cobra.Command {
 			Use:   runbook.Name,
 			Long:  runbook.Description.Long,
 			Short: runbook.Description.Short,
+		}
+
+		runbookRunRunbookCmd.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
+			err := RootCmd.PersistentPreRunE(RootCmd, args)
+
+			if err != nil {
+				return err
+			}
+
+			err = runbooks.ValidateRunbook(&runbook)
+
+			if err != nil {
+				return fmt.Errorf("validation of runbook '%s' failed: %v", runbook.Name, err)
+			}
+
+			return nil
 		}
 
 		runbookRunCommand.AddCommand(runbookRunRunbookCmd)
