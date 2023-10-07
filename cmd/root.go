@@ -177,8 +177,8 @@ var RootCmd = GetRootCommand()
 func GetRootCommand() *cobra.Command {
 	return &cobra.Command{
 		Use:   os.Args[0],
-		Short: "A command line interface for interacting with the Elastic Path Commerce Cloud API",
-		Long: `The EPCC CLI tool provides a powerful command line interface for interacting with the Elastic Path Commerce Cloud API.
+		Short: "A command line interface for interacting with the Elastic Path Composable Commerce API",
+		Long: `The EPCC CLI tool provides a powerful command line interface for interacting with the Elastic Path Composable Commerce API.
 
 The EPCC CLI tool uses environment variables for configuration and in particular a tool like https://direnv.net/ which
 auto populates your shell with environment variables when you switch directories. This allows you to store a context in a folder,
