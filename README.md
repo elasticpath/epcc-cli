@@ -1,13 +1,13 @@
-# Elastic Path Commerce Cloud Command Line Interface
+# Elastic Path Composable Commerce Command Line Interface
 
 
 ## Overview
-This project is designed as a tool for power users to interact with the [Elastic Path Commerce Cloud API](https://documentation.elasticpath.com/commerce-cloud/docs/api/) via the command line and the project is designed to fill three distinct niches:
+This project is designed as a tool for power users to interact with the [Elastic Path Composable Commerce API](https://documentation.elasticpath.com/commerce-cloud/docs/api/) via the command line and the project is designed to fill three distinct niches:
 1. Provide a fast way for users familiar with the API to interact with it.
 2. Provide a simpler way to do scripting with the API (i.e., instead of using curl and creating JSON in the shell)
 3. Provide a reusable set of scripts for creating data sets with [Runbooks](docs/runbook-development.md).
 
-This tool is not meant for new users unfamiliar with the API, new users are  highly encouraged to use the [Elastic Path Commerce Cloud Postman Collection](https://documentation.elasticpath.com/commerce-cloud/docs/developer/how-to/test-with-postman-collection.html) instead of this tool.
+This tool is not meant for new users unfamiliar with the API, new users are  highly encouraged to use the [Elastic Path Composable Commerce Postman Collection](https://elasticpath.dev/docs/commerce-cloud/api-overview/test-with-postman-collection) instead of this tool.
 
 Additionally, this tool is not necessarily meant to be a new command line equivalent of Commerce Manager, it should just feel at all times like you are interacting with a JSON based REST API.
 

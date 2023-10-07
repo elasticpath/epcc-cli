@@ -40,7 +40,7 @@ var docsCommand = &cobra.Command{
 			}
 
 		} else {
-			err = browser.OpenUrl("https://documentation.elasticpath.com/commerce-cloud/docs/api/")
+			err = browser.OpenUrl("https://elasticpath.dev/docs/commerce-cloud/")
 		}
 
 		return err
