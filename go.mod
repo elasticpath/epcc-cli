@@ -27,7 +27,7 @@ require (
 require github.com/quasilyte/regex/syntax v0.0.0-20210819130434-b3f0c404a727
 
 require (
-	github.com/iancoleman/strcase v0.2.0
+	github.com/iancoleman/strcase v0.3.0
 	github.com/jolestar/go-commons-pool/v2 v2.1.2
 )
 
