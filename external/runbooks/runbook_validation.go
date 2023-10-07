@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func validateRunbook(runbook *Runbook) error {
+func ValidateRunbook(runbook *Runbook) error {
 
 	if len(runbook.Name) == 0 {
 		return fmt.Errorf("Runbook has no name")
@@ -19,7 +19,7 @@ func validateRunbook(runbook *Runbook) error {
 
 	for _, runbookAction := range runbook.RunbookActions {
 		if (len(runbookAction.RawCommands)) == 0 {
-			return fmt.Errorf("number of commands in action %s is zero", runbookAction.Name)
+			return fmt.Errorf("number of commands in action '%s' is zero", runbookAction.Name)
 		}
 
 		argumentsWithDefaults := CreateMapForRunbookArgumentPointers(runbookAction)

@@ -53,6 +53,9 @@ type RunbookDescription struct {
 }
 
 func init() {
+	Reset()
+}
+func Reset() {
 	runbooks = make(map[string]Runbook)
 }
 
@@ -137,19 +140,13 @@ func AddRunbookFromYaml(yaml string) error {
 		return err
 	}
 
-	err = validateRunbook(runbook)
-	if err != nil {
-		return err
-	} else {
+	log.Tracef("Loaded runbook: %s, %s", runbook.Name, yaml)
 
-		log.Tracef("Loaded runbook: %s, %s", runbook.Name, yaml)
-
-		if _, ok := runbooks[runbook.Name]; ok {
-			log.Warnf("Runbook name %s already loaded and is being overriden", runbook.Name)
-		}
-
-		runbooks[runbook.Name] = *runbook
+	if _, ok := runbooks[runbook.Name]; ok {
+		log.Warnf("Runbook name %s already loaded and is being overriden", runbook.Name)
 	}
+
+	runbooks[runbook.Name] = *runbook
 
 	return nil
 }

@@ -2,6 +2,7 @@ package runbooks
 
 import (
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"testing"
 )
 
@@ -17,7 +18,7 @@ docs: http://localhost
 	assert.NoError(t, err, "Error should be nil")
 
 	// Execute SUT
-	err = validateRunbook(runbook)
+	err = ValidateRunbook(runbook)
 
 	// Verification
 	assert.ErrorContains(t, err, "Runbook has no name")
@@ -36,7 +37,7 @@ docs: http://localhost
 	assert.NoError(t, err, "Error should be nil")
 
 	// Execute SUT
-	err = validateRunbook(runbook)
+	err = ValidateRunbook(runbook)
 
 	// Verification
 	assert.ErrorContains(t, err, "number of actions is zero")
@@ -58,10 +59,10 @@ actions:
 	assert.NoError(t, err, "Error should be nil")
 
 	// Execute SUT
-	err = validateRunbook(runbook)
+	err = ValidateRunbook(runbook)
 
 	// Verification
-	assert.ErrorContains(t, err, "number of commands in action test-action is zero")
+	assert.ErrorContains(t, err, "number of commands in action 'test-action' is zero")
 }
 
 func TestThatRunbookWithActionThatDoesNotStartWithEpccFails(t *testing.T) {
@@ -81,7 +82,7 @@ actions:
 	assert.NoError(t, err, "Error should be nil")
 
 	// Execute SUT
-	err = validateRunbook(runbook)
+	err = ValidateRunbook(runbook)
 
 	// Verification
 	assert.ErrorContains(t, err, "Each command needs be a recognized command")
@@ -104,7 +105,7 @@ actions:
 	assert.NoError(t, err, "Error should be nil")
 
 	// Execute SUT
-	err = validateRunbook(runbook)
+	err = ValidateRunbook(runbook)
 
 	// Verification
 	assert.ErrorContains(t, err, "Each epcc command should be followed by a verb")
@@ -127,7 +128,7 @@ actions:
 	assert.NoError(t, err, "Error should be nil")
 
 	// Execute SUT
-	err = validateRunbook(runbook)
+	err = ValidateRunbook(runbook)
 
 	// Verification
 	assert.NoError(t, err)
@@ -150,7 +151,7 @@ actions:
 	assert.NoError(t, err, "Error should be nil")
 
 	// Execute SUT
-	err = validateRunbook(runbook)
+	err = ValidateRunbook(runbook)
 
 	// Verification
 	assert.NoError(t, err)
@@ -173,7 +174,7 @@ actions:
 	assert.NoError(t, err, "Error should be nil")
 
 	// Execute SUT
-	err = validateRunbook(runbook)
+	err = ValidateRunbook(runbook)
 
 	// Verification
 	assert.NoError(t, err)
@@ -196,7 +197,7 @@ actions:
 	assert.NoError(t, err, "Error should be nil")
 
 	// Execute SUT
-	err = validateRunbook(runbook)
+	err = ValidateRunbook(runbook)
 
 	// Verification
 	assert.NoError(t, err)
@@ -219,7 +220,7 @@ actions:
 	assert.NoError(t, err, "Error should be nil")
 
 	// Execute SUT
-	err = validateRunbook(runbook)
+	err = ValidateRunbook(runbook)
 
 	// Verification
 	assert.NoError(t, err)
@@ -242,7 +243,7 @@ actions:
 	assert.NoError(t, err, "Error should be nil")
 
 	// Execute SUT
-	err = validateRunbook(runbook)
+	err = ValidateRunbook(runbook)
 
 	// Verification
 	assert.NoError(t, err)
@@ -265,7 +266,7 @@ actions:
 	assert.NoError(t, err, "Error should be nil")
 
 	// Execute SUT
-	err = validateRunbook(runbook)
+	err = ValidateRunbook(runbook)
 
 	// Verification
 	assert.ErrorContains(t, err, "Invalid argument to sleep a long time")
@@ -293,7 +294,7 @@ actions:
 	assert.NoError(t, err, "Error should be nil")
 
 	// Execute SUT
-	err = validateRunbook(runbook)
+	err = ValidateRunbook(runbook)
 
 	// Verification
 	assert.NoError(t, err)
@@ -323,7 +324,7 @@ actions:
 	assert.NoError(t, err, "Error should be nil")
 
 	// Execute SUT
-	err = validateRunbook(runbook)
+	err = ValidateRunbook(runbook)
 
 	// Verification
 	assert.ErrorContains(t, err, "Each command needs be a recognized command")
@@ -350,7 +351,7 @@ actions:
 	assert.NoError(t, err, "Error should be nil")
 
 	// Execute SUT
-	err = validateRunbook(runbook)
+	err = ValidateRunbook(runbook)
 
 	// Verification
 	assert.NoError(t, err)
@@ -377,7 +378,7 @@ actions:
 	assert.NoError(t, err, "Error should be nil")
 
 	// Execute SUT
-	err = validateRunbook(runbook)
+	err = ValidateRunbook(runbook)
 
 	// Verification
 	assert.ErrorContains(t, err, "Each command needs to have a valid verb")
@@ -400,7 +401,7 @@ actions:
 	assert.NoError(t, err, "Error should be nil")
 
 	// Execute SUT
-	err = validateRunbook(runbook)
+	err = ValidateRunbook(runbook)
 
 	// Verification
 	assert.ErrorContains(t, err, "error rendering template")
@@ -423,7 +424,7 @@ actions:
 	assert.NoError(t, err, "Error should be nil")
 
 	// Execute SUT
-	err = validateRunbook(runbook)
+	err = ValidateRunbook(runbook)
 
 	// Verification
 	assert.ErrorContains(t, err, "error rendering template")
@@ -450,7 +451,7 @@ actions:
 	assert.NoError(t, err, "Error should be nil")
 
 	// Execute SUT
-	err = validateRunbook(runbook)
+	err = ValidateRunbook(runbook)
 
 	// Verification
 	assert.ErrorContains(t, err, "Expected closing quote")
@@ -477,7 +478,7 @@ actions:
 	assert.NoError(t, err, "Error should be nil")
 
 	// Execute SUT
-	err = validateRunbook(runbook)
+	err = ValidateRunbook(runbook)
 
 	// Verification
 	assert.ErrorContains(t, err, "error processing variable time, value make-faster is not an integer")
@@ -504,8 +505,30 @@ actions:
 	assert.NoError(t, err, "Error should be nil")
 
 	// Execute SUT
-	err = validateRunbook(runbook)
+	err = ValidateRunbook(runbook)
 
 	// Verification
 	assert.ErrorContains(t, err, " error processing variable time, unknown type [magic] ")
+}
+
+func TestThatInitializeBuiltInRunbooksActuallyValidate(t *testing.T) {
+
+	// Fixture Setup
+
+	// language=yaml
+	Reset()
+
+	// Execute SUT
+	InitializeBuiltInRunbooks()
+
+	runbookNames := GetRunbookNames()
+
+	for k, v := range runbooks {
+		t.Run(k, func(t *testing.T) {
+			assert.NoError(t, ValidateRunbook(&v))
+		})
+	}
+
+	// Verification
+	require.GreaterOrEqual(t, len(runbookNames), 1, "Expected that some runbooks should be loaded.")
 }

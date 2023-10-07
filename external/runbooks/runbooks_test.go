@@ -75,33 +75,12 @@ actions:
 	require.Equal(t, []string{"test"}, runbookNames)
 }
 
-func TestThatAddRunbookWithNameAndInvalidYamlDoesNotAddRunbook(t *testing.T) {
-
-	// Fixture Setup
-
-	// language=yaml
-	runbooks = map[string]Runbook{}
-
-	invalidRunbook := `
-name: unit-test-runbook
-docs: "http://localhost"
-`
-
-	// Execute SUT
-	err := AddRunbookFromYaml(invalidRunbook)
-	require.Errorf(t, err, "Should get an error when adding runbook")
-	runbookNames := GetRunbookNames()
-
-	// Verification
-	require.Equal(t, []string{}, runbookNames)
-}
-
 func TestThatInitializeBuiltInRunbooksActuallyLoadsRunbooks(t *testing.T) {
 
 	// Fixture Setup
 
 	// language=yaml
-	runbooks = map[string]Runbook{}
+	Reset()
 
 	// Execute SUT
 	InitializeBuiltInRunbooks()

@@ -53,11 +53,12 @@ The following is a summary of the main commands, in general you can type `epcc h
 | `epcc test-json [KEY] [VAL] [KEY] [VAL] ...`       | Render a JSON document based on the supplied key and value pairs             |
 
 #### Power User Commands
-| Command                                 | Description                                                  |
-|-----------------------------------------|--------------------------------------------------------------|
-| `epcc reset-store <STORE_ID>`           | Reset the store to an initial state (on a best effort basis) |
-| `epcc runbooks show <RUNBOOK> <ACTION>` | Show a specific runbook (script)                             |
-| `epcc runbooks run <RUNBOOK> <ACTION>`  | Run a specific runbook (script)                              |
+| Command                                 | Description                                                                |
+|-----------------------------------------|----------------------------------------------------------------------------|
+| `epcc reset-store <STORE_ID>`           | Reset the store to an initial state (on a best effort basis)               |
+| `epcc runbooks show <RUNBOOK> <ACTION>` | Show a specific runbook (script)                                           |
+| `epcc runbooks validate`                | Validates all runbooks (built in and user supplied, outputting any errors) |
+| `epcc runbooks run <RUNBOOK> <ACTION>`  | Run a specific runbook (script)                                            |
 
 #### Tuning Runbooks
 

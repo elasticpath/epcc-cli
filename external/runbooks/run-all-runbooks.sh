@@ -5,6 +5,9 @@ SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 set -e
 set -x
 
+#Let's test that epcc command works after an embarrassing bug that caused it to panic :(
+epcc
+
 epcc reset-store .+
 
 echo "Starting Misc Runbook"
