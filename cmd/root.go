@@ -115,7 +115,6 @@ func InitializeCmd() {
 	RootCmd.PersistentFlags().Float32VarP(&requestTimeout, "timeout", "", 60, "Request timeout in seconds (fractional values allowed)")
 	RootCmd.PersistentFlags().Uint16VarP(&statisticsFrequency, "statistics-frequency", "", 15, "How often to print runtime statistics (0 turns them off)")
 
-	RootCmd.PersistentFlags().BoolVarP(&aliases.SkipAliasProcessing, "skip-alias-processing", "", false, "if set, we don't process the response for aliases")
 	ResetStore.ResetFlags()
 	ResetStore.PersistentFlags().BoolVarP(&DeleteApplicationKeys, "delete-application-keys", "", false, "if set, we delete application keys as well")
 
