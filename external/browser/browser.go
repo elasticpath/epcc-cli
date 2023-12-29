@@ -7,6 +7,9 @@ import (
 )
 
 func OpenUrl(url string) error {
+	if url == "" {
+		return fmt.Errorf("No url available")
+	}
 	switch runtime.GOOS {
 	case "linux":
 		exec.Command("xdg-open", url).Start()
