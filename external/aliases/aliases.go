@@ -26,7 +26,6 @@ var typeToAliasNameToIdMap = map[string]map[string]*id.IdableAttributes{}
 
 var dirtyAliases = map[string]bool{}
 
-var SkipAliasProcessing = false
 var typeToIdToAliasNamesMap = map[string]map[string]map[string]bool{}
 
 func ClearAllAliasesForJsonApiType(jsonApiType string) error {
@@ -161,9 +160,6 @@ func ResolveAliasValuesOrReturnIdentity(jsonApiType string, alternateJsonApiType
 }
 
 func SaveAliasesForResources(jsonTxt string) {
-	if SkipAliasProcessing {
-		return
-	}
 	var jsonStruct = map[string]interface{}{}
 	err := json.Unmarshal([]byte(jsonTxt), &jsonStruct)
 	if err != nil {
@@ -183,9 +179,6 @@ func SaveAliasesForResources(jsonTxt string) {
 }
 
 func SetAliasForResource(jsonTxt string, name string) {
-	if SkipAliasProcessing {
-		return
-	}
 	var jsonResult = map[string]interface{}{}
 	err := json.Unmarshal([]byte(jsonTxt), &jsonResult)
 	if err != nil {

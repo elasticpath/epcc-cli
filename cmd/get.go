@@ -35,6 +35,7 @@ func NewGetCommand(parentCmd *cobra.Command) func() {
 	var retryWhileJQMaxAttempts = uint16(1200)
 	var ifAliasExists = ""
 	var ifAliasDoesNotExist = ""
+	var skipAliases = false
 
 	resetFunc := func() {
 		overrides.QueryParameters = nil
@@ -45,6 +46,7 @@ func NewGetCommand(parentCmd *cobra.Command) func() {
 		retryWhileJQMaxAttempts = uint16(1200)
 		ifAliasExists = ""
 		ifAliasDoesNotExist = ""
+		skipAliases = false
 	}
 
 	var getCmd = &cobra.Command{
@@ -136,7 +138,7 @@ func NewGetCommand(parentCmd *cobra.Command) func() {
 					retriesFailedError := fmt.Errorf("Maximum number of retries hit %d and condition [%s] always true", retryWhileJQMaxAttempts, retryWhileJQ)
 
 					for attempt := uint16(0); attempt < retryWhileJQMaxAttempts; attempt++ {
-						body, err = getInternal(context.Background(), overrides, append([]string{resourceName}, args...))
+						body, err = getInternal(context.Background(), overrides, append([]string{resourceName}, args...), skipAliases)
 						if retryWhileJQ == "" {
 							retriesFailedError = nil
 							break
@@ -268,6 +270,7 @@ func NewGetCommand(parentCmd *cobra.Command) func() {
 	getCmd.PersistentFlags().Uint16VarP(&retryWhileJQMaxAttempts, "retry-while-jq-max-attempts", "", 1200, "The maximum number of attempts we will retry with jq")
 	getCmd.PersistentFlags().StringVarP(&ifAliasExists, "if-alias-exists", "", "", "If the alias exists we will run this command, otherwise exit with no error")
 	getCmd.PersistentFlags().StringVarP(&ifAliasDoesNotExist, "if-alias-does-not-exist", "", "", "If the alias does not exist we will run this command, otherwise exit with no error")
+	getCmd.PersistentFlags().BoolVarP(&skipAliases, "skip-alias-processing", "", false, "if set, we don't process the response for aliases")
 	getCmd.MarkFlagsMutuallyExclusive("if-alias-exists", "if-alias-does-not-exist")
 	_ = getCmd.RegisterFlagCompletionFunc("output-jq", jqCompletionFunc)
 
@@ -276,7 +279,7 @@ func NewGetCommand(parentCmd *cobra.Command) func() {
 	return resetFunc
 }
 
-func getInternal(ctx context.Context, overrides *httpclient.HttpParameterOverrides, args []string) (string, error) {
+func getInternal(ctx context.Context, overrides *httpclient.HttpParameterOverrides, args []string, skipAliases bool) (string, error) {
 	resp, err := getResource(ctx, overrides, args)
 
 	if err != nil {
@@ -300,7 +303,9 @@ func getInternal(ctx context.Context, overrides *httpclient.HttpParameterOverrid
 			return "", fmt.Errorf(resp.Status)
 		}
 
-		aliases.SaveAliasesForResources(string(body))
+		if !skipAliases {
+			aliases.SaveAliasesForResources(string(body))
+		}
 
 		return string(body), nil
 	} else {

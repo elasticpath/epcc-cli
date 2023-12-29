@@ -28,6 +28,7 @@ func NewUpdateCommand(parentCmd *cobra.Command) func() {
 	var noBodyPrint = false
 	var ifAliasExists = ""
 	var ifAliasDoesNotExist = ""
+	var skipAliases = false
 
 	resetFunc := func() {
 		overrides.QueryParameters = nil
@@ -36,6 +37,7 @@ func NewUpdateCommand(parentCmd *cobra.Command) func() {
 		noBodyPrint = false
 		ifAliasExists = ""
 		ifAliasDoesNotExist = ""
+		skipAliases = false
 	}
 
 	var updateCmd = &cobra.Command{
@@ -85,7 +87,7 @@ func NewUpdateCommand(parentCmd *cobra.Command) func() {
 					}
 				}
 
-				body, err := updateInternal(context.Background(), overrides, append([]string{resourceName}, args...))
+				body, err := updateInternal(context.Background(), overrides, skipAliases, append([]string{resourceName}, args...))
 
 				if err != nil {
 					return err
@@ -180,6 +182,7 @@ func NewUpdateCommand(parentCmd *cobra.Command) func() {
 	updateCmd.PersistentFlags().StringVarP(&ifAliasExists, "if-alias-exists", "", "", "If the alias exists we will run this command, otherwise exit with no error")
 	updateCmd.PersistentFlags().StringVarP(&ifAliasDoesNotExist, "if-alias-does-not-exist", "", "", "If the alias does not exist we will run this command, otherwise exit with no error")
 	updateCmd.MarkFlagsMutuallyExclusive("if-alias-exists", "if-alias-does-not-exist")
+	updateCmd.PersistentFlags().BoolVarP(&skipAliases, "skip-alias-processing", "", false, "if set, we don't process the response for aliases")
 	_ = updateCmd.RegisterFlagCompletionFunc("output-jq", jqCompletionFunc)
 	parentCmd.AddCommand(updateCmd)
 
@@ -187,7 +190,7 @@ func NewUpdateCommand(parentCmd *cobra.Command) func() {
 
 }
 
-func updateInternal(ctx context.Context, overrides *httpclient.HttpParameterOverrides, args []string) (string, error) {
+func updateInternal(ctx context.Context, overrides *httpclient.HttpParameterOverrides, skipAliases bool, args []string) (string, error) {
 	shutdown.OutstandingOpCounter.Add(1)
 	defer shutdown.OutstandingOpCounter.Done()
 
@@ -261,7 +264,9 @@ func updateInternal(ctx context.Context, overrides *httpclient.HttpParameterOver
 
 		// 204 is no content, so we will skip it.
 		if resp.StatusCode != 204 {
-			aliases.SaveAliasesForResources(string(resBody))
+			if !skipAliases {
+				aliases.SaveAliasesForResources(string(resBody))
+			}
 		}
 
 		return string(resBody), nil

@@ -108,7 +108,7 @@ func openDoc(resourceDoc resources.Resource, verb string) error {
 
 	}
 	if err != nil {
-		return err
+		return fmt.Errorf("could not open docs for resource '%s', action'%s': %w", resourceDoc.PluralName, verb, err)
 	}
 	return nil
 }

@@ -46,6 +46,7 @@ func NewCreateCommand(parentCmd *cobra.Command) func() {
 	var setAlias = ""
 	var ifAliasExists = ""
 	var ifAliasDoesNotExist = ""
+	var skipAliases = false
 
 	resetFunc := func() {
 		autoFillOnCreate = false
@@ -56,6 +57,7 @@ func NewCreateCommand(parentCmd *cobra.Command) func() {
 		ifAliasDoesNotExist = ""
 		overrides.OverrideUrlPath = ""
 		overrides.QueryParameters = nil
+		skipAliases = false
 	}
 
 	for _, resource := range resources.GetPluralResources() {
@@ -95,7 +97,7 @@ func NewCreateCommand(parentCmd *cobra.Command) func() {
 					}
 				}
 
-				body, err := createInternal(context.Background(), overrides, append([]string{resourceName}, args...), autoFillOnCreate, setAlias)
+				body, err := createInternal(context.Background(), overrides, append([]string{resourceName}, args...), autoFillOnCreate, setAlias, skipAliases)
 
 				if err != nil {
 					return err
@@ -208,13 +210,14 @@ func NewCreateCommand(parentCmd *cobra.Command) func() {
 	createCmd.PersistentFlags().StringVarP(&setAlias, "save-as-alias", "", "", "A name to save the created resource as")
 	createCmd.PersistentFlags().StringVarP(&ifAliasExists, "if-alias-exists", "", "", "If the alias exists we will run this command, otherwise exit with no error")
 	createCmd.PersistentFlags().StringVarP(&ifAliasDoesNotExist, "if-alias-does-not-exist", "", "", "If the alias does not exist we will run this command, otherwise exit with no error")
+	createCmd.PersistentFlags().BoolVarP(&skipAliases, "skip-alias-processing", "", false, "if set, we don't process the response for aliases")
 	createCmd.MarkFlagsMutuallyExclusive("if-alias-exists", "if-alias-does-not-exist")
 	_ = createCmd.RegisterFlagCompletionFunc("output-jq", jqCompletionFunc)
 
 	return resetFunc
 }
 
-func createInternal(ctx context.Context, overrides *httpclient.HttpParameterOverrides, args []string, autoFillOnCreate bool, aliasName string) (string, error) {
+func createInternal(ctx context.Context, overrides *httpclient.HttpParameterOverrides, args []string, autoFillOnCreate bool, aliasName string, skipAliases bool) (string, error) {
 	shutdown.OutstandingOpCounter.Add(1)
 	defer shutdown.OutstandingOpCounter.Done()
 
@@ -321,7 +324,9 @@ func createInternal(ctx context.Context, overrides *httpclient.HttpParameterOver
 
 		// 204 is no content, so we will skip it.
 		if resp.StatusCode != 204 {
-			aliases.SaveAliasesForResources(string(resBody))
+			if !skipAliases {
+				aliases.SaveAliasesForResources(string(resBody))
+			}
 		}
 
 		if aliasName != "" {

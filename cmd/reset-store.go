@@ -56,25 +56,25 @@ var ResetStore = &cobra.Command{
 		// We would also need locking to go faster.
 
 		// Get customer and account authentication settings to populate the aliases
-		_, err = getInternal(ctx, overrides, []string{"customer-authentication-settings"})
+		_, err = getInternal(ctx, overrides, []string{"customer-authentication-settings"}, false)
 
 		if err != nil {
 			errors = append(errors, err.Error())
 		}
 
-		_, err = getInternal(ctx, overrides, []string{"account-authentication-settings"})
+		_, err = getInternal(ctx, overrides, []string{"account-authentication-settings"}, false)
 
 		if err != nil {
 			errors = append(errors, err.Error())
 		}
 
-		_, err = getInternal(ctx, overrides, []string{"merchant-realm-mappings"})
+		_, err = getInternal(ctx, overrides, []string{"merchant-realm-mappings"}, false)
 
 		if err != nil {
 			errors = append(errors, err.Error())
 		}
 
-		_, err = getInternal(ctx, overrides, []string{"authentication-realms"})
+		_, err = getInternal(ctx, overrides, []string{"authentication-realms"}, false)
 
 		if err != nil {
 			errors = append(errors, err.Error())
@@ -180,7 +180,7 @@ func resetResourcesUndeletableResources(ctx context.Context, overrides *httpclie
 	errors := make([]string, 0)
 
 	for _, resetCmd := range resetCmds {
-		body, err := updateInternal(ctx, overrides, resetCmd)
+		body, err := updateInternal(ctx, overrides, false, resetCmd)
 
 		if err != nil {
 			errors = append(errors, fmt.Errorf("error resetting  %s: %v", resetCmd[0], err).Error())
