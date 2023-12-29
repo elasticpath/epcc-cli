@@ -8,6 +8,7 @@ set -x
 #Let's test that epcc command works after an embarrassing bug that caused it to panic :(
 epcc
 
+
 epcc reset-store .+
 
 echo "Starting Misc Runbook"
@@ -61,7 +62,15 @@ epcc runbooks run manual-gateway-how-to capture-payment
 epcc runbooks run manual-gateway-how-to reset-cart
 epcc runbooks run manual-gateway-how-to reset
 
-
+echo "Starting Customer Cart Association Tests"
+epcc reset-store .+
+epcc runbooks run customer-cart-associations try-and-delete-all-carts
+epcc runbooks run customer-cart-associations create-prerequisites
+epcc runbooks run customer-cart-associations create-customers-and-carts-with-product-items
+epcc runbooks run customer-cart-associations delete-customer-and-carts-with-product-items
+epcc runbooks run customer-cart-associations create-customers-and-carts-with-custom-items
+epcc runbooks run customer-cart-associations delete-customer-and-carts-with-custom-items
+epcc runbooks run customer-cart-associations reset
 
 echo "SUCCESS"
 

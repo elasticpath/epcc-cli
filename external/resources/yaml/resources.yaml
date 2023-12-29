@@ -219,7 +219,7 @@ carts:
   json-api-format: "legacy"
   docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/carts-and-orders/carts/index.html"
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/carts-and-orders/carts/associations/get-customer-carts.html"
+    docs: "https://elasticpath.dev/docs/commerce-cloud/carts/customer-cart-associations/get-customer-carts#get-get-all-carts"
     url: "/v2/carts"
   get-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/carts-and-orders/carts/get-a-cart.html"
@@ -491,6 +491,24 @@ customers:
       autofill: FUNC:Email
     password:
       type: STRING
+customer-cart-associations:
+  singular-name: customer-cart-association
+  json-api-type: customer-cart-relationship
+  json-api-format: "legacy"
+  no-wrapping: true
+  docs: "https://elasticpath.dev/docs/commerce-cloud/carts/customer-cart-associations/customer-cart-associations-overview"
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/commerce-cloud/carts/customer-cart-associations/delete-an-association"
+    url: "/v2/carts/{carts}/relationships/customers"
+  create-entity:
+    docs: "https://elasticpath.dev/docs/commerce-cloud/carts/customer-cart-associations/create-an-association"
+    url: "/v2/carts/{carts}/relationships/customers"
+    content-type: application/json
+  attributes:
+    data[n].id:
+      type: RESOURCE_ID:customer
+    data[n].type:
+      type: ENUM:customer
 customer-addresses:
   singular-name: "customer-address"
   json-api-type: "address"
@@ -797,7 +815,7 @@ entries-relationship:
     data.id:
       type: RESOURCE_ID:*
     data.type:
-      type: SINGULAR_RESOURCE_TYPE
+      type: JSON_API_TYPE
 integration-jobs:
   singular-name: "integration-job"
   json-api-type: "integration-job"
