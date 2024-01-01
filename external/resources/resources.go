@@ -136,6 +136,16 @@ func GetResourceByName(name string) (Resource, bool) {
 	return Resource{}, false
 }
 
+func MustGetResourceByName(name string) Resource {
+	res, ok := GetResourceByName(name)
+
+	if !ok {
+		panic("Could not find resource: " + name)
+	}
+
+	return res
+}
+
 func GetSingularResourceByName(name string) (Resource, bool) {
 	res, ok := resourcesSingular[name]
 

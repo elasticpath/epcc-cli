@@ -5,6 +5,7 @@ import (
 	"github.com/elasticpath/epcc-cli/config"
 	"github.com/elasticpath/epcc-cli/external/aliases"
 	"github.com/elasticpath/epcc-cli/external/clictx"
+	"github.com/elasticpath/epcc-cli/external/headergroups"
 	"github.com/elasticpath/epcc-cli/external/httpclient"
 	"github.com/elasticpath/epcc-cli/external/logger"
 	"github.com/elasticpath/epcc-cli/external/misc"
@@ -84,7 +85,7 @@ func InitializeCmd() {
 		resourceListCommand,
 		aliasesCmd,
 		configure,
-		loginCmd,
+		LoginCmd,
 		logoutCmd,
 		ResetStore,
 		runbookGlobalCmd,
@@ -120,16 +121,19 @@ func InitializeCmd() {
 
 	aliasesCmd.AddCommand(aliasListCmd, aliasClearCmd)
 
-	loginCmd.AddCommand(loginClientCredentials)
-	loginCmd.AddCommand(loginImplicit)
-	loginCmd.AddCommand(loginInfo)
-	loginCmd.AddCommand(loginDocs)
-	loginCmd.AddCommand(loginCustomer)
-	loginCmd.AddCommand(loginAccountManagement)
+	LoginCmd.AddCommand(loginClientCredentials)
+	LoginCmd.AddCommand(loginImplicit)
+	LoginCmd.AddCommand(loginInfo)
+	LoginCmd.AddCommand(loginDocs)
+	LoginCmd.AddCommand(loginCustomer)
+	LoginCmd.AddCommand(loginAccountManagement)
 
 	logoutCmd.AddCommand(logoutBearer)
 	logoutCmd.AddCommand(logoutCustomer)
 	logoutCmd.AddCommand(logoutAccountManagement)
+	logoutCmd.AddCommand(LogoutHeaders)
+
+	NewHeadersCommand(RootCmd)
 }
 
 // If there is a log level argument, we will set it much earlier on a dummy command
@@ -251,6 +255,7 @@ func Execute() {
 
 		httpclient.LogStats()
 		aliases.FlushAliases()
+		headergroups.FlushHeaderGroups()
 
 		if exit {
 			os.Exit(3)

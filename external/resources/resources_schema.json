@@ -105,7 +105,8 @@
                     "id",
                     "sku",
                     "code",
-                    "slug"
+                    "slug",
+                    "name"
                   ]
                 }
               },

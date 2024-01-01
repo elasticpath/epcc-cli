@@ -9,6 +9,7 @@ import (
 	"github.com/elasticpath/epcc-cli/external/authentication"
 	"github.com/elasticpath/epcc-cli/external/browser"
 	"github.com/elasticpath/epcc-cli/external/completion"
+	"github.com/elasticpath/epcc-cli/external/headergroups"
 	"github.com/elasticpath/epcc-cli/external/httpclient"
 	"github.com/elasticpath/epcc-cli/external/json"
 	"github.com/elasticpath/epcc-cli/external/resources"
@@ -24,7 +25,7 @@ const (
 	ClientSecret = "client_secret"
 )
 
-var loginCmd = &cobra.Command{
+var LoginCmd = &cobra.Command{
 	Use:          "login",
 	Short:        "Login to the API via client_credentials, implicit, customer or account management tokens.",
 	SilenceUsage: false,
@@ -103,6 +104,16 @@ var loginInfo = &cobra.Command{
 				log.Info("Auto login is disabled")
 			}
 
+		}
+
+		hgs := headergroups.GetAllHeaderGroups()
+
+		for _, hg := range hgs {
+			log.Infof("We are using a header group: %s", hg)
+		}
+
+		for k, v := range headergroups.GetAllHeaders() {
+			log.Infof("Using header %s: %s", k, v)
 		}
 
 		log.Infof("All tokens are stored in %s", authentication.GetAuthenticationCacheDirectory())
@@ -208,7 +219,7 @@ var loginClientCredentials = &cobra.Command{
 			}
 		}
 
-		token, err := authentication.GetAuthenticationToken(false, &values)
+		token, err := authentication.GetAuthenticationToken(false, &values, true)
 
 		if err != nil {
 			return err
@@ -259,7 +270,7 @@ var loginImplicit = &cobra.Command{
 			values.Set(k, args[i+1])
 		}
 
-		token, err := authentication.GetAuthenticationToken(false, &values)
+		token, err := authentication.GetAuthenticationToken(false, &values, true)
 
 		if err != nil {
 			return err

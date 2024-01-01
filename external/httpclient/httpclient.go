@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/elasticpath/epcc-cli/config"
 	"github.com/elasticpath/epcc-cli/external/authentication"
+	"github.com/elasticpath/epcc-cli/external/headergroups"
 	"github.com/elasticpath/epcc-cli/external/json"
 	"github.com/elasticpath/epcc-cli/external/profiles"
 	"github.com/elasticpath/epcc-cli/external/shutdown"
@@ -188,7 +189,9 @@ func doRequestInternal(ctx context.Context, method string, contentType string, p
 		return nil, err
 	}
 
-	bearerToken, err := authentication.GetAuthenticationToken(true, nil)
+	warnOnNoAuthentication := len(headergroups.GetAllHeaderGroups()) == 0
+
+	bearerToken, err := authentication.GetAuthenticationToken(true, nil, warnOnNoAuthentication)
 
 	if err != nil {
 		return nil, err
@@ -222,6 +225,10 @@ func doRequestInternal(ctx context.Context, method string, contentType string, p
 		return nil, err
 	}
 
+	for k, v := range headergroups.GetAllHeaders() {
+		req.Header.Add(k, v)
+	}
+
 	dumpReq, err := httputil.DumpRequestOut(req, true)
 	if err != nil {
 		log.Error(err)
@@ -235,11 +242,16 @@ func doRequestInternal(ctx context.Context, method string, contentType string, p
 	}
 
 	rateLimitTime := time.Since(start)
+	log.Tracef("Rate limiter allowed call, making HTTP Request")
+
 	resp, err := HttpClient.Do(req)
 	requestTime := time.Since(start)
 
-	log.Tracef("Waiting for stats lock")
+	log.Tracef("HTTP Request complete, waiting for stats lock")
 	statsLock.Lock()
+
+	// Lock is not deferred (for perf reasons), so don't
+	// forget to unlock it, if you return before it is so.
 	stats.totalRequests += 1
 	if rateLimitTime.Milliseconds() > 50 {
 		// Only count rate limit time if it took us longer than 50 ms to get here.
@@ -256,6 +268,8 @@ func doRequestInternal(ctx context.Context, method string, contentType string, p
 
 	requestNumber := stats.totalRequests
 	statsLock.Unlock()
+
+	log.Tracef("Stats processing complete")
 
 	if err != nil {
 		return nil, err

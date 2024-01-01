@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"github.com/elasticpath/epcc-cli/external/authentication"
+	"github.com/elasticpath/epcc-cli/external/headergroups"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -70,6 +71,19 @@ var logoutAccountManagement = &cobra.Command{
 			log.Info("No account management authentication token found, you were already logged out.")
 		}
 
+		return nil
+	},
+}
+
+var LogoutHeaders = &cobra.Command{
+	Use:   "headers",
+	Short: "Clear all headers that are persisted in the profile",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		for k, v := range headergroups.GetAllHeaders() {
+			log.Infof("Unsetting: %s = %s", k, v)
+		}
+
+		headergroups.ClearAllHeaderGroups()
 		return nil
 	},
 }
