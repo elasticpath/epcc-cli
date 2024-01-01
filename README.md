@@ -53,6 +53,7 @@ The following is a summary of the main commands, in general you can type `epcc h
 | `epcc test-json [KEY] [VAL] [KEY] [VAL] ...`       | Render a JSON document based on the supplied key and value pairs             |
 
 #### Power User Commands
+
 | Command                                 | Description                                                                |
 |-----------------------------------------|----------------------------------------------------------------------------|
 | `epcc reset-store <STORE_ID>`           | Reset the store to an initial state (on a best effort basis)               |
@@ -67,7 +68,19 @@ The following is a summary of the main commands, in general you can type `epcc h
 3. `--max-concurrency` will control the maximum number of concurrent commands that can run simultaneously.
     * This differs from the rate limit in that if a request takes 2 seconds, a rate limit of 3 will allow 6 requests in flight at a time, whereas `--max-concurrency` would limit you to 3. A higher value will slow down initial start time. 
 
+#### Headers
 
+Headers can be set in one of three ways, depending on what is most convenient
+
+1. Via the `-H` argument.
+   * This header will be one time only.
+2. Via the `EPCC_CLI_HTTP_HEADER_0` environment variable.
+   * This header will be always be set.
+3. Via the `epcc header set`
+   * These headers will be set in the current profile and will stay until unset. You can see what headers are set with `epcc headers status`
+   * Headers set this way support aliases.
+   * You can also additionally group headers into groups with `--group` and then clear all headers with `epcc headers clear <GROUP>`
+   
 ### Configuration
 
 #### Via Prompts
@@ -78,16 +91,16 @@ Run the `epcc configure` and it will prompt you for the required settings, when 
 
 The following environment variables can be set up to control which environment and store to use with the EPCC CLI.
 
-| Environment Variable               | Description                                                                                                                                                                                                                                                                                               |
-|------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| EPCC_API_BASE_URL                  | This is the API base URL which can be retrieved via CM.                                                                                                                                                                                                                                                   |
-| EPCC_BETA_API_FEATURES             | This variable allows you to set [Beta Headers](https://documentation.elasticpath.com/commerce-cloud/docs/api/basics/api-contract.html#beta-apis) for all API calls.                                                                                                                                       |
-| EPCC_CLI_HTTP_HEADER_**N**         | Setting any environment variable like this (where N is a number) will cause it's value to be parsed and added to all HTTP headers (e.g., `EPCC_CLI_HTTP_HEADER_0=Cache-Control: no-cache` will add `Cache-Control: no-cache` as a header). FYI, the surprising syntax is due to different encoding rules. |
-| EPCC_CLI_SUPPRESS_NO_AUTH_MESSAGES | This will supress warning messages about not being authenticated or logged out                                                                                                                                                                                                                            |
-| EPCC_CLIENT_ID                     | This is the Client ID which can be retrieved via CM.                                                                                                                                                                                                                                                      |                                            
-| EPCC_CLIENT_SECRET                 | This is the Client Secret which can be retrieved via CM.                                                                                                                                                                                                                                                  |
-| EPCC_PROFILE                       | A profile name that allows for an independent session and isolation (e.g., distinct histories)                                                                                                                                                                                                            |
-| EPCC_RUNBOOK_DIRECTORY             | A directory that will be scanned for runbook, a runbook ends with `.epcc.yml`                                                                                                                                                                                                                             |
+| Environment Variable               | Description                                                                                                                                                                                                                                                                                                                                                               |
+|------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| EPCC_API_BASE_URL                  | This is the API base URL which can be retrieved via CM.                                                                                                                                                                                                                                                                                                                   |
+| EPCC_BETA_API_FEATURES             | This variable allows you to set [Beta Headers](https://documentation.elasticpath.com/commerce-cloud/docs/api/basics/api-contract.html#beta-apis) for all API calls.                                                                                                                                                                                                       |
+| EPCC_CLI_HTTP_HEADER_**N**         | Setting any environment variable like this (where N is a number) will cause it's value to be parsed and added to all HTTP headers (e.g., `EPCC_CLI_HTTP_HEADER_0=Cache-Control: no-cache` will add `Cache-Control: no-cache` as a header). FYI, the surprising syntax is due to different encoding rules. You can also specify headers using `-H` or `epcc headers`       |
+| EPCC_CLI_SUPPRESS_NO_AUTH_MESSAGES | This will supress warning messages about not being authenticated or logged out                                                                                                                                                                                                                                                                                            |
+| EPCC_CLIENT_ID                     | This is the Client ID which can be retrieved via CM.                                                                                                                                                                                                                                                                                                                      |                                            
+| EPCC_CLIENT_SECRET                 | This is the Client Secret which can be retrieved via CM.                                                                                                                                                                                                                                                                                                                  |
+| EPCC_PROFILE                       | A profile name that allows for an independent session and isolation (e.g., distinct histories)                                                                                                                                                                                                                                                                            |
+| EPCC_RUNBOOK_DIRECTORY             | A directory that will be scanned for runbook, a runbook ends with `.epcc.yml`                                                                                                                                                                                                                                                                                             |
 
 It is recommended to set EPCC_API_BASE_URL, EPCC_CLIENT_ID, and EPCC_CLIENT_SECRET to be able to interact with most things in the CLI.
 

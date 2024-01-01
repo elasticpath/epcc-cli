@@ -22,6 +22,11 @@ const (
 	CompleteLoginClientID             = 512
 	CompleteLoginClientSecret         = 1024
 	CompleteLoginAccountManagementKey = 2048
+
+	CompleteHeaderKey   = 4096
+	CompleteHeaderValue = 8192
+
+	CompleteCurrency = 16384
 )
 
 const (
@@ -41,6 +46,8 @@ type Request struct {
 	Verb       int
 	Attribute  string
 	QueryParam string
+	Header     string
+	// The current string argument being completed
 	ToComplete string
 	NoAliases  bool
 }
@@ -256,34 +263,12 @@ func Complete(c Request) ([]string, cobra.ShellCompDirective) {
 					}
 
 				} else if attribute.Type == "CURRENCY" {
-					currencies := []string{"AED", "AFN", "ALL", "AMD", "ANG", "AOA", "ARS", "AUD", "AWG", "AZN",
-						"BAM", "BBD", "BDT", "BGN", "BHD", "BIF", "BMD", "BND", "BOB", "BRL", "BSD", "BTN", "BWP", "BYN", "BZD",
-						"CAD", "CDF", "CHF", "CLP", "CNY", "COP", "CRC", "CUC", "CUP", "CVE", "CZK",
-						"DJF", "DKK", "DOP", "DZD",
-						"EGP", "ERN", "ETB", "EUR",
-						"FJD", "FKP",
-						"GBP", "GEL", "GGP", "GHS", "GIP", "GMD", "GNF", "GTQ", "GYD",
-						"HKD", "HNL", "HRK", "HTG", "HUF",
-						"IDR", "ILS", "IMP", "INR", "IQD", "IRR", "ISK",
-						"JEP", "JMD", "JOD", "JPY",
-						"KES", "KGS", "KHR", "KMF", "KPW", "KRW", "KWD", "KYD", "KZT",
-						"LAK", "LBP", "LKR", "LRD", "LSL", "LYD",
-						"MAD", "MDL", "MGA", "MKD", "MMK", "MNT", "MOP", "MRU", "MUR", "MVR", "MWK", "MXN", "MYR", "MZN",
-						"NAD", "NGN", "NIO", "NOK", "NPR", "NZD",
-						"OMR",
-						"PAB", "PEN", "PGK", "PHP", "PKR", "PLN", "PYG",
-						"QAR",
-						"RON", "RSD", "RUB", "RWF",
-						"SAR", "SBD", "SCR", "SDG", "SEK", "SGD", "SHP", "SLL", "SOS", "SPL", "SRD", "STN", "SVC", "SYP", "SZL",
-						"THB", "TJS", "TMT", "TND", "TOP", "TRY", "TTD", "TVD", "TWD", "TZS",
-						"UAH", "UGX", "USD", "UYU", "UZS",
-						"VEF", "VND", "VUV",
-						"WST",
-						"XAF", "XCD", "XDR", "XOF", "XPF",
-						"YER",
-						"ZAR", "ZMW", "ZWD"}
+					res, _ := Complete(Request{
+						Type: CompleteCurrency,
+					})
 
-					results = append(results, currencies...)
+					results = append(results, res...)
+
 				} else if attribute.Type == "FILE" {
 					compDir = cobra.ShellCompDirectiveFilterFileExt
 
@@ -360,6 +345,60 @@ func Complete(c Request) ([]string, cobra.ShellCompDirective) {
 
 	if c.Type&CompleteLoginAccountManagementKey > 0 {
 		results = append(results, "account_id", "account_name")
+	}
+
+	if c.Type&CompleteHeaderKey > 0 {
+
+		headersMutex.RLock()
+		defer headersMutex.RUnlock()
+
+		for k := range supportedHeadersToCompletionRequest {
+			results = append(results, supportedHeadersOriginalCasing[k])
+		}
+	}
+
+	if c.Type&CompleteHeaderValue > 0 {
+		headersMutex.RLock()
+		defer headersMutex.RUnlock()
+
+		v := supportedHeadersToCompletionRequest[strings.ToLower(c.Header)]
+
+		if v != nil {
+			r, _ := Complete(*v)
+
+			results = append(results, r...)
+		}
+	}
+
+	if c.Type&CompleteCurrency > 0 {
+		currencies := []string{"AED", "AFN", "ALL", "AMD", "ANG", "AOA", "ARS", "AUD", "AWG", "AZN",
+			"BAM", "BBD", "BDT", "BGN", "BHD", "BIF", "BMD", "BND", "BOB", "BRL", "BSD", "BTN", "BWP", "BYN", "BZD",
+			"CAD", "CDF", "CHF", "CLP", "CNY", "COP", "CRC", "CUC", "CUP", "CVE", "CZK",
+			"DJF", "DKK", "DOP", "DZD",
+			"EGP", "ERN", "ETB", "EUR",
+			"FJD", "FKP",
+			"GBP", "GEL", "GGP", "GHS", "GIP", "GMD", "GNF", "GTQ", "GYD",
+			"HKD", "HNL", "HRK", "HTG", "HUF",
+			"IDR", "ILS", "IMP", "INR", "IQD", "IRR", "ISK",
+			"JEP", "JMD", "JOD", "JPY",
+			"KES", "KGS", "KHR", "KMF", "KPW", "KRW", "KWD", "KYD", "KZT",
+			"LAK", "LBP", "LKR", "LRD", "LSL", "LYD",
+			"MAD", "MDL", "MGA", "MKD", "MMK", "MNT", "MOP", "MRU", "MUR", "MVR", "MWK", "MXN", "MYR", "MZN",
+			"NAD", "NGN", "NIO", "NOK", "NPR", "NZD",
+			"OMR",
+			"PAB", "PEN", "PGK", "PHP", "PKR", "PLN", "PYG",
+			"QAR",
+			"RON", "RSD", "RUB", "RWF",
+			"SAR", "SBD", "SCR", "SDG", "SEK", "SGD", "SHP", "SLL", "SOS", "SPL", "SRD", "STN", "SVC", "SYP", "SZL",
+			"THB", "TJS", "TMT", "TND", "TOP", "TRY", "TTD", "TVD", "TWD", "TZS",
+			"UAH", "UGX", "USD", "UYU", "UZS",
+			"VEF", "VND", "VUV",
+			"WST",
+			"XAF", "XCD", "XDR", "XOF", "XPF",
+			"YER",
+			"ZAR", "ZMW", "ZWD"}
+
+		results = append(results, currencies...)
 	}
 
 	// This is dead code since I hacked the aliases to never return spaces.

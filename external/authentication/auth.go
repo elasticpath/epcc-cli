@@ -51,7 +51,7 @@ func AddPostAuthHook(f func(r *http.Request, s *http.Response)) {
 	defer getTokenMutex.Unlock()
 	postAuthHook = append(postAuthHook, f)
 }
-func GetAuthenticationToken(useTokenFromProfileDir bool, valuesOverride *url.Values) (*ApiTokenResponse, error) {
+func GetAuthenticationToken(useTokenFromProfileDir bool, valuesOverride *url.Values, warnOnNoAuthentication bool) (*ApiTokenResponse, error) {
 
 	if useTokenFromProfileDir {
 		bearerToken.Store(GetApiToken())
@@ -98,7 +98,7 @@ func GetAuthenticationToken(useTokenFromProfileDir bool, valuesOverride *url.Val
 					defer noTokenWarningMutex.Unlock()
 					if noTokenWarningMessageLogged == false {
 						noTokenWarningMessageLogged = true
-						if !env.EPCC_CLI_SUPPRESS_NO_AUTH_MESSAGES {
+						if !env.EPCC_CLI_SUPPRESS_NO_AUTH_MESSAGES && warnOnNoAuthentication {
 							log.Warn("No client id set in profile or env var, no authentication will be used for API request. To get started, set the EPCC_CLIENT_ID and (optionally) EPCC_CLIENT_SECRET environment variables")
 						}
 

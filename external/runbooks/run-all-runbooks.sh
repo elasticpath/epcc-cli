@@ -2,8 +2,18 @@
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
+# We just need to hack this for now, due to API limitations
+epcc get cart cust1_and_2 --output-jq .data.relationships.customers.data[].id  | sed -E 's/"//g' |  xargs -d "\n" -n 1 epcc delete customer-cart-association cust1_and_2 data[0].type customer data[0].id
+epcc get cart cust4_and_5 --output-jq .data.relationships.customers.data[].id  | sed -E 's/"//g' |  xargs -d "\n" -n 1 epcc delete customer-cart-association cust4_and_5 data[0].type customer data[0].id
+sleep 1
+epcc get cart cust1_and_2 --output-jq .data.relationships.customers.data[].id  | sed -E 's/"//g' |  xargs -d "\n" -n 1 epcc delete customer-cart-association cust1_and_2 data[0].type customer data[0].id
+epcc get cart cust4_and_5 --output-jq .data.relationships.customers.data[].id  | sed -E 's/"//g' |  xargs -d "\n" -n 1 epcc delete customer-cart-association cust4_and_5 data[0].type customer data[0].id
+
+
 set -e
 set -x
+
+
 
 #Let's test that epcc command works after an embarrassing bug that caused it to panic :(
 epcc
@@ -64,6 +74,7 @@ epcc runbooks run manual-gateway-how-to reset
 
 echo "Starting Customer Cart Association Tests"
 epcc reset-store .+
+
 epcc runbooks run customer-cart-associations try-and-delete-all-carts
 epcc runbooks run customer-cart-associations create-prerequisites
 epcc runbooks run customer-cart-associations create-customers-and-carts-with-product-items
