@@ -74,7 +74,7 @@ jobs:
           args: build --single-target --snapshot
 
       - name: 'Upload Artifact'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: distribution
           path: dist/epcc-cli_linux_amd64
