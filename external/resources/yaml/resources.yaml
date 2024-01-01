@@ -36,7 +36,7 @@ account-management-authentication-tokens:
   suppress-reset-warning: true
 account-members:
   singular-name: "account-member"
-  json-api-type: "account-member"
+  json-api-type: "account_member"
   json-api-format: "legacy"
   docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/account-management/account-members/index.html"
   alternate-json-type-for-aliases:
