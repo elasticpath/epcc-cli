@@ -132,8 +132,15 @@ func ResolveAliasValuesOrReturnIdentity(jsonApiType string, alternateJsonApiType
 	splitAlias := strings.Split(aliasName, "/")
 
 	if len(splitAlias) == 2 {
+		//
 		alternateJsonApiTypes = append(alternateJsonApiTypes, splitAlias[0])
 		aliasName = splitAlias[1]
+	}
+
+	if len(splitAlias) == 4 {
+		if splitAlias[0] == "alias" {
+			return ResolveAliasValuesOrReturnIdentity(splitAlias[1], []string{}, splitAlias[2], splitAlias[3])
+		}
 	}
 
 	if result, ok := GetAliasesForJsonApiTypeAndAlternates(jsonApiType, alternateJsonApiTypes)[aliasName]; ok {

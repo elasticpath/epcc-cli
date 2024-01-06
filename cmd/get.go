@@ -30,6 +30,7 @@ func NewGetCommand(parentCmd *cobra.Command) func() {
 
 	// Ensure that any new options here are added to the resetFunc
 	var outputJq = ""
+	var compactOutput = false
 	var noBodyPrint = false
 	var retryWhileJQ = ""
 	var retryWhileJQMaxAttempts = uint16(1200)
@@ -41,12 +42,14 @@ func NewGetCommand(parentCmd *cobra.Command) func() {
 		overrides.QueryParameters = nil
 		overrides.OverrideUrlPath = ""
 		outputJq = ""
+		compactOutput = false
 		noBodyPrint = false
 		retryWhileJQ = ""
 		retryWhileJQMaxAttempts = uint16(1200)
 		ifAliasExists = ""
 		ifAliasDoesNotExist = ""
 		skipAliases = false
+
 	}
 
 	var getCmd = &cobra.Command{
@@ -195,6 +198,14 @@ func NewGetCommand(parentCmd *cobra.Command) func() {
 					if noBodyPrint {
 						return retriesFailedError
 					} else {
+						if compactOutput {
+							body, err = json.Compact(body)
+
+							if err != nil {
+								return err
+							}
+						}
+
 						printError := json.PrintJson(body)
 
 						if retriesFailedError != nil {
@@ -266,6 +277,7 @@ func NewGetCommand(parentCmd *cobra.Command) func() {
 	getCmd.PersistentFlags().StringVar(&overrides.OverrideUrlPath, "override-url-path", "", "Override the URL that will be used for the Request")
 	getCmd.PersistentFlags().StringSliceVarP(&overrides.QueryParameters, "query-parameters", "q", []string{}, "Pass in key=value an they will be added as query parameters")
 	getCmd.PersistentFlags().StringVarP(&outputJq, "output-jq", "", "", "A jq expression, if set we will restrict output to only this")
+	getCmd.PersistentFlags().BoolVarP(&compactOutput, "compact", "", false, "Hides some of the boiler plate keys and empty fields, etc...")
 	getCmd.PersistentFlags().StringVarP(&retryWhileJQ, "retry-while-jq", "", "", "A jq expression, if set and returns true we will retry the get command (see manual for examples)")
 	getCmd.PersistentFlags().Uint16VarP(&retryWhileJQMaxAttempts, "retry-while-jq-max-attempts", "", 1200, "The maximum number of attempts we will retry with jq")
 	getCmd.PersistentFlags().StringVarP(&ifAliasExists, "if-alias-exists", "", "", "If the alias exists we will run this command, otherwise exit with no error")

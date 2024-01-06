@@ -267,5 +267,4 @@ func formatValue(v string) string {
 	} else {
 		return fmt.Sprintf("\"%s\"", v)
 	}
-
 }

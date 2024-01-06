@@ -31,18 +31,19 @@ actions:
           short: "Password (if set we will try and create a user-authentication-password-profile-info)"
     commands:
       # Initialize alias for Authentication Realm
-      - epcc get account-authentication-settings
+      - epcc get -s account-authentication-settings
       # Initialize alias for password profile id
-      - epcc get password-profiles related_authentication_realm_for_account_authentication_settings_last_read=entity
-      - epcc create user-authentication-info related_authentication_realm_for_account_authentication_settings_last_read=entity name "{{.name}}" email "{{.email}}"
+      - epcc get -s password-profiles related_authentication_realm_for_account_authentication_settings_last_read=entity
+      - epcc create -s user-authentication-info related_authentication_realm_for_account_authentication_settings_last_read=entity name "{{.name}}" email "{{.email}}"
       # TODO if we ever support variables, we should check whether we actually have that alias.
       - |
         {{ if ne (len .password) 0 }}
         epcc create user-authentication-password-profile-info related_authentication_realm_for_account_authentication_settings_last_read=entity last_read=entity username "{{.email}}" password "{{.password}}" password_profile_id last_read=array[0]
         {{ end }}
-      - epcc get account-member user_authentication_info/last_read=entity
-      - epcc create account name "Personal Account For {{ .name }}" legal_name "Individual Account For {{ .name }}"
-      - epcc create account-membership last_read=entity account_member_id user_authentication_info/last_read=entity
+
+      - epcc get account-member alias/user_authentication_info/last_read=entity/id
+      - epcc create -s account name "Personal Account For {{ .name }}" legal_name "Individual Account For {{ .name }}"
+      - epcc create -s account-membership last_read=entity account_member_id user_authentication_info/last_read=entity
   catalog-rule-example:
     description:
       short: "Create some catalog rules"
@@ -77,13 +78,13 @@ actions:
       - epcc create account name "Account 1" legal_name "Account 1"
       - epcc create user-authentication-info related_authentication_realm_for_account_authentication_settings_last_read=entity name "Account 1" email "account1@example.com"
       - epcc create user-authentication-password-profile-info related_authentication_realm_for_account_authentication_settings_last_read=entity name=Account_1 username "{{.account_1_username}}" password "{{.account_1_password}}" password_profile_id last_read=array[0]
-      - epcc get account-member user_authentication_info/last_read=entity
+      - epcc get account-member alias/user_authentication_info/last_read=entity/id
       - epcc create account-membership name=Account_1 account_member_id user_authentication_info/last_read=entity
       # Create Account 2
       - epcc create account name "Account 2" legal_name "Account 2"
       - epcc create user-authentication-info related_authentication_realm_for_account_authentication_settings_last_read=entity name "Account 2" email "account2@example.com"
       - epcc create user-authentication-password-profile-info related_authentication_realm_for_account_authentication_settings_last_read=entity name=Account_2 username "{{.account_2_username}}" password "{{.account_2_password}}" password_profile_id last_read=array[0]
-      - epcc get account-member user_authentication_info/last_read=entity
+      - epcc get account-member alias/user_authentication_info/last_read=entity/id
       - epcc create account-membership name=Account_2 account_member_id user_authentication_info/last_read=entity
       # Create PXM Stuff
       - |
