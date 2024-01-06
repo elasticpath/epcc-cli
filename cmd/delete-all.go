@@ -7,9 +7,11 @@ import (
 	"github.com/elasticpath/epcc-cli/external/apihelper"
 	"github.com/elasticpath/epcc-cli/external/httpclient"
 	"github.com/elasticpath/epcc-cli/external/id"
+	"github.com/elasticpath/epcc-cli/external/json"
 	"github.com/elasticpath/epcc-cli/external/resources"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"io"
 	"net/url"
 	"reflect"
 	"regexp"
@@ -176,6 +178,7 @@ func getParentIds(ctx context.Context, resource resources.Resource) ([][]id.Idab
 }
 
 var flowsUrlRegex = regexp.MustCompile("^/v2/flows/([^/]+)$")
+var cartsUrlRegex = regexp.MustCompile("^/v2/carts/([^/]+)$")
 
 func delPage(ctx context.Context, urlInfo *resources.CrudEntityInfo, ids [][]id.IdableAttributes) {
 	// Create a wait group to run DELETE in parallel
@@ -205,6 +208,102 @@ func delPage(ctx context.Context, urlInfo *resources.CrudEntityInfo, ids [][]id.
 
 			if resp.Body != nil {
 				defer resp.Body.Close()
+			}
+			if resp.StatusCode == 400 && cartsUrlRegex.MatchString(resourceURL) {
+				log.Warnf("Could not delete %s, likely associations, trying to clean up", resourceURL)
+
+				resp2, err := httpclient.DoRequest(ctx, "GET", resourceURL, "", nil)
+
+				if err != nil {
+					return
+				}
+
+				if resp2 != nil {
+					if resp2.Body != nil {
+						defer resp2.Body.Close()
+					}
+				}
+
+				if resp2.StatusCode != 200 {
+					log.Warnf("Couldn't retrieve cart %d", resp2.StatusCode)
+					return
+				}
+
+				bytes, err := io.ReadAll(resp2.Body)
+
+				if err != nil {
+					log.Warnf("Couldn't read cart body for %s: %v", resourceURL, err)
+					return
+				}
+
+				custIds, err := json.RunJQOnStringWithArray(".data.relationships.customers.data[].id", string(bytes))
+
+				if err == nil {
+					for _, id := range custIds {
+						jsonBody := fmt.Sprintf(`{ "data": [{ "id":"%s", "type": "customer"}]}`, id)
+						resp3, err := httpclient.DoRequest(ctx, "DELETE", fmt.Sprintf("%s/relationships/customers", resourceURL), "", strings.NewReader(jsonBody))
+
+						if err != nil {
+							log.Warnf("Couldn't delete customer cart association %s: %v", id, err)
+							continue
+						}
+
+						if resp3 == nil {
+							continue
+						}
+
+						if resp3.Body != nil {
+							defer resp3.Body.Close()
+						}
+					}
+				} else {
+
+					// JQ might give us an error if there are no customers (perhaps because there are accounts).
+					log.Tracef("Couldn't parse customers, %v", err)
+				}
+
+				acctIds, err := json.RunJQOnStringWithArray(".data.relationships.accounts.data[].id", string(bytes))
+
+				if err == nil {
+					for _, id := range acctIds {
+						jsonBody := fmt.Sprintf(`{ "data": [{ "id":"%s", "type": "account"}]}`, id)
+						resp3, err := httpclient.DoRequest(ctx, "DELETE", fmt.Sprintf("%s/relationships/accounts", resourceURL), "", strings.NewReader(jsonBody))
+
+						if err != nil {
+							log.Warnf("Couldn't delete account cart association %s: %v", id, err)
+							continue
+						}
+
+						if resp3 == nil {
+							continue
+						}
+
+						if resp3.Body != nil {
+							defer resp3.Body.Close()
+						}
+					}
+				} else {
+
+					// JQ might give us an error if there are no customers (perhaps because there are accounts).
+					log.Tracef("Couldn't parse customers, %v", err)
+				}
+
+				resp3, err := httpclient.DoRequest(ctx, "DELETE", resourceURL, "", nil)
+				if err != nil {
+					return
+				}
+
+				if resp3 == nil {
+					return
+				}
+
+				if resp3.Body != nil {
+					defer resp3.Body.Close()
+				}
+
+				if resp3.StatusCode == 400 {
+					log.Infof("Even after cleaning up associations, still couldn't clean up the cart")
+				}
 			}
 
 			if resp.StatusCode == 405 && flowsUrlRegex.MatchString(resourceURL) {
