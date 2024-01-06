@@ -63,7 +63,15 @@ func GenerateUrlViaIdableAttributes(urlInfo *CrudEntityInfo, args []id.IdableAtt
 
 	}
 
-	return template.Expand(values)
+	uri, err := template.Expand(values)
+
+	if err != nil {
+		return "", err
+	}
+
+	decodedUrlBytes, err := url.PathUnescape(uri)
+
+	return decodedUrlBytes, err
 
 }
 

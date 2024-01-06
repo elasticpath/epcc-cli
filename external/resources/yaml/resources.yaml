@@ -240,6 +240,7 @@ carts:
       type: STRING
     name:
       type: STRING
+      autofill: FUNC:Noun
     description:
       type: STRING
 cart-items:
