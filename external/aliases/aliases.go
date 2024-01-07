@@ -18,7 +18,7 @@ import (
 	"time"
 )
 
-var mutex = &sync.RWMutex{}
+var aliasMapMutex = &sync.RWMutex{}
 
 var aliasDirectoryOverride = ""
 
@@ -45,33 +45,39 @@ var arrayPathPattern = regexp.MustCompile("^\\.data\\[([0-9]+)]$")
 var relationshipPattern = regexp.MustCompile("^\\.data(?:\\[[0-9]+])?\\.relationships\\.([^.]+)\\.data")
 
 func GetAliasesForJsonApiTypeAndAlternates(jsonApiType string, alternateJsonApiTypes []string) map[string]*id.IdableAttributes {
-	aliases := map[string]*id.IdableAttributes{}
+	aliasList := map[string]*id.IdableAttributes{}
 
-	for k, v := range getAliasesForSingleJsonApiType(jsonApiType) {
-		aliases[k] = v
+	source := getAliasesForSingleJsonApiType(jsonApiType)
+	aliasMapMutex.RLock()
+	for k, v := range source {
+		aliasList[k] = v
 	}
+	aliasMapMutex.RUnlock()
 
 	for _, alternateJsonApiType := range alternateJsonApiTypes {
-		for k, v := range getAliasesForSingleJsonApiType(alternateJsonApiType) {
-			if _, ok := aliases[k]; !ok {
-				aliases[k] = v
-			}
 
+		source := getAliasesForSingleJsonApiType(alternateJsonApiType)
+		aliasMapMutex.RLock()
+		for k, v := range source {
+			if _, ok := aliasList[k]; !ok {
+				aliasList[k] = v
+			}
 		}
+		aliasMapMutex.RUnlock()
 	}
 
-	return aliases
+	return aliasList
 }
 
 func getAliasesForSingleJsonApiType(jsonApiType string) map[string]*id.IdableAttributes {
 
-	mutex.RLock()
+	aliasMapMutex.RLock()
 	aliasMap, ok := typeToAliasNameToIdMap[jsonApiType]
 
 	if !ok {
-		mutex.RUnlock()
-		mutex.Lock()
-		defer mutex.Unlock()
+		aliasMapMutex.RUnlock()
+		aliasMapMutex.Lock()
+		defer aliasMapMutex.Unlock()
 
 		done := make(chan bool, 1)
 
@@ -122,7 +128,7 @@ func getAliasesForSingleJsonApiType(jsonApiType string) map[string]*id.IdableAtt
 		done <- true
 
 	} else {
-		mutex.RUnlock()
+		aliasMapMutex.RUnlock()
 	}
 
 	return aliasMap
@@ -291,8 +297,8 @@ func getAliasFileForJsonApiType(profileDirectory string, resourceType string) st
 func modifyAliases(jsonApiType string, fn func(map[string]*id.IdableAttributes, map[string]map[string]bool)) {
 	aliasesToIdMapForType := getAliasesForSingleJsonApiType(jsonApiType)
 
-	mutex.Lock()
-	defer mutex.Unlock()
+	aliasMapMutex.Lock()
+	defer aliasMapMutex.Unlock()
 
 	fn(aliasesToIdMapForType, typeToIdToAliasNamesMap[jsonApiType])
 	dirtyAliases[jsonApiType] = true
@@ -326,7 +332,17 @@ func saveAliasesForResource(jsonApiType string, newAliases map[string]*id.Idable
 						if aliases.Id != newAliasReferencedId.Id {
 							log.Warnf("Trying to delete alias %v, but it points to id %v not %v, this is a bug", oldAliasName, aliases.Id, newAliasReferencedId.Id)
 						} else {
+
+							if oldId, ok := aliasMap[oldAliasName]; ok {
+								if _, ok := aliasesById[oldId.Id][oldAliasName]; ok {
+									// If we are pointing an alias at a new id, we
+									// need to delete the reference to the alias in the old id.
+									delete(aliasesById[oldId.Id], oldAliasName)
+								}
+							}
+
 							delete(aliasMap, oldAliasName)
+
 						}
 					}
 
@@ -515,19 +531,19 @@ func InitializeAliasDirectoryForTesting() {
 }
 
 func ClearAllCaches() {
-	mutex.Lock()
+	aliasMapMutex.Lock()
 	typeToAliasNameToIdMap = map[string]map[string]*id.IdableAttributes{}
 	typeToIdToAliasNamesMap = map[string]map[string]map[string]bool{}
 	dirtyAliases = map[string]bool{}
-	mutex.Unlock()
+	aliasMapMutex.Unlock()
 }
 
 func ClearCache(jsonApiType string) {
-	mutex.Lock()
+	aliasMapMutex.Lock()
 	delete(typeToAliasNameToIdMap, jsonApiType)
 	delete(dirtyAliases, jsonApiType)
 	delete(typeToIdToAliasNamesMap, jsonApiType)
-	mutex.Unlock()
+	aliasMapMutex.Unlock()
 }
 
 func ClearAllAliases() error {
@@ -564,8 +580,8 @@ func SyncAliases() int {
 	}()
 
 	syncedFiles := 0
-	mutex.RLock()
-	defer mutex.RUnlock()
+	aliasMapMutex.RLock()
+	defer aliasMapMutex.RUnlock()
 
 	for jsonApiType, val := range dirtyAliases {
 		if val == false {
