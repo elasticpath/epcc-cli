@@ -10,6 +10,37 @@ actions:
       # Initialize alias for Authentication Realm
       - epcc get account-authentication-settings
       - epcc create password-profile related_authentication_realm_for_account_authentication_settings_last_read=entity name "Username and Password Authentication"
+  create-deep-hierarchy:
+    description:
+      short: "Create a hierarchy"
+    variables:
+      depth:
+        type: INT
+        default: 4
+        description:
+          short: "Depth of the hierarchy"
+      width:
+        type: INT
+        default: 2
+        description:
+          short: "Width of the hierarchy"
+    commands:
+      # language=YAML
+      - |2
+        {{- range untilStep 0 $.depth  1 -}}
+          {{- $d := . -}}
+          {{- $total := 1 -}}
+          {{- range untilStep 0 $d  1 -}}
+              {{- $total = mul $total $.width | int }}
+          {{ end }}
+          -
+          {{ range untilStep 0 $total 1 -}}
+          {{- $x := . }}
+            epcc create -s account name "Account_{{ $d }}_{{ $x }}" legal_name "Account at {{ $d }} {{ $x }}" {{ if ne $d 0 }} parent_id name=Account_{{ sub $d 1 }}_{{ div $x $.width }} {{ end }}
+          {{ end }}
+        {{ end }}
+
+
   create-singleton-account-member:
     description:
       short: "Create an account member with an account"
@@ -115,7 +146,7 @@ actions:
          epcc create pcm-catalog-release name=Account_1_Catalog --save-as-alias account-management-catalog-rule-account-1-catalog
          epcc create pcm-catalog-release name=Account_2_Catalog --save-as-alias account-management-catalog-rule-account-2-catalog
       # Wait for Catalogs to be Published
-      - | 
+      - |
         epcc get pcm-catalog-release --retry-while-jq '.data.meta.release_status != "PUBLISHED"' name=Account_1_Catalog account-management-catalog-rule-account-1-catalog
         epcc get pcm-catalog-release --retry-while-jq '.data.meta.release_status != "PUBLISHED"' name=Account_2_Catalog account-management-catalog-rule-account-2-catalog
       - epcc get pcm-catalog-releases name=Account_1_Catalog
@@ -127,7 +158,7 @@ actions:
       short: "Reset the store configuration"
     ignore_errors: true
     commands:
-      - | 
+      - |
         epcc delete accounts name=Account_1
         epcc delete accounts name=Account_2
         epcc delete pcm-catalog-rule name=Account_1_Rule
@@ -135,7 +166,7 @@ actions:
       - |
         epcc delete pcm-catalog-release name=Account_1_Catalog name=Account_1_Catalog
         epcc delete pcm-catalog-release name=Account_2_Catalog name=Account_2_Catalog
-      - | 
+      - |
         epcc delete pcm-catalog name=Account_1_Catalog
         epcc delete pcm-catalog name=Account_2_Catalog
       - |
@@ -148,7 +179,3 @@ actions:
         epcc delete pcm-pricebook name=Account_1_Pricebook
         epcc delete pcm-pricebook name=Account_2_Pricebook
         epcc delete pcm-pricebook name=Account_2_Pricebook
-      
-        
-      
-

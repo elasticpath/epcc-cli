@@ -14,6 +14,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"golang.org/x/sync/semaphore"
+	"gopkg.in/yaml.v3"
 	"strconv"
 	"strings"
 	"sync/atomic"
@@ -120,13 +121,31 @@ func initRunbookShowCommands() *cobra.Command {
 				Short: runbookAction.Description.Short,
 				RunE: func(cmd *cobra.Command, args []string) error {
 
-					for stepIdx, cmd := range runbookAction.RawCommands {
+					cmds := runbookAction.RawCommands
+					for stepIdx := 0; stepIdx < len(cmds); stepIdx++ {
+						cmd := cmds[stepIdx]
 						templateName := fmt.Sprintf("Runbook: %s Action: %s Step: %d", runbook.Name, runbookAction.Name, stepIdx)
-
 						rawCmdLines, err := runbooks.RenderTemplates(templateName, cmd, runbookStringArguments, runbookAction.Variables)
+
 						if err != nil {
 							return err
 						}
+
+						joinedString := strings.Join(rawCmdLines, "\n")
+						renderedCmd := []string{}
+						err = yaml.Unmarshal([]byte(joinedString), &renderedCmd)
+
+						if err == nil {
+							log.Tracef("Line %d is a Yaml array %s, inserting into stack", stepIdx, joinedString)
+							newCmds := make([]string, 0, len(cmds)+len(renderedCmd)-1)
+							newCmds = append(newCmds, cmds[0:stepIdx]...)
+							newCmds = append(newCmds, renderedCmd...)
+							newCmds = append(newCmds, cmds[stepIdx+1:]...)
+							cmds = newCmds
+							stepIdx--
+							continue
+						}
+
 						for _, line := range rawCmdLines {
 							if len(strings.Trim(line, " \n")) > 0 {
 								println(line)
@@ -224,13 +243,15 @@ func initRunbookRunCommands() *cobra.Command {
 						MaxTotal: *maxConcurrency,
 						MaxIdle:  *maxConcurrency,
 					})
-					for stepIdx, rawCmd := range runbookAction.RawCommands {
 
+					rawCmds := runbookAction.RawCommands
+					for stepIdx := 0; stepIdx < len(rawCmds); stepIdx++ {
+
+						origIndex := &stepIdx
 						// Create a copy of loop variables
 						stepIdx := stepIdx
-						rawCmd := rawCmd
+						rawCmd := rawCmds[stepIdx]
 
-						log.Infof("Executing> %s", rawCmd)
 						templateName := fmt.Sprintf("Runbook: %s Action: %s Step: %d", runbook.Name, runbookAction.Name, stepIdx)
 						rawCmdLines, err := runbooks.RenderTemplates(templateName, rawCmd, runbookStringArguments, runbookAction.Variables)
 
@@ -238,6 +259,24 @@ func initRunbookRunCommands() *cobra.Command {
 							cancelFunc()
 							return err
 						}
+
+						joinedString := strings.Join(rawCmdLines, "\n")
+						renderedCmd := []string{}
+
+						err = yaml.Unmarshal([]byte(joinedString), &renderedCmd)
+
+						if err == nil {
+							log.Tracef("Line %d is a Yaml array %s, inserting into stack", stepIdx, joinedString)
+							newCmds := make([]string, 0, len(rawCmds)+len(renderedCmd)-1)
+							newCmds = append(newCmds, rawCmds[0:stepIdx]...)
+							newCmds = append(newCmds, renderedCmd...)
+							newCmds = append(newCmds, rawCmds[stepIdx+1:]...)
+							rawCmds = newCmds
+							*origIndex--
+							continue
+						}
+
+						log.Infof("Executing> %s", rawCmd)
 						resultChan := make(chan *commandResult, *maxConcurrency*2)
 						funcs := make([]func(), 0, len(rawCmdLines))
 

@@ -299,7 +299,7 @@ func DumpTraces() {
 		for {
 			<-sigs
 			stacklen := runtime.Stack(buf, true)
-			fmt.Printf("=== received SIGQUIT ===\n*** goroutine dump...\n%s\n*** end\n", buf[:stacklen])
+			log.Printf("=== received SIGQUIT ===\n*** goroutine dump...\n%s\n*** end\n", buf[:stacklen])
 		}
 	}()
 }

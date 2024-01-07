@@ -38,6 +38,9 @@ epcc runbooks run hello-world create-10-customers
 epcc create customer --auto-fill
 epcc runbooks run hello-world create-some-customer-addresses --customer_id last_read=entity
 
+epcc runbooks run hello-world concurrent-sleeps  --count 2
+epcc runbooks run hello-world sequential-sleeps  --count 2
+
 epcc runbooks run hello-world reset
 
 echo "Starting Extend Customer Resources"

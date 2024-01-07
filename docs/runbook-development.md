@@ -4,6 +4,8 @@
 
 This document outlines the syntax and capabilities of runbooks. 
 
+
+
 ## Prerequisites
 
 Users developing runbooks should have familiarity with:
@@ -156,6 +158,72 @@ You can use the show command to see what a rendered script looks like (although 
 #epcc runbooks show hello-world create-some-customer-addresses --number_of_addresses 2 --customer_id "Hello World" --country DE
 epcc create customer-address  "Hello World" name "address_0" first_name "John" last_name "Smith" line_1 "1234 Main Street" county "XX" "postcode" "H0H 0H0" country "DE"
 epcc create customer-address  "Hello World" name "address_1" first_name "John" last_name "Smith" line_1 "1234 Main Street" county "XX" "postcode" "H0H 0H0" country "DE"
+```
+
+### Dynamic Steps
+
+Templates are only renderable for a particular step, but you can instead of generating a command, actually generate a Yaml array, that will be interpreted as steps.
+This can give you more control over control flow, where-as otherwise you are stuck with all rendered commands being in the same sequence.
+
+```yaml
+name: hello-world
+description:
+  short: "A hello world runbook"
+actions:
+   sequential-sleeps:
+   variables:
+      count:
+         type: INT
+         default: 2
+         description:
+            short: "The number of sleeps"
+   commands:
+      - |2
+        {{- range untilStep 0 .count 1}}
+          - sleep 1
+        {{- end -}}
+   concurrent-sleeps:
+      variables:
+         count:
+            type: INT
+            default: 2
+            description:
+               short: "The number of sleeps"
+      commands:
+         - |
+            {{- range untilStep 0 .count 1}}
+            sleep 1
+            {{- end -}}
+```
+
+It's important for all commands to be indended the same amount, and start with a `-` this will cause the entire string to be valid as a Yaml array.
+
+You can see the results of executing these runbooks below, without the `-` the commands all execute concurrently. With the `-` the execute one after another.
+
+```bash
+$time epcc runbooks run hello-world concurrent-sleeps  --count 4
+INFO[0000] Executing> {{- range untilStep 0 .count 1}}
+sleep 1
+{{- end -}} 
+INFO[0000] Sleeping for 1 seconds                       
+INFO[0000] Sleeping for 1 seconds                       
+INFO[0000] Sleeping for 1 seconds                       
+INFO[0000] Sleeping for 1 seconds                       
+real    0m1.302s
+user    0m0.441s
+sys     0m0.059s
+$time epcc runbooks run hello-world sequential-sleeps --count 4
+INFO[0000] Executing> sleep 1                           
+INFO[0000] Sleeping for 1 seconds                       
+INFO[0001] Executing> sleep 1                           
+INFO[0001] Sleeping for 1 seconds                       
+INFO[0002] Executing> sleep 1                           
+INFO[0002] Sleeping for 1 seconds                       
+INFO[0003] Executing> sleep 1                           
+INFO[0003] Sleeping for 1 seconds                       
+real    0m4.289s
+user    0m0.405s
+sys     0m0.050s
 ```
 
 ### Error Handling

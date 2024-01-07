@@ -3,6 +3,8 @@ package runbooks
 import (
 	"fmt"
 	"github.com/buildkite/shellwords"
+	log "github.com/sirupsen/logrus"
+	"gopkg.in/yaml.v3"
 	"strconv"
 	"strings"
 )
@@ -24,13 +26,30 @@ func ValidateRunbook(runbook *Runbook) error {
 
 		argumentsWithDefaults := CreateMapForRunbookArgumentPointers(runbookAction)
 
-		for stepIdx, rawCmd := range runbookAction.RawCommands {
+		cmds := runbookAction.RawCommands
+		for stepIdx := 0; stepIdx < len(cmds); stepIdx++ {
+			rawCmd := cmds[stepIdx]
 
 			templateName := fmt.Sprintf("Runbook: %s Action: %s Step: %d", runbook.Name, runbookAction.Name, stepIdx+1)
 			rawCmdLines, err := RenderTemplates(templateName, rawCmd, argumentsWithDefaults, runbookAction.Variables)
 
 			if err != nil {
 				return fmt.Errorf("error rendering template: %w", err)
+			}
+
+			joinedString := strings.Join(rawCmdLines, "\n")
+			renderedCmd := []string{}
+			err = yaml.Unmarshal([]byte(joinedString), &renderedCmd)
+
+			if err == nil {
+				log.Tracef("Line %d is a Yaml array %s, inserting into stack", stepIdx, joinedString)
+				newCmds := make([]string, 0, len(cmds)+len(renderedCmd)-1)
+				newCmds = append(newCmds, cmds[0:stepIdx]...)
+				newCmds = append(newCmds, renderedCmd...)
+				newCmds = append(newCmds, cmds[stepIdx+1:]...)
+				cmds = newCmds
+				stepIdx--
+				continue
 			}
 
 			for commandIdx, rawCmdLine := range rawCmdLines {
