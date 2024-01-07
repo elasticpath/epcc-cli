@@ -188,9 +188,10 @@ func deleteInternal(ctx context.Context, overrides *httpclient.HttpParameterOver
 		return "", fmt.Errorf("got nil response")
 	}
 
-	idToDelete := aliases.ResolveAliasValuesOrReturnIdentity(resource.JsonApiType, resource.AlternateJsonApiTypesForAliases, args[len(args)-1], "id")
-	aliases.DeleteAliasesById(idToDelete, resource.JsonApiType)
-
+	if resp.StatusCode < 400 {
+		idToDelete := aliases.ResolveAliasValuesOrReturnIdentity(resource.JsonApiType, resource.AlternateJsonApiTypesForAliases, args[len(args)-1], "id")
+		aliases.DeleteAliasesById(idToDelete, resource.JsonApiType)
+	}
 	if resp.Body != nil {
 
 		defer resp.Body.Close()

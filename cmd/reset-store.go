@@ -4,6 +4,8 @@ import (
 	"context"
 	gojson "encoding/json"
 	"fmt"
+	"github.com/elasticpath/epcc-cli/external/aliases"
+	"github.com/elasticpath/epcc-cli/external/authentication"
 	"github.com/elasticpath/epcc-cli/external/httpclient"
 	"github.com/elasticpath/epcc-cli/external/json"
 	"github.com/elasticpath/epcc-cli/external/resources"
@@ -51,6 +53,18 @@ var ResetStore = &cobra.Command{
 		}
 
 		errors := make([]string, 0)
+
+		err = authentication.ClearCustomerToken()
+
+		if err != nil {
+			log.Warnf("Couldn't delete the customer token")
+		}
+
+		err = authentication.ClearAccountManagementAuthenticationToken()
+
+		if err != nil {
+			log.Warnf("Couldn't delete the account management token")
+		}
 
 		// In theory we could topo-sort all the resources and determine dependencies.
 		// We would also need locking to go faster.
@@ -101,6 +115,11 @@ var ResetStore = &cobra.Command{
 
 		if len(errors) > 0 {
 			log.Warnf("The following errors occurred while deleting all data: \n\t%s", strings.Join(errors, "\n\t"))
+		}
+
+		err = aliases.ClearAllAliases()
+		if err != nil {
+			log.Warnf("Couldn't clear all aliases")
 		}
 
 		return nil

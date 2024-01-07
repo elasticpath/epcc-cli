@@ -140,6 +140,13 @@ Flags:
   -h, --help                      help for create-some-customer-addresses
     --number_of_addresses string  The number of addresses (default "10")
 ```
+##### Dashed Argument Names
+
+If you would like to use a dashed argument name you need to use a different syntax in the chart:
+
+```
+{{ . index "dashed-argument-name" }}
+```
 
 #### Showing the output
 

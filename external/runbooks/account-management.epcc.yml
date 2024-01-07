@@ -24,6 +24,11 @@ actions:
         default: "ron@swanson.com"
         description:
           short: "Email of the account member"
+      account-name:
+        type: STRING
+        default: "Pawnee Parks and Recreation"
+        description:
+          short: "Name of the account"
       password:
         type: STRING
         default: "password"
@@ -42,7 +47,7 @@ actions:
         {{ end }}
 
       - epcc get account-member alias/user_authentication_info/last_read=entity/id
-      - epcc create -s account name "Personal Account For {{ .name }}" legal_name "Individual Account For {{ .name }}"
+      - epcc create -s account name "{{ index . "account-name" }}" legal_name "{{ index . "account-name" }}"
       - epcc create -s account-membership last_read=entity account_member_id user_authentication_info/last_read=entity
   catalog-rule-example:
     description:
