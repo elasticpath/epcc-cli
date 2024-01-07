@@ -9,12 +9,12 @@ require (
 	github.com/caarlos0/env/v6 v6.10.1
 	github.com/google/uuid v1.5.0
 	github.com/gookit/color v1.5.3
-	github.com/itchyny/gojq v0.12.13
+	github.com/itchyny/gojq v0.12.14
 	github.com/mattn/go-isatty v0.0.20
 	github.com/santhosh-tekuri/jsonschema/v4 v4.0.0
 	github.com/santhosh-tekuri/jsonschema/v5 v5.3.0
 	github.com/sirupsen/logrus v1.9.3
-	github.com/spf13/cobra v1.7.0
+	github.com/spf13/cobra v1.8.0
 	github.com/stretchr/testify v1.8.4
 	github.com/thediveo/enumflag v0.10.1
 	github.com/yosida95/uritemplate/v3 v3.0.2

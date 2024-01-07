@@ -97,6 +97,11 @@ func Initialize(rateLimit uint16, requestTimeout float32, statisticsFrequency in
 var Retry429 = false
 var Retry5xx = false
 
+var RetryConnectionErrors = false
+
+var RetryAllErrors = false
+var RetryDelay uint = 500
+
 var statsLock = &sync.Mutex{}
 
 var HttpClient = &http.Client{}
@@ -179,9 +184,16 @@ func doRequestInternal(ctx context.Context, method string, contentType string, p
 	reqURL.Path = path
 	reqURL.RawQuery = query
 
-	var bodyBuf bytes.Buffer
+	var bodyBuf []byte
 	if payload != nil {
-		payload = io.TeeReader(payload, &bodyBuf)
+		buf := new(bytes.Buffer)
+		_, err := buf.ReadFrom(payload)
+		if err != nil {
+			log.Warnf("Error reading payload, %s", err)
+		}
+		bodyBuf = buf.Bytes()
+
+		payload = bytes.NewReader(bodyBuf)
 	}
 
 	req, err := http.NewRequest(method, reqURL.String(), payload)
@@ -270,9 +282,25 @@ func doRequestInternal(ctx context.Context, method string, contentType string, p
 	statsLock.Unlock()
 
 	log.Tracef("Stats processing complete")
+	requestError := err
+	if requestError != nil {
 
-	if err != nil {
-		return nil, err
+		resp = &http.Response{
+			Status:           "CONNECTION_ERROR",
+			StatusCode:       0,
+			Proto:            "",
+			ProtoMajor:       0,
+			ProtoMinor:       0,
+			Header:           map[string][]string{},
+			Body:             io.NopCloser(strings.NewReader(fmt.Sprintf("%v", err))),
+			ContentLength:    0,
+			TransferEncoding: nil,
+			Close:            true,
+			Uncompressed:     false,
+			Trailer:          nil,
+			Request:          nil,
+			TLS:              nil,
+		}
 	}
 
 	var logf func(string, ...interface{})
@@ -322,7 +350,7 @@ func doRequestInternal(ctx context.Context, method string, contentType string, p
 
 	if displayLongFormRequestAndResponse {
 		if payload != nil {
-			body, _ := io.ReadAll(&bodyBuf)
+			body := bodyBuf
 			if len(body) > 0 {
 				logf("(%0.4d) %s %s%s", requestNumber, method, reqURL.String(), requestHeaders)
 				if contentType == "application/json" {
@@ -352,10 +380,24 @@ func doRequestInternal(ctx context.Context, method string, contentType string, p
 	log.Tracef("Starting log to disk")
 	profiles.LogRequestToDisk(method, path, dumpReq, dumpRes, resp.StatusCode)
 	log.Tracef("Done log to disk")
-	if resp.StatusCode == 429 && Retry429 {
-		return doRequestInternal(ctx, method, contentType, path, query, &bodyBuf)
-	} else if resp.StatusCode >= 500 && Retry5xx {
-		return doRequestInternal(ctx, method, contentType, path, query, &bodyBuf)
+	if resp.StatusCode == 429 && (Retry429 || RetryAllErrors) {
+		if RetryDelay > 0 {
+			log.Debugf("Retrying request in %d ms", RetryDelay)
+			time.Sleep(time.Duration(RetryDelay) * time.Millisecond)
+		}
+		return doRequestInternal(ctx, method, contentType, path, query, bytes.NewReader(bodyBuf))
+	} else if resp.StatusCode >= 500 && (Retry5xx || RetryAllErrors) {
+		if RetryDelay > 0 {
+			log.Debugf("Retrying request in %d ms", RetryDelay)
+			time.Sleep(time.Duration(RetryDelay) * time.Millisecond)
+		}
+		return doRequestInternal(ctx, method, contentType, path, query, bytes.NewReader(bodyBuf))
+	} else if requestError != nil && (RetryConnectionErrors || RetryAllErrors) {
+		if RetryDelay > 0 {
+			log.Debugf("Retrying request in %d ms", RetryDelay)
+			time.Sleep(time.Duration(RetryDelay) * time.Millisecond)
+		}
+		return doRequestInternal(ctx, method, contentType, path, query, bytes.NewReader(bodyBuf))
 	} else {
 		return resp, err
 	}

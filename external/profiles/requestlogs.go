@@ -86,7 +86,12 @@ func LogRequestToDisk(requestMethod string, requestPath string, requestBytes []b
 		responseBytes = regex1.ReplaceAll(responseBytes, []byte("client_secret=*****"))
 	}
 
-	return SaveRequest(fmt.Sprintf("%s %s ==> %d", requestMethod, requestPath, responseCode), requestBytes, responseBytes)
+	statusCode := fmt.Sprintf("%d", responseCode)
+
+	if responseCode == 0 {
+		statusCode = "ERROR"
+	}
+	return SaveRequest(fmt.Sprintf("%s %s ==> %s", requestMethod, requestPath, statusCode), requestBytes, responseBytes)
 }
 
 func SaveRequest(title string, requestBytes []byte, responseBytes []byte) error {
