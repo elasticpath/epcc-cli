@@ -242,3 +242,9 @@ go fmt "./..."
 echo "Adding changed files back to git"
 git diff --cached --name-only --diff-filter=ACM | grep -E "\.(go)$" | xargs  git add
 ```
+
+### Generating Go Routine Dumps
+
+You can send a `SIGQUIT` to `epcc` to get it to generate a go routine dump, this can be useful for debugging deadlocks and other performance issues.
+
+On Linux and maybe other OS, you can use CTRL+\ to send a `SIGQUIT` to the process.

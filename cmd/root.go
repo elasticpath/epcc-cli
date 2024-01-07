@@ -16,6 +16,7 @@ import (
 	"github.com/thediveo/enumflag"
 	"os"
 	"os/signal"
+	"runtime"
 	"syscall"
 	"time"
 
@@ -61,6 +62,8 @@ var profileNameFromCommandLine = ""
 
 func InitializeCmd() {
 
+	DumpTraces()
+
 	os.Args = misc.AddImplicitDoubleDash(os.Args)
 	if len(os.Args) > 1 && os.Args[1] == "__complete" {
 		DisableLongOutput = true
@@ -76,7 +79,10 @@ func InitializeCmd() {
 	}
 
 	applyLogLevelEarlyDetectionHack()
+	log.Tracef("Root Command Building In Progress")
+
 	initRunbookCommands()
+	log.Tracef("Runbooks initialized")
 	RootCmd.AddCommand(
 		cmCommand,
 		docsCommand,
@@ -91,10 +97,17 @@ func InitializeCmd() {
 		runbookGlobalCmd,
 	)
 
+	log.Tracef("Building Create Commands")
 	NewCreateCommand(RootCmd)
+	log.Tracef("Building Delete Commands")
 	NewDeleteCommand(RootCmd)
+	log.Tracef("Building Get Commands")
 	NewGetCommand(RootCmd)
+
+	log.Tracef("Building Update Commands")
 	NewUpdateCommand(RootCmd)
+
+	log.Tracef("Building Delete All Commands")
 	NewDeleteAllCommand(RootCmd)
 
 	Logs.AddCommand(LogsList, LogsShow, LogsClear)
@@ -134,6 +147,7 @@ func InitializeCmd() {
 	logoutCmd.AddCommand(LogoutHeaders)
 
 	NewHeadersCommand(RootCmd)
+	log.Tracef("Root Command Constructed")
 }
 
 // If there is a log level argument, we will set it much earlier on a dummy command
@@ -225,7 +239,6 @@ Environment Variables
 }
 
 func Execute() {
-
 	sigs := make(chan os.Signal, 1)
 	normalShutdown := make(chan bool, 1)
 	shutdownHandlerDone := make(chan bool, 1)
@@ -276,6 +289,19 @@ func Execute() {
 
 		os.Exit(0)
 	}
+}
+
+func DumpTraces() {
+	go func() {
+		sigs := make(chan os.Signal, 1)
+		signal.Notify(sigs, syscall.SIGQUIT)
+		buf := make([]byte, 1<<20)
+		for {
+			<-sigs
+			stacklen := runtime.Stack(buf, true)
+			fmt.Printf("=== received SIGQUIT ===\n*** goroutine dump...\n%s\n*** end\n", buf[:stacklen])
+		}
+	}()
 }
 
 func initConfig() {
