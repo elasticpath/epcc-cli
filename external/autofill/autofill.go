@@ -46,6 +46,7 @@ func GetJsonArrayForResource(r *resources.Resource) []string {
 						for true {
 							v := result[0].Uint()
 							if v == 0 && rejectZero {
+								result = method.Call([]reflect.Value{})
 								continue
 							}
 							arg = strconv.FormatUint(v, 10)
@@ -56,6 +57,7 @@ func GetJsonArrayForResource(r *resources.Resource) []string {
 						for true {
 							v := result[0].Int()
 							if v == 0 && rejectZero {
+								result = method.Call([]reflect.Value{})
 								continue
 							}
 							arg = strconv.FormatInt(v, 10)
