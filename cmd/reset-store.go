@@ -4,6 +4,8 @@ import (
 	"context"
 	gojson "encoding/json"
 	"fmt"
+	"github.com/elasticpath/epcc-cli/external/aliases"
+	"github.com/elasticpath/epcc-cli/external/authentication"
 	"github.com/elasticpath/epcc-cli/external/httpclient"
 	"github.com/elasticpath/epcc-cli/external/json"
 	"github.com/elasticpath/epcc-cli/external/resources"
@@ -51,6 +53,18 @@ var ResetStore = &cobra.Command{
 		}
 
 		errors := make([]string, 0)
+
+		err = authentication.ClearCustomerToken()
+
+		if err != nil {
+			log.Warnf("Couldn't delete the customer token")
+		}
+
+		err = authentication.ClearAccountManagementAuthenticationToken()
+
+		if err != nil {
+			log.Warnf("Couldn't delete the account management token")
+		}
 
 		// In theory we could topo-sort all the resources and determine dependencies.
 		// We would also need locking to go faster.
@@ -101,6 +115,11 @@ var ResetStore = &cobra.Command{
 
 		if len(errors) > 0 {
 			log.Warnf("The following errors occurred while deleting all data: \n\t%s", strings.Join(errors, "\n\t"))
+		}
+
+		err = aliases.ClearAllAliases()
+		if err != nil {
+			log.Warnf("Couldn't clear all aliases")
 		}
 
 		return nil
@@ -174,6 +193,7 @@ func resetResourcesUndeletableResources(ctx context.Context, overrides *httpclie
 		{"authentication-realm", "last_read=array[2]", "redirect_uris", "[]", "duplicate_email_policy", "allowed"},
 		{"authentication-realm", "related_authentication-realm_for_customer-authentication-settings_last_read=entity", "name", "Buyer Organization"},
 		{"authentication-realm", "related_authentication_realm_for_account_authentication_settings_last_read=entity", "name", "Account Management Realm"},
+		{"account-authentication-settings", "enable_self_signup", "false", "auto_create_account_for_account_members", "false", "account_member_self_management", "disabled"},
 		{"log-ttl-settings", "days", "356"},
 	}
 

@@ -1,6 +1,6 @@
 account-authentication-settings:
   singular-name: "account-authentication-setting"
-  json-api-type: "account-authentication-settings"
+  json-api-type: "account_authentication_settings"
   json-api-format: "legacy"
   docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/settings/account-authentication-settings/index.html"
   get-collection:
@@ -9,6 +9,16 @@ account-authentication-settings:
   get-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/settings/account-authentication-settings/get-account-authentication-settings.html"
     url: "/v2/settings/account-authentication"
+  update-entity:
+    docs: "https://elasticpath.dev/docs/commerce-cloud/authentication/single-sign-on/account-authentication-settings/update-account-authentication-settings"
+    url: "/v2/settings/account-authentication"
+  attributes:
+    enable_self_signup:
+      type: BOOL
+    auto_create_account_for_account_members:
+      type: BOOL
+    account_member_self_management:
+      type: BOOL
 account-management-authentication-tokens:
   singular-name: "account-management-authentication-token"
   json-api-type: "account_management_authentication_token"
@@ -510,6 +520,7 @@ customer-cart-associations:
       type: RESOURCE_ID:customer
     data[n].type:
       type: ENUM:customer
+      autofill: VALUE:customer
 customer-addresses:
   singular-name: "customer-address"
   json-api-type: "address"

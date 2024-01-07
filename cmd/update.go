@@ -25,6 +25,7 @@ func NewUpdateCommand(parentCmd *cobra.Command) func() {
 
 	// Ensure that any new options here are added to the resetFunc
 	var outputJq = ""
+	var compactOutput = false
 	var noBodyPrint = false
 	var ifAliasExists = ""
 	var ifAliasDoesNotExist = ""
@@ -34,6 +35,7 @@ func NewUpdateCommand(parentCmd *cobra.Command) func() {
 		overrides.QueryParameters = nil
 		overrides.OverrideUrlPath = ""
 		outputJq = ""
+		compactOutput = false
 		noBodyPrint = false
 		ifAliasExists = ""
 		ifAliasDoesNotExist = ""
@@ -120,6 +122,14 @@ func NewUpdateCommand(parentCmd *cobra.Command) func() {
 				if noBodyPrint {
 					return nil
 				} else {
+					if compactOutput {
+						body, err = json.Compact(body)
+
+						if err != nil {
+							return err
+						}
+					}
+
 					return json.PrintJson(body)
 				}
 
@@ -179,6 +189,7 @@ func NewUpdateCommand(parentCmd *cobra.Command) func() {
 	updateCmd.PersistentFlags().StringSliceVarP(&overrides.QueryParameters, "query-parameters", "q", []string{}, "Pass in key=value an they will be added as query parameters")
 	updateCmd.PersistentFlags().BoolVarP(&noBodyPrint, "silent", "s", false, "Don't print the body on success")
 	updateCmd.PersistentFlags().StringVarP(&outputJq, "output-jq", "", "", "A jq expression, if set we will restrict output to only this")
+	updateCmd.PersistentFlags().BoolVarP(&compactOutput, "compact", "", false, "Hides some of the boiler plate keys and empty fields, etc...")
 	updateCmd.PersistentFlags().StringVarP(&ifAliasExists, "if-alias-exists", "", "", "If the alias exists we will run this command, otherwise exit with no error")
 	updateCmd.PersistentFlags().StringVarP(&ifAliasDoesNotExist, "if-alias-does-not-exist", "", "", "If the alias does not exist we will run this command, otherwise exit with no error")
 	updateCmd.MarkFlagsMutuallyExclusive("if-alias-exists", "if-alias-does-not-exist")

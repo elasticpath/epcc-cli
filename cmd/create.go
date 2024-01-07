@@ -43,6 +43,7 @@ func NewCreateCommand(parentCmd *cobra.Command) func() {
 	var autoFillOnCreate = false
 	var noBodyPrint = false
 	var outputJq = ""
+	var compactOutput = true
 	var setAlias = ""
 	var ifAliasExists = ""
 	var ifAliasDoesNotExist = ""
@@ -58,6 +59,7 @@ func NewCreateCommand(parentCmd *cobra.Command) func() {
 		overrides.OverrideUrlPath = ""
 		overrides.QueryParameters = nil
 		skipAliases = false
+		compactOutput = false
 	}
 
 	for _, resource := range resources.GetPluralResources() {
@@ -130,6 +132,14 @@ func NewCreateCommand(parentCmd *cobra.Command) func() {
 				if noBodyPrint {
 					return nil
 				} else {
+					if compactOutput {
+						body, err = json.Compact(body)
+
+						if err != nil {
+							return err
+						}
+					}
+
 					return json.PrintJson(body)
 				}
 
@@ -207,6 +217,7 @@ func NewCreateCommand(parentCmd *cobra.Command) func() {
 	createCmd.PersistentFlags().BoolVarP(&noBodyPrint, "silent", "s", false, "Don't print the body on success")
 	createCmd.PersistentFlags().StringSliceVarP(&overrides.QueryParameters, "query-parameters", "q", []string{}, "Pass in key=value an they will be added as query parameters")
 	createCmd.PersistentFlags().StringVarP(&outputJq, "output-jq", "", "", "A jq expression, if set we will restrict output to only this")
+	createCmd.PersistentFlags().BoolVarP(&compactOutput, "compact", "", false, "Hides some of the boiler plate keys and empty fields, etc...")
 	createCmd.PersistentFlags().StringVarP(&setAlias, "save-as-alias", "", "", "A name to save the created resource as")
 	createCmd.PersistentFlags().StringVarP(&ifAliasExists, "if-alias-exists", "", "", "If the alias exists we will run this command, otherwise exit with no error")
 	createCmd.PersistentFlags().StringVarP(&ifAliasDoesNotExist, "if-alias-does-not-exist", "", "", "If the alias does not exist we will run this command, otherwise exit with no error")

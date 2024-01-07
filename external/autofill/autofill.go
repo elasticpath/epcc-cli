@@ -19,6 +19,8 @@ func GetJsonArrayForResource(r *resources.Resource) []string {
 	args := make([]string, 0)
 
 	for attributeName, data := range r.Attributes {
+		key := data.Key
+		key = strings.Replace(key, "data[n]", "data[0]", 1)
 		autofill := data.AutoFill
 
 		if strings.HasPrefix(autofill, "FUNC:") {
@@ -68,7 +70,7 @@ func GetJsonArrayForResource(r *resources.Resource) []string {
 						}
 					}
 
-					args = append(args, data.Key, arg)
+					args = append(args, key, arg)
 				} else {
 					log.Warnf("Got unexpected number of results from calling %s -> %d", methodName, len(result))
 				}
@@ -78,7 +80,7 @@ func GetJsonArrayForResource(r *resources.Resource) []string {
 			}
 
 		} else if strings.HasPrefix(autofill, "VALUE:") {
-			args = append(args, data.Key, strings.Trim(autofill[6:], " "))
+			args = append(args, key, strings.Trim(autofill[6:], " "))
 		}
 
 	}
