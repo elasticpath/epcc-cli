@@ -17,6 +17,8 @@ var embeddedRunbooks embed.FS
 
 var runbooks map[string]Runbook
 
+var otherEmbeddedRunbooks []embed.FS
+
 type Runbook struct {
 
 	// The name of the runbook
@@ -61,12 +63,23 @@ func Reset() {
 
 func InitializeBuiltInRunbooks() {
 	LoadBuiltInRunbooks(embeddedRunbooks)
+
+	log.Tracef("Processing other embedded runbooks")
+
+	for _, fs := range otherEmbeddedRunbooks {
+		LoadBuiltInRunbooks(fs)
+	}
+
 	env := config.GetEnv()
 	if env.EPCC_RUNBOOK_DIRECTORY != "" {
 		if loadedRunbookCount := LoadRunbooksFromDirectory(env.EPCC_RUNBOOK_DIRECTORY); loadedRunbookCount == 0 {
 			log.Warnf("EPCC_RUNBOOK_DIRECTORY set as %s but no files found, runbooks should end in .epcc.yml", env.EPCC_RUNBOOK_DIRECTORY)
 		}
 	}
+}
+
+func AddOtherEmbeddedRunbooks(fs embed.FS) {
+	otherEmbeddedRunbooks = append(otherEmbeddedRunbooks, fs)
 }
 
 func LoadRunbooksFromDirectory(dir string) uint32 {
