@@ -41,6 +41,10 @@ func NewDeleteCommand(parentCmd *cobra.Command) func() {
 	var allow404 = false
 	var ifAliasExists = ""
 	var ifAliasDoesNotExist = ""
+	var repeat uint32 = 1
+	var repeatDelay uint32 = 100
+	var ignoreErrors = false
+	var noBodyPrint = false
 
 	resetFunc := func() {
 		overrides.QueryParameters = nil
@@ -48,6 +52,10 @@ func NewDeleteCommand(parentCmd *cobra.Command) func() {
 		allow404 = false
 		ifAliasExists = ""
 		ifAliasDoesNotExist = ""
+		noBodyPrint = false
+		repeat = 1
+		repeatDelay = 100
+		ignoreErrors = false
 	}
 
 	for _, resource := range resources.GetPluralResources() {
@@ -65,37 +73,46 @@ func NewDeleteCommand(parentCmd *cobra.Command) func() {
 			Example: GetDeleteExample(resource),
 			Args:    GetArgFunctionForDelete(resource),
 			RunE: func(cmd *cobra.Command, args []string) error {
+				c := func(cmd *cobra.Command, args []string) error {
+					if ifAliasExists != "" {
+						aliasId := aliases.ResolveAliasValuesOrReturnIdentity(resource.JsonApiType, resource.AlternateJsonApiTypesForAliases, ifAliasExists, "id")
 
-				if ifAliasExists != "" {
-					aliasId := aliases.ResolveAliasValuesOrReturnIdentity(resource.JsonApiType, resource.AlternateJsonApiTypesForAliases, ifAliasExists, "id")
+						if aliasId == ifAliasExists {
+							// If the aliasId is the same as requested, it means an alias did not exist.
+							log.Infof("Alias [%s] does not exist, not continuing run", ifAliasExists)
+							return nil
+						}
+					}
 
-					if aliasId == ifAliasExists {
-						// If the aliasId is the same as requested, it means an alias did not exist.
-						log.Infof("Alias [%s] does not exist, not continuing run", ifAliasExists)
+					if ifAliasDoesNotExist != "" {
+						aliasId := aliases.ResolveAliasValuesOrReturnIdentity(resource.JsonApiType, resource.AlternateJsonApiTypesForAliases, ifAliasDoesNotExist, "id")
+
+						if aliasId != ifAliasDoesNotExist {
+							// If the aliasId is different than the request then it does exist.
+							log.Infof("Alias [%s] does exist (value: %s), not continuing run", ifAliasDoesNotExist, aliasId)
+							return nil
+						}
+					}
+
+					body, err := deleteInternal(context.Background(), overrides, allow404, append([]string{resourceName}, args...))
+
+					if err != nil {
+						if body != "" {
+							if !noBodyPrint {
+								json.PrintJson(body)
+							}
+						}
+						return err
+					}
+
+					if noBodyPrint {
 						return nil
+					} else {
+						return json.PrintJson(body)
 					}
 				}
 
-				if ifAliasDoesNotExist != "" {
-					aliasId := aliases.ResolveAliasValuesOrReturnIdentity(resource.JsonApiType, resource.AlternateJsonApiTypesForAliases, ifAliasDoesNotExist, "id")
-
-					if aliasId != ifAliasDoesNotExist {
-						// If the aliasId is different than the request then it does exist.
-						log.Infof("Alias [%s] does exist (value: %s), not continuing run", ifAliasDoesNotExist, aliasId)
-						return nil
-					}
-				}
-
-				body, err := deleteInternal(context.Background(), overrides, allow404, append([]string{resourceName}, args...))
-
-				if err != nil {
-					if body != "" {
-						json.PrintJson(body)
-					}
-					return err
-				}
-
-				return json.PrintJson(body)
+				return repeater(c, repeat, repeatDelay, cmd, args, ignoreErrors)
 			},
 
 			ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
@@ -165,7 +182,12 @@ func NewDeleteCommand(parentCmd *cobra.Command) func() {
 	deleteCmd.PersistentFlags().BoolVar(&allow404, "allow-404", allow404, "If set 404's will not be treated as errors")
 	deleteCmd.PersistentFlags().StringVarP(&ifAliasExists, "if-alias-exists", "", "", "If the alias exists we will run this command, otherwise exit with no error")
 	deleteCmd.PersistentFlags().StringVarP(&ifAliasDoesNotExist, "if-alias-does-not-exist", "", "", "If the alias does not exist we will run this command, otherwise exit with no error")
+	deleteCmd.PersistentFlags().BoolVarP(&noBodyPrint, "silent", "s", false, "Don't print the body on success")
 	deleteCmd.MarkFlagsMutuallyExclusive("if-alias-exists", "if-alias-does-not-exist")
+	deleteCmd.PersistentFlags().Uint32VarP(&repeat, "repeat", "", 1, "Number of times to repeat the command")
+	deleteCmd.PersistentFlags().Uint32VarP(&repeatDelay, "repeat-delay", "", 100, "Delay (in ms) between repeats")
+	deleteCmd.PersistentFlags().BoolVarP(&ignoreErrors, "ignore-errors", "", false, "Don't return non zero on an error")
+
 	parentCmd.AddCommand(deleteCmd)
 
 	return resetFunc
