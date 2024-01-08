@@ -48,6 +48,9 @@ func NewCreateCommand(parentCmd *cobra.Command) func() {
 	var ifAliasExists = ""
 	var ifAliasDoesNotExist = ""
 	var skipAliases = false
+	var repeat uint32 = 1
+	var repeatDelay uint32 = 100
+	var ignoreErrors = false
 
 	resetFunc := func() {
 		autoFillOnCreate = false
@@ -60,6 +63,9 @@ func NewCreateCommand(parentCmd *cobra.Command) func() {
 		overrides.QueryParameters = nil
 		skipAliases = false
 		compactOutput = false
+		repeat = 1
+		repeatDelay = 100
+		ignoreErrors = false
 	}
 
 	for _, resource := range resources.GetPluralResources() {
@@ -78,71 +84,74 @@ func NewCreateCommand(parentCmd *cobra.Command) func() {
 			Example: GetCreateExample(resource),
 			Args:    GetArgFunctionForCreate(resource),
 			RunE: func(cmd *cobra.Command, args []string) error {
+				c := func(cmd *cobra.Command, args []string) error {
+					if ifAliasExists != "" {
+						aliasId := aliases.ResolveAliasValuesOrReturnIdentity(resource.JsonApiType, resource.AlternateJsonApiTypesForAliases, ifAliasExists, "id")
 
-				if ifAliasExists != "" {
-					aliasId := aliases.ResolveAliasValuesOrReturnIdentity(resource.JsonApiType, resource.AlternateJsonApiTypesForAliases, ifAliasExists, "id")
-
-					if aliasId == ifAliasExists {
-						// If the aliasId is the same as requested, it means an alias did not exist.
-						log.Infof("Alias [%s] does not exist, not continuing run", ifAliasExists)
-						return nil
+						if aliasId == ifAliasExists {
+							// If the aliasId is the same as requested, it means an alias did not exist.
+							log.Infof("Alias [%s] does not exist, not continuing run", ifAliasExists)
+							return nil
+						}
 					}
-				}
 
-				if ifAliasDoesNotExist != "" {
-					aliasId := aliases.ResolveAliasValuesOrReturnIdentity(resource.JsonApiType, resource.AlternateJsonApiTypesForAliases, ifAliasDoesNotExist, "id")
+					if ifAliasDoesNotExist != "" {
+						aliasId := aliases.ResolveAliasValuesOrReturnIdentity(resource.JsonApiType, resource.AlternateJsonApiTypesForAliases, ifAliasDoesNotExist, "id")
 
-					if aliasId != ifAliasDoesNotExist {
-						// If the aliasId is different than the request then it does exist.
-						log.Infof("Alias [%s] does exist (value: %s), not continuing run", ifAliasDoesNotExist, aliasId)
-						return nil
+						if aliasId != ifAliasDoesNotExist {
+							// If the aliasId is different than the request then it does exist.
+							log.Infof("Alias [%s] does exist (value: %s), not continuing run", ifAliasDoesNotExist, aliasId)
+							return nil
+						}
 					}
-				}
 
-				body, err := createInternal(context.Background(), overrides, append([]string{resourceName}, args...), autoFillOnCreate, setAlias, skipAliases)
-
-				if err != nil {
-					return err
-				}
-
-				if outputJq != "" {
-					output, err := json.RunJQOnStringWithArray(outputJq, body)
+					body, err := createInternal(context.Background(), overrides, append([]string{resourceName}, args...), autoFillOnCreate, setAlias, skipAliases)
 
 					if err != nil {
 						return err
 					}
 
-					for _, outputLine := range output {
-						outputJson, err := gojson.Marshal(outputLine)
+					if outputJq != "" {
+						output, err := json.RunJQOnStringWithArray(outputJq, body)
 
 						if err != nil {
 							return err
 						}
 
-						err = json.PrintJson(string(outputJson))
+						for _, outputLine := range output {
+							outputJson, err := gojson.Marshal(outputLine)
 
-						if err != nil {
-							return err
+							if err != nil {
+								return err
+							}
+
+							err = json.PrintJson(string(outputJson))
+
+							if err != nil {
+								return err
+							}
 						}
+
+						return nil
 					}
 
-					return nil
-				}
+					if noBodyPrint {
+						return nil
+					} else {
+						if compactOutput {
+							body, err = json.Compact(body)
 
-				if noBodyPrint {
-					return nil
-				} else {
-					if compactOutput {
-						body, err = json.Compact(body)
-
-						if err != nil {
-							return err
+							if err != nil {
+								return err
+							}
 						}
+
+						return json.PrintJson(body)
 					}
 
-					return json.PrintJson(body)
 				}
 
+				return repeater(c, repeat, repeatDelay, cmd, args, ignoreErrors)
 			},
 
 			ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
@@ -218,11 +227,15 @@ func NewCreateCommand(parentCmd *cobra.Command) func() {
 	createCmd.PersistentFlags().StringSliceVarP(&overrides.QueryParameters, "query-parameters", "q", []string{}, "Pass in key=value an they will be added as query parameters")
 	createCmd.PersistentFlags().StringVarP(&outputJq, "output-jq", "", "", "A jq expression, if set we will restrict output to only this")
 	createCmd.PersistentFlags().BoolVarP(&compactOutput, "compact", "", false, "Hides some of the boiler plate keys and empty fields, etc...")
+	createCmd.PersistentFlags().BoolVarP(&ignoreErrors, "ignore-errors", "", false, "Don't return non zero on an error")
 	createCmd.PersistentFlags().StringVarP(&setAlias, "save-as-alias", "", "", "A name to save the created resource as")
 	createCmd.PersistentFlags().StringVarP(&ifAliasExists, "if-alias-exists", "", "", "If the alias exists we will run this command, otherwise exit with no error")
 	createCmd.PersistentFlags().StringVarP(&ifAliasDoesNotExist, "if-alias-does-not-exist", "", "", "If the alias does not exist we will run this command, otherwise exit with no error")
 	createCmd.PersistentFlags().BoolVarP(&skipAliases, "skip-alias-processing", "", false, "if set, we don't process the response for aliases")
 	createCmd.MarkFlagsMutuallyExclusive("if-alias-exists", "if-alias-does-not-exist")
+	createCmd.PersistentFlags().Uint32VarP(&repeat, "repeat", "", 1, "Number of times to repeat the command")
+	createCmd.PersistentFlags().Uint32VarP(&repeatDelay, "repeat-delay", "", 100, "Delay (in ms) between repeats")
+
 	_ = createCmd.RegisterFlagCompletionFunc("output-jq", jqCompletionFunc)
 
 	return resetFunc
