@@ -20,7 +20,7 @@ var topLevelResourceRegexp = regexp.MustCompile("^/v2/[^/]+/\\{[^}]+}/?$")
 
 type Resource struct {
 	// The type as far as the EPCC CLI is concerned.
-	Type string
+	Type string `yaml:"-"`
 
 	// A link to the generic documentation page about a type in the EPCC API
 	Docs string `yaml:"docs"`
@@ -29,40 +29,40 @@ type Resource struct {
 	JsonApiType string `yaml:"json-api-type"`
 
 	// Alterative types used for aliases
-	AlternateJsonApiTypesForAliases []string `yaml:"alternate-json-type-for-aliases"`
+	AlternateJsonApiTypesForAliases []string `yaml:"alternate-json-type-for-aliases,omitempty"`
 
 	// Some resources (e.g., PCM, accelerator svc, bury most attributes under the attributes key). This is considered "compliant", other services just bury attributes under data, this is "legacy.
 	JsonApiFormat string `yaml:"json-api-format"`
 
 	// Information about how to get a collection
-	GetCollectionInfo *CrudEntityInfo `yaml:"get-collection"`
+	GetCollectionInfo *CrudEntityInfo `yaml:"get-collection,omitempty"`
 
 	// Information about how to get a single object.
-	GetEntityInfo *CrudEntityInfo `yaml:"get-entity"`
+	GetEntityInfo *CrudEntityInfo `yaml:"get-entity,omitempty"`
 
 	// Information about how to create an entity.
-	CreateEntityInfo *CrudEntityInfo `yaml:"create-entity"`
+	CreateEntityInfo *CrudEntityInfo `yaml:"create-entity,omitempty"`
 
 	// Information about how to update an entity.
-	UpdateEntityInfo *CrudEntityInfo `yaml:"update-entity"`
+	UpdateEntityInfo *CrudEntityInfo `yaml:"update-entity,omitempty"`
 
 	// Information about how to delete an entity.
-	DeleteEntityInfo *CrudEntityInfo `yaml:"delete-entity"`
+	DeleteEntityInfo *CrudEntityInfo `yaml:"delete-entity,omitempty"`
 
-	Attributes map[string]*CrudEntityAttribute `yaml:"attributes"`
+	Attributes map[string]*CrudEntityAttribute `yaml:"attributes,omitempty"`
 
 	// If true, don't wrap json in a data tag
-	NoWrapping bool `yaml:"no-wrapping"`
+	NoWrapping bool `yaml:"no-wrapping,omitempty"`
 
 	// The singular name version of the resource.
 	SingularName string `yaml:"singular-name"`
 
-	PluralName string
+	PluralName string `yaml:"-"`
 
 	// Use this value to silence warnings about a resource not supporting resets.
 	// This should only be used for cases where we manually fix things, or where
 	// a store reset would clear a resource another way (e.g., the resource represents a projection).
-	SuppressResetWarning bool `yaml:"suppress-reset-warning"`
+	SuppressResetWarning bool `yaml:"suppress-reset-warning,omitempty"`
 }
 
 type CrudEntityInfo struct {
@@ -74,26 +74,26 @@ type CrudEntityInfo struct {
 	Url string `yaml:"url"`
 
 	// Content type to send
-	ContentType string `yaml:"content-type"`
+	ContentType string `yaml:"content-type,omitempty"`
 
 	// A list of valid query parameters
-	QueryParameters string `yaml:"query"`
+	QueryParameters string `yaml:"query,omitempty"`
 
 	// Minimum resources so we don't keep trying to delete in
-	MinResources int `yaml:"min"`
+	MinResources int `yaml:"min,omitempty"`
 
 	// Override the attribute we use in the URL for a specific key
-	ParentResourceValueOverrides map[string]string `yaml:"parent_resource_value_overrides"`
+	ParentResourceValueOverrides map[string]string `yaml:"parent_resource_value_overrides,omitempty"`
 }
 
 type CrudEntityAttribute struct {
 	// The name of the attribute
-	Key string
+	Key string `yaml:"-"`
 
 	// The type of the attribute
 	Type           string `yaml:"type"`
-	AutoFill       string `yaml:"autofill"`
-	AliasAttribute string `yaml:"alias_attribute"`
+	AutoFill       string `yaml:"autofill,omitempty"`
+	AliasAttribute string `yaml:"alias_attribute,omitempty"`
 }
 
 func GetPluralResourceNames() []string {

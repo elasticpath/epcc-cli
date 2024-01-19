@@ -1,13 +1,16 @@
 # Elastic Path Composable Commerce Command Line Interface
 
-
 ## Overview
-This project is designed as a tool for power users to interact with the [Elastic Path Composable Commerce API](https://documentation.elasticpath.com/commerce-cloud/docs/api/) via the command line and the project is designed to fill three distinct niches:
+
+This project is designed as a tool for power users to interact with the [Elastic Path Composable Commerce API](https://documentation.elasticpath.com/commerce-cloud/docs/api/) via the command line and the project is designed to fill three distinct
+niches:
+
 1. Provide a fast way for users familiar with the API to interact with it.
 2. Provide a simpler way to do scripting with the API (i.e., instead of using curl and creating JSON in the shell)
 3. Provide a reusable set of scripts for creating data sets with [Runbooks](docs/runbook-development.md).
 
-This tool is not meant for new users unfamiliar with the API, new users are  highly encouraged to use the [Elastic Path Composable Commerce Postman Collection](https://elasticpath.dev/docs/commerce-cloud/api-overview/test-with-postman-collection) instead of this tool.
+This tool is not meant for new users unfamiliar with the API, new users are highly encouraged to use the [Elastic Path Composable Commerce Postman Collection](https://elasticpath.dev/docs/commerce-cloud/api-overview/test-with-postman-collection)
+instead of this tool.
 
 Additionally, this tool is not necessarily meant to be a new command line equivalent of Commerce Manager, it should just feel at all times like you are interacting with a JSON based REST API.
 
@@ -26,6 +29,7 @@ It is highly recommended that new users check out the [Tutorial](docs/tutorial.m
 The following is a summary of the main commands, in general you can type `epcc help` to get an updated list and see all commands as well as flags.
 
 #### CRUD Commands
+
 | Command                                                     | Description                                                               |
 |-------------------------------------------------------------|---------------------------------------------------------------------------|
 | `epcc get <RESOURCE> [ID] ... [QUERY_PARAM_KEY] [VAL] ...`  | Retrieves either a list of objects, or an particular object from the API. |
@@ -43,7 +47,8 @@ The following is a summary of the main commands, in general you can type `epcc h
 | `epcc login implicit`           | Login to the API using an Implicit Token                          |
 | `epcc login status`             | Determine the current state of the login                          |
 
-#### Debugging Commands 
+#### Debugging Commands
+
 | Command                                            | Description                                                                  |
 |----------------------------------------------------|------------------------------------------------------------------------------|
 | `epcc docs <RESOURCE>`                             | Open the API docs for a resource in your browser                             |  
@@ -66,21 +71,21 @@ The following is a summary of the main commands, in general you can type `epcc h
 1. `--execution-timeout` will control how long the `epcc` process can run before timing out.
 2. `--rate-limit` will control the number of requests per second to EPCC.
 3. `--max-concurrency` will control the maximum number of concurrent commands that can run simultaneously.
-    * This differs from the rate limit in that if a request takes 2 seconds, a rate limit of 3 will allow 6 requests in flight at a time, whereas `--max-concurrency` would limit you to 3. A higher value will slow down initial start time. 
+    * This differs from the rate limit in that if a request takes 2 seconds, a rate limit of 3 will allow 6 requests in flight at a time, whereas `--max-concurrency` would limit you to 3. A higher value will slow down initial start time.
 
 #### Headers
 
 Headers can be set in one of three ways, depending on what is most convenient
 
 1. Via the `-H` argument.
-   * This header will be one time only.
+    * This header will be one time only.
 2. Via the `EPCC_CLI_HTTP_HEADER_0` environment variable.
-   * This header will be always be set.
+    * This header will be always be set.
 3. Via the `epcc header set`
-   * These headers will be set in the current profile and will stay until unset. You can see what headers are set with `epcc headers status`
-   * Headers set this way support aliases.
-   * You can also additionally group headers into groups with `--group` and then clear all headers with `epcc headers clear <GROUP>`
-   
+    * These headers will be set in the current profile and will stay until unset. You can see what headers are set with `epcc headers status`
+    * Headers set this way support aliases.
+    * You can also additionally group headers into groups with `--group` and then clear all headers with `epcc headers clear <GROUP>`
+
 ### Configuration
 
 #### Via Prompts
@@ -91,16 +96,18 @@ Run the `epcc configure` and it will prompt you for the required settings, when 
 
 The following environment variables can be set up to control which environment and store to use with the EPCC CLI.
 
-| Environment Variable               | Description                                                                                                                                                                                                                                                                                                                                                               |
-|------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| EPCC_API_BASE_URL                  | This is the API base URL which can be retrieved via CM.                                                                                                                                                                                                                                                                                                                   |
-| EPCC_BETA_API_FEATURES             | This variable allows you to set [Beta Headers](https://documentation.elasticpath.com/commerce-cloud/docs/api/basics/api-contract.html#beta-apis) for all API calls.                                                                                                                                                                                                       |
-| EPCC_CLI_HTTP_HEADER_**N**         | Setting any environment variable like this (where N is a number) will cause it's value to be parsed and added to all HTTP headers (e.g., `EPCC_CLI_HTTP_HEADER_0=Cache-Control: no-cache` will add `Cache-Control: no-cache` as a header). FYI, the surprising syntax is due to different encoding rules. You can also specify headers using `-H` or `epcc headers`       |
-| EPCC_CLI_SUPPRESS_NO_AUTH_MESSAGES | This will supress warning messages about not being authenticated or logged out                                                                                                                                                                                                                                                                                            |
-| EPCC_CLIENT_ID                     | This is the Client ID which can be retrieved via CM.                                                                                                                                                                                                                                                                                                                      |                                            
-| EPCC_CLIENT_SECRET                 | This is the Client Secret which can be retrieved via CM.                                                                                                                                                                                                                                                                                                                  |
-| EPCC_PROFILE                       | A profile name that allows for an independent session and isolation (e.g., distinct histories)                                                                                                                                                                                                                                                                            |
-| EPCC_RUNBOOK_DIRECTORY             | A directory that will be scanned for runbook, a runbook ends with `.epcc.yml`                                                                                                                                                                                                                                                                                             |
+| Environment Variable                | Description                                                                                                                                                                                                                                                                                                                                                          |
+|-------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| EPCC_API_BASE_URL                   | This is the API base URL which can be retrieved via CM.                                                                                                                                                                                                                                                                                                              |
+| EPCC_BETA_API_FEATURES              | This variable allows you to set [Beta Headers](https://documentation.elasticpath.com/commerce-cloud/docs/api/basics/api-contract.html#beta-apis) for all API calls.                                                                                                                                                                                                  |
+| EPCC_CLI_HTTP_HEADER_**N**          | Setting any environment variable like this (where N is a number) will cause it's value to be parsed and added to all HTTP headers (e.g., `EPCC_CLI_HTTP_HEADER_0=Cache-Control: no-cache` will add `Cache-Control: no-cache` as a header). FYI, the surprising syntax is due to different encoding rules. You can also specify headers using `-H` or `epcc headers`. |
+| EPCC_CLI_SUPPRESS_NO_AUTH_MESSAGES  | This will supress warning messages about not being authenticated or logged out                                                                                                                                                                                                                                                                                       |
+| EPCC_CLI_URL_MATCH_REGEXP_**N**     | Setting this value causes the _path_ section of a URL to be matched and replaced with a corresponding value from the `EPCC_CLI_URL_MATCH_SUBSTITION_**N**` header, if not set the empty string is used.                                                                                                                                                              |
+| EPCC_CLI_URL_MATCH_SUBSTITION_**N** | The replacement string to use when a match is found. Capture groups and back references are supported (see [ReplaceAllString](https://pkg.go.dev/regexp#Regexp.ReplaceAllString)).                                                                                                                                                                                   |
+| EPCC_CLIENT_ID                      | This is the Client ID which can be retrieved via CM.                                                                                                                                                                                                                                                                                                                 |                                            
+| EPCC_CLIENT_SECRET                  | This is the Client Secret which can be retrieved via CM.                                                                                                                                                                                                                                                                                                             |
+| EPCC_PROFILE                        | A profile name that allows for an independent session and isolation (e.g., distinct histories).                                                                                                                                                                                                                                                                      |
+| EPCC_RUNBOOK_DIRECTORY              | A directory that will be scanned for runbook, a runbook ends with `.epcc.yml`.                                                                                                                                                                                                                                                                                       |
 
 It is recommended to set EPCC_API_BASE_URL, EPCC_CLIENT_ID, and EPCC_CLIENT_SECRET to be able to interact with most things in the CLI.
 
@@ -123,7 +130,9 @@ You will need to start a new shell for this setup to take effect
 
 #### Bash
 
-You will need to have the [bash-completion](https://github.com/scop/bash-completion) (e.g., [Ubuntu](https://packages.ubuntu.com/search?keywords=bash-completion), [Arch](https://archlinux.org/packages/extra/any/bash-completion/), [Gentoo](https://packages.gentoo.org/packages/app-shells/bash-completion)) package installed, and restart your bash session.
+You will need to have the [bash-completion](https://github.com/scop/bash-completion) (
+e.g., [Ubuntu](https://packages.ubuntu.com/search?keywords=bash-completion), [Arch](https://archlinux.org/packages/extra/any/bash-completion/), [Gentoo](https://packages.gentoo.org/packages/app-shells/bash-completion)) package installed, and restart
+your bash session.
 
 To load completions for each session, execute once:
 
@@ -156,7 +165,6 @@ For fish run:
 To load completions for each session, execute once:
 
 `epcc completion fish > ~/.config/fish/completions/epcc.fish`
-
 
 ## Tips
 
@@ -207,6 +215,7 @@ this is based on [GoJQ which has a number of differences](https://github.com/itc
 The `--retry-while-jq` argument can be used to wait for certain conditions to happen (e.g., a catalog publication, or an eventual consistency condition).
 
 For example:
+
 ```bash
 epcc get pcm-catalog-release --retry-while-jq '.data.meta.release_status != "PUBLISHED"' name=Ranges_Catalog last_release
 ```
@@ -219,6 +228,7 @@ this is based on [GoJQ which has a number of differences](https://github.com/itc
 ```bash
 epcc runbooks run misc get-store-info
 ```
+
 ## Development Tips
 
 ### Fast rebuilds
