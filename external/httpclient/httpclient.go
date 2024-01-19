@@ -18,6 +18,7 @@ import (
 	"net/http/httputil"
 	"net/url"
 	"os"
+	"regexp"
 	"runtime"
 	"sort"
 	"strings"
@@ -28,6 +29,12 @@ import (
 var RawHeaders []string
 
 const EnvNameHttpPrefix = "EPCC_CLI_HTTP_HEADER_"
+
+const EnvUrlMatch = "EPCC_CLI_URL_MATCH_REGEXP_(\\d+)"
+
+const EnvUrlMatchPrefix = "EPCC_CLI_URL_MATCH_SUBSTITUTION_"
+
+var urlSubstitions = map[*regexp.Regexp]string{}
 
 var httpHeaders = map[string]string{}
 
@@ -43,6 +50,9 @@ var stats = struct {
 
 func init() {
 	stats.respCodes = make(map[int]int)
+
+	urlMatchRegexp := regexp.MustCompile(EnvUrlMatch)
+
 	for _, env := range os.Environ() {
 		splitEnv := strings.SplitN(env, "=", 2)
 
@@ -56,6 +66,18 @@ func init() {
 					log.Warnf("Found environment variable with malformed value %s => %s. Headers should be set in a Key: Value format. This value is being ignored.", envName, envValue)
 				} else {
 					httpHeaders[headersSplit[0]] = headersSplit[1]
+				}
+			}
+
+			if groups := urlMatchRegexp.FindStringSubmatch(envName); groups != nil {
+				if groups != nil {
+					r, err := regexp.Compile(envValue)
+
+					if err != nil {
+						log.Warnf("Environment variable %s has a malformed regex and substition cannot be performed, %v", env, err)
+					} else {
+						urlSubstitions[r] = os.Getenv(EnvUrlMatchPrefix + groups[1])
+					}
 				}
 			}
 		}
@@ -181,7 +203,21 @@ func doRequestInternal(ctx context.Context, method string, contentType string, p
 			log.Fatalf("Error when parsing default host, this is a bug, %s", config.DefaultUrl)
 		}
 	}
+
+	origPath := path
+
+	for r, substitution := range urlSubstitions {
+		if r.MatchString(path) {
+			path = r.ReplaceAllString(path, substitution)
+		}
+	}
+
+	if origPath != path {
+		log.Tracef("URL Replacement transformed %s to %s", origPath, path)
+	}
+
 	reqURL.Path = path
+
 	reqURL.RawQuery = query
 
 	var bodyBuf []byte
