@@ -299,7 +299,9 @@ epcc %s %s%s key [] => %s
 
 # To send a nested object use the . character to nest values deeper.
 epcc %s %s%s key.some.child hello key.some.other goodbye => %s
-`,
+
+# Attributes can also be generated using Go templates and Sprig (https://masterminds.github.io/sprig/) functions.
+epcc %s %s%s key 'Test {{ randAlphaNum 6 | upper }} Value' => %s`,
 		verb, resource.SingularName, id, toJsonExample([]string{"key", "b"}, resource),
 		verb, resource.SingularName, id, toJsonExample([]string{"key", "1"}, resource),
 		verb, resource.SingularName, id, toJsonExample([]string{"key", "\"1\""}, resource),
@@ -310,6 +312,7 @@ epcc %s %s%s key.some.child hello key.some.other goodbye => %s
 		verb, resource.SingularName, id, toJsonExample([]string{"key[0]", "a", "key[1]", "true"}, resource),
 		verb, resource.SingularName, id, toJsonExample([]string{"key", "[]"}, resource),
 		verb, resource.SingularName, id, toJsonExample([]string{"key.some.child", "hello", "key.some.other", "goodbye"}, resource),
+		verb, resource.SingularName, id, toJsonExample([]string{"key", "Test {{ randAlphaNum 6 | upper }} Value"}, resource),
 	)
 }
 

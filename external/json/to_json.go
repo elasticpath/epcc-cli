@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/elasticpath/epcc-cli/external/aliases"
 	"github.com/elasticpath/epcc-cli/external/resources"
+	"github.com/elasticpath/epcc-cli/external/templates"
 	"github.com/itchyny/gojq"
 	log "github.com/sirupsen/logrus"
 	"regexp"
@@ -52,6 +53,9 @@ func toJsonObject(args []string, noWrapping bool, compliant bool, attributes map
 	for i := 0; i < len(args); i += 2 {
 		key := args[i]
 		val := args[i+1]
+
+		// Try and process the argument as a helm template
+		val = templates.Render(val)
 
 		jsonKey := key
 		switch {
@@ -265,6 +269,9 @@ func formatValue(v string) string {
 	} else if match, _ := regexp.MatchString("^\\[\\]$", v); match {
 		return v
 	} else {
+		v = strings.ReplaceAll(v, "\\", "\\\\")
+		v = strings.ReplaceAll(v, `"`, `\"`)
+
 		return fmt.Sprintf("\"%s\"", v)
 	}
 }

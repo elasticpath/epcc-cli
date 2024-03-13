@@ -1,9 +1,11 @@
 package completion
 
 import (
+	"fmt"
 	"github.com/elasticpath/epcc-cli/external/aliases"
 	"github.com/elasticpath/epcc-cli/external/resources"
 	"github.com/spf13/cobra"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -48,8 +50,9 @@ type Request struct {
 	QueryParam string
 	Header     string
 	// The current string argument being completed
-	ToComplete string
-	NoAliases  bool
+	ToComplete     string
+	NoAliases      bool
+	AllowTemplates bool
 }
 
 func Complete(c Request) ([]string, cobra.ShellCompDirective) {
@@ -293,6 +296,79 @@ func Complete(c Request) ([]string, cobra.ShellCompDirective) {
 						"xls", "xlsx",
 					}
 					results = append(results, supportedFileTypes...)
+				}
+			}
+
+			if c.AllowTemplates {
+				lastPipe := strings.LastIndex(c.ToComplete, "|")
+				prefix := ""
+				if lastPipe == -1 {
+					prefix = "{{ "
+				} else {
+					prefix = c.ToComplete[0:lastPipe+1] + " "
+				}
+
+				myResults := []string{}
+				myResults = append(myResults,
+					prefix+"date",
+					prefix+"now",
+					prefix+"randAlphaNum",
+					prefix+"randAlpha",
+					prefix+"randAscii",
+					prefix+"randNumeric",
+					prefix+"randAlphaNum",
+					prefix+"randAlpha",
+					prefix+"randAscii",
+					prefix+"randNumeric",
+					prefix+"pseudoRandAlphaNum",
+					prefix+"pseudoRandAlpha",
+					prefix+"pseudoRandNumeric",
+					prefix+"pseudoRandString",
+					prefix+"pseudoRandInt",
+					prefix+"uuidv4",
+					prefix+"duration",
+				)
+
+				if prefix != "{{ " {
+					// Functions that make sense as continuations
+					myResults = append(myResults,
+						prefix+"trim",
+						prefix+"trimAll",
+						prefix+"trimSuffix",
+						prefix+"trimPrefix",
+						prefix+"upper",
+						prefix+"lower",
+						prefix+"title",
+						prefix+"repeat",
+						prefix+"substr",
+						prefix+"nospace",
+						prefix+"trunc",
+						prefix+"abbrev",
+						prefix+"initials",
+						prefix+"wrap",
+						prefix+"cat",
+						prefix+"replace",
+						prefix+"snakecase",
+						prefix+"camelcase",
+						prefix+"kebabcase",
+						prefix+"swapcase",
+						prefix+"shufflecase",
+					)
+				}
+
+				re := regexp.MustCompile(`env\s+[A-Za-z]*\s*$`)
+				if re.MatchString(c.ToComplete) {
+					for _, v := range os.Environ() {
+						myResults = append(myResults,
+							fmt.Sprintf("%venv \"%v\"", prefix, strings.Split(v, "=")[0]),
+						)
+					}
+				} else {
+					myResults = append(myResults, prefix+"env")
+				}
+				//myResults = append(myResults, strings.TrimSuffix(c.ToComplete, " ")+" }}", strings.TrimSuffix(c.ToComplete, " ")+" |")
+				for _, r := range myResults {
+					results = append(results, r+" |", r+" }}")
 				}
 			}
 		}

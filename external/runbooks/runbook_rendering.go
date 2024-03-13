@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/Masterminds/sprig/v3"
+	"github.com/elasticpath/epcc-cli/external/templates"
+	"math"
 	"strconv"
 	"strings"
 	"text/template"
@@ -20,7 +22,15 @@ func CreateMapForRunbookArgumentPointers(runbookAction *RunbookAction) map[strin
 }
 
 func RenderTemplates(templateName string, rawCmd string, stringVars map[string]*string, variableDefinitions map[string]Variable) ([]string, error) {
-	tpl, err := template.New(templateName).Funcs(sprig.FuncMap()).Parse(rawCmd)
+	tpl, err := template.New(templateName).Funcs(sprig.FuncMap()).Funcs(
+		map[string]any{
+			"pow":                func(a, b int) int { return int(math.Pow(float64(a), float64(b))) },
+			"pseudoRandAlphaNum": templates.RandAlphaNum,
+			"pseudoRandAlpha":    templates.RandAlpha,
+			"pseudoRandNumeric":  templates.RandNumeric,
+			"pseudoRandString":   templates.RandString,
+			"pseudoRandInt":      templates.RandInt,
+		}).Parse(rawCmd)
 
 	if err != nil {
 		// Handle this case better

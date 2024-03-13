@@ -54,6 +54,51 @@ func TestToJsonLegacyFormatSimpleKeyStringValue(t *testing.T) {
 	}
 }
 
+func TestToJsonLegacyFormatSimpleKeyStringValueWithQuotes(t *testing.T) {
+	// Fixture Setup
+	input := []string{"key", "val\"ue"}
+	expected := `{"data":{"key":"val\"ue"}}`
+
+	// Execute SUT
+	actual, err := ToJson(input, false, false, map[string]*resources.CrudEntityAttribute{}, true)
+
+	// Verification
+	require.NoError(t, err)
+	if actual != expected {
+		t.Fatalf("Testing json conversion of empty value %s did not match expected %s, actually: %s", input, expected, actual)
+	}
+}
+
+func TestToJsonLegacyFormatSimpleKeyStringValueWithNewLines(t *testing.T) {
+	// Fixture Setup
+	input := []string{"key", "val\nue"}
+	expected := `{"data":{"key":"val\nue"}}`
+
+	// Execute SUT
+	actual, err := ToJson(input, false, false, map[string]*resources.CrudEntityAttribute{}, true)
+
+	// Verification
+	require.NoError(t, err)
+	if actual != expected {
+		t.Fatalf("Testing json conversion of empty value %s did not match expected %s, actually: %s", input, expected, actual)
+	}
+}
+
+func TestToJsonLegacyFormatSimpleKeyStringValueWithBackslashes(t *testing.T) {
+	// Fixture Setup
+	input := []string{"key", "val\\nue"}
+	expected := `{"data":{"key":"val\\nue"}}`
+
+	// Execute SUT
+	actual, err := ToJson(input, false, false, map[string]*resources.CrudEntityAttribute{}, true)
+
+	// Verification
+	require.NoError(t, err)
+	if actual != expected {
+		t.Fatalf("Testing json conversion of empty value %s did not match expected %s, actually: %s", input, expected, actual)
+	}
+}
+
 func TestToJsonLegacyFormatSimpleNestedKeyValue(t *testing.T) {
 	// Fixture Setup
 	input := []string{"foo.bar", "val"}

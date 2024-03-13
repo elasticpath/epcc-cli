@@ -161,11 +161,12 @@ func NewUpdateCommand(parentCmd *cobra.Command) func() {
 						})
 					} else { // This is an attribute value
 						return completion.Complete(completion.Request{
-							Type:       completion.CompleteAttributeValue,
-							Resource:   resource,
-							Verb:       completion.Update,
-							Attribute:  args[len(args)-1],
-							ToComplete: toComplete,
+							Type:           completion.CompleteAttributeValue,
+							Resource:       resource,
+							Verb:           completion.Update,
+							Attribute:      args[len(args)-1],
+							ToComplete:     toComplete,
+							AllowTemplates: true,
 						})
 					}
 				} else {

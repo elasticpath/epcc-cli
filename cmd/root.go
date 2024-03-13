@@ -290,7 +290,6 @@ func Execute() {
 
 		os.Exit(1)
 	} else {
-
 		os.Exit(0)
 	}
 }
