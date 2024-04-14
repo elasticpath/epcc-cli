@@ -148,7 +148,9 @@ func initRunbookShowCommands() *cobra.Command {
 
 						for _, line := range rawCmdLines {
 							if len(strings.Trim(line, " \n")) > 0 {
+								//if i <= 10 {
 								println(line)
+								//}
 							}
 
 						}

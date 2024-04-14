@@ -18,7 +18,8 @@ account-authentication-settings:
     auto_create_account_for_account_members:
       type: BOOL
     account_member_self_management:
-      type: BOOL
+      type: ENUM:disabled,update_only
+
 account-management-authentication-tokens:
   singular-name: "account-management-authentication-token"
   json-api-type: "account_management_authentication_token"

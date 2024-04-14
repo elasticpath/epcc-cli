@@ -269,6 +269,6 @@ func formatValue(v string) string {
 	} else if match, _ := regexp.MatchString("^\\[\\]$", v); match {
 		return v
 	} else {
-		return fmt.Sprintf("\"%s\"", v)
+		return fmt.Sprintf("\"%s\"", strings.ReplaceAll(v, `"`, `\"`))
 	}
 }
