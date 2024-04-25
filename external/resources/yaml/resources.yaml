@@ -1778,8 +1778,10 @@ pcm-pricebooks:
   attributes:
     name:
       type: STRING
+      autofill: FUNC:Company
     description:
       type: STRING
+      autofill: FUNC:Phrase
 pcm-product-prices:
   singular-name: "pcm-product-price"
   json-api-type: "product-price"
@@ -1817,6 +1819,35 @@ pcm-product-prices:
       type: INT
     currencies.CAD.includes_tax:
       type: BOOL
+pcm-pricebook-modifiers:
+  singular-name: "pcm-pricebook-modifier"
+  json-api-format: "compliant"
+  json-api-type: "price-modifier"
+  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/options/modifiers/modifiers.html"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/pxm/pricebooks/pxm-pricebooks-modifiers/get-all-price-modifiers"
+    url: "/pcm/pricebooks/{pcm_pricebooks}/options/{pcm_variation_options}/modifiers"
+  get-entity:
+    docs: "https://elasticpath.dev/docs/pxm/pricebooks/pxm-pricebooks-modifiers/get-a-price-modifier"
+    url: "/pcm/pricebooks/{pcm_pricebooks}/options/{pcm_variation_options}/modifiers/{pcm_variation_modifiers}"
+  create-entity:
+    docs: "https://elasticpath.dev/docs/pxm/pricebooks/pxm-pricebooks-modifiers/create-a-price-modifier"
+    url: "/pcm/pricebooks/{pcm_pricebooks}/options/{pcm_variation_options}/modifiers"
+  update-entity:
+    docs: "https://elasticpath.dev/docs/pxm/pricebooks/pxm-pricebooks-modifiers/update-a-price-modifier"
+    url: "/pcm/pricebooks/{pcm_pricebooks}/options/{pcm_variation_options}/modifiers/{pcm_variation_modifiers}"
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/pxm/pricebooks/pxm-pricebooks-modifiers/delete-a-price-modifier"
+    url: "/pcm/pricebooks/{pcm_pricebooks}/options/{pcm_variation_options}/modifiers/{pcm_variation_modifiers}"
+  attributes:
+    attribute.type:
+      type: ENUM:commodity_type,status,description_append,description_prepend,description_equals,name_append,name_prepend,name_equals,sku_append,sku_prepend,sku_equals,slug_append,slug_prepend,slug_equals
+    attribute.value:
+      type: STRING
+    seek:
+      type: STRING
+    set:
+      type: STRING
 pcm-variations:
   singular-name: "pcm-variation"
   json-api-type: "product-variation"
