@@ -422,7 +422,13 @@ func processRunbookVariablesOnCommand(runbookActionRunActionCommand *cobra.Comma
 				log.Errorf("Could not set flag as required, this is a bug of some kind %s: %v", key, err)
 			}
 		} else {
-			runbookActionRunActionCommand.Flags().StringVar(runbookStringArguments[key], key, variable.Default, variable.Description.Short)
+
+			description := ""
+
+			if variable.Description != nil {
+				description = variable.Description.Short
+			}
+			runbookActionRunActionCommand.Flags().StringVar(runbookStringArguments[key], key, variable.Default, description)
 		}
 
 		runbookActionRunActionCommand.RegisterFlagCompletionFunc(key, func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {

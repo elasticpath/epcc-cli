@@ -147,7 +147,7 @@ Flags:
 If you would like to use a dashed argument name you need to use a different syntax in the chart:
 
 ```
-{{ . index "dashed-argument-name" }}
+{{ index . "dashed-argument-name" }}
 ```
 
 #### Showing the output
