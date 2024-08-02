@@ -147,7 +147,7 @@ Flags:
 If you would like to use a dashed argument name you need to use a different syntax in the chart:
 
 ```
-{{ . index "dashed-argument-name" }}
+{{ index . "dashed-argument-name" }}
 ```
 
 #### Showing the output
@@ -171,17 +171,17 @@ description:
   short: "A hello world runbook"
 actions:
    sequential-sleeps:
-   variables:
-      count:
-         type: INT
-         default: 2
-         description:
-            short: "The number of sleeps"
-   commands:
-      - |2
-        {{- range untilStep 0 .count 1}}
-          - sleep 1
-        {{- end -}}
+      variables:
+         count:
+            type: INT
+            default: 2
+            description:
+               short: "The number of sleeps"
+      commands:
+         - |2
+           {{- range untilStep 0 .count 1}}
+             - sleep 1
+           {{- end -}}
    concurrent-sleeps:
       variables:
          count:

@@ -294,6 +294,7 @@ func Complete(c Request) ([]string, cobra.ShellCompDirective) {
 					}
 					results = append(results, supportedFileTypes...)
 				}
+
 			}
 		}
 	}
