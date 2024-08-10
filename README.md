@@ -231,6 +231,11 @@ epcc runbooks run misc get-store-info
 
 ## Development Tips
 
+### Retries vs Ignoring Errors
+
+Retries in epcc-cli will retry the _exact_ rendered request so if you are using templated parameters i.e., `auto-fill` and the failure is deterministic (say a unique constraint),
+a retry will just get stuck in a loop. In this case if you want to create many different records, you want to `--ignore-errors`.
+
 ### Fast rebuilds
 
 For development the following command using [Reflex](https://github.com/cespare/reflex) can speed up your development time, by recreating the command line tool.

@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/elasticpath/epcc-cli/external/httpclient"
 	"github.com/elasticpath/epcc-cli/external/shutdown"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -16,6 +17,9 @@ func repeater(c func(*cobra.Command, []string) error, repeat, repeatDelay uint32
 			if ignoreErrors {
 				log.Debugf("Ignored error %v", ignoreErrors)
 			} else {
+				if repeat > 1 && !ignoreErrors && httpclient.RetryAllErrors {
+					log.Infof("If you want to continue repeating even if the requests gets a 4xx you should use `--ignore-errors.`")
+				}
 				return err
 			}
 		}
