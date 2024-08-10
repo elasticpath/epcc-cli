@@ -31,7 +31,7 @@ account-management-authentication-tokens:
     content-type: application/json
   attributes:
     authentication_mechanism:
-      type: STRING
+      type: ENUM:oidc,password,passwordless,self_signup
     oauth_authorization_code:
       type: STRING
     oauth_redirect_uri:
@@ -44,6 +44,13 @@ account-management-authentication-tokens:
       type: STRING
     password:
       type: STRING
+    name:
+      type: STRING
+      autofill: FUNC:Name
+    email:
+      type: string
+      autofill: FUNC:Email
+
   suppress-reset-warning: true
 account-members:
   singular-name: "account-member"
@@ -1560,6 +1567,9 @@ pcm-nodes:
   update-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/hierarchies/nodes/update-a-hierarchy-node.html"
     url: "/pcm/hierarchies/{pcm_hierarchies}/nodes/{pcm_nodes}"
+  get-collection:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/hierarchies/nodes/get-a-hierarchy-node.html"
+    url: "/pcm/hierarchies/{pcm_hierarchies}/nodes"
   delete-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/hierarchies/nodes/delete-a-hierarchy-node.html"
     url: "/pcm/hierarchies/{pcm_hierarchies}/nodes/{pcm_nodes}"

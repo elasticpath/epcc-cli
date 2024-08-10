@@ -123,6 +123,7 @@ func InitializeCmd() {
 	RootCmd.PersistentFlags().StringVarP(&profileNameFromCommandLine, "profile", "P", "", "overrides the current EPCC_PROFILE var to run the command with the chosen profile.")
 	RootCmd.PersistentFlags().Uint16VarP(&rateLimit, "rate-limit", "", 10, "Request limit per second")
 	RootCmd.PersistentFlags().BoolVarP(&httpclient.Retry5xx, "retry-5xx", "", false, "Whether we should retry requests with HTTP 5xx response code")
+	RootCmd.PersistentFlags().BoolVarP(&httpclient.Retry4xx, "retry-4xx", "", false, "Whether we should retry requests with HTTP 4xx response code")
 	RootCmd.PersistentFlags().BoolVarP(&httpclient.Retry429, "retry-429", "", false, "Whether we should retry requests with HTTP 429 response code")
 	RootCmd.PersistentFlags().BoolVarP(&httpclient.RetryConnectionErrors, "retry-connection-errors", "", false, "Whether we should retry requests with connection errors")
 	RootCmd.PersistentFlags().UintVarP(&httpclient.RetryDelay, "retry-delay", "", 500, "When retrying how long should we delay")
@@ -286,6 +287,7 @@ func Execute() {
 	<-shutdownHandlerDone
 
 	if err != nil {
+
 		log.Errorf("Error occurred while processing command: %s", err)
 
 		os.Exit(1)
