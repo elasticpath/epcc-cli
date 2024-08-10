@@ -7,7 +7,7 @@ require (
 	github.com/brianvoe/gofakeit/v6 v6.28.0
 	github.com/buildkite/shellwords v0.0.0-20180315110454-59467a9b8e10
 	github.com/caarlos0/env/v6 v6.10.1
-	github.com/google/uuid v1.5.0
+	github.com/google/uuid v1.6.0
 	github.com/gookit/color v1.5.3
 	github.com/itchyny/gojq v0.12.14
 	github.com/mattn/go-isatty v0.0.20
