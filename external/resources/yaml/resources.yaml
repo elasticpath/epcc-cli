@@ -1583,6 +1583,9 @@ pcm-nodes:
   get-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/hierarchies/nodes/get-a-hierarchy-node.html"
     url: "/pcm/hierarchies/{pcm_hierarchies}/nodes/{pcm_nodes}"
+  get-collection:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/hierarchies/nodes/get-a-hierarchy-node.html"
+    url: "/pcm/hierarchies/{pcm_hierarchies}/nodes"
   update-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/hierarchies/nodes/update-a-hierarchy-node.html"
     url: "/pcm/hierarchies/{pcm_hierarchies}/nodes/{pcm_nodes}"
