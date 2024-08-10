@@ -25,7 +25,7 @@ actions:
         epcc create pcm-product-price name=Preferred_Pricing currencies.USD.amount 300000 currencies.USD.includes_tax false currencies.GBP.amount 250000 currencies.GBP.includes_tax false sku BE-Electric-Range-1a1a
         epcc create pcm-product-price name=Preferred_Pricing currencies.USD.amount 350000 currencies.USD.includes_tax false currencies.GBP.amount 300000 currencies.GBP.includes_tax false sku BE-Gas-Range-2b2b
       - epcc create pcm-catalog name "Ranges Catalog" description "Ranges Catalog" pricebook_id name=Preferred_Pricing hierarchy_ids[0] name=Major_Appliances
-      - epcc create pcm-catalog-release --save-as-alias pxm-how-to-create-catalog-and-publish-release name=Ranges_Catalog
+      - epcc create pcm-catalog-release --retry-while-jq '.errors[0].status == 422'  --save-as-alias pxm-how-to-create-catalog-and-publish-release name=Ranges_Catalog
       # Wait for Catalog to be Published
       - epcc get pcm-catalog-release --retry-while-jq '.data.meta.release_status != "PUBLISHED"' name=Ranges_Catalog pxm-how-to-create-catalog-and-publish-release
   create-catalog-rule:
@@ -105,7 +105,7 @@ actions:
       - epcc create pcm-product attributes.name "SKU-less Bed and Ball Bundle" attributes.commodity_type "physical" status "live" components.dogbed.max 1 components.dogbed.min 1 components.dogbed.name "Dog Bed" components.dogbed.options[0].id alias/product/name=Fluffy_Bed/id components.dogbed.options[0].type "product" components.dogbed.options[0].quantity 1 components.dogball.max 1 components.dogball.min 1 components.dogball.name "Dog Ball" components.dogball.options[0].id alias/product/name=Squeaky_Ball/id components.dogball.options[0].type "product" components.dogball.options[0].quantity 1
       - epcc create pcm-node-product name=Pet_Supplies name=Dog_Supplies data[0].type product data[0].id name=SKU-less_Bed_and_Ball_Bundle
       - epcc create pcm-catalog name "Pet Supplies Catalog" description "Pet Supplies Catalog" pricebook_id name=VIP_Pricing hierarchy_ids[0] name=Pet_Supplies
-      - epcc create pcm-catalog-release name=Pet_Supplies_Catalog  --save-as-alias pxm-how-to-publish-catalog-with-bundles-release
+      - epcc create pcm-catalog-release --retry-while-jq '.errors[0].status == 422' name=Pet_Supplies_Catalog  --save-as-alias pxm-how-to-publish-catalog-with-bundles-release
       # Wait for Catalog to be Published
       - epcc get pcm-catalog-release --retry-while-jq '.data.meta.release_status != "PUBLISHED"'  name=Pet_Supplies_Catalog pxm-how-to-publish-catalog-with-bundles-release
 
