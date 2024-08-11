@@ -139,6 +139,7 @@ actions:
       - |
         epcc create pcm-pricebook name "Account 1 Pricebook" description "Account 1 Pricebook"
         epcc create pcm-pricebook name "Account 2 Pricebook" description "Account 2 Pricebook"
+      - sleep 2
       - |
         epcc create pcm-catalog name "Account 1 Catalog" description "Account 1 Catalog" pricebook_id name=Account_1_Pricebook hierarchy_ids[0] name=Hierarchy_For_Account_1
         epcc create pcm-catalog name "Account 2 Catalog" description "Account 2 Catalog" pricebook_id name=Account_2_Pricebook hierarchy_ids[0] name=Hierarchy_For_Account_2
