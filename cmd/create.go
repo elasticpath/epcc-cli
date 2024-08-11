@@ -18,6 +18,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 )
 
 func NewCreateCommand(parentCmd *cobra.Command) func() {
@@ -42,6 +43,8 @@ func NewCreateCommand(parentCmd *cobra.Command) func() {
 	// Ensure that any new options here are added to the resetFunc
 	var autoFillOnCreate = false
 	var noBodyPrint = false
+	var retryWhileJQ = ""
+	var retryWhileJQMaxAttempts = uint16(1200)
 	var outputJq = ""
 	var compactOutput = true
 	var setAlias = ""
@@ -105,8 +108,42 @@ func NewCreateCommand(parentCmd *cobra.Command) func() {
 						}
 					}
 
-					body, err := createInternal(context.Background(), overrides, append([]string{resourceName}, args...), autoFillOnCreate, setAlias, skipAliases)
+					var body string
+					var err error
+					if retryWhileJQMaxAttempts == 0 {
+						return fmt.Errorf("--retry-while-jq-max-attempts must be greater than 0")
+					}
 
+					retriesFailedError := fmt.Errorf("Maximum number of retries hit %d and condition [%s] always true", retryWhileJQMaxAttempts, retryWhileJQ)
+
+					for attempt := uint16(0); attempt < retryWhileJQMaxAttempts; attempt++ {
+						body, err = createInternal(context.Background(), overrides, append([]string{resourceName}, args...), autoFillOnCreate, setAlias, skipAliases)
+
+						if retryWhileJQ == "" {
+							retriesFailedError = nil
+							break
+						}
+
+						resultOfRetryWhileJQ, err := json.RunJQOnStringWithArray(retryWhileJQ, body)
+
+						if err != nil {
+							break
+						}
+
+						if len(resultOfRetryWhileJQ) > 0 {
+							if result, ok := resultOfRetryWhileJQ[0].(bool); ok {
+								if result {
+									time.Sleep(3 * time.Second)
+									continue
+								}
+							}
+						}
+
+						log.Infof("Result of JQ [%s] was: %v, retries complete", retryWhileJQ, resultOfRetryWhileJQ)
+						retriesFailedError = nil
+						break
+
+					}
 					if err != nil {
 						return err
 					}
@@ -132,11 +169,11 @@ func NewCreateCommand(parentCmd *cobra.Command) func() {
 							}
 						}
 
-						return nil
+						return retriesFailedError
 					}
 
 					if noBodyPrint {
-						return nil
+						return retriesFailedError
 					} else {
 						if compactOutput {
 							body, err = json.Compact(body)
@@ -228,6 +265,8 @@ func NewCreateCommand(parentCmd *cobra.Command) func() {
 	createCmd.PersistentFlags().StringVarP(&outputJq, "output-jq", "", "", "A jq expression, if set we will restrict output to only this")
 	createCmd.PersistentFlags().BoolVarP(&compactOutput, "compact", "", false, "Hides some of the boiler plate keys and empty fields, etc...")
 	createCmd.PersistentFlags().BoolVarP(&ignoreErrors, "ignore-errors", "", false, "Don't return non zero on an error")
+	createCmd.PersistentFlags().StringVarP(&retryWhileJQ, "retry-while-jq", "", "", "A jq expression, if set and returns true we will retry the get command (see manual for examples)")
+	createCmd.PersistentFlags().Uint16VarP(&retryWhileJQMaxAttempts, "retry-while-jq-max-attempts", "", 1200, "The maximum number of attempts we will retry with jq")
 	createCmd.PersistentFlags().StringVarP(&setAlias, "save-as-alias", "", "", "A name to save the created resource as")
 	createCmd.PersistentFlags().StringVarP(&ifAliasExists, "if-alias-exists", "", "", "If the alias exists we will run this command, otherwise exit with no error")
 	createCmd.PersistentFlags().StringVarP(&ifAliasDoesNotExist, "if-alias-does-not-exist", "", "", "If the alias does not exist we will run this command, otherwise exit with no error")
@@ -343,7 +382,7 @@ func createInternal(ctx context.Context, overrides *httpclient.HttpParameterOver
 		// Check if error response
 		if resp.StatusCode >= 400 && resp.StatusCode <= 600 {
 			json.PrintJson(string(resBody))
-			return "", fmt.Errorf(resp.Status)
+			return string(resBody), fmt.Errorf(resp.Status)
 		}
 
 		// 204 is no content, so we will skip it.

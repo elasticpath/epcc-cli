@@ -3,6 +3,14 @@ description:
   long: "Creates the Getting Started PXM Catalog (https://documentation.elasticpath.com/commerce-cloud/docs/developer/how-to/get-started-pcm.html)."
   short: "Create and manipulate the Getting Started PXM Catalog"
 actions:
+  create-pricebooks:
+    description:
+      short: "Test"
+    commands:
+      - |
+        {{- range untilStep 0 10000 1}}
+        epcc create -s pcm-pricebook name "Test 12434{{.}}" description "foo"
+        {{- end -}}
   create-catalog-and-publish:
     description:
       short: "Create the sample catalog and publish"
@@ -25,7 +33,7 @@ actions:
         epcc create pcm-product-price name=Preferred_Pricing currencies.USD.amount 300000 currencies.USD.includes_tax false currencies.GBP.amount 250000 currencies.GBP.includes_tax false sku BE-Electric-Range-1a1a
         epcc create pcm-product-price name=Preferred_Pricing currencies.USD.amount 350000 currencies.USD.includes_tax false currencies.GBP.amount 300000 currencies.GBP.includes_tax false sku BE-Gas-Range-2b2b
       - epcc create pcm-catalog name "Ranges Catalog" description "Ranges Catalog" pricebook_id name=Preferred_Pricing hierarchy_ids[0] name=Major_Appliances
-      - epcc create pcm-catalog-release --save-as-alias pxm-how-to-create-catalog-and-publish-release name=Ranges_Catalog
+      - epcc create pcm-catalog-release --retry-while-jq '.errors[0].status == "422"' --save-as-alias pxm-how-to-create-catalog-and-publish-release name=Ranges_Catalog
       # Wait for Catalog to be Published
       - epcc get pcm-catalog-release --retry-while-jq '.data.meta.release_status != "PUBLISHED"' name=Ranges_Catalog pxm-how-to-create-catalog-and-publish-release
   create-catalog-rule:
