@@ -1,0 +1,132 @@
+name: "account-cart-associations"
+description:
+  long: "Sample commands for using Account cart association"
+  short: "Sample commands for using Account cart association"
+actions:
+  create-prerequisites:
+    description:
+      short: "Create necessary prerequisites"
+    commands:
+      - epcc create pcm-hierarchy name "Major Appliances" description "Free standing appliances" slug "Major-Appliances-MA0"
+      - epcc create pcm-node name=Major_Appliances name "Ranges" description "All stoves and ovens" slug "Ranges-MA1"
+      - |
+        epcc create pcm-node name=Major_Appliances name "Electric Ranges" description "Electric stoves and ovens" slug "Electric-Ranges-MA2" relationships.parent.data.type node relationships.parent.data.id name=Ranges
+        epcc create pcm-node name=Major_Appliances name "Gas Ranges" description "Gas stoves and ovens" slug "Gas-Ranges-MA2" relationships.parent.data.type node relationships.parent.data.id name=Ranges
+      - epcc create pcm-product name "BestEver Electric Range" sku "BE-Electric-Range-1a1a" slug "bestever-range-1a1a" description "This electric model offers an induction heating element and convection oven." status live commodity_type physical upc_ean \"111122223333\" mpn BE-R-1111-aaaa-1a1a
+      - epcc create pcm-node-product name=Major_Appliances name=Electric_Ranges data[0].type product data[0].id name=BestEver_Electric_Range
+      - epcc create pcm-product name "BestEver Gas Range" sku "BE-Gas-Range-2b2b" slug "bestever-range-2b2b" description "This gas model includes a convection oven." status live commodity_type physical upc_ean \"222233334444\" mpn BE-R-2222-bbbb-2b2b
+      - epcc create pcm-node-product name=Major_Appliances name=Gas_Ranges data[0].type product data[0].id name=BestEver_Gas_Range
+      - epcc get -s currencies
+      - epcc create currency --if-alias-does-not-exist code=GBP code GBP exchange_rate 1 format £{price} decimal_point "." thousand_separator , decimal_places 2 default false enabled true
+      - epcc create pcm-pricebook name "Preferred Pricing" description "Catalog with pricing suitable for high-volume accounts."
+      - |
+        epcc create pcm-product-price name=Preferred_Pricing currencies.USD.amount 300000 currencies.USD.includes_tax false currencies.GBP.amount 250000 currencies.GBP.includes_tax false sku BE-Electric-Range-1a1a
+        epcc create pcm-product-price name=Preferred_Pricing currencies.USD.amount 350000 currencies.USD.includes_tax false currencies.GBP.amount 300000 currencies.GBP.includes_tax false sku BE-Gas-Range-2b2b
+      - sleep 2
+      - epcc create pcm-catalog name "Ranges Catalog" description "Ranges Catalog" pricebook_id name=Preferred_Pricing hierarchy_ids[0] name=Major_Appliances
+      - epcc create pcm-catalog-release --save-as-alias pxm-how-to-create-catalog-and-publish-release name=Ranges_Catalog
+      # Wait for Catalog to be Published
+      - epcc get pcm-catalog-release --retry-while-jq '.data.meta.release_status != "PUBLISHED"' name=Ranges_Catalog pxm-how-to-create-catalog-and-publish-release
+  create-accounts-and-carts-with-product-items:
+    description:
+      short: "Create the accounts and carts with items from the catalog"
+    ignore_errors: true
+    commands:
+      - | 
+          epcc create account --auto-fill name acct1
+          epcc create account --auto-fill name acct2
+          epcc create account --auto-fill name acct3
+          epcc create cart name "Account 1 Cart" id acct1_only description "Account 1 Cart"
+          epcc create cart name "Account 1&2 Shared Cart" id acct1_and_2 description "Account 1 & 2 Cart"
+          epcc create cart name "No Account Cart" id no_acct_cart description "No Account Cart"
+      - epcc create account-cart-association id=acct1_only data[0].type account data[0].id name=acct1
+      - epcc create account-cart-association id=acct1_and_2 data[0].type account data[0].id name=acct1
+      - epcc create account-cart-association id=acct1_and_2 data[0].type account data[0].id name=acct2
+      - epcc create cart-product-item id=acct1_only sku  sku=BE-Gas-Range-2b2b quantity 1
+      - epcc create cart-product-item id=acct1_and_2 sku  sku=BE-Gas-Range-2b2b quantity 2
+      - epcc create cart-product-item no_acct_cart sku  sku=BE-Gas-Range-2b2b quantity 3
+
+  create-accounts-and-carts-with-custom-items:
+    description:
+      short: "Create the accounts and carts with custom items"
+    ignore_errors: true
+    commands:
+      - |
+        epcc create account -s --auto-fill name "acct1"
+        epcc create account -s --auto-fill name "acct2"
+        epcc create account -s --auto-fill name "acct3"
+        epcc create cart -s name "Account 1 Cart" id acct1_only description "Account 1 Cart"
+        epcc create cart -s name "Account 1&2 Shared Cart" id acct1_and_2 description "Account 1 & 2 Cart"
+        epcc create cart -s name "No Account Cart" id no_acct_cart description "No Account Cart"
+      - epcc create account-cart-association id=acct1_only data[0].type account data[0].id name=acct1
+      - epcc create account-cart-association id=acct1_and_2 data[0].type account data[0].id name=acct1
+      - epcc create account-cart-association id=acct1_and_2 data[0].type account data[0].id name=acct2
+      - epcc create cart-custom-item id=acct1_only sku sku=BE-Gas-Range-2b2b quantity 1 price.amount 100000 price.includes_tax false name "Best Ever Electric Range"
+      - epcc create cart-custom-item id=acct1_and_2 sku sku=BE-Gas-Range-2b2b quantity 2 price.amount 100000 price.includes_tax false name "Best Ever Electric Range"
+      - epcc create cart-custom-item no_acct_cart sku sku=BE-Gas-Range-2b2b quantity 3 price.amount 100000 price.includes_tax false name "Best Ever Electric Range"
+
+
+  delete-accounts-and-carts:
+    description:
+      short: "Delete all the accounts and their carts"
+    commands:
+      - epcc get -s accounts
+      - epcc delete account-cart-association id=acct1_only data[0].type account data[0].id name=acct1
+      - epcc delete account-cart-association id=acct1_and_2 data[0].type account data[0].id name=acct1
+      - epcc delete account-cart-association id=acct1_and_2 data[0].type account data[0].id name=acct2
+      - |
+        epcc delete account name=acct1
+        epcc delete account name=acct2
+        epcc delete account name=acct3
+      - |   
+        epcc delete cart acct1_only
+        epcc delete cart acct1_and_2
+        epcc delete cart no_acct_cart
+  try-and-delete-all-carts:
+    description:
+      short: "Try and delete all carts"
+    ignore_errors: true
+    commands:
+      - epcc get -s accounts
+      - epcc delete account-cart-association id=acct1_only data[0].type account data[0].id name=acct1
+      - epcc delete account-cart-association id=acct1_and_2 data[0].type account data[0].id name=acct1
+      - epcc delete account-cart-association id=acct1_and_2 data[0].type account data[0].id name=acct2
+
+      - |
+        epcc delete cart acct1_only
+        epcc delete cart acct1_and_2
+        epcc delete cart no_acct_cart
+
+  
+  reset:
+    description:
+      short: "Reset the store to the initial state"
+    ignore_errors: true
+    commands:
+      # Retrieve a bunch of data (not all), so that aliases can be populated
+      - | 
+        epcc get -s pcm-products
+        epcc get -s pcm-catalogs
+        epcc get -s pcm-hierarchies
+        epcc get -s pcm-pricebooks
+        epcc get -s pcm-catalog-rules
+        epcc get -s accounts
+      - |
+        epcc get -s pcm-catalog-releases name=Ranges_Catalog 
+        epcc get -s pcm-catalog-releases name=Ranges_Catalog_for_Special_Accounts
+      - |
+        epcc delete account name=acct1 --if-alias-exists name=acct1
+        epcc delete account name=acct2 --if-alias-exists name=acct2
+        epcc delete account name=acct3 --if-alias-exists name=acct3
+        epcc delete currency code=GBP  --if-alias-exists code=GBP
+        epcc delete pcm-catalog-release name=Ranges_Catalog name=Ranges_Catalog   
+        epcc delete pcm-catalog-release name=Ranges_Catalog_for_Special_Accounts name=Ranges_Catalog_for_Special_Accounts 
+        epcc delete pcm-catalog-rule name=Catalog_Rule_for_Civil_Servants --if-alias-exists name=Catalog_Rule_for_Civil_Servants    
+        epcc delete pcm-product name=BestEver_Gas_Range --if-alias-exists name=BestEver_Gas_Range
+        epcc delete pcm-product name=BestEver_Electric_Range --if-alias-exists name=BestEver_Electric_Range 
+        epcc delete pcm-hierarchy name=Major_Appliances  --if-alias-exists name=Major_Appliances
+        epcc delete pcm-pricebook name=Preferred_Pricing --if-alias-exists name=Preferred_Pricing 
+        epcc delete pcm-pricebook name=Loyal_Civil_Servants_Pricing --if-alias-exists name=Loyal_Civil_Servants_Pricing
+      - |
+        epcc delete pcm-catalog name=Ranges_Catalog_for_Special_Accounts --if-alias-exists name=Ranges_Catalog_for_Special_Accounts
+        epcc delete pcm-catalog name=Ranges_Catalog --if-alias-exists name=Ranges_Catalog

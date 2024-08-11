@@ -11,12 +11,25 @@ set -x
 
 
 #Let's test that epcc command works after an embarrassing bug that caused it to panic :(
-epcc
+#epcc
 
 
+echo "Starting Account Cart Association Tests"
 epcc reset-store .+
 
+epcc runbooks run account-cart-associations try-and-delete-all-carts
+epcc runbooks run account-cart-associations create-prerequisites
+epcc runbooks run account-cart-associations create-accounts-and-carts-with-product-items
+epcc runbooks run account-cart-associations delete-accounts-and-carts
+epcc runbooks run account-cart-associations create-accounts-and-carts-with-custom-items
+epcc runbooks run account-cart-associations delete-accounts-and-carts
+epcc runbooks run account-cart-associations reset
+
+
+
+
 echo "Starting Misc Runbook"
+epcc reset-store .+
 epcc runbooks run misc get-store-info
 
 echo "Starting pxm how to"
@@ -80,6 +93,7 @@ epcc runbooks run customer-cart-associations delete-customer-and-carts-with-prod
 epcc runbooks run customer-cart-associations create-customers-and-carts-with-custom-items
 epcc runbooks run customer-cart-associations delete-customer-and-carts-with-custom-items
 epcc runbooks run customer-cart-associations reset
+
 
 echo "SUCCESS"
 
