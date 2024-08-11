@@ -229,6 +229,11 @@ this is based on [GoJQ which has a number of differences](https://github.com/itc
 epcc runbooks run misc get-store-info
 ```
 
+### Retries vs Ignoring Errors
+
+Retries in epcc-cli will retry the _exact_ rendered request so if you are using templated parameters i.e., `auto-fill` and the failure is deterministic (say a unique constraint), 
+a retry will just get stuck in a loop. In this case if you want to create many different records, you want to `--ignore-errors`.
+
 ## Development Tips
 
 ### Fast rebuilds

@@ -118,6 +118,7 @@ func Initialize(rateLimit uint16, requestTimeout float32, statisticsFrequency in
 
 var Retry429 = false
 var Retry5xx = false
+var Retry4xx = false
 
 var RetryConnectionErrors = false
 

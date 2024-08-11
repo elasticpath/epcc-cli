@@ -16,6 +16,9 @@ func repeater(c func(*cobra.Command, []string) error, repeat, repeatDelay uint32
 			if ignoreErrors {
 				log.Debugf("Ignored error %v", ignoreErrors)
 			} else {
+				if repeat > 1 && !ignoreErrors {
+					log.Infof("if you want to continue in the face of errors use the --ignore-errors")
+				}
 				return err
 			}
 		}

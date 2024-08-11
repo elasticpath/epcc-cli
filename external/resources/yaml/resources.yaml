@@ -18,7 +18,8 @@ account-authentication-settings:
     auto_create_account_for_account_members:
       type: BOOL
     account_member_self_management:
-      type: BOOL
+      type: ENUM:disabled,update_only
+
 account-management-authentication-tokens:
   singular-name: "account-management-authentication-token"
   json-api-type: "account_management_authentication_token"
@@ -30,7 +31,7 @@ account-management-authentication-tokens:
     content-type: application/json
   attributes:
     authentication_mechanism:
-      type: STRING
+      type: ENUM:oidc,password,passwordless,self_signup
     oauth_authorization_code:
       type: STRING
     oauth_redirect_uri:
@@ -43,6 +44,13 @@ account-management-authentication-tokens:
       type: STRING
     password:
       type: STRING
+    name:
+      type: STRING
+      autofill: FUNC:Name
+    email:
+      type: string
+      autofill: FUNC:Email
+
   suppress-reset-warning: true
 account-members:
   singular-name: "account-member"
@@ -1575,9 +1583,15 @@ pcm-nodes:
   get-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/hierarchies/nodes/get-a-hierarchy-node.html"
     url: "/pcm/hierarchies/{pcm_hierarchies}/nodes/{pcm_nodes}"
+  get-collection:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/hierarchies/nodes/get-a-hierarchy-node.html"
+    url: "/pcm/hierarchies/{pcm_hierarchies}/nodes"
   update-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/hierarchies/nodes/update-a-hierarchy-node.html"
     url: "/pcm/hierarchies/{pcm_hierarchies}/nodes/{pcm_nodes}"
+  get-collection:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/hierarchies/nodes/get-a-hierarchy-node.html"
+    url: "/pcm/hierarchies/{pcm_hierarchies}/nodes"
   delete-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/hierarchies/nodes/delete-a-hierarchy-node.html"
     url: "/pcm/hierarchies/{pcm_hierarchies}/nodes/{pcm_nodes}"
@@ -1777,8 +1791,10 @@ pcm-pricebooks:
   attributes:
     name:
       type: STRING
+      autofill: FUNC:Company
     description:
       type: STRING
+      autofill: FUNC:Phrase
 pcm-product-prices:
   singular-name: "pcm-product-price"
   json-api-type: "product-price"
@@ -1816,6 +1832,41 @@ pcm-product-prices:
       type: INT
     currencies.CAD.includes_tax:
       type: BOOL
+pcm-pricebook-modifiers:
+  singular-name: "pcm-pricebook-modifier"
+  json-api-format: "compliant"
+  json-api-type: "price-modifier"
+  docs: "https://elasticpath.dev/docs/pxm/pricebooks/pxm-pricebooks-modifiers/get-a-price-modifier"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/pxm/pricebooks/pxm-pricebooks-modifiers/get-all-price-modifiers"
+    url: "/pcm/pricebooks/{pcm_pricebooks}/modifiers/"
+  get-entity:
+    docs: "https://elasticpath.dev/docs/pxm/pricebooks/pxm-pricebooks-modifiers/get-a-price-modifier"
+    url: "/pcm/pricebooks/{pcm_pricebooks}/modifiers/{pcm_pricebook_modifiers}"
+  create-entity:
+    docs: "https://elasticpath.dev/docs/pxm/pricebooks/pxm-pricebooks-modifiers/create-a-price-modifier"
+    url: "/pcm/pricebooks/{pcm_pricebooks}/modifiers"
+  update-entity:
+    docs: "https://elasticpath.dev/docs/pxm/pricebooks/pxm-pricebooks-modifiers/update-a-price-modifier"
+    url: "/pcm/pricebooks/{pcm_pricebooks}/modifiers/{pcm_pricebook_modifiers}"
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/pxm/pricebooks/pxm-pricebooks-modifiers/delete-a-price-modifier"
+    url: "/pcm/pricebooks/{pcm_pricebooks}/modifiers/{pcm_pricebook_modifiers}"
+  attributes:
+    name:
+      type: STRING
+      autofill: FUNC:BuzzWord
+    modifier_type:
+      type: ENUM:price_increment,price_decrement,price_equals
+      autofill: VALUE:price_equals
+    currencies.USD.amount:
+      type: INT
+    currencies.USD.includes_tax:
+      type: BOOL
+    ^currencies\.USD\.tiers\..+\.minimum_quantity$:
+      type: INT
+    ^currencies\.USD\.tiers\..+\.amount$:
+      type: INT
 pcm-variations:
   singular-name: "pcm-variation"
   json-api-type: "product-variation"
