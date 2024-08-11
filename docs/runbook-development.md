@@ -147,7 +147,7 @@ Flags:
 If you would like to use a dashed argument name you need to use a different syntax in the chart:
 
 ```
-{{ . index "dashed-argument-name" }}
+{{ index . "dashed-argument-name" }}
 ```
 
 #### Showing the output
@@ -170,30 +170,30 @@ name: hello-world
 description:
   short: "A hello world runbook"
 actions:
-   sequential-sleeps:
-   variables:
+  sequential-sleeps:
+  variables:
+    count:
+      type: INT
+      default: 2
+      description:
+        short: "The number of sleeps"
+  commands:
+    - |2
+      {{- range untilStep 0 .count 1}}
+        - sleep 1
+      {{- end -}}
+  concurrent-sleeps:
+    variables:
       count:
-         type: INT
-         default: 2
-         description:
-            short: "The number of sleeps"
-   commands:
-      - |2
+        type: INT
+        default: 2
+        description:
+          short: "The number of sleeps"
+    commands:
+      - |
         {{- range untilStep 0 .count 1}}
-          - sleep 1
+        sleep 1
         {{- end -}}
-   concurrent-sleeps:
-      variables:
-         count:
-            type: INT
-            default: 2
-            description:
-               short: "The number of sleeps"
-      commands:
-         - |
-            {{- range untilStep 0 .count 1}}
-            sleep 1
-            {{- end -}}
 ```
 
 It's important for all commands to be indended the same amount, and start with a `-` this will cause the entire string to be valid as a Yaml array.
