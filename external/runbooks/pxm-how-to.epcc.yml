@@ -24,6 +24,7 @@ actions:
       - |
         epcc create pcm-product-price name=Preferred_Pricing currencies.USD.amount 300000 currencies.USD.includes_tax false currencies.GBP.amount 250000 currencies.GBP.includes_tax false sku BE-Electric-Range-1a1a
         epcc create pcm-product-price name=Preferred_Pricing currencies.USD.amount 350000 currencies.USD.includes_tax false currencies.GBP.amount 300000 currencies.GBP.includes_tax false sku BE-Gas-Range-2b2b
+      - sleep 2
       - epcc create pcm-catalog name "Ranges Catalog" description "Ranges Catalog" pricebook_id name=Preferred_Pricing hierarchy_ids[0] name=Major_Appliances
       - epcc create pcm-catalog-release --save-as-alias pxm-how-to-create-catalog-and-publish-release name=Ranges_Catalog
       # Wait for Catalog to be Published
@@ -39,6 +40,7 @@ actions:
       - |
         epcc create pcm-product-price name=Loyal_Civil_Servants_Pricing currencies.USD.amount 200000 currencies.USD.includes_tax false currencies.GBP.amount 150000 currencies.GBP.includes_tax false sku BE-Electric-Range-1a1a
         epcc create pcm-product-price name=Loyal_Civil_Servants_Pricing currencies.USD.amount 250000 currencies.USD.includes_tax false currencies.GBP.amount 200000 currencies.GBP.includes_tax false sku BE-Gas-Range-2b2b
+      - sleep 2
       - epcc create pcm-catalog name "Ranges Catalog for Special Customers" description "Ranges Catalog For Loyal Civil Servants" pricebook_id name=Loyal_Civil_Servants_Pricing hierarchy_ids[0] name=Major_Appliances
       - epcc create pcm-catalog-release --save-as-alias pxm-how-to-create-catalog-rule name=Ranges_Catalog_for_Special_Customers
       # Wait for Catalog to be Published
@@ -104,6 +106,7 @@ actions:
         epcc create pcm-product-price name=VIP_Pricing currencies.USD.amount 500 currencies.USD.includes_tax false sku squeaky-ball-sku
       - epcc create pcm-product attributes.name "SKU-less Bed and Ball Bundle" attributes.commodity_type "physical" status "live" components.dogbed.max 1 components.dogbed.min 1 components.dogbed.name "Dog Bed" components.dogbed.options[0].id alias/product/name=Fluffy_Bed/id components.dogbed.options[0].type "product" components.dogbed.options[0].quantity 1 components.dogball.max 1 components.dogball.min 1 components.dogball.name "Dog Ball" components.dogball.options[0].id alias/product/name=Squeaky_Ball/id components.dogball.options[0].type "product" components.dogball.options[0].quantity 1
       - epcc create pcm-node-product name=Pet_Supplies name=Dog_Supplies data[0].type product data[0].id name=SKU-less_Bed_and_Ball_Bundle
+      - sleep 2
       - epcc create pcm-catalog name "Pet Supplies Catalog" description "Pet Supplies Catalog" pricebook_id name=VIP_Pricing hierarchy_ids[0] name=Pet_Supplies
       - epcc create pcm-catalog-release name=Pet_Supplies_Catalog  --save-as-alias pxm-how-to-publish-catalog-with-bundles-release
       # Wait for Catalog to be Published
