@@ -183,6 +183,25 @@ account-addresses:
     country:
       type: STRING
       autofill: FUNC:CountryAbr
+account-cart-associations:
+  singular-name: account-cart-association
+  json-api-type: account-cart-relationship
+  json-api-format: "legacy"
+  no-wrapping: true
+  docs: "https://elasticpath.dev/docs/commerce-cloud/carts/account-cart-associations/account-cart-associations-overview"
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/commerce-cloud/carts/account-cart-associations/delete-an-association"
+    url: "/v2/carts/{carts}/relationships/accounts"
+  create-entity:
+    docs: "https://elasticpath.dev/docs/commerce-cloud/carts/account-cart-associations/create-an-association"
+    url: "/v2/carts/{carts}/relationships/accounts"
+    content-type: application/json
+  attributes:
+    data[n].id:
+      type: RESOURCE_ID:account
+    data[n].type:
+      type: ENUM:account
+      autofill: VALUE:account
 application-keys:
   singular-name: "application-key"
   json-api-type: "application_key"
