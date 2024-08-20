@@ -428,11 +428,12 @@ var loginAccountManagement = &cobra.Command{
 				})
 			} else {
 				return completion.Complete(completion.Request{
-					Type:       completion.CompleteAttributeValue,
-					Verb:       completion.Create,
-					Resource:   res,
-					Attributes: usedAttributes,
-					ToComplete: toComplete,
+					Type:           completion.CompleteAttributeValue,
+					Verb:           completion.Create,
+					Resource:       res,
+					Attributes:     usedAttributes,
+					ToComplete:     toComplete,
+					AllowTemplates: true,
 				})
 			}
 

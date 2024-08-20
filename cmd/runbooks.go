@@ -421,11 +421,9 @@ func processRunbookVariablesOnCommand(runbookActionRunActionCommand *cobra.Comma
 			}
 		} else {
 			description := ""
-
 			if variable.Description != nil {
 				description = variable.Description.Short
 			}
-
 			runbookActionRunActionCommand.Flags().StringVar(runbookStringArguments[key], key, variable.Default, description)
 		}
 
