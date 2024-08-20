@@ -10,6 +10,15 @@ actions:
       # Initialize alias for Authentication Realm
       - epcc get account-authentication-settings
       - epcc create password-profile related_authentication_realm_for_account_authentication_settings_last_read=entity name "Username and Password Authentication"
+  enable-self-signup-and-management:
+    description:
+      short: "Enable password authentication"
+    commands:
+      # Initialize alias for Authentication Realm
+      - epcc get account-authentication-settings
+      - |
+        epcc create password-profile related_authentication_realm_for_account_authentication_settings_last_read=entity name "Username and Password Authentication"
+        epcc update account-authentication-setting enable_self_signup true auto_create_account_for_account_members true account_member_self_management "update_only"
   create-deep-hierarchy:
     description:
       short: "Create a hierarchy"
@@ -25,7 +34,7 @@ actions:
         description:
           short: "Width of the hierarchy"
     commands:
-      # language=YAML
+      # language=Yaml
       - |2
         {{- range untilStep 0 $.depth  1 -}}
           {{- $d := . -}}

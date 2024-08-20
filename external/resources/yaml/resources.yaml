@@ -18,7 +18,7 @@ account-authentication-settings:
     auto_create_account_for_account_members:
       type: BOOL
     account_member_self_management:
-      type: BOOL
+      type: ENUM:disabled,update_only
 account-management-authentication-tokens:
   singular-name: "account-management-authentication-token"
   json-api-type: "account_management_authentication_token"
@@ -30,7 +30,7 @@ account-management-authentication-tokens:
     content-type: application/json
   attributes:
     authentication_mechanism:
-      type: STRING
+      type: ENUM:oidc,password,passwordless,self_signup
     oauth_authorization_code:
       type: STRING
     oauth_redirect_uri:
@@ -43,6 +43,12 @@ account-management-authentication-tokens:
       type: STRING
     password:
       type: STRING
+    name:
+      type: STRING
+      autofill: FUNC:Name
+    email:
+      type: STRING
+      autofill: FUNC:Email
   suppress-reset-warning: true
 account-members:
   singular-name: "account-member"
@@ -1575,6 +1581,9 @@ pcm-nodes:
   get-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/hierarchies/nodes/get-a-hierarchy-node.html"
     url: "/pcm/hierarchies/{pcm_hierarchies}/nodes/{pcm_nodes}"
+  get-collection:
+    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/hierarchies/nodes/get-a-hierarchy-node.html"
+    url: "/pcm/hierarchies/{pcm_hierarchies}/nodes"
   update-entity:
     docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/hierarchies/nodes/update-a-hierarchy-node.html"
     url: "/pcm/hierarchies/{pcm_hierarchies}/nodes/{pcm_nodes}"
@@ -1777,8 +1786,10 @@ pcm-pricebooks:
   attributes:
     name:
       type: STRING
+      autofill: FUNC:Company
     description:
       type: STRING
+      autofill: FUNC:Phrase
 pcm-product-prices:
   singular-name: "pcm-product-price"
   json-api-type: "product-price"
@@ -1816,6 +1827,41 @@ pcm-product-prices:
       type: INT
     currencies.CAD.includes_tax:
       type: BOOL
+pcm-pricebook-modifiers:
+  singular-name: "pcm-pricebook-modifier"
+  json-api-format: "compliant"
+  json-api-type: "price-modifier"
+  docs: "https://elasticpath.dev/docs/pxm/pricebooks/pxm-pricebooks-modifiers/get-a-price-modifier"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/pxm/pricebooks/pxm-pricebooks-modifiers/get-all-price-modifiers"
+    url: "/pcm/pricebooks/{pcm_pricebooks}/modifiers/"
+  get-entity:
+    docs: "https://elasticpath.dev/docs/pxm/pricebooks/pxm-pricebooks-modifiers/get-a-price-modifier"
+    url: "/pcm/pricebooks/{pcm_pricebooks}/modifiers/{pcm_pricebook_modifiers}"
+  create-entity:
+    docs: "https://elasticpath.dev/docs/pxm/pricebooks/pxm-pricebooks-modifiers/create-a-price-modifier"
+    url: "/pcm/pricebooks/{pcm_pricebooks}/modifiers"
+  update-entity:
+    docs: "https://elasticpath.dev/docs/pxm/pricebooks/pxm-pricebooks-modifiers/update-a-price-modifier"
+    url: "/pcm/pricebooks/{pcm_pricebooks}/modifiers/{pcm_pricebook_modifiers}"
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/pxm/pricebooks/pxm-pricebooks-modifiers/delete-a-price-modifier"
+    url: "/pcm/pricebooks/{pcm_pricebooks}/modifiers/{pcm_pricebook_modifiers}"
+  attributes:
+    name:
+      type: STRING
+      autofill: FUNC:BuzzWord
+    modifier_type:
+      type: ENUM:price_increment,price_decrement,price_equals
+      autofill: VALUE:price_equals
+    currencies.USD.amount:
+      type: INT
+    currencies.USD.includes_tax:
+      type: BOOL
+    ^currencies\.USD\.tiers\..+\.minimum_quantity$:
+      type: INT
+    ^currencies\.USD\.tiers\..+\.amount$:
+      type: INT
 pcm-variations:
   singular-name: "pcm-variation"
   json-api-type: "product-variation"
@@ -2372,3 +2418,149 @@ stores:
   get-entity:
     docs: "https://elasticpath.dev/docs/getting-started/api-reference"
     url: "/v2/stores/{settings}"
+custom-apis:
+  singular-name: custom-api
+  json-api-type: custom_api
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/api/commerce-extensions/custom-ap-is"
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/api/commerce-extensions/delete-a-custom-api"
+    url: "/v2/settings/extensions/custom-apis/{custom_apis}"
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/commerce-extensions/create-a-custom-api"
+    url: "/v2/settings/extensions/custom-apis/"
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/commerce-extensions/update-a-custom-api"
+    url: "/v2/settings/extensions/custom-apis/{custom_apis}"
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/commerce-extensions/get-a-custom-api"
+    url: "/v2/settings/extensions/custom-apis/{custom_apis}"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/commerce-extensions/get-all-custom-apis"
+    url: "/v2/settings/extensions/custom-apis"
+  attributes:
+    name:
+      type: STRING
+      autofill: FUNC:Company
+    slug:
+      type: STRING
+    api_type:
+      type: STRING
+    description:
+      type: STRING
+      autofill: FUNC:Phrase
+    relationships.parent_apis[n].type:
+      type: ENUM:api_location,custom_api
+    relationships.parent_apis[n].id:
+      type: RESOURCE_ID:custom-apis
+custom-fields:
+  singular-name: custom-field
+  json-api-type: custom_field
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/api/commerce-extensions/custom-fields"
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/api/commerce-extensions/delete-a-custom-field"
+    url: "/v2/settings/extensions/custom-apis/{custom_apis}/fields/{custom_fields}"
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/commerce-extensions/create-a-custom-field"
+    url: "/v2/settings/extensions/custom-apis/{custom_apis}/fields"
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/commerce-extensions/update-a-custom-field"
+    url: "/v2/settings/extensions/custom-apis/{custom_apis}/fields/{custom_fields}"
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/commerce-extensions/get-a-custom-field"
+    url: "/v2/settings/extensions/custom-apis/{custom_apis}/fields/{custom_fields}"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/commerce-extensions/get-all-custom-fields"
+    url: "/v2/settings/extensions/custom-apis/{custom_apis}/fields/"
+  attributes:
+    name:
+      type: STRING
+      autofill: FUNC:Company
+    slug:
+      type: STRING
+    field_type:
+      type: ENUM:string,integer,boolean,float
+    description:
+      type: STRING
+      autofill: FUNC:Phrase
+    validation.string.min_length:
+      type: INT
+    validation.string.max_length:
+      type: INT
+    validation.string.regex:
+      type: STRING
+    validation.string.allow_null_values:
+      type: BOOL
+    validation.string.unique:
+      type: ENUM:yes,no
+    validation.integer.min_value:
+      type: INT
+    validation.integer.max_value:
+      type: INT
+    validation.integer.allow_null_values:
+      type: BOOL
+    validation.boolean.allow_null_values:
+      type: BOOL
+custom-api-settings-entries:
+  singular-name: custom-api-settings-entry
+  json-api-type: custom_entry
+  json-api-format: "legacy"
+  no-wrapping: true
+  docs: "https://elasticpath.dev/docs/api/commerce-extensions/custom-api-entries"
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/api/commerce-extensions/delete-a-custom-entry"
+    url: "/v2/settings/extensions/custom-apis/{custom_apis}/entries/{custom_api_settings_entries}"
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/commerce-extensions/create-a-custom-entry"
+    url: "/v2/settings/extensions/custom-apis/{custom_apis}/entries"
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/commerce-extensions/update-a-custom-entry"
+    url: "/v2/settings/extensions/custom-apis/{custom_apis}/entries/{custom_api_settings_entries}"
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/commerce-extensions/get-a-custom-entry"
+    url: "/v2/settings/extensions/custom-apis/{custom_apis}/entries/{custom_api_settings_entries}"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/commerce-extensions/get-all-custom-entries"
+    url: "/v2/settings/extensions/custom-apis/{custom_apis}/entries/"
+  attributes:
+    data.type:
+      type: STRING
+    ^data\.(.+)$:
+      type: STRING
+custom-api-extensions-entries:
+  singular-name: custom-api-extension-entry
+  json-api-type: custom_entry
+  json-api-format: "legacy"
+  no-wrapping: true
+  docs: "https://elasticpath.dev/docs/api/commerce-extensions/custom-api-entries"
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/api/commerce-extensions/delete-a-custom-entry"
+    url: "/v2/extensions/custom-apis/{custom_apis}/entries/{custom_api_extensions_entries}"
+    parent_resource_value_overrides:
+      custom_apis: slug
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/commerce-extensions/create-a-custom-entry"
+    url: "/v2/extensions/custom-apis/{custom_apis}/entries"
+    parent_resource_value_overrides:
+      custom_apis: slug
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/commerce-extensions/update-a-custom-entry"
+    url: "/v2/extensions/custom-apis/{custom_apis}/entries/{custom_api_extensions_entries}"
+    parent_resource_value_overrides:
+      custom_apis: slug
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/commerce-extensions/get-a-custom-entry"
+    url: "/v2/extensions/custom-apis/{custom_apis}/entries/{custom_api_extensions_entries}"
+    parent_resource_value_overrides:
+      custom_apis: slug
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/commerce-extensions/get-all-custom-entries"
+    url: "/v2/extensions/custom-apis/{custom_apis}/entries/"
+    parent_resource_value_overrides:
+      custom_apis: slug
+  attributes:
+    data.type:
+      type: STRING
+    ^data\.(.+)$:
+      type: STRING
