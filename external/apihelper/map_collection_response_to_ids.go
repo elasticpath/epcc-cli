@@ -4,21 +4,12 @@ import (
 	json2 "encoding/json"
 	"fmt"
 	"github.com/elasticpath/epcc-cli/external/id"
-	log "github.com/sirupsen/logrus"
-	"io"
-	"net/http"
 )
 
-func GetResourceIdsFromHttpResponse(resp *http.Response) ([]id.IdableAttributes, int, error) {
-	// Read the body
-	body, err := io.ReadAll(resp.Body)
-
-	if err != nil {
-		log.Fatal(err)
-	}
+func GetResourceIdsFromHttpResponse(bodyTxt []byte) ([]id.IdableAttributes, int, error) {
 
 	var jsonStruct = map[string]interface{}{}
-	err = json2.Unmarshal(body, &jsonStruct)
+	err := json2.Unmarshal(bodyTxt, &jsonStruct)
 	if err != nil {
 		return nil, 0, fmt.Errorf("response for get was not JSON: %w", err)
 	}

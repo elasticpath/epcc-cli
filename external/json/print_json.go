@@ -12,15 +12,33 @@ import (
 
 var MonochromeOutput = false
 
-func PrintJson(json string) error {
+func PrintJsonToStdout(json string) error {
 	defer os.Stdout.Sync()
-	return printJsonToWriter(json, os.Stdout)
+	return printJsonToWriter(json, shouldPrintMonochrome(), os.Stdout)
+}
 
+func shouldPrintMonochrome() bool {
+	m := MonochromeOutput
+	// Adapted from gojq
+	if !m && os.Getenv("TERM") == "dumb" {
+		m = true
+	} else {
+		colorCapableTerminal := isatty.IsTerminal(os.Stdout.Fd()) || isatty.IsCygwinTerminal(os.Stdout.Fd())
+		if !colorCapableTerminal {
+			m = true
+		}
+	}
+
+	return m
+}
+
+func PrintJsonToWriter(json string, w io.Writer) error {
+	return printJsonToWriter(json, true, w)
 }
 
 func PrintJsonToStderr(json string) error {
 	defer os.Stderr.Sync()
-	return printJsonToWriter(json, os.Stderr)
+	return printJsonToWriter(json, shouldPrintMonochrome(), os.Stderr)
 }
 
 func PrettyPrint(in string) string {
@@ -32,28 +50,19 @@ func PrettyPrint(in string) string {
 	return out.String()
 }
 
-func printJsonToWriter(json string, w io.Writer) error {
-	// Adapted from gojq
-	if os.Getenv("TERM") == "dumb" {
-		MonochromeOutput = true
-	} else {
-		colorCapableTerminal := isatty.IsTerminal(os.Stdout.Fd()) || isatty.IsCygwinTerminal(os.Stdout.Fd())
-		if !colorCapableTerminal {
-			MonochromeOutput = true
-		}
-	}
+func printJsonToWriter(json string, monoOutput bool, w io.Writer) error {
 
 	var v interface{}
 
 	err := gojson.Unmarshal([]byte(json), &v)
 
-	e := NewEncoder(false, 2)
+	e := NewEncoder(false, 0, monoOutput)
 
 	done := make(chan bool, 1)
 
 	defer close(done)
 
-	if !MonochromeOutput {
+	if !monoOutput {
 		go func() {
 			select {
 			case <-done:

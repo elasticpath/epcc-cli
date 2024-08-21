@@ -1,0 +1,22 @@
+name: "commerce-extensions"
+description:
+  long: "Examples for using Commerce Extensions"
+  short: "Examples for using Commerce Extensions"
+actions:
+  multi-location-inventory:
+    description:
+      short: "An example of multi location inventory"
+    commands:
+      - |
+        epcc create custom-api name Location Description Location api_type location_ext slug location
+        epcc create custom-api name Inventory Description Inventory api_type inventory_ext slug inventory
+
+  reset-multi-location-inventory:
+    description:
+      short: "Reset the store configuration"
+    ignore_errors: true
+    commands:
+      - |
+        epcc delete custom-api slug=location
+        epcc delete custom-api slug=inventory
+      
