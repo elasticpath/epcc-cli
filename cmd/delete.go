@@ -95,7 +95,7 @@ func NewDeleteCommand(parentCmd *cobra.Command) func() {
 					if err != nil {
 						if body != "" {
 							if !noBodyPrint {
-								json.PrintJson(body)
+								json.PrintJsonToStdout(body)
 							}
 						}
 						return err
@@ -104,7 +104,7 @@ func NewDeleteCommand(parentCmd *cobra.Command) func() {
 					if noBodyPrint {
 						return nil
 					} else {
-						return json.PrintJson(body)
+						return json.PrintJsonToStdout(body)
 					}
 				}
 
