@@ -8,7 +8,11 @@ import (
 	"github.com/elasticpath/epcc-cli/external/httpclient"
 	"github.com/elasticpath/epcc-cli/external/id"
 	"github.com/elasticpath/epcc-cli/external/json"
+	"github.com/yukithm/json2csv"
+	"github.com/yukithm/json2csv/jsonpointer"
 	"os"
+	"sort"
+	"strings"
 	"sync"
 
 	"github.com/elasticpath/epcc-cli/external/resources"
@@ -25,12 +29,14 @@ type OutputFormat enumflag.Flag
 
 const (
 	Jsonl OutputFormat = iota
+	Json
 	Csv
 	EpccCli
 )
 
 var OutputFormatIds = map[OutputFormat][]string{
 	Jsonl:   {"jsonl"},
+	Json:    {"json"},
 	Csv:     {"csv"},
 	EpccCli: {"epcc-cli"},
 }
@@ -84,6 +90,30 @@ func NewGetAllCommand(parentCmd *cobra.Command) func() {
 
 }
 
+func writeJson(obj interface{}, writer io.Writer) error {
+	line, err := gojson.Marshal(&obj)
+
+	if err != nil {
+		return fmt.Errorf("could not create JSON for %s, error: %v", line, err)
+
+	}
+
+	_, err = writer.Write(line)
+
+	if err != nil {
+		return fmt.Errorf("could not save line %s, error: %v", line, err)
+
+	}
+
+	_, err = writer.Write([]byte{10})
+
+	if err != nil {
+		return fmt.Errorf("Could not save line %s, error: %v", line, err)
+	}
+
+	return nil
+}
+
 func getAllInternal(ctx context.Context, outputFormat OutputFormat, outputFile string, args []string) error {
 	// Find Resource
 	resource, ok := resources.GetResourceByName(args[0])
@@ -127,7 +157,7 @@ func getAllInternal(ctx context.Context, outputFormat OutputFormat, outputFile s
 	if outputFile == "" {
 		writer = os.Stdout
 	} else {
-		file, err := os.Create(outputFile)
+		file, err := os.OpenFile(outputFile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0600)
 		if err != nil {
 			panic(err)
 		}
@@ -138,13 +168,15 @@ func getAllInternal(ctx context.Context, outputFormat OutputFormat, outputFile s
 	outputWriter := func() {
 		defer syncGroup.Done()
 
+		csvLines := make([]interface{}, 0)
+
+	endMessages:
 		for msgs := 0; ; msgs++ {
 			select {
 			case result, ok := <-sendChannel:
-
 				if !ok {
 					log.Debugf("Channel closed, we are done.")
-					return
+					break endMessages
 				}
 				var obj interface{}
 				err = gojson.Unmarshal(result.txt, &obj)
@@ -170,31 +202,140 @@ func getAllInternal(ctx context.Context, outputFormat OutputFormat, outputFile s
 						},
 					}
 
-					line, err := gojson.Marshal(&wrappedObj)
+					if outputFormat == Jsonl {
+						err = writeJson(wrappedObj, writer)
 
-					if err != nil {
-						log.Errorf("Could not create JSON for %s, error: %v", line, err)
-						continue
+						if err != nil {
+							log.Errorf("Error writing JSON line: %v", err)
+							continue
+						}
+					} else if outputFormat == Json || outputFormat == Csv {
+						csvLines = append(csvLines, wrappedObj)
+					} else if outputFormat == EpccCli {
+						sb := &strings.Builder{}
+
+						sb.WriteString("epcc create ")
+						sb.WriteString(resource.SingularName)
+
+						sb.WriteString(" ")
+						sb.WriteString("--save-as-alias")
+						sb.WriteString(" ")
+						sb.WriteString("exported_source_id=")
+						sb.WriteString(resource.SingularName)
+						sb.WriteString("/")
+
+						if mp, ok := newObj.(map[string]interface{}); ok {
+							sb.WriteString(fmt.Sprintf("%s", mp["id"]))
+						} else {
+							log.Errorf("Error casting newObj to map[string]interface{}")
+							sb.WriteString("\n")
+							continue
+						}
+
+						for _, resId := range result.id {
+							sb.WriteString(" ")
+							sb.WriteString("exported_source_id=")
+							sb.WriteString(resources.MustGetResourceByName(resId.EpccCliType).SingularName)
+							sb.WriteString("/")
+							sb.WriteString(resId.Id)
+
+						}
+
+						kvs, err := json2csv.JSON2CSV(newObj)
+						if err != nil {
+							log.Errorf("Error generating Key/Value pairs: %v", err)
+							sb.WriteString("\n")
+							continue
+						}
+
+						for _, kv := range kvs {
+
+							keys := kv.Keys()
+
+							sort.Strings(keys)
+
+							for _, k := range keys {
+								v := kv[k]
+
+								jp, err := jsonpointer.New(k)
+
+								if err != nil {
+									log.Errorf("Couldn't generate JSON Pointer for %s: %v", k, err)
+
+									continue
+								}
+
+								jsonPointerKey := jp.DotNotation(true)
+
+								if strings.HasPrefix(jsonPointerKey, "meta.") {
+									continue
+								}
+
+								if strings.HasPrefix(jsonPointerKey, "links.") {
+									continue
+								}
+
+								if jsonPointerKey == "id" {
+									continue
+								}
+
+								if jsonPointerKey == "type" {
+									continue
+								}
+
+								sb.WriteString(" ")
+								sb.WriteString(jsonPointerKey)
+								sb.WriteString(" ")
+
+								if s, ok := v.(string); ok {
+									sb.WriteString(`'`)
+									sb.WriteString(strings.ReplaceAll(s, `'`, `\'`))
+									sb.WriteString(`'`)
+								} else {
+									sb.WriteString(fmt.Sprintf("%v", v))
+								}
+
+							}
+						}
+
+						sb.WriteString("\n")
+						_, err = writer.Write([]byte(sb.String()))
+
+						if err != nil {
+							log.Errorf("Error writing command: %v", err)
+						}
 					}
-
-					_, err = writer.Write(line)
-
-					if err != nil {
-						log.Errorf("Could not save line %s, error: %v", line, err)
-						continue
-					}
-
-					_, err = writer.Write([]byte{10})
-
-					if err != nil {
-						log.Errorf("Could not save line %s, error: %v", line, err)
-						continue
-					}
-
 				}
-
 			}
 		}
+
+		if outputFormat == Json {
+			err = writeJson(csvLines, writer)
+
+			if err != nil {
+				log.Errorf("Error writing JSON line: %v", err)
+			}
+		} else if outputFormat == Csv {
+
+			// Create writer that saves to string
+			results, err := json2csv.JSON2CSV(csvLines)
+
+			if err != nil {
+				log.Errorf("Error converting to CSV: %v", err)
+				return
+			}
+
+			csvWriter := json2csv.NewCSVWriter(writer)
+
+			csvWriter.HeaderStyle = json2csv.DotBracketStyle
+			csvWriter.Transpose = false
+
+			if err := csvWriter.WriteCSV(results); err != nil {
+				log.Errorf("Error writing CSV: %v", err)
+				return
+			}
+		}
+
 	}
 
 	go outputWriter()
