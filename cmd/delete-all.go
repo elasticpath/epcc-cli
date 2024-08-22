@@ -103,7 +103,19 @@ func deleteAllInternal(ctx context.Context, args []string) error {
 				return err
 			}
 
-			ids, totalCount, err := apihelper.GetResourceIdsFromHttpResponse(resp)
+			if resp.StatusCode >= 400 {
+				log.Warnf("Could not retrieve page of data, aborting")
+				break
+			}
+
+			bodyTxt, err := io.ReadAll(resp.Body)
+
+			if err != nil {
+				return err
+			}
+
+			ids, totalCount, err := apihelper.GetResourceIdsFromHttpResponse(bodyTxt)
+
 			resp.Body.Close()
 
 			allIds := make([][]id.IdableAttributes, 0)

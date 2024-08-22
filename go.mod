@@ -31,6 +31,8 @@ require (
 	github.com/jolestar/go-commons-pool/v2 v2.1.2
 )
 
+require github.com/yukithm/json2csv v0.1.2 // indirect
+
 require (
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver/v3 v3.2.0 // indirect

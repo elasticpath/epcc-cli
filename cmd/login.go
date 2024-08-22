@@ -387,7 +387,7 @@ var loginCustomer = &cobra.Command{
 
 		authentication.SaveCustomerToken(*customerTokenResponse)
 
-		return json.PrintJson(body)
+		return json.PrintJsonToStdout(body)
 	},
 }
 
@@ -609,6 +609,6 @@ var loginAccountManagement = &cobra.Command{
 		}
 
 		jsonBody, _ := gojson.Marshal(selectedAccount)
-		return json.PrintJson(string(jsonBody))
+		return json.PrintJsonToStdout(string(jsonBody))
 	},
 }

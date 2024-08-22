@@ -69,6 +69,7 @@ echo "Starting Account Management Runbook"
 
 epcc reset-store .+
 epcc runbooks run account-management enable-password-authentication
+epcc runbooks run account-management enable-self-signup-and-management
 epcc runbooks run account-management create-singleton-account-member
 epcc runbooks run account-management catalog-rule-example
 epcc runbooks run account-management catalog-rule-example-reset

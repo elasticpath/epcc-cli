@@ -125,7 +125,7 @@ func NewCreateCommand(parentCmd *cobra.Command) func() {
 								return err
 							}
 
-							err = json.PrintJson(string(outputJson))
+							err = json.PrintJsonToStdout(string(outputJson))
 
 							if err != nil {
 								return err
@@ -146,7 +146,7 @@ func NewCreateCommand(parentCmd *cobra.Command) func() {
 							}
 						}
 
-						return json.PrintJson(body)
+						return json.PrintJsonToStdout(body)
 					}
 
 				}
@@ -343,7 +343,7 @@ func createInternal(ctx context.Context, overrides *httpclient.HttpParameterOver
 
 		// Check if error response
 		if resp.StatusCode >= 400 && resp.StatusCode <= 600 {
-			json.PrintJson(string(resBody))
+			json.PrintJsonToStdout(string(resBody))
 			return "", fmt.Errorf(resp.Status)
 		}
 
