@@ -78,5 +78,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: distribution
-          path: dist/epcc-cli_linux_amd64
+          path: dist/epcc-cli_linux_amd64_v1/epcc
           retention-days: 5

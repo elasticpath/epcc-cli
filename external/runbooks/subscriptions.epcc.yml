@@ -1,0 +1,45 @@
+name: "subscriptions"
+description:
+  long: "Utilities for working with subscriptions"
+  short: "Utilities for working with subscriptions"
+actions:
+  create-subscription-products:
+    variables:
+      count:
+        type: INT
+        default: 10
+        description:
+          short: "Create a lot of subscription products"
+    description:
+      short: "Create a number of products"
+    commands:
+      - |
+        {{ range untilStep 0 .count  1 -}}epcc create --skip-alias-processing -s subscription-product --auto-fill
+        {{ end }}
+  create-subscription-plans:
+    variables:
+      count:
+        type: INT
+        default: 10
+        description:
+          short: "Create a lot of subscription plans"
+    description:
+      short: "Create a number of orders"
+    commands:
+      - |
+        {{ range untilStep 0 .count  1 -}}epcc create --skip-alias-processing -s subscription-plan status active --auto-fill billing_interval_type day billing_frequency 214 plan_length 1 end_behavior close can_pause true can_resume true can_cancel true fixed_price.USD.amount {{ pseudoRandInt 1 200 }}00 fixed_price.USD.includes_tax true
+        {{ end }}
+  create-subscription-offerings:
+    variables:
+      count:
+        type: INT
+        default: 10
+        description:
+          short: "Create a lot of subscription offerings"
+    description:
+      short: "Create a number of offerings"
+    commands:
+      - |
+        {{ range untilStep 0 .count  1 -}}epcc create --skip-alias-processing -s subscription-offering --auto-fill
+        {{ end }}
+  
