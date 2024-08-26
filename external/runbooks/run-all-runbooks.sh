@@ -11,8 +11,13 @@ set -x
 
 
 #Let's test that epcc command works after an embarrassing bug that caused it to panic :(
-#epcc
+epcc
 
+echo "Starting Subscriptions Tests"
+epcc reset-store .+
+epcc runbooks run subscriptions create-subscription-plans
+epcc runbooks run subscriptions create-subscription-products
+epcc runbooks run subscriptions create-subscription-offerings
 
 echo "Starting Account Cart Association Tests"
 epcc reset-store .+
