@@ -9,6 +9,7 @@ import (
 	"github.com/elasticpath/epcc-cli/external/httpclient"
 	"github.com/elasticpath/epcc-cli/external/json"
 	"github.com/elasticpath/epcc-cli/external/resources"
+	"github.com/elasticpath/epcc-cli/external/rest"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"io"
@@ -70,25 +71,25 @@ var ResetStore = &cobra.Command{
 		// We would also need locking to go faster.
 
 		// Get customer and account authentication settings to populate the aliases
-		_, err = getInternal(ctx, overrides, []string{"customer-authentication-settings"}, false)
+		_, err = rest.GetInternal(ctx, overrides, []string{"customer-authentication-settings"}, false)
 
 		if err != nil {
 			errors = append(errors, err.Error())
 		}
 
-		_, err = getInternal(ctx, overrides, []string{"account-authentication-settings"}, false)
+		_, err = rest.GetInternal(ctx, overrides, []string{"account-authentication-settings"}, false)
 
 		if err != nil {
 			errors = append(errors, err.Error())
 		}
 
-		_, err = getInternal(ctx, overrides, []string{"merchant-realm-mappings"}, false)
+		_, err = rest.GetInternal(ctx, overrides, []string{"merchant-realm-mappings"}, false)
 
 		if err != nil {
 			errors = append(errors, err.Error())
 		}
 
-		_, err = getInternal(ctx, overrides, []string{"authentication-realms"}, false)
+		_, err = rest.GetInternal(ctx, overrides, []string{"authentication-realms"}, false)
 
 		if err != nil {
 			errors = append(errors, err.Error())
@@ -200,7 +201,7 @@ func resetResourcesUndeletableResources(ctx context.Context, overrides *httpclie
 	errors := make([]string, 0)
 
 	for _, resetCmd := range resetCmds {
-		body, err := updateInternal(ctx, overrides, false, resetCmd)
+		body, err := rest.UpdateInternal(ctx, overrides, false, resetCmd)
 
 		if err != nil {
 			errors = append(errors, fmt.Errorf("error resetting  %s: %v", resetCmd[0], err).Error())

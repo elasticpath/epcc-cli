@@ -7,6 +7,7 @@ import (
 	"github.com/elasticpath/epcc-cli/external/resources"
 	"github.com/elasticpath/epcc-cli/external/templates"
 	"github.com/itchyny/gojq"
+	"github.com/mitchellh/mapstructure"
 	log "github.com/sirupsen/logrus"
 	"regexp"
 	"strings"
@@ -190,6 +191,30 @@ func RunJQOnString(queryStr string, json string) (interface{}, error) {
 	}
 
 	return RunJQ(queryStr, obj)
+}
+
+func RunJQOnStringAndGetString(queryStr string, json string) (string, error) {
+	result, err := RunJQOnString(queryStr, json)
+
+	if err != nil {
+		return "", err
+	}
+
+	if result, ok := result.(string); ok {
+		return result, nil
+	}
+
+	return "", fmt.Errorf("could not convert %T into string", result)
+}
+
+func RunJQOnStringAndMarshalResponse(queryStr string, json string, obj any) error {
+	result, err := RunJQOnString(queryStr, json)
+
+	if err != nil {
+		return err
+	}
+
+	return mapstructure.Decode(result, &obj)
 }
 
 func RunJQ(queryStr string, result interface{}) (interface{}, error) {

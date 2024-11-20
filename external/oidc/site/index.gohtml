@@ -1,0 +1,123 @@
+{{ template "header" }}
+<script>
+
+    function redirectToUrlForCustomers(id) {
+        document.cookie = "login_type=Customers"
+
+        redirectToUrl(id)
+    }
+
+    function redirectToUrlForAM(id) {
+        document.cookie = "login_type=AM"
+
+        redirectToUrl(id)
+    }
+    // Function to redirect user to the URL in the textarea
+    function redirectToUrl(id) {
+        document.cookie = "state={{ .State }}"
+        document.cookie = "code_verifier={{ .CodeVerifier }}"
+
+        // Get the textarea element by its ID
+        const textarea = document.getElementById(id);
+        if (textarea) {
+            const url = textarea.value.trim(); // Get the URL value from the textarea
+            if (url) {
+                window.location.href = url; // Redirect to the URL
+            } else {
+                alert("Please enter a valid URL.");
+            }
+        } else {
+            console.error(`No textarea found with ID: ${id}`);
+        }
+    }
+</script>
+<h2>Welcome</h2>
+    This utility allows you to test Single Sign-On (SSO) with Elastic Path Commerce Cloud.
+
+    You can authenticate two ways:
+    <ul>
+
+        <li>Using the <a href="https://elasticpath.dev/docs/customer-management/customer-management-api/customer-tokens#using-openid-connect">Legacy Customers</a></li>
+    </ul>
+
+
+    <h2>Account Management</h2>
+
+    In order to successfully authenticate with Account Management following the <a href="https://elasticpath.dev/guides/How-To/Authentication/get-single-sign-on-account-management-token#generate-proof-key-for-code-exchange-parameters">HOWTO Guide</a>, you will need to
+    make the following changes to the store:
+    <ol>
+        <li>Add <code>{{ $.RedirectUriUnencoded }}</code> to the <a href="https://elasticpath.dev/docs/authentication/single-sign-on/authentication-realm-api/update-an-authentication-realm">Account Management Authentication Realm</a> allowed redirect URIs.
+
+            <code>
+                <br/>
+                <br/>
+                epcc get account-authentication-settings<br/>
+                epcc get authentication-realm related_authentication_realm_for_account_authentication_settings_last_read=entity<br/>
+            <br/>
+            </code>
+            After inspecting the list of redirect_uris, you can add a new one with the following syntax:
+            <code>
+                <br/>
+                <br/>
+                epcc update authentication-realm related_authentication_realm_for_account_authentication_settings_last_read=entity redirect_uris[0] {{ $.RedirectUriUnencoded }}<br/>
+                <br/>
+            </code>
+        </li>
+        <li>Add an <a href="https://elasticpath.dev/docs/authentication/single-sign-on/openid-connect-profiles-api/create-an-oidc-profile">OpenID Connect Profile</a> that connects to the Identity Provider:
+        <code>
+            <br/>
+            <br/>
+            epcc create oidc-profile related_authentication_realm_for_account_authentication_settings_last_read=entity name "EPCC CLI Test OIDC Profile" client_id <i>my_client_id</i> client_secret <i>my_client_secret</i> discovery_url <i>my_discovery_url</i>
+            <br/>
+            <br/>
+        </code>
+        <li>Refresh this page, you should then see each OpenID Connect Profile and can authenticate, by clicking the <b>Login</b> button after perhaps editing the URL. The URL will contain all the necessarily arguments.</li>
+    </ol>
+    <h3>OpenID Connect Profiles</h3>
+    {{ range $i, $item := .AccountProfiles }}
+        <h4>Profile: <i>{{ $item.Name }} ( {{ $item.Idp }} )</i></h4>
+        <label for="account-{{ $i }}">URL:</label><br><textarea rows="5" cols="200" id="account-{{ $i }}">{{ $item.AuthorizationLink }}&client_id={{ $.AccountClientId }}&redirect_uri={{ $.RedirectUriEncoded }}&scope=openid+email&response_type=code&state={{ $.State }}&code_challenge_method=S256&code_challenge={{ $.CodeChallenge }}</textarea>
+        <br><button onclick="redirectToUrlForAM('account-{{ $i }}')">Login</button>
+    {{ end }}
+
+
+    <h2>Customers</h2>
+
+    In order to successfully authenticate with Customers similar to the <a href="https://elasticpath.dev/guides/How-To/Authentication/get-single-sign-on-account-management-token#generate-proof-key-for-code-exchange-parameters">HOWTO Guide for Account Management</a>, you will need to
+    make the following changes to the store:
+    <ol>
+        <li>Add <code>{{ $.RedirectUriUnencoded }}</code> to the <a href="https://elasticpath.dev/docs/authentication/single-sign-on/authentication-realm-api/update-an-authentication-realm">Buyer Organization</a> allowed redirect URIs.
+
+            <code>
+                <br/>
+                <br/>
+                epcc get customer-authentication-settings<br/>
+                epcc get authentication-realm related_authentication-realm_for_customer-authentication-settings_last_read=entity<br/>
+                <br/>
+            </code>
+            After inspecting the list of redirect_uris, you can add a new one with the following syntax:
+            <code>
+                <br/>
+                <br/>
+                epcc update authentication-realm related_authentication-realm_for_customer-authentication-settings_last_read=entity redirect_uris[0] {{ $.RedirectUriUnencoded }}<br/>
+                <br/>
+            </code>
+        </li>
+        <li>Add an <a href="https://elasticpath.dev/docs/authentication/single-sign-on/openid-connect-profiles-api/create-an-oidc-profile">OpenID Connect Profile</a> that connects to the Identity Provider:
+            <code>
+                <br/>
+                <br/>
+                epcc create oidc-profile related_authentication-realm_for_customer-authentication-settings_last_read=entity=entity name "EPCC CLI Test OIDC Profile" client_id <i>my_client_id</i> client_secret <i>my_client_secret</i> discovery_url <i>my_discovery_url</i>
+                <br/>
+                <br/>
+            </code>
+        <li>Refresh this page, you should then see each OpenID Connect Profile and can authenticate, by clicking the <b>Login</b> button after perhaps editing the URL. The URL will contain all the necessarily arguments.</li>
+    </ol>
+
+    <h3>OpenID Connect Profiles</h3>
+    {{ range $i, $item := .CustomerProfiles }}
+        <h4>Profile: <i>{{ $item.Name }} ( {{ $item.Idp }} )</i></h4>
+        <label for="customer-{{ $i }}">URL:</label><br><textarea rows="5" cols="200" id="customer-{{ $i }}">{{ $item.AuthorizationLink }}&client_id={{ $.CustomerClientId }}&redirect_uri={{ $.RedirectUriEncoded }}&scope=openid+email&response_type=code&state={{ $.State }}&code_challenge_method=S256&code_challenge={{ $.CodeChallenge }}</textarea>
+        <br><button onclick="redirectToUrlForCustomers('customer-{{ $i }}')">Login</button>
+    {{ end }}
+{{ template "footer" }}
