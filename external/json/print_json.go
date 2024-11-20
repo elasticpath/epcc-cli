@@ -56,7 +56,7 @@ func printJsonToWriter(json string, monoOutput bool, w io.Writer) error {
 
 	err := gojson.Unmarshal([]byte(json), &v)
 
-	e := NewEncoder(false, 0, monoOutput)
+	e := NewEncoder(false, 2, monoOutput)
 
 	done := make(chan bool, 1)
 
