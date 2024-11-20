@@ -126,7 +126,8 @@ func InitializeCmd() {
 	RootCmd.PersistentFlags().BoolVarP(&httpclient.Retry429, "retry-429", "", false, "Whether we should retry requests with HTTP 429 response code")
 	RootCmd.PersistentFlags().BoolVarP(&httpclient.RetryConnectionErrors, "retry-connection-errors", "", false, "Whether we should retry requests with connection errors")
 	RootCmd.PersistentFlags().UintVarP(&httpclient.RetryDelay, "retry-delay", "", 500, "When retrying how long should we delay")
-	RootCmd.PersistentFlags().BoolVarP(&httpclient.RetryAllErrors, "retry-all-errors", "", false, "When enable retries on all errors (i.e., the same as --retry-5xx --retry-429 and --retry-connection-errors")
+	RootCmd.PersistentFlags().BoolVarP(&httpclient.RetryAllErrors, "retry-all-errors", "", false, "When enable retries on all errors (i.e., the same as --retry-5xx, --retry-4xx and --retry-connection-errors")
+	RootCmd.PersistentFlags().BoolVarP(&httpclient.RetryTemporaryErrors, "retry-temporary-errors", "", false, "When enable retries on all errors (i.e., the same as --retry-5xx --retry-429 and --retry-connection-errors")
 
 	RootCmd.PersistentFlags().BoolVarP(&httpclient.DontLog2xxs, "silence-2xx", "", false, "Whether we should silence HTTP 2xx response code logging")
 
