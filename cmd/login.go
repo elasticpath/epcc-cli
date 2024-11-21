@@ -12,7 +12,9 @@ import (
 	"github.com/elasticpath/epcc-cli/external/headergroups"
 	"github.com/elasticpath/epcc-cli/external/httpclient"
 	"github.com/elasticpath/epcc-cli/external/json"
+	"github.com/elasticpath/epcc-cli/external/oidc"
 	"github.com/elasticpath/epcc-cli/external/resources"
+	"github.com/elasticpath/epcc-cli/external/rest"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"net/url"
@@ -251,38 +253,7 @@ var loginImplicit = &cobra.Command{
 	},
 
 	RunE: func(cmd *cobra.Command, args []string) error {
-
-		values := url.Values{}
-		values.Set("grant_type", "implicit")
-
-		env := config.GetEnv()
-		if len(args) == 0 {
-			log.Debug("Arguments have been passed, not using profile EPCC_CLIENT_ID")
-			values.Set("client_id", env.EPCC_CLIENT_ID)
-		}
-
-		if len(args)%2 != 0 {
-			return fmt.Errorf("invalid number of arguments supplied to login command, must be multiple of 2, not %v", len(args))
-		}
-
-		for i := 0; i < len(args); i += 2 {
-			k := args[i]
-			values.Set(k, args[i+1])
-		}
-
-		token, err := authentication.GetAuthenticationToken(false, &values, true)
-
-		if err != nil {
-			return err
-		}
-
-		if token != nil {
-			log.Infof("Successfully authenticated with implicit token, session expires %s", time.Unix(token.Expires, 0).Format(time.RFC1123Z))
-		} else {
-			log.Warn("Did not successfully authenticate against the API")
-		}
-
-		return nil
+		return authentication.InternalImplicitAuthentication(args)
 	},
 }
 
@@ -330,7 +301,7 @@ var loginCustomer = &cobra.Command{
 		newArgs = append(newArgs, "customer-token")
 		newArgs = append(newArgs, args...)
 
-		body, err := createInternal(ctx, overrides, newArgs, false, "", false)
+		body, err := rest.CreateInternal(ctx, overrides, newArgs, false, "", false)
 
 		if err != nil {
 			log.Warnf("Login not completed successfully")
@@ -360,7 +331,7 @@ var loginCustomer = &cobra.Command{
 		if customerTokenResponse != nil {
 
 			// Get the customer so we have aliases where we need the id.
-			getCustomerBody, err := getInternal(ctx, overrides, []string{"customer", customerTokenResponse.Data.CustomerId}, false)
+			getCustomerBody, err := rest.GetInternal(ctx, overrides, []string{"customer", customerTokenResponse.Data.CustomerId}, false)
 
 			if err != nil {
 				log.Warnf("Could not retrieve customer")
@@ -460,7 +431,7 @@ var loginAccountManagement = &cobra.Command{
 		}
 
 		// Populate an alias to get the authentication_realm.
-		_, err := getInternal(ctx, overrides, []string{"account-authentication-settings"}, false)
+		_, err := rest.GetInternal(ctx, overrides, []string{"account-authentication-settings"}, false)
 
 		if err != nil {
 			return fmt.Errorf("couldn't determine authentication realm: %w", err)
@@ -485,7 +456,7 @@ var loginAccountManagement = &cobra.Command{
 
 		// Try and auto-detect the password profile id
 		if passwordAuthentication {
-			resp, err := getInternal(ctx, overrides, []string{"password-profiles", "related_authentication_realm_for_account_authentication_settings_last_read=entity"}, false)
+			resp, err := rest.GetInternal(ctx, overrides, []string{"password-profiles", "related_authentication_realm_for_account_authentication_settings_last_read=entity"}, false)
 
 			if err != nil {
 				return fmt.Errorf("couldn't determine password profile: %w", err)
@@ -540,7 +511,7 @@ var loginAccountManagement = &cobra.Command{
 		}
 
 		// Do the login and get back a list of accounts
-		body, err := createInternal(ctx, overrides, loginArgs, false, "", false)
+		body, err := rest.CreateInternal(ctx, overrides, loginArgs, false, "", false)
 
 		if err != nil {
 			log.Warnf("Login not completed successfully")
@@ -600,7 +571,7 @@ var loginAccountManagement = &cobra.Command{
 
 		authentication.SaveAccountManagementAuthenticationToken(*selectedAccount)
 
-		accountMembers, err := getInternal(ctx, overrides, []string{"account-members"}, false)
+		accountMembers, err := rest.GetInternal(ctx, overrides, []string{"account-members"}, false)
 
 		if err == nil {
 			accountMemberId, _ := json.RunJQOnString(".data[0].id", accountMembers)
@@ -610,5 +581,15 @@ var loginAccountManagement = &cobra.Command{
 
 		jsonBody, _ := gojson.Marshal(selectedAccount)
 		return json.PrintJson(string(jsonBody))
+	},
+}
+
+var OidcPort uint16 = 8080
+var loginOidc = &cobra.Command{
+	Use:   "oidc",
+	Short: "Starts a local webserver to facilitate OIDC login flows",
+	Args:  cobra.NoArgs,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		return oidc.StartOIDCServer(OidcPort)
 	},
 }

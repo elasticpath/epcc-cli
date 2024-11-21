@@ -1,0 +1,52 @@
+{{ template "header" }}
+    {{ if ne .ErrorTitle "" }}
+        <h2><span class="material-symbols-outlined error">error</span>An Error has Occurred</h2>
+        <h3>Error Type: {{ .ErrorTitle }}</h3>
+        <h3>Error Description: {{ .ErrorDescription }}</h3>
+    {{ else if eq .LoginType "AM" }}
+        <h2><span class="material-symbols-outlined success">check_circle</span> Authentication With Identity Provider Successful</h2>
+
+        To finish the authentication process, you must select an account. If you see no accounts make sure that <a href="https://elasticpath.dev/docs/api/accounts/get-v-2-settings-account-authentication"><code>auto_create_account_for_account_members</code></a> is enabled or manually create an account.
+            <code>
+            <br/>
+            epcc update account-authentication-setting auto_create_account_for_account_members true
+            <br/>
+        </code>
+        <h4>Please Select An Account</h4>
+            <table>
+                <tr>
+                    <th>Account Name</th>
+                    <th>Account ID</th>
+                    <th>Action</th>
+                </tr>
+
+        {{ range $i, $item := .AccountTokenResponse.Data }}
+            <tr>
+                <td>{{ $item.AccountName }}</td>
+                <td>{{ $item.AccountId }}</td>
+                <td><button onclick="window.location.href='/get_token?login_type=AM&token={{ index $.AccountTokenStructBase64 $i }}'">GO</button></td>
+            </tr>
+        {{ end }}</table>
+    {{ else if eq .LoginType "Customers" }}
+        <h2><span class="material-symbols-outlined success">check_circle</span> Authentication With Identity Provider Successful</h2>
+        To continue, press <b>GO</b> next to the Customer.
+        <table>
+            <tr>
+                <th>Customer ID</th>
+                <th>Action</th>
+            </tr>
+
+            <tr>
+                <td>{{ .CustomerTokenResponse.Data.Id }}</td>
+                <td><button onclick="window.location.href='/get_token?login_type={{ .LoginType }}&token={{ .CustomerTokenStructBase64 }}'">GO</button></td>
+            </tr>
+        </table>
+    {{ end }}
+    <br/>
+    <br/>
+    <br/>
+    <br/>
+    <br/>
+    <br/>
+    To return to start <a href="/">Click here</a>.
+{{ template "footer" }}

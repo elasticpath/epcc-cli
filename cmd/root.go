@@ -144,7 +144,9 @@ func InitializeCmd() {
 	LoginCmd.AddCommand(loginDocs)
 	LoginCmd.AddCommand(loginCustomer)
 	LoginCmd.AddCommand(loginAccountManagement)
+	LoginCmd.AddCommand(loginOidc)
 
+	loginOidc.PersistentFlags().Uint16VarP(&OidcPort, "port", "p", 8080, "The port to listen on for the OIDC callback")
 	logoutCmd.AddCommand(logoutBearer)
 	logoutCmd.AddCommand(logoutCustomer)
 	logoutCmd.AddCommand(logoutAccountManagement)

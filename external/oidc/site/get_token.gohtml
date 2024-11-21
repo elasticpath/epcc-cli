@@ -1,0 +1,37 @@
+{{ template "header" }}
+    {{ if ne .ErrorTitle "" }}
+        <h2><span class="material-symbols-outlined error">error</span>An Error has Occurred</h2>
+        <h3>Error Type: {{ .ErrorTitle }}</h3>
+        <h3>Error Description: {{ .ErrorDescription }}</h3>
+    {{ else if eq .LoginType "AM" }}
+
+        <h2><span class="material-symbols-outlined success">check_circle</span> Authentication Complete</h2>
+        You are now authenticated as:
+        <table>
+        <tr>
+            <th>Account Name</th>
+            <th>Account ID</th>
+        </tr>
+        <tr>
+            <td>{{ .Name }}</td>
+            <td>{{ .Id }}</td>
+        </tr>
+        </table>
+        <h3>You may now close this window.</h3>
+    {{ else if eq .LoginType "Customers" }}
+
+        <h2><span class="material-symbols-outlined success">check_circle</span> Authentication Complete</h2>
+        You are now authenticated as:
+        <table>
+            <tr>
+                <th>Customer Name</th>
+                <th>Customer ID</th>
+            </tr>
+            <tr>
+                <td>{{ .Name }}</td>
+                <td>{{ .Id }}</td>
+            </tr>
+        </table>
+        <h3>You may now close this window.</h3>
+    {{ end }}
+{{ template "footer" }}

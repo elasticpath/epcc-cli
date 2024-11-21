@@ -1,0 +1,76 @@
+/* General Reset */
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+
+
+/* Top Banner */
+.top-banner {
+    background-color: #61DEA6;
+    color: black;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    position: relative;
+    width: 100%;
+}
+
+
+.logo {
+    position: absolute; /* Keeps the image pinned to the left */
+    left: 50px;         /* Always stays 50px from the left edge of the page */
+    top: 50%;           /* Vertically centers relative to the header */
+    transform: translateY(-50%); /* Adjusts for the height of the image */
+}
+
+/* Top Banner */
+.error-banner {
+    background-color: red;
+    color: black;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+/* Top Banner */
+.success-banner {
+    background-color: greenyellow;
+    color: black;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+
+/* Main Content */
+main {
+    padding: 20px;
+}
+
+.url-link {
+    width: 800px;
+}
+
+table {
+    border-collapse: collapse;
+
+    border: 2px solid black; /* Adds a bold border around the table */
+}
+
+.success { color: mediumseagreen; }
+
+.error { color: crimson; }
+
+table td, table th {
+    border: 2px solid black; /* Adds borders to each cell */
+    min-width: 100px; /* Ensures a minimum width for all cells */
+    padding: 5px; /* Optional, adds some padding inside cells */
+    text-align: left; /* Optional, left-aligns text in cells */
+}
