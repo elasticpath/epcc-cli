@@ -4,6 +4,7 @@ go 1.24.0
 
 toolchain go1.24.2
 
+replace github.com/elasticpath/epcc-cli-internal => ./epcc-cli-internal
 require (
 	github.com/Masterminds/sprig/v3 v3.3.0
 	github.com/brianvoe/gofakeit/v6 v6.28.0

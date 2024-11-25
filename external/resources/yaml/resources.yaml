@@ -452,6 +452,28 @@ cart-checkout:
     shipping_address.country:
       type: STRING
       autofill: FUNC:Country
+cart-settings:
+  singular-name: "cart-setting"
+  json-api-type: "settings"
+  json-api-format: legacy
+  docs: "https://elasticpath.dev/docs/api/settings/get-v-2-settings-cart"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/settings/get-v-2-settings-cart"
+    url: "/v2/settings/cart"
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/settings/get-v-2-settings-cart"
+    url: "/v2/settings/cart"
+
+  attributes:
+    cart_expiry_days:
+      type: INT
+    snapshot_date:
+      type: STRING
+    discounts.custom_discounts_enabled:
+      type: BOOL
+    discounts.use_rule_promotions:
+      type: BOOL
+
 currencies:
   singular-name: "currency"
   json-api-type: "currency"
@@ -2103,6 +2125,60 @@ promotions:
       type: INT
     schema.exclude.targets[n]:
       type: STRING
+
+rule-promotions:
+  singular-name: "rule-promotion"
+  json-api-type: "rule_promotion"
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/promotions-builder/promotions-builder-api/promotions-builder-api-overview"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/promotions-builder/promotions-builder-api/promotions-builder-api-overview"
+    url: "/v2/rule-promotions"
+  create-entity:
+    docs: "https://elasticpath.dev/docs/promotions-builder/promotions-builder-api/cart-level-promotions/create-a-cart-percent-discount-promotion"
+    url: "/v2/rule-promotions"
+  get-entity:
+    docs: "https://elasticpath.dev/docs/promotions-builder/promotions-builder-api/promotions-builder-api-overview"
+    url: "/v2/rule-promotions/{rule_promotion}"
+  attributes:
+    name:
+      type: STRING
+      autofill: VALUE:Promotion {{ pseudoRandAlpha 10 }}
+    start:
+      type: STRING
+      #autofill: VALUE:{{ (now | int) | div 1000000000 | sub 86400 | date "2006-01-02" }}
+      autofill: VALUE:{{ now | unixEpoch | add -86400 | date "2006-01-02" }}
+    description:
+      type: STRING
+      autofill: FUNC:Phrase
+    end:
+      type: STRING
+      autofill: VALUE:{{ now | unixEpoch | add 604800 |  date "2006-01-02" }}
+    enabled:
+      type: BOOL
+      autofill: VALUE:true
+    priority:
+      type: INT
+    rule_set.actions[n].strategy:
+      type: ENUM:cart_discount,item_discount,shipping_discount
+    rule_set.actions[n].args[n]:
+      type: STRING
+    rule_set.catalog_ids[n]:
+      type: RESOURCE_ID:pcm-catalog
+    rule_set.currencies[n]:
+      type: CURRENCY
+    rule_set.rules.strategy:
+      type: ENUM:cart_total,cart_custom_attribute,item_price,item_quantity,item_sku,item_category,item_attribute,item_product_id
+      autofill: VALUE:cart_total
+    rule_set.rules.operator:
+      type: ENUM:eq,gt,lt,gte,lte,in,nin
+    rule_set.rules.args[n]:
+      type: STRING
+    stackable:
+      type: BOOL
+
+      #autofill: VALUE:{{ (now | int) | div 1000000000 | add 604800 | date "2006-01-02" }}
+
 settings:
   singular-name: "setting"
   json-api-type: "settings"
