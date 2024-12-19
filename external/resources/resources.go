@@ -187,7 +187,7 @@ func PublicInit() {
 	resourceData, err := GenerateResourceMetadataFromYaml(resourceMetaData)
 
 	if err != nil {
-		panic("Couldn't load the resource meta data")
+		panic("Couldn't load the resource meta data: " + err.Error())
 	}
 
 	resources = resourceData

@@ -917,7 +917,7 @@ integrations:
     configuration.aws_secret_access_key:
       type: STRING
     observes[n]:
-      type: ENUM:address.created,address.updated,address.deleted,account.created,account.updated,account.deleted,account-member.created,account-member.updated,account-member.deleted,account-membership.created,account-membership.updated,account-membership.deleted,brand.created,brand.updated,brand.deleted,cart.updated,cart.deleted,category.created,category.updated,category.deleted,collection.created,collection.updated,collection.deleted,currency.created,currency.updated,currency.deleted,customer.created,customer.updated,customer.deleted,file.created,file.deleted,integration.created,integration.updated,integration.deleted,order.created,order.updated,order.fulfilled,order.authorized,order.paid,order.refunded,payment-gateway.updated,product.created,product.updated,product.deleted,settings.created,settings.updated,stock-transaction.created,transaction.created,transaction.updated,user-authentication-info.created,user-authentication-info.updated,user-authentication-info.deleted
+      type: ENUM:address.created,address.updated,address.deleted,account.created,account.updated,account.deleted,account-member.created,account-member.updated,account-member.deleted,account-membership.created,account-membership.updated,account-membership.deleted,brand.created,brand.updated,brand.deleted,cart.updated,cart.deleted,category.created,category.updated,category.deleted,collection.created,collection.updated,collection.deleted,currency.created,currency.updated,currency.deleted,customer.created,customer.updated,customer.deleted,file.created,file.deleted,integration.created,integration.updated,integration.deleted,order.created,order.updated,order.fulfilled,order.authorized,order.paid,order.refunded,payment-gateway.updated,product.created,product.updated,product.deleted,settings.created,settings.updated,stock-transaction.created,transaction.created,transaction.updated,user-authentication-info.created,user-authentication-info.updated,user-authentication-info.deleted,one-time-password-token-request.created
 inventories:
   singular-name: "inventory"
   json-api-type: "stock"
@@ -1175,6 +1175,22 @@ password-profiles:
       type: ENUM:any,email
     name:
       type: STRING
+    enable_one_time_password_token:
+      type: BOOL
+one-time-password-token-requests:
+  singular-name: "one-time-password-token-request"
+  json-api-type: "one_time_password_token_request"
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/authentication/single-sign-on/password-profiles-api/create-one-time-password-token-request"
+  create-entity:
+    docs: "https://elasticpath.dev/docs/authentication/single-sign-on/password-profiles-api/create-one-time-password-token-request"
+    url: "/v2/authentication-realms/{authentication_realms}/password-profiles/{password_profiles}/one-time-password-token-request"
+    content-type: application/json
+  attributes:
+    username:
+      type: STRING
+    purpose:
+      type: ENUM:reset_password,passwordless_authentication
 pcm-catalogs:
   singular-name: "pcm-catalog"
   json-api-type: "catalog"
