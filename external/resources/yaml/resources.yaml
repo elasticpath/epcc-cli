@@ -1583,22 +1583,39 @@ pcm-node-products:
       type: RESOURCE_ID:pcm-product
     "data[n].type":
       type: ENUM:product
+pcm-node-parents:
+  singular-name: "pcm-node-parent"
+  json-api-type: "node"
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/api/pxm/products/update-node-parent"
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/products/delete-node-parent"
+    url: "/pcm/hierarchies/{pcm_hierarchies}/nodes/{pcm_nodes}/relationships/parent"
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/products/update-node-parent"
+    url: "/pcm/hierarchies/{pcm_hierarchies}/nodes/{pcm_nodes}/relationships/parent"
+  attributes:
+    id:
+      type: RESOURCE_ID:pcm-node
 pcm-nodes:
   singular-name: "pcm-node"
   json-api-type: "node"
   json-api-format: "compliant"
   docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/hierarchies/nodes/get-a-hierarchy-node.html"
   get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/hierarchies/nodes/get-a-hierarchy-node.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/products/get-hierarchy-node"
     url: "/pcm/hierarchies/{pcm_hierarchies}/nodes/{pcm_nodes}"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/pxm/products/get-all-nodes-in-hierarchy"
+    url: "/pcm/hierarchies/{pcm_hierarchies}/nodes"
   update-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/hierarchies/nodes/update-a-hierarchy-node.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/products/update-node"
     url: "/pcm/hierarchies/{pcm_hierarchies}/nodes/{pcm_nodes}"
   delete-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/hierarchies/nodes/delete-a-hierarchy-node.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/products/delete-node"
     url: "/pcm/hierarchies/{pcm_hierarchies}/nodes/{pcm_nodes}"
   create-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/hierarchies/nodes/create-a-hierarchy-node.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/products/create-node"
     url: "/pcm/hierarchies/{pcm_hierarchies}/nodes"
     content-type: application/json
   attributes:
