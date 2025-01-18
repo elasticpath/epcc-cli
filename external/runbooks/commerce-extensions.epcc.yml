@@ -1,0 +1,55 @@
+name: "commerce-extensions"
+description:
+  long: "Examples for using Commerce Extensions"
+  short: "Examples for using Commerce Extensions"
+actions:
+  create-product-review-custom-api:
+    description:
+      short: "Create a sample API that can be used for product reviews"
+    commands:
+      # Populate aliases
+      - epcc get built-in-roles -s
+      - epcc create -s custom-api name "Product Reviews"  slug "product-reviews" description "Stores reviews for products" api_type "product_review_ext"
+      - |
+        epcc create -s custom-field name=Product_Reviews field_type string name "Title" slug "title" validation.string.min_length 1 validation.string.max_length 100  description "Title" validation.string.allow_null_values false
+        epcc create -s custom-field name=Product_Reviews field_type string name "Review" slug "review" validation.string.min_length 1  validation.string.max_length 4000 description "Review" validation.string.allow_null_values false
+        epcc create -s custom-field name=Product_Reviews field_type string name "Product ID" slug "product_id" validation.string.regex "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}" description "Product" validation.string.allow_null_values false
+        epcc create -s custom-field name=Product_Reviews field_type integer name "Rating" slug "rating" validation.integer.min_value 0 validation.integer.max_value 100 description "Rating" validation.integer.allow_null_values false
+      - |
+        epcc create custom-api-role-policy -s relationships.custom_api.data.id name=Product_Reviews relationships.role.data.id name=Registered_Shopper list true read true create true  update false delete false relationships.custom_api.data.type custom_api relationships.role.data.type built_in_role
+        epcc create custom-api-role-policy -s relationships.custom_api.data.id name=Product_Reviews relationships.role.data.id name=Guest_Shopper      list true read true create false update false delete false relationships.custom_api.data.type custom_api relationships.role.data.type built_in_role
+        epcc create custom-api-role-policy -s relationships.custom_api.data.id name=Product_Reviews relationships.role.data.id name=eCommerce_Admin    list true read true create false update false delete true  relationships.custom_api.data.type custom_api relationships.role.data.type built_in_role
+        epcc create custom-api-role-policy -s relationships.custom_api.data.id name=Product_Reviews relationships.role.data.id name=Promotions_Manager list true read true create false update false delete false relationships.custom_api.data.type custom_api relationships.role.data.type built_in_role  
+        epcc create custom-api-role-policy -s relationships.custom_api.data.id name=Product_Reviews relationships.role.data.id name=Support            list true read true create false update true  delete true  relationships.custom_api.data.type custom_api relationships.role.data.type built_in_role
+      # Aliases don't work with / for the moment sadly
+      # epcc create custom-api-role-policy -s relationships.custom_api.data.id name=Product_Reviews relationships.role.data.id "name=IT/Developer"     list true read true create false update false delete false relationships.custom_api.data.type custom_api relationships.role.data.type built_in_role
+      # epcc create custom-api-role-policy -s relationships.custom_api.data.id name=Product_Reviews relationships.role.data.id "name=Marketing/Sales"  list true read true create false update false delete true  relationships.custom_api.data.type custom_api relationships.role.data.type built_in_role
+  create-review-for-random-product:
+    description:
+      short: "Create a review for a randomly generated product id"
+    variables:
+      title:
+        type: STRING
+        default: "Great product!"
+        description:
+          short: "The title of the review"
+      review:
+        type: STRING
+        default: "I love this product!"
+        description:
+          short: "The review"
+
+      rating:
+        type: INT
+        default: 80
+        description:
+          short: "The rating"
+    commands:
+      - epcc create custom-api-extension-entry product-reviews data.type product_review_ext data.title "{{ .title }}" data.review "{{ .review }}" data.rating {{ .rating }} data.product_id {{ uuidv4 }}
+
+
+  delete-product-review-custom-api:
+    description:
+      short: "Delete the sample API that can be used for product reviews"
+    commands:
+      - epcc delete custom-api name=Product_Reviews --if-alias-exists name=Product_Reviews
