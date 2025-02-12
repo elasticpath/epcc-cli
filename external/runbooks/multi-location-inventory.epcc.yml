@@ -1,0 +1,90 @@
+name: "multi-location-inventory"
+description:
+  long: "Sample commands for working with Multi Location Inventory (https://elasticpath.dev/docs/api/pxm/inventory_mli/inventories-introduction)"
+  short: "Multi Location Inventory"
+  create-prerequisites:
+    description:
+      short: "Create necessary prerequisites"
+    commands:
+      - epcc update payment-gateway-manual enabled true
+      - epcc create customer name "Ron Swanson" email "ron.swanson@gmail.com"
+      - epcc create pcm-hierarchy name "Major Appliances" description "Free standing appliances" slug "Major-Appliances-MA0"
+      - epcc create pcm-node name=Major_Appliances name "Ranges" description "All stoves and ovens" slug "Ranges-MA1"
+      - |
+        epcc create pcm-node name=Major_Appliances name "Electric Ranges" description "Electric stoves and ovens" slug "Electric-Ranges-MA2" relationships.parent.data.type node relationships.parent.data.id name=Ranges
+        epcc create pcm-node name=Major_Appliances name "Gas Ranges" description "Gas stoves and ovens" slug "Gas-Ranges-MA2" relationships.parent.data.type node relationships.parent.data.id name=Ranges
+      - epcc create pcm-product name "BestEver Electric Range" sku "BE-Electric-Range-1a1a" slug "bestever-range-1a1a" description "This electric model offers an induction heating element and convection oven." status live commodity_type physical upc_ean \"111122223333\" mpn BE-R-1111-aaaa-1a1a
+      - epcc create pcm-node-product name=Major_Appliances name=Electric_Ranges data[0].type product data[0].id name=BestEver_Electric_Range
+      - epcc create pcm-product name "BestEver Gas Range" sku "BE-Gas-Range-2b2b" slug "bestever-range-2b2b" description "This gas model includes a convection oven." status live commodity_type physical upc_ean \"222233334444\" mpn BE-R-2222-bbbb-2b2b
+      - epcc create pcm-node-product name=Major_Appliances name=Gas_Ranges data[0].type product data[0].id name=BestEver_Gas_Range
+      - epcc create currency code GBP exchange_rate 1 format £{price} decimal_point "." thousand_separator , decimal_places 2 default false enabled true
+      - epcc create pcm-pricebook name "Preferred Pricing" description "Catalog with pricing suitable for high-volume customers."
+      - |
+        epcc create pcm-product-price name=Preferred_Pricing currencies.USD.amount 300000 currencies.USD.includes_tax false currencies.GBP.amount 250000 currencies.GBP.includes_tax false sku BE-Electric-Range-1a1a
+        epcc create pcm-product-price name=Preferred_Pricing currencies.USD.amount 350000 currencies.USD.includes_tax false currencies.GBP.amount 300000 currencies.GBP.includes_tax false sku BE-Gas-Range-2b2b
+      - sleep 2
+      - epcc create pcm-catalog name "Ranges Catalog" description "Ranges Catalog" pricebook_id name=Preferred_Pricing hierarchy_ids[0] name=Major_Appliances
+      - epcc create pcm-catalog-release --save-as-alias manual-gateway-how-to-create-catalog-and-publish-release name=Ranges_Catalog
+      - epcc get pcm-catalog-release --retry-while-jq '.data.meta.release_status != "PUBLISHED"' name=Ranges_Catalog manual-gateway-how-to-create-catalog-and-publish-release
+  setup-inventory:
+    description:
+      short: "Setup inventory"
+    commands:
+      - epcc create mli-inventory-location name "Milton Keynes Warehouse" slug "milton-keynes-warehouse" description "Southern dispatch location for all inventory" geolocation.lat '51.477928' geolocation.l
+
+  create-order:
+    description:
+      short: "Create an order"
+    commands:
+      - epcc delete cart sample_cart
+      - epcc create cart name sample_cart id sample_cart description sample_cart
+      - epcc create cart-product-item id=sample_cart quantity 1 id sku=BE-Gas-Range-2b2b
+      - epcc create cart-checkout sample_cart customer.name Billy customer.email "billy@billy.com" billing_address.first_name Jack billing_address.last_name Macdowall billing_address.company_name Macdowalls billing_address.line_1 "1225 Invention Avenue"  billing_address.line_2 Birmingham billing_address.postcode "B21 9AF" billing_address.county "West midlands" billing_address.country "UK" shipping_address.first_name Otis shipping_address.last_name Sedmak shipping_address.company_name "Sedmak & Co." shipping_address.line_1 "1251, Rexmere Ave" shipping_address.line_2 "Farmingville, Suffolk" shipping_address.postcode '"11738"' shipping_address.county "New York" shipping_address.country US shipping_address.instructions "Leave in porch"
+      - epcc get order last_read=entity
+  authorize-payment:
+    description:
+      short: "Authorize a payment"
+    commands:
+      #- epcc get orders sort -created_at page[limit] 1
+      # Last order should be last_read=entity
+      - epcc create order-payment last_read=entity gateway manual method authorize
+      - epcc get order-transactions last_read=entity
+  capture-payment:
+    description:
+      short: "Capture a payment"
+    commands:
+      # First parameter is the order, second parameter is the last transaction
+      - epcc create order-transaction-capture last_read=entity last_read=array[0]
+      # First parameter is the order
+      - epcc get order-transactions last_read=entity
+  reset-cart:
+    ignore_errors: true
+    description:
+      short: "Reset the cart"
+    commands:
+      - epcc delete cart sample_cart
+  reset:
+    description:
+      short: "Reset the store to the initial state"
+    ignore_errors: true
+    commands:
+      - |
+        epcc delete customer name=Ron_Swanson
+        epcc delete currency code=GBP
+        epcc delete pcm-catalog-release name=Ranges_Catalog name=Ranges_Catalog
+        epcc delete pcm-catalog-release name=Ranges_Catalog_for_Special_Customers name=Ranges_Catalog_for_Special_Customers
+        epcc delete pcm-catalog-rule name=Catalog_Rule_for_Civil_Servants    
+        epcc delete pcm-product name=BestEver_Gas_Range
+        epcc delete pcm-product name=BestEver_Electric_Range
+        epcc delete pcm-hierarchy name=Major_Appliances
+        epcc delete pcm-pricebook name=Preferred_Pricing
+        epcc delete pcm-pricebook name=Loyal_Civil_Servants_Pricing
+        epcc delete customer name=Ron_Swanson
+      - |
+        epcc delete pcm-catalog name=Ranges_Catalog_for_Special_Customers
+        epcc delete pcm-catalog name=Ranges_Catalog
+      # Don't reset the manual gateway since we don't know it's initial state and it's a singleton
+
+
+
+
