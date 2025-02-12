@@ -287,7 +287,7 @@ func RunJQWithArray(queryStr string, result interface{}) ([]interface{}, error) 
 	return queryResult, nil
 }
 func formatValue(v string) string {
-	if match, _ := regexp.MatchString("^([0-9]+(\\.[0-9]+)?|false|true|null)$", v); match {
+	if match, _ := regexp.MatchString("^(-?[0-9]+(\\.[0-9]+)?|false|true|null)$", v); match {
 		return v
 	} else if match, _ := regexp.MatchString("^\\\".+\\\"$", v); match {
 		return v
