@@ -16,6 +16,9 @@ var supportedHeadersToCompletionRequest = map[string]*Request{
 		Type: CompleteCurrency,
 	},
 	"X-Moltin-Currencies": nil,
+	"EP-Inventories-Multi-Location": {
+		Type: CompleteBool,
+	},
 }
 
 var supportedHeadersOriginalCasing = map[string]string{}

@@ -328,6 +328,9 @@ cart-product-items:
       type: STRING
     tax[n].rate:
       type: FLOAT
+    location:
+      type: RESOURCE_ID:mli-inventory-locations
+      alias_attribute: slug
 cart-custom-items:
   singular-name: "cart-custom-item"
   json-api-type: "custom_item"
@@ -928,18 +931,18 @@ inventories:
   singular-name: "inventory"
   json-api-type: "stock"
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/inventory/index.html"
+  docs: "https://elasticpath.dev/docs/api/pxm/inventory/inventory"
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/inventory/get-all-inventory.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/inventory/inventory"
     url: "/v2/inventories"
   get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/inventory/get-a-product-stock.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/inventory/get-product-stock"
     url: "/v2/inventories/{pcm_products}"
   create-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/inventory/create-inventory.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/inventory/create-product-stock"
     url: "/v2/inventories/{pcm_products}"
   delete-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/inventory/delete-inventory.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/inventory/delete-stock"
     url: "/v2/inventories/{pcm_products}"
   attributes:
     quantity:
@@ -960,7 +963,7 @@ inventory-transactions:
     url: "/v2/inventories/{pcm_products}/transactions"
   attributes:
     action:
-      type: ENUM:increment,decrement,allocate,deallocate
+      type: ENUM:increment,decrement,allocate,deallocate,set
     quantity:
       type: INT
 catalog-products:
@@ -2792,7 +2795,108 @@ custom-api-role-policies:
       type: ENUM:built_in_role
     relationships.role.data.id:
       type: RESOURCE_ID:built-in-role
-
-
+mli-inventory-locations:
+    singular-name: mli-inventory-location
+    json-api-type: inventory_location
+    json-api-format: "compliant"
+    docs: "https://elasticpath.dev/docs/api/inventory/mli-inventory-locations"
+    delete-entity:
+        docs: "https://elasticpath.dev/docs/api/pxm/inventory_mli/delete-location"
+        url: "/v2/inventories/locations/{mli_inventory_locations}"
+    create-entity:
+        docs: "https://elasticpath.dev/docs/api/pxm/inventory_mli/create-location"
+        url: "/v2/inventories/locations"
+    update-entity:
+        docs: "https://elasticpath.dev/docs/api/pxm/inventory_mli/update-location"
+        url: "/v2/inventories/locations/{mli_inventory_locations}"
+    get-entity:
+        docs: "https://elasticpath.dev/docs/api/inventory/get-a-mli-inventory-location"
+        url: "/v2/inventories/locations/{mli_inventory_locations}"
+    get-collection:
+        docs: "https://elasticpath.dev/docs/api/pxm/inventory_mli/list-locations"
+        url: "/v2/inventories/locations"
+    attributes:
+      name:
+        type: STRING
+        autofill: FUNC:City
+      external_ref:
+        type: STRING
+      slug:
+        type: STRING
+      description:
+        type: STRING
+        autofill: FUNC:Phrase
+      address[n]:
+        type: STRING
+      geolocation.lat:
+        type: FLOAT
+      geolocation.lon:
+        type: FLOAT
+mli-inventory-stocks:
+  json-api-format: compliant
+  json-api-type: "stock"
+  singular-name: "mli-inventory-stock"
+  alternate-json-type-for-aliases:
+    - pcm-products
+  docs: "https://elasticpath.dev/docs/api/pxm/inventory_mli/inventory"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/pxm/inventory_mli/list-stock"
+    url: "/v2/inventories/"
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/inventory_mli/get-stock"
+    url: "/v2/inventories/{mli_inventory_stocks}"
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/inventory_mli/update-stock"
+    url: "/v2/inventories/{mli_inventory_stocks}"
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/inventory_mli/delete-stock"
+    url: "/v2/inventories/{mli_inventory_stocks}"
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/inventory_mli/create-stock"
+    url: "/v2/inventories"
+  attributes:
+    id:
+      type: RESOURCE_ID:pcm-products
+    available:
+      type: INT
+      autofill: FUNC:NonZeroUint8
+    ^locations\.([a-zA-Z0-9-_]+)\.available$:
+      type: INT
+mli-inventory-product-transactions:
+    singular-name: "mli-inventory-product-transaction"
+    json-api-type: "stock-transaction"
+    json-api-format: "compliant"
+    docs: "https://elasticpath.dev/docs/api/pxm/inventory_mli/transactions"
+    get-collection:
+      docs: "https://elasticpath.dev/docs/api/pxm/inventory_mli/list-transactions"
+      url: "/v2/inventories/{pcm_products}/transactions"
+    create-entity:
+      docs: "https://elasticpath.dev/docs/api/pxm/inventory_mli/create-transaction"
+      url: "/v2/inventories/{pcm_products}/transactions"
+    get-entity:
+      docs: "https://elasticpath.dev/docs/api/pxm/inventory_mli/get-transaction"
+      url: "/v2/inventories/{pcm_products}/transactions/{mli_inventory_product_transactions}"
+    attributes:
+      action:
+        type: ENUM:increment,decrement,allocate,deallocate,set
+      quantity:
+        type: INT
+      location:
+        type: RESOURCE_ID:mli-inventory-locations
+        alias_attribute: slug
+mli-inventory-list-stocks:
+  singular-name: "mli-inventory-list-stock"
+  json-api-type: "stock"
+  json-api-format: "legacy"
+  no-wrapping: true
+  docs: "https://elasticpath.dev/docs/api/pxm/inventory_mli/get-stock-for-products"
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/inventory_mli/create-transaction"
+    url: "/v2/inventories/multiple"
+  attributes:
+    data[n].type:
+      type: ENUM:stock
+    data[n].id:
+      type: RESOURCE_ID:pcm-products
 
 
