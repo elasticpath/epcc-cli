@@ -13,6 +13,21 @@ set -x
 #Let's test that epcc command works after an embarrassing bug that caused it to panic :(
 epcc
 
+echo "Starting Multi Location Inventory Runbook"
+epcc reset-store .+
+epcc headers set ep-inventories-multi-location true
+epcc runbooks run multi-location-inventory create-prerequisites
+epcc runbooks run multi-location-inventory setup-inventory
+epcc runbooks run multi-location-inventory check-inventory
+epcc runbooks run multi-location-inventory create-order
+epcc runbooks run multi-location-inventory check-inventory
+epcc runbooks run multi-location-inventory authorize-payment
+epcc runbooks run multi-location-inventory capture-payment
+epcc runbooks run multi-location-inventory reset-inventory
+epcc runbooks run multi-location-inventory reset-cart
+epcc runbooks run multi-location-inventory reset
+epcc headers delete ep-inventories-multi-location
+
 echo "Starting Commerce Extensions Runbook"
 epcc reset-store .+
 

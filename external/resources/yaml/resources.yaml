@@ -328,6 +328,9 @@ cart-product-items:
       type: STRING
     tax[n].rate:
       type: FLOAT
+    location:
+      type: RESOURCE_ID:mli-inventory-locations
+      alias_attribute: slug
 cart-custom-items:
   singular-name: "cart-custom-item"
   json-api-type: "custom_item"
@@ -2833,19 +2836,21 @@ mli-inventory-stocks:
   json-api-format: compliant
   json-api-type: "stock"
   singular-name: "mli-inventory-stock"
+  alternate-json-type-for-aliases:
+    - pcm-products
   docs: "https://elasticpath.dev/docs/api/pxm/inventory_mli/inventory"
   get-collection:
     docs: "https://elasticpath.dev/docs/api/pxm/inventory_mli/list-stock"
     url: "/v2/inventories/"
   get-entity:
     docs: "https://elasticpath.dev/docs/api/pxm/inventory_mli/get-stock"
-    url: "/v2/inventories/{pcm_products}"
+    url: "/v2/inventories/{mli_inventory_stocks}"
   update-entity:
     docs: "https://elasticpath.dev/docs/api/pxm/inventory_mli/update-stock"
-    url: "/v2/inventories/{pcm_products}"
+    url: "/v2/inventories/{mli_inventory_stocks}"
   delete-entity:
     docs: "https://elasticpath.dev/docs/api/pxm/inventory_mli/delete-stock"
-    url: "/v2/inventories/{pcm_products}"
+    url: "/v2/inventories/{mli_inventory_stocks}"
   create-entity:
     docs: "https://elasticpath.dev/docs/api/pxm/inventory_mli/create-stock"
     url: "/v2/inventories"
