@@ -254,3 +254,6 @@ actions:
 
 
 
+### Output JQ
+
+You will need to escape \ when using the `--output-jq` argument.
