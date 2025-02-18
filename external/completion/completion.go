@@ -29,6 +29,7 @@ const (
 	CompleteHeaderValue = 8192
 
 	CompleteCurrency = 16384
+	CompleteBool     = 32768
 )
 
 const (
@@ -111,6 +112,10 @@ func Complete(c Request) ([]string, cobra.ShellCompDirective) {
 
 	if c.Type&CompleteLoginLogoutAPI > 0 {
 		results = append(results, "api")
+	}
+
+	if c.Type&CompleteBool > 0 {
+		results = append(results, "true", "false")
 	}
 
 	if c.Type&CompleteLoginClientID > 0 {

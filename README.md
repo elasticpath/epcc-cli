@@ -37,6 +37,8 @@ The following is a summary of the main commands, in general you can type `epcc h
 | `epcc update <RESOURCE> [ID]...[KEY] [VAL] [KEY] [VAL]...`  | Update an object.                                                         |
 | `epcc delete <RESOURCE> [ID]...`                            | Delete an object.                                                         |
 
+Key and Value pairs are specified in a specific format documented in the [Tutorial](docs/tutorial.md#advanced-json-encoding).
+
 #### Authentication Commands
 
 | Command                         | Description                                                       |

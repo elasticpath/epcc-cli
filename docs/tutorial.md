@@ -486,6 +486,25 @@ $epcc test-json  --compliant  relationships.test.type customer relationships.tes
 
 The important thing to note in the above, is that the first `attributes` value is ignored if it's a prefix of a compliant resource, the second is that values that start with `relationships` are not nested under `attributes`.
 
+#### Dashed Arguments
+
+If an argument starts with a dash, it can be treated as an option, this can make certain values hard to put in, you can use the `--` to stop argument processing and force values to be interpreted as a JSON afterwards.
+
+For example:
+
+```bash
+$epcc test-json hello "-world" value -3.14
+Error: unknown shorthand flag: 'w' in -world
+ERRO[0000] Error occurred while processing command: unknown shorthand flag: 'w' in -world 
+$epcc test-json hello -- "-world" value -3.14
+{
+  "data": {
+    "hello": "-world",
+    "value": -3.14
+  }
+}
+```
+
 ### Runbooks
 
 The EPCC CLI supports Runbooks which are either built in or external scripts that can be used to configure a store a certain way. These scripts can typically execute very fast and in parallel.
