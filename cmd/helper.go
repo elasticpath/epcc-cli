@@ -243,6 +243,10 @@ func GetDeleteAllShort(resource resources.Resource) string {
 	return fmt.Sprintf("Calls DELETE %s for every resource in GET %s", GetHelpResourceUrls(resource.DeleteEntityInfo.Url), GetHelpResourceUrls(resource.GetCollectionInfo.Url))
 }
 
+func GetGetAllShort(resource resources.Resource) string {
+	return fmt.Sprintf("Calls GET %s and iterates over all pages and parent resources (if applicable)", GetHelpResourceUrls(resource.GetCollectionInfo.Url))
+}
+
 func GetGetLong(resourceName string, resourceUrl string, usageGetType string, completionVerb int, urlInfo *resources.CrudEntityInfo, resource resources.Resource) string {
 
 	if DisableLongOutput {
