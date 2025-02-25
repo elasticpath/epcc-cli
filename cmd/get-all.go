@@ -8,6 +8,7 @@ import (
 	"github.com/elasticpath/epcc-cli/external/httpclient"
 	"github.com/elasticpath/epcc-cli/external/id"
 	"github.com/elasticpath/epcc-cli/external/json"
+	"github.com/elasticpath/epcc-cli/external/toposort"
 	"github.com/yukithm/json2csv"
 	"github.com/yukithm/json2csv/jsonpointer"
 	"os"
@@ -117,6 +118,7 @@ func writeJson(obj interface{}, writer io.Writer) error {
 func getAllInternal(ctx context.Context, outputFormat OutputFormat, outputFile string, args []string) error {
 	// Find Resource
 	resource, ok := resources.GetResourceByName(args[0])
+
 	if !ok {
 		return fmt.Errorf("could not find resource %s", args[0])
 	}
@@ -164,6 +166,20 @@ func getAllInternal(ctx context.Context, outputFormat OutputFormat, outputFile s
 		defer file.Close()
 		writer = file
 	}
+
+	topoSortNeeded := false
+
+	topoSortKeys := make([]string, 0)
+	for k, v := range resource.Attributes {
+		if (v.Type == fmt.Sprintf("RESOURCE_ID:%s", resource.PluralName)) || (v.Type == fmt.Sprintf("RESOURCE_ID:%s", resource.SingularName)) {
+			topoSortKeys = append(topoSortKeys, k)
+			topoSortNeeded = true
+		}
+
+	}
+
+	lines := map[string]string{}
+	graph := toposort.NewGraph()
 
 	outputWriter := func() {
 		defer syncGroup.Done()
@@ -221,11 +237,11 @@ func getAllInternal(ctx context.Context, outputFormat OutputFormat, outputFile s
 						sb.WriteString("--save-as-alias")
 						sb.WriteString(" ")
 						sb.WriteString("exported_source_id=")
-						sb.WriteString(resource.SingularName)
-						sb.WriteString("/")
 
+						var myId = ""
 						if mp, ok := newObj.(map[string]interface{}); ok {
-							sb.WriteString(fmt.Sprintf("%s", mp["id"]))
+							myId = fmt.Sprintf("%s", mp["id"])
+							sb.WriteString(myId)
 						} else {
 							log.Errorf("Error casting newObj to map[string]interface{}")
 							sb.WriteString("\n")
@@ -234,9 +250,9 @@ func getAllInternal(ctx context.Context, outputFormat OutputFormat, outputFile s
 
 						for _, resId := range result.id {
 							sb.WriteString(" ")
-							sb.WriteString("exported_source_id=")
-							sb.WriteString(resources.MustGetResourceByName(resId.EpccCliType).SingularName)
+							sb.WriteString(resources.MustGetResourceByName(resId.EpccCliType).JsonApiType)
 							sb.WriteString("/")
+							sb.WriteString("exported_source_id=")
 							sb.WriteString(resId.Id)
 
 						}
@@ -254,6 +270,7 @@ func getAllInternal(ctx context.Context, outputFormat OutputFormat, outputFile s
 
 							sort.Strings(keys)
 
+						nextKey:
 							for _, k := range keys {
 								v := kv[k]
 
@@ -283,14 +300,64 @@ func getAllInternal(ctx context.Context, outputFormat OutputFormat, outputFile s
 									continue
 								}
 
+								for _, e := range resource.ExcludedJsonPointersFromImport {
+									if len(e) == 0 {
+										continue
+									}
+
+									if e[len(e)-1] == '.' {
+										if strings.HasPrefix(jsonPointerKey, e) {
+											continue nextKey
+										}
+									} else {
+										if jsonPointerKey == e {
+											continue nextKey
+										}
+									}
+								}
+
 								sb.WriteString(" ")
 								sb.WriteString(jsonPointerKey)
 								sb.WriteString(" ")
 
 								if s, ok := v.(string); ok {
-									sb.WriteString(`'`)
-									sb.WriteString(strings.ReplaceAll(s, `'`, `\'`))
-									sb.WriteString(`'`)
+
+									writeValueFromJson := true
+
+									for _, k := range topoSortKeys {
+										if jsonPointerKey == k {
+											dependentId := fmt.Sprintf("%s", v)
+											graph.AddEdge(dependentId, myId)
+											writeValueFromJson = false
+											sb.WriteString(`"`)
+											sb.WriteString("exported_source_id=")
+											sb.WriteString(dependentId)
+											sb.WriteString(`"`)
+										}
+									}
+
+									if writeValueFromJson {
+										// This is to prevent shell characters from interpreting things
+										sb.WriteString(`"`)
+
+										quoteArgument := json.ValueNeedsQuotes(s)
+
+										if quoteArgument {
+											// This is to force the EPCC CLI to interpret the value as a string
+											sb.WriteString("\\\"")
+										}
+										value := strings.ReplaceAll(s, `\`, `\\`)
+										value = strings.ReplaceAll(value, `$`, `\$`)
+										value = strings.ReplaceAll(value, `"`, `\"`)
+										sb.WriteString(value)
+
+										if quoteArgument {
+											// This is to force the EPCC CLI to interpret the value as a string
+											sb.WriteString("\\\"")
+										}
+										// This is to prevent shell characters from interpreting things
+										sb.WriteString(`"`)
+									}
 								} else {
 									sb.WriteString(fmt.Sprintf("%v", v))
 								}
@@ -299,10 +366,14 @@ func getAllInternal(ctx context.Context, outputFormat OutputFormat, outputFile s
 						}
 
 						sb.WriteString("\n")
-						_, err = writer.Write([]byte(sb.String()))
+						if topoSortNeeded {
+							lines[myId] = sb.String()
+						} else {
+							_, err = writer.Write([]byte(sb.String()))
 
-						if err != nil {
-							log.Errorf("Error writing command: %v", err)
+							if err != nil {
+								log.Errorf("Error writing command: %v", err)
+							}
 						}
 					}
 				}
@@ -333,6 +404,20 @@ func getAllInternal(ctx context.Context, outputFormat OutputFormat, outputFile s
 			if err := csvWriter.WriteCSV(results); err != nil {
 				log.Errorf("Error writing CSV: %v", err)
 				return
+			}
+		} else if outputFormat == EpccCli && topoSortNeeded {
+			sorted := graph.TopologicalSort()
+
+			if err != nil {
+				log.Fatalf("Error sorting data: %v", err)
+			}
+
+			for _, id := range sorted {
+				_, err = writer.Write([]byte(lines[id]))
+
+				if err != nil {
+					log.Errorf("Error writing command: %v", err)
+				}
 			}
 		}
 
