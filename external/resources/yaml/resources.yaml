@@ -1558,6 +1558,8 @@ pcm-hierarchies:
       type: STRING
     locales.en-US.description:
       type: STRING
+  excluded-json-pointers-from-import:
+    - relationships.children.links.related
 pcm-hierarchy-node-children:
   singular-name: "pcm-hierarchy-node-child"
   json-api-type: "node"
@@ -1642,6 +1644,9 @@ pcm-nodes:
       type: ENUM:node
     relationships.parent.data.id:
       type: RESOURCE_ID:pcm-nodes
+  excluded-json-pointers-from-import:
+    - relationships.children.
+    - relationships.products.
 pcm-product-main-image:
   singular-name: "pcm-product-main-image"
   json-api-type: "file"

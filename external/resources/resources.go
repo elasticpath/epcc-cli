@@ -63,6 +63,9 @@ type Resource struct {
 	// This should only be used for cases where we manually fix things, or where
 	// a store reset would clear a resource another way (e.g., the resource represents a projection).
 	SuppressResetWarning bool `yaml:"suppress-reset-warning,omitempty"`
+
+	// Exclude these json pointers from import
+	ExcludedJsonPointersFromImport []string `yaml:"excluded-json-pointers-from-import"`
 }
 
 type CrudEntityInfo struct {

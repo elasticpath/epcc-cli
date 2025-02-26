@@ -22,7 +22,16 @@
           "enum": ["compliant", "legacy"]
         },
         "alternate-json-type-for-aliases": {
-          "type":"array"
+          "type":"array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "excluded-json-pointers-from-import": {
+          "type": "array",
+          "items": {
+              "type": "string"
+          }
         },
         "no-wrapping": {
           "type": "boolean"

@@ -207,7 +207,7 @@ func resetResourcesUndeletableResources(ctx context.Context, overrides *httpclie
 			errors = append(errors, fmt.Errorf("error resetting  %s: %v", resetCmd[0], err).Error())
 		}
 
-		err = json.PrintJson(body)
+		err = json.PrintJsonToStdout(body)
 
 		if err != nil {
 			errors = append(errors, fmt.Errorf("error resetting  %s: %v", resetCmd[0], err).Error())

@@ -110,6 +110,9 @@ func InitializeCmd() {
 	log.Tracef("Building Delete All Commands")
 	NewDeleteAllCommand(RootCmd)
 
+	log.Tracef("Building Get All Commands")
+	NewGetAllCommand(RootCmd)
+
 	Logs.AddCommand(LogsList, LogsShow, LogsClear)
 
 	testJson.ResetFlags()

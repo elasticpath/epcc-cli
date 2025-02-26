@@ -17,13 +17,14 @@ import (
 // https://github.com/itchyny/gojq/blob/main/cli/color.go
 
 type encoder struct {
-	out      io.Writer
-	w        *bytes.Buffer
-	tab      bool
-	indent   int
-	depth    int
-	buf      [64]byte
-	keyStack []string
+	out        io.Writer
+	w          *bytes.Buffer
+	tab        bool
+	monoOutput bool
+	indent     int
+	depth      int
+	buf        [64]byte
+	keyStack   []string
 }
 
 type colorInfo struct {
@@ -31,8 +32,8 @@ type colorInfo struct {
 	colorString string
 }
 
-func setColor(buf *bytes.Buffer, color colorInfo) {
-	if !MonochromeOutput {
+func (e *encoder) setColor(buf *bytes.Buffer, color colorInfo) {
+	if !e.monoOutput {
 		buf.Write([]byte(color.colorString))
 	}
 }
@@ -107,9 +108,9 @@ var (
 	objectColor               = newColor("", "<default>")                // No color
 )
 
-func NewEncoder(tab bool, indent int) *encoder {
+func NewEncoder(tab bool, indent int, monoOutput bool) *encoder {
 	// reuse the buffer in multiple calls of marshal
-	return &encoder{w: new(bytes.Buffer), tab: tab, indent: indent}
+	return &encoder{w: new(bytes.Buffer), tab: tab, indent: indent, monoOutput: monoOutput}
 }
 
 func (e *encoder) Marshal(v interface{}, w io.Writer) error {
@@ -182,7 +183,7 @@ func (e *encoder) encodeFloat64(f float64) {
 // ref: encodeState#string in encoding/json
 func (e *encoder) encodeString(s string, color *colorInfo) {
 	if color != nil {
-		setColor(e.w, *color)
+		e.setColor(e.w, *color)
 	}
 	e.w.WriteByte('"')
 	start := 0
@@ -236,7 +237,7 @@ func (e *encoder) encodeString(s string, color *colorInfo) {
 	}
 	e.w.WriteByte('"')
 	if color != nil {
-		setColor(e.w, resetColor)
+		e.setColor(e.w, resetColor)
 	}
 }
 
@@ -378,9 +379,9 @@ func (e *encoder) writeByte(b byte, color *colorInfo) {
 	if color == nil || color.colorString == "<default>" {
 		e.w.WriteByte(b)
 	} else {
-		setColor(e.w, *color)
+		e.setColor(e.w, *color)
 		e.w.WriteByte(b)
-		setColor(e.w, resetColor)
+		e.setColor(e.w, resetColor)
 	}
 }
 
@@ -388,8 +389,8 @@ func (e *encoder) write(bs []byte, color *colorInfo) {
 	if color == nil || color.colorString == "<default>" {
 		e.w.Write(bs)
 	} else {
-		setColor(e.w, *color)
+		e.setColor(e.w, *color)
 		e.w.Write(bs)
-		setColor(e.w, resetColor)
+		e.setColor(e.w, resetColor)
 	}
 }

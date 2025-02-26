@@ -82,7 +82,7 @@ func UpdateInternal(ctx context.Context, overrides *httpclient.HttpParameterOver
 
 		// Check if error response
 		if resp.StatusCode >= 400 && resp.StatusCode <= 600 {
-			json.PrintJson(string(resBody))
+			json.PrintJsonToStdout(string(resBody))
 			return "", fmt.Errorf(resp.Status)
 		}
 

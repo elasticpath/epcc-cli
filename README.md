@@ -254,3 +254,5 @@ go fmt "./..."
 echo "Adding changed files back to git"
 git diff --cached --name-only --diff-filter=ACM | grep -E "\.(go)$" | xargs  git add
 ```
+
+Update Readme

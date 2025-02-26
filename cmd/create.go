@@ -120,7 +120,7 @@ func NewCreateCommand(parentCmd *cobra.Command) func() {
 								return err
 							}
 
-							err = json.PrintJson(string(outputJson))
+							err = json.PrintJsonToStdout(string(outputJson))
 
 							if err != nil {
 								return err
@@ -141,7 +141,7 @@ func NewCreateCommand(parentCmd *cobra.Command) func() {
 							}
 						}
 
-						return json.PrintJson(body)
+						return json.PrintJsonToStdout(body)
 					}
 
 				}
