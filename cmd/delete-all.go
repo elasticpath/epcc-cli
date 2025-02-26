@@ -95,7 +95,7 @@ func deleteAllInternal(ctx context.Context, args []string) error {
 			}
 
 			params := url.Values{}
-			params.Add("page[limit]", "25")
+			params.Add("page[limit]", "100")
 
 			resp, err := httpclient.DoRequest(ctx, "GET", resourceURL, params.Encode(), nil)
 

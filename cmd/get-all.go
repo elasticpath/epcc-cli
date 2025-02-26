@@ -33,13 +33,15 @@ const (
 	Json
 	Csv
 	EpccCli
+	EpccCliRunbook
 )
 
 var OutputFormatIds = map[OutputFormat][]string{
-	Jsonl:   {"jsonl"},
-	Json:    {"json"},
-	Csv:     {"csv"},
-	EpccCli: {"epcc-cli"},
+	Jsonl:          {"jsonl"},
+	Json:           {"json"},
+	Csv:            {"csv"},
+	EpccCli:        {"epcc-cli"},
+	EpccCliRunbook: {"epcc-cli-runbook"},
 }
 
 func NewGetAllCommand(parentCmd *cobra.Command) func() {
@@ -186,6 +188,15 @@ func getAllInternal(ctx context.Context, outputFormat OutputFormat, outputFile s
 
 		csvLines := make([]interface{}, 0)
 
+		if outputFormat == EpccCliRunbook && !topoSortNeeded {
+			// We need to prefix
+			_, err := writer.Write([]byte("- |\n"))
+
+			if err != nil {
+				log.Errorf("Error writing command: %v", err)
+			}
+		}
+
 	endMessages:
 		for msgs := 0; ; msgs++ {
 			select {
@@ -227,10 +238,10 @@ func getAllInternal(ctx context.Context, outputFormat OutputFormat, outputFile s
 						}
 					} else if outputFormat == Json || outputFormat == Csv {
 						csvLines = append(csvLines, wrappedObj)
-					} else if outputFormat == EpccCli {
+					} else if outputFormat == EpccCli || outputFormat == EpccCliRunbook {
 						sb := &strings.Builder{}
 
-						sb.WriteString("epcc create ")
+						sb.WriteString("epcc create -s --skip-alias-processing ")
 						sb.WriteString(resource.SingularName)
 
 						sb.WriteString(" ")
@@ -246,6 +257,10 @@ func getAllInternal(ctx context.Context, outputFormat OutputFormat, outputFile s
 							log.Errorf("Error casting newObj to map[string]interface{}")
 							sb.WriteString("\n")
 							continue
+						}
+
+						if topoSortNeeded {
+							graph.AddNode(myId)
 						}
 
 						for _, resId := range result.id {
@@ -359,6 +374,29 @@ func getAllInternal(ctx context.Context, outputFormat OutputFormat, outputFile s
 										sb.WriteString(`"`)
 									}
 								} else {
+									// TODO handle arrays in output
+									// TODO handle arrays in output
+									// TODO handle arrays in output
+									// TODO handle arrays in output
+									// TODO handle arrays in output
+									// TODO handle arrays in output
+									// TODO handle arrays in output
+									// TODO handle arrays in output
+									// TODO handle arrays in output
+									// TODO handle arrays in output
+									// TODO handle arrays in output
+									// TODO handle arrays in output
+									// TODO handle arrays in output
+									// TODO handle arrays in output
+									// TODO handle arrays in output
+									// TODO handle arrays in output
+									// TODO handle arrays in output
+									// TODO handle arrays in output
+									// TODO handle arrays in output
+									// TODO handle arrays in output
+									// TODO handle arrays in output
+									// TODO handle arrays in output
+									// TODO handle arrays in outputd
 									sb.WriteString(fmt.Sprintf("%v", v))
 								}
 
@@ -369,6 +407,15 @@ func getAllInternal(ctx context.Context, outputFormat OutputFormat, outputFile s
 						if topoSortNeeded {
 							lines[myId] = sb.String()
 						} else {
+							if outputFormat == EpccCliRunbook {
+								// We need to prefix
+								_, err := writer.Write([]byte("  "))
+
+								if err != nil {
+									log.Errorf("Error writing command: %v", err)
+								}
+							}
+
 							_, err = writer.Write([]byte(sb.String()))
 
 							if err != nil {
@@ -405,20 +452,34 @@ func getAllInternal(ctx context.Context, outputFormat OutputFormat, outputFile s
 				log.Errorf("Error writing CSV: %v", err)
 				return
 			}
-		} else if outputFormat == EpccCli && topoSortNeeded {
-			sorted := graph.TopologicalSort()
+		} else if (outputFormat == EpccCli || outputFormat == EpccCliRunbook) && topoSortNeeded {
+			stages, err := graph.ParallelizableStages()
 
 			if err != nil {
 				log.Fatalf("Error sorting data: %v", err)
 			}
 
-			for _, id := range sorted {
-				_, err = writer.Write([]byte(lines[id]))
+			for idx, stage := range stages {
+				writer.Write([]byte(fmt.Sprintf("# Stage %d\n", idx)))
+				if outputFormat == EpccCliRunbook {
+					writer.Write([]byte(fmt.Sprintf("- |\n")))
+				}
 
-				if err != nil {
-					log.Errorf("Error writing command: %v", err)
+				for _, id := range stage {
+					if outputFormat == EpccCliRunbook {
+						writer.Write([]byte(fmt.Sprintf("  ")))
+					}
+
+					_, err = writer.Write([]byte(lines[id]))
+
+					if err != nil {
+						log.Errorf("Error writing command: %v", err)
+					}
 				}
 			}
+
+		} else if outputFormat == EpccCliRunbook && topoSortNeeded {
+
 		}
 
 	}
