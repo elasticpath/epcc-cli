@@ -30,12 +30,12 @@
         "suppress-reset-warning": {
           "type": "boolean"
         },
-        "docs": { "type": "string", "pattern": "^https?://"  },
+        "docs": { "type": "string", "pattern": "^(https?://|n/a$)"  },
         "get-collection": {
           "type": "object",
           "additionalProperties": false,
           "properties" : {
-            "docs": { "type": "string", "pattern": "^https?://"  },
+            "docs": { "type": "string", "pattern": "^(https?://|n/a$)"  },
             "url": { "type": "string" },
             "content-type": { "type": "string" },
             "parent_resource_value_overrides": { "type":  "object" },
@@ -46,7 +46,7 @@
         "get-entity": {
           "type": "object",
           "properties" : {
-            "docs": { "type": "string", "pattern": "^https?://" },
+            "docs": { "type": "string", "pattern": "^(https?://|n/a$)" },
             "url": { "type": "string" },
             "content-type": { "type": "string" },
             "parent_resource_value_overrides": { "type":  "object" },
@@ -57,7 +57,7 @@
         "update-entity": {
           "type": "object",
           "properties" : {
-            "docs": { "type": "string", "pattern": "^https?://"  },
+            "docs": { "type": "string", "pattern": "^(https?://|n/a$)"  },
             "url": { "type": "string" },
             "content-type": { "type": "string" },
             "parent_resource_value_overrides": { "type":  "object" }
@@ -67,7 +67,7 @@
         "create-entity": {
           "type": "object",
           "properties" : {
-            "docs": { "type": "string", "pattern": "^https?://"  },
+            "docs": { "type": "string", "pattern": "^(https?://|n/a$)"  },
             "url": { "type": "string" },
             "content-type": { "type": "string" },
             "parent_resource_value_overrides": { "type":  "object" }
@@ -77,7 +77,7 @@
         "delete-entity": {
           "type": "object",
           "properties" : {
-            "docs": { "type": "string",  "pattern": "^https?://"  },
+            "docs": { "type": "string",  "pattern": "^(https?://|n/a$)"  },
             "url": { "type": "string" },
             "min": { "type": "integer" }
           },

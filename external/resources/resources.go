@@ -228,12 +228,12 @@ func createFlowEntityRelationships() {
 		}
 		newResource := Resource{
 			Type:              key + "-entity-relationships",
-			Docs:              "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/entry-relationships/index.html",
+			Docs:              "https://elasticpath.dev/docs/api/flows/entry-relationships",
 			JsonApiType:       key + "-entity-relationships",
 			JsonApiFormat:     "legacy",
 			GetCollectionInfo: nil,
 			GetEntityInfo: &CrudEntityInfo{
-				Docs:            "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/entry-relationships/index.html",
+				Docs:            "https://elasticpath.dev/docs/api/flows/entry-relationships",
 				Url:             val.GetEntityInfo.Url + "/relationships/{fields}",
 				ContentType:     "",
 				QueryParameters: "",
@@ -243,7 +243,7 @@ func createFlowEntityRelationships() {
 				},
 			},
 			CreateEntityInfo: &CrudEntityInfo{
-				Docs:            "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/entry-relationships/create-an-entry-relationship.html",
+				Docs:            "https://elasticpath.dev/docs/api/flows/entry-relationships",
 				Url:             val.GetEntityInfo.Url + "/relationships/{fields}",
 				ContentType:     "",
 				QueryParameters: "",
@@ -253,7 +253,7 @@ func createFlowEntityRelationships() {
 				},
 			},
 			UpdateEntityInfo: &CrudEntityInfo{
-				Docs:            "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/entry-relationships/update-entry-relationships.html",
+				Docs:            "https://elasticpath.dev/docs/api/flows/entry-relationships",
 				Url:             val.GetEntityInfo.Url + "/relationships/{fields}",
 				ContentType:     "",
 				QueryParameters: "",
@@ -263,7 +263,7 @@ func createFlowEntityRelationships() {
 				},
 			},
 			DeleteEntityInfo: &CrudEntityInfo{
-				Docs:            "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/entry-relationships/delete-entry-relationships.html",
+				Docs:            "https://elasticpath.dev/docs/api/flows/delete-an-entry-relationship",
 				Url:             val.GetEntityInfo.Url + "/relationships/{fields}",
 				ContentType:     "",
 				QueryParameters: "",

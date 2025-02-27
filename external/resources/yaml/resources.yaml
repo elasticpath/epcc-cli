@@ -2,15 +2,15 @@ account-authentication-settings:
   singular-name: "account-authentication-setting"
   json-api-type: "account_authentication_settings"
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/settings/account-authentication-settings/index.html"
+  docs: "https://elasticpath.dev/docs/api/accounts/account-authentication-settings"
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/settings/account-authentication-settings/get-account-authentication-settings.html"
+    docs: "https://elasticpath.dev/docs/api/accounts/get-v-2-settings-account-authentication"
     url: "/v2/settings/account-authentication"
   get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/settings/account-authentication-settings/get-account-authentication-settings.html"
+    docs: "https://elasticpath.dev/docs/api/accounts/get-v-2-settings-account-authentication"
     url: "/v2/settings/account-authentication"
   update-entity:
-    docs: "https://elasticpath.dev/docs/commerce-cloud/authentication/single-sign-on/account-authentication-settings/update-account-authentication-settings"
+    docs: "https://elasticpath.dev/docs/api/accounts/put-v-2-settings-account-authentication"
     url: "/v2/settings/account-authentication"
   attributes:
     enable_self_signup:
@@ -23,9 +23,9 @@ account-management-authentication-tokens:
   singular-name: "account-management-authentication-token"
   json-api-type: "account_management_authentication_token"
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/account-management/account-members/account-member-authentication.html"
+  docs: "https://elasticpath.dev/docs/api/accounts/account-management-authentication"
   create-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/account-management/account-members/account-member-authentication.html"
+    docs: "https://elasticpath.dev/docs/api/accounts/post-v-2-account-members-tokens"
     url: "/v2/account-members/tokens"
     content-type: application/json
   attributes:
@@ -54,14 +54,14 @@ account-members:
   singular-name: "account-member"
   json-api-type: "account_member"
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/account-management/account-members/index.html"
+  docs: "https://elasticpath.dev/docs/api/accounts/account-members"
   alternate-json-type-for-aliases:
     - user_authentication_info
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/account-management/account-members/get-all-account-members.html"
+    docs: "https://elasticpath.dev/docs/api/accounts/account-members"
     url: "/v2/account-members"
   get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/account-management/account-members/get-an-account-member.html"
+    docs: "https://elasticpath.dev/docs/api/accounts/account-members"
     url: "/v2/account-members/{account_members}"
   attributes:
     name:
@@ -72,18 +72,18 @@ account-memberships:
   singular-name: "account-membership"
   json-api-type: "account_membership"
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/account-management/account-memberships/index.html"
+  docs: "https://elasticpath.dev/docs/api/accounts/account-membership"
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/account-management/account-memberships/get-all-account-memberships.html"
+    docs: "https://elasticpath.dev/docs/api/accounts/account-membership"
     url: "/v2/accounts/{accounts}/account-memberships"
   get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/account-management/account-memberships/get-an-account-membership.html"
+    docs: "https://elasticpath.dev/docs/api/accounts/account-membership"
     url: "/v2/accounts/{accounts}/account-memberships/{account_memberships}"
   delete-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/account-management/account-memberships/delete-an-account-membership.html"
+    docs: "https://elasticpath.dev/docs/api/accounts/delete-v-2-accounts-account-id-account-memberships-membership-id"
     url: "/v2/accounts/{accounts}/account-memberships/{account_memberships}"
   create-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/account-management/account-memberships/create-an-account-membership.html"
+    docs: "https://elasticpath.dev/docs/api/accounts/account-membership"
     url: "/v2/accounts/{accounts}/account-memberships"
     content-type: application/json
   attributes:
@@ -93,30 +93,30 @@ unassigned-account-memberships:
   singular-name: "unassigned-account-membership"
   json-api-type: "account_member"
   json-api-format: "legacy"
-  docs: "https://elasticpath.dev/docs/accounts/using-account-membership-api/get-all-unassigned-account-members"
+  docs: "https://elasticpath.dev/docs/api/accounts/get-v-2-accounts-account-id-account-memberships-unassigned-account-members"
   get-collection:
-    docs: "https://elasticpath.dev/docs/accounts/using-account-membership-api/get-all-unassigned-account-members"
+    docs: "https://elasticpath.dev/docs/api/accounts/get-v-2-accounts-account-id-account-memberships-unassigned-account-members"
     url: "/v2/accounts/{accounts}/account-memberships/unassigned-account-members/"
 accounts:
   singular-name: "account"
   json-api-type: "account"
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/account-management/accounts/index.html"
+  docs: "https://elasticpath.dev/docs/api/accounts"
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/account-management/accounts/get-all-accounts.html"
+    docs: "https://elasticpath.dev/docs/api/accounts/get-v-2-accounts-account-id"
     url: "/v2/accounts"
   get-entity:
     #TODO this link is wrong, but the actual page doesn't exist.
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/account-management/accounts/index.html"
+    docs: "https://elasticpath.dev/docs/api/accounts"
     url: "/v2/accounts/{accounts}"
   update-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/account-management/accounts/update-an-account.html"
+    docs: "https://elasticpath.dev/docs/api/accounts/put-v-2-accounts-account-id"
     url: "/v2/accounts/{accounts}"
   delete-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/account-management/accounts/delete-an-account.html"
+    docs: "https://elasticpath.dev/docs/api/accounts/delete-v-2-accounts-account-id"
     url: "/v2/accounts/{accounts}"
   create-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/account-management/accounts/create-an-account.html"
+    docs: "https://elasticpath.dev/docs/api/accounts/post-v-2-accounts"
     url: "/v2/accounts"
     content-type: application/json
   attributes:
@@ -134,21 +134,21 @@ account-addresses:
   singular-name: "account-address"
   json-api-type: "address"
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/addresses/index.html"
+  docs: "https://elasticpath.dev/docs/api/addresses/account-addresses"
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/addresses/get-all-addresses.html#get-get-all-of-a-customers-or-account-addresses"
+    docs: "https://elasticpath.dev/docs/api/addresses/get-v-2-account-addresses"
     url: "/v2/accounts/{accounts}/addresses"
   get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/addresses/get-an-address.html"
+    docs: "https://elasticpath.dev/docs/api/addresses/get-v-2-account-address"
     url: "/v2/accounts/{accounts}/addresses/{account_addresses}"
   update-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/addresses/update-an-address.html"
+    docs: "https://elasticpath.dev/docs/api/addresses/put-v-2-account-address"
     url: "/v2/accounts/{accounts}/addresses/{account_addresses}"
   delete-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/addresses/delete-an-address.html"
+    docs: "https://elasticpath.dev/docs/api/addresses/delete-v-2-account-address"
     url: "/v2/accounts/{accounts}/addresses/{account_addresses}"
   create-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/addresses/create-an-address.html"
+    docs: "https://elasticpath.dev/docs/api/addresses/post-v-2-account-address"
     url: "/v2/accounts/{accounts}/addresses"
     content-type: application/json
   attributes:
@@ -194,12 +194,12 @@ account-cart-associations:
   json-api-type: account-cart-relationship
   json-api-format: "legacy"
   no-wrapping: true
-  docs: "https://elasticpath.dev/docs/commerce-cloud/carts/account-cart-associations/account-cart-associations-overview"
+  docs: "https://elasticpath.dev/docs/api/carts/account-cart-associations"
   delete-entity:
-    docs: "https://elasticpath.dev/docs/commerce-cloud/carts/account-cart-associations/delete-an-association"
+    docs: "https://elasticpath.dev/docs/api/carts/delete-customer-cart-association"
     url: "/v2/carts/{carts}/relationships/accounts"
   create-entity:
-    docs: "https://elasticpath.dev/docs/commerce-cloud/carts/account-cart-associations/create-an-association"
+    docs: "https://elasticpath.dev/docs/api/carts/account-cart-associations"
     url: "/v2/carts/{carts}/relationships/accounts"
     content-type: application/json
   attributes:
@@ -212,15 +212,15 @@ application-keys:
   singular-name: "application-key"
   json-api-type: "application_key"
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/basics/authentication/application-keys/index.html"
+  docs: "https://elasticpath.dev/docs/api/application-keys/application-keys"
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/basics/authentication/application-keys/get-all-application-keys.html"
+    docs: "https://elasticpath.dev/docs/api/application-keys/get-all-keys"
     url: "/v2/application-keys"
   create-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/basics/authentication/application-keys/create-an-application-key.html"
+    docs: "https://elasticpath.dev/docs/api/application-keys/create-key"
     url: "/v2/application-keys"
   delete-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/basics/authentication/application-keys/delete-an-application-key.html"
+    docs: "https://elasticpath.dev/docs/api/application-keys/delete-key"
     url: "/v2/application-keys/{application_keys}"
   attributes:
     name:
@@ -231,15 +231,15 @@ authentication-realms:
   alternate-json-type-for-aliases:
     - authentication_realm
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/authentication-realms/index.html"
+  docs: "https://elasticpath.dev/docs/authentication/single-sign-on/authentication-realm-api/authentication-realm-api-overview"
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/authentication-realms/get-all-authentication-realms.html"
+    docs: "https://elasticpath.dev/docs/authentication/single-sign-on/authentication-realm-api/get-all-authentication-realms"
     url: "/v2/authentication-realms"
   get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/authentication-realms/get-an-authentication-realm.html"
+    docs: "https://elasticpath.dev/docs/authentication/single-sign-on/authentication-realm-api/get-an-authentication-realm"
     url: "/v2/authentication-realms/{authentication_realms}"
   update-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/authentication-realms/update-an-authentication-realm.html"
+    docs: "https://elasticpath.dev/docs/authentication/single-sign-on/authentication-realm-api/update-an-authentication-realm"
     url: "/v2/authentication-realms/{authentication_realms}"
   attributes:
     name:
@@ -252,22 +252,22 @@ carts:
   singular-name: "cart"
   json-api-type: "cart"
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/carts-and-orders/carts/index.html"
+  docs: "https://elasticpath.dev/docs/api/carts/cart-management"
   get-collection:
-    docs: "https://elasticpath.dev/docs/commerce-cloud/carts/customer-cart-associations/get-customer-carts#get-get-all-carts"
+    docs: "https://elasticpath.dev/docs/api/carts/get-carts"
     url: "/v2/carts"
   get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/carts-and-orders/carts/get-a-cart.html"
+    docs: "https://elasticpath.dev/docs/api/carts/get-a-cart"
     url: "/v2/carts/{carts}"
     query: "include"
   update-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/carts-and-orders/carts/create-multi-cart.html#put-update-a-cart"
+    docs: "https://elasticpath.dev/docs/api/carts/create-a-cart#put-update-a-cart"
     url: "/v2/carts/{carts}"
   delete-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/carts-and-orders/carts/delete-a-cart.html"
+    docs: "https://elasticpath.dev/docs/api/carts/delete-a-cart"
     url: "/v2/carts/{carts}"
   create-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/carts-and-orders/carts/create-multi-cart.html"
+    docs: "https://elasticpath.dev/docs/api/carts/create-a-cart"
     url: "/v2/carts"
     content-type: application/json
   attributes:
@@ -282,15 +282,15 @@ cart-items:
   singular-name: "cart-item"
   json-api-type: "cart_items"
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/carts-and-orders/carts/cart-items/index.html"
+  docs: "https://elasticpath.dev/docs/api/carts/cart-items"
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/carts-and-orders/carts/cart-items/get-cart-items.html"
+    docs: "https://elasticpath.dev/docs/api/carts/get-cart-items"
     url: "/v2/carts/{carts}/items"
   update-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/carts-and-orders/carts/cart-items/update-cart-item.html"
+    docs: "https://elasticpath.dev/docs/carts-orders/bulk-add-to-cart"
     url: "/v2/carts/{carts}/items/{cart_items}"
   delete-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/carts-and-orders/carts/cart-items/remove-cart-item.html"
+    docs: "https://elasticpath.dev/docs/api/carts/delete-a-cart-item"
     url: "/v2/carts/{carts}/items/{cart_items}"
   attributes:
     sku:
@@ -303,9 +303,9 @@ cart-product-items:
   singular-name: "cart-product-item"
   json-api-type: "cart_item"
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/carts-and-orders/carts/cart-items/index.html"
+  docs: "https://elasticpath.dev/docs/api/carts/cart-items"
   create-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/carts-and-orders/carts/add-product-to-cart.html"
+    docs: "https://elasticpath.dev/docs/api/carts/manage-carts"
     url: "/v2/carts/{carts}/items"
     content-type: application/json
   attributes:
@@ -335,9 +335,9 @@ cart-custom-items:
   singular-name: "cart-custom-item"
   json-api-type: "custom_item"
   json-api-format: "legacy"
-  docs: "https://elasticpath.dev/docs/carts/cart-items/add-custom-item-to-cart"
+  docs: "https://elasticpath.dev/docs/api/carts/manage-carts#add-custom-item-to-cart"
   create-entity:
-    docs: "https://elasticpath.dev/docs/carts/cart-items/add-custom-item-to-cart"
+    docs: "https://elasticpath.dev/docs/api/carts/manage-carts#add-custom-item-to-cart"
     url: "/v2/carts/{carts}/items"
     content-type: application/json
   attributes:
@@ -372,9 +372,9 @@ cart-checkout:
   singular-name: "cart-checkout"
   json-api-type: "checkout"
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/carts-and-orders/checkout.html#post-with-customer-object"
+  docs: "https://elasticpath.dev/docs/api/carts/checkout"
   create-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/carts-and-orders/checkout.html#post-with-customer-object"
+    docs: "https://elasticpath.dev/docs/api/carts/checkout"
     url: "/v2/carts/{carts}/checkout"
     content-type: application/json
   attributes:
@@ -454,22 +454,22 @@ currencies:
   singular-name: "currency"
   json-api-type: "currency"
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/currencies/index.html"
+  docs: "https://elasticpath.dev/docs/api/pxm/currencies/currencies-introduction"
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/currencies/get-all-currencies.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/currencies/get-all-currencies"
     url: "/v2/currencies"
   get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/currencies/get-a-currency.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/currencies/get-a-currency"
     url: "/v2/currencies/{currencies}"
   update-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/currencies/update-a-currency.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/currencies/update-a-currency"
     url: "/v2/currencies/{currencies}"
   delete-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/currencies/delete-a-currency.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/currencies/delete-a-currency"
     url: "/v2/currencies/{currencies}"
     min: 1
   create-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/currencies/create-a-currency.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/currencies/create-a-currency"
     url: "/v2/currencies"
     content-type: application/json
   attributes:
@@ -493,32 +493,32 @@ customer-authentication-settings:
   singular-name: "customer-authentication-setting"
   json-api-type: "customer-authentication-settings"
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/settings/customer-authentication-settings/index.html"
+  docs: "https://elasticpath.dev/docs/authentication/single-sign-on/customer-authentication-settings/overview"
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/settings/customer-authentication-settings/get-customer-authentication-settings.html"
+    docs: "https://elasticpath.dev/docs/authentication/single-sign-on/customer-authentication-settings/get-customer-authentication-settings"
     url: "/v2/settings/customer-authentication"
   get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/settings/customer-authentication-settings/get-customer-authentication-settings.html"
+    docs: "https://elasticpath.dev/docs/authentication/single-sign-on/customer-authentication-settings/get-customer-authentication-settings"
     url: "/v2/settings/customer-authentication/{customer_authentication_settings}"
 customers:
   singular-name: "customer"
   json-api-type: "customer"
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/customers/index.html"
+  docs: "https://elasticpath.dev/docs/customer-management/customer-management-api/customer-management-api-overview"
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/customers/get-all-customers.html"
+    docs: "https://elasticpath.dev/docs/customer-management/customer-management-api/get-all-customers"
     url: "/v2/customers"
   get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/customers/get-a-customer.html"
+    docs: "https://elasticpath.dev/docs/customer-management/customer-management-api/get-a-customer"
     url: "/v2/customers/{customers}"
   update-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/customers/update-a-customer.html"
+    docs: "https://elasticpath.dev/docs/customer-management/customer-management-api/update-a-customer"
     url: "/v2/customers/{customers}"
   delete-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/customers/delete-a-customer.html"
+    docs: "https://elasticpath.dev/docs/customer-management/customer-management-api/delete-a-customer"
     url: "/v2/customers/{customers}"
   create-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/customers/create-a-customer.html"
+    docs: "https://elasticpath.dev/docs/customer-management/customer-management-api/create-a-customer"
     url: "/v2/customers"
     content-type: application/json
   attributes:
@@ -535,12 +535,12 @@ customer-cart-associations:
   json-api-type: customer-cart-relationship
   json-api-format: "legacy"
   no-wrapping: true
-  docs: "https://elasticpath.dev/docs/commerce-cloud/carts/customer-cart-associations/customer-cart-associations-overview"
+  docs: "https://elasticpath.dev/docs/api/carts/customer-cart-associations"
   delete-entity:
-    docs: "https://elasticpath.dev/docs/commerce-cloud/carts/customer-cart-associations/delete-an-association"
+    docs: "https://elasticpath.dev/docs/api/carts/delete-customer-cart-association"
     url: "/v2/carts/{carts}/relationships/customers"
   create-entity:
-    docs: "https://elasticpath.dev/docs/commerce-cloud/carts/customer-cart-associations/create-an-association"
+    docs: "https://elasticpath.dev/docs/api/carts/create-customer-cart-association"
     url: "/v2/carts/{carts}/relationships/customers"
     content-type: application/json
   attributes:
@@ -553,21 +553,21 @@ customer-addresses:
   singular-name: "customer-address"
   json-api-type: "address"
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/addresses/index.html"
+  docs: "https://elasticpath.dev/docs/api/customer-addresses/customer-addresses"
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/addresses/get-all-addresses.html#get-get-all-of-a-customers-or-account-addresses"
+    docs: "https://elasticpath.dev/docs/api/customer-addresses/get-v-2-customer-addresses"
     url: "/v2/customers/{customers}/addresses"
   get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/addresses/get-an-address.html"
+    docs: "https://elasticpath.dev/docs/api/customer-addresses/get-v-2-customer-address"
     url: "/v2/customers/{customers}/addresses/{customer_addresses}"
   update-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/addresses/update-an-address.html"
+    docs: "https://elasticpath.dev/docs/api/customer-addresses/put-v-2-customer-address"
     url: "/v2/customers/{customers}/addresses/{customer_addresses}"
   delete-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/addresses/delete-an-address.html"
+    docs: "https://elasticpath.dev/docs/api/customer-addresses/delete-v-2-customer-address"
     url: "/v2/customers/{customers}/addresses/{customer_addresses}"
   create-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/addresses/create-an-address.html"
+    docs: "https://elasticpath.dev/docs/api/customer-addresses/post-v-2-customer-address"
     url: "/v2/customers/{customers}/addresses"
     content-type: application/json
   attributes:
@@ -612,9 +612,9 @@ customer-tokens:
   singular-name: "customer-token"
   json-api-type: "token"
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/customers/customer-tokens.html"
+  docs: "https://elasticpath.dev/docs/customer-management/customer-management-api/customer-tokens"
   create-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/customers/customer-tokens.html#post-generate-a-token"
+    docs: "https://elasticpath.dev/docs/customer-management/customer-management-api/customer-tokens"
     url: "/v2/customers/tokens"
   attributes:
     password:
@@ -634,18 +634,18 @@ files:
   singular-name: "file"
   json-api-type: "file"
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/files/index.html"
+  docs: "https://elasticpath.dev/docs/commerce-manager/product-experience-manager/product-assets/files"
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/files/get-all-files.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/files/get-a-file"
     url: "/v2/files"
   get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/files/get-a-file.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/files/get-a-file"
     url: "/v2/files/{files}"
   delete-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/files/delete-a-file.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/files/delete-a-file"
     url: "/v2/files/{files}"
   create-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/files/create-a-file.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/files/files"
     url: "/v2/files"
     content-type: "multipart/form-data"
   attributes:
@@ -659,21 +659,21 @@ flows:
   singular-name: "flow"
   json-api-type: "flow"
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/flows/index.html"
+  docs: "https://elasticpath.dev/docs/api/flows/get-all-flows"
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/flows/get-a-flow.html"
+    docs: "https://elasticpath.dev/docs/api/flows/get-all-flows"
     url: "/v2/flows"
   get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/flows/get-a-flow.html"
+    docs: "https://elasticpath.dev/docs/api/flows/get-all-flows"
     url: "/v2/flows/{flows}"
   update-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/flows/update-a-flow.html"
+    docs: "https://elasticpath.dev/docs/api/flows/update-a-flow"
     url: "/v2/flows/{flows}"
   delete-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/flows/delete-a-flow.html"
+    docs: "https://elasticpath.dev/docs/api/flows/delete-a-flow"
     url: "/v2/flows/{flows}"
   create-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/flows/create-a-flow.html"
+    docs: "https://elasticpath.dev/docs/api/flows/create-a-flow"
     url: "/v2/flows"
     content-type: application/json
   attributes:
@@ -692,21 +692,21 @@ fields:
   singular-name: "field"
   json-api-type: "field"
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/fields/index.html"
+  docs: "https://elasticpath.dev/docs/api/flows/create-a-field"
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/fields/get-all-fields.html"
+    docs: "https://elasticpath.dev/docs/api/flows/get-a-field"
     url: "/v2/fields"
   get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/fields/get-a-field.html"
+    docs: "https://elasticpath.dev/docs/api/flows/get-a-field"
     url: "/v2/fields/{fields}"
   update-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/fields/update-a-field.html"
+    docs: "https://elasticpath.dev/docs/api/flows/get-a-field"
     url: "/v2/fields/{fields}"
   delete-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/fields/delete-a-field.html"
+    docs: "https://elasticpath.dev/docs/api/flows/delete-a-field"
     url: "/v2/fields/{fields}"
   create-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/fields/create-a-field.html"
+    docs: "https://elasticpath.dev/docs/api/flows/create-a-field"
     url: "/v2/fields"
     content-type: application/json
   attributes:
@@ -753,9 +753,9 @@ flow-fields:
   singular-name: "flow-field"
   json-api-type: "field"
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/fields/get-all-fields.html#get-get-all-fields-by-flow"
+  docs: "https://elasticpath.dev/docs/api/flows/get-a-field#get-get-all-fields-by-flow"
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/fields/get-all-fields.html"
+    docs: "https://elasticpath.dev/docs/api/flows/get-a-field"
     url: "/v2/flows/{flows}/fields"
     parent_resource_value_overrides:
       flows: slug
@@ -763,29 +763,29 @@ entries:
   singular-name: entry
   json-api-type: entry
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/entries/index.html"
+  docs: "https://elasticpath.dev/docs/api/flows/entries"
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/entries/get-all-entries.html"
+    docs: "https://elasticpath.dev/docs/api/flows/get-an-entry"
     url: "/v2/flows/{flows}/entries"
     parent_resource_value_overrides:
       flows: slug
   get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/entries/get-an-entry.html"
+    docs: "https://elasticpath.dev/docs/api/flows/get-an-entry"
     url: "/v2/flows/{flows}/entries/{entries}"
     parent_resource_value_overrides:
       flows: slug
   update-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/entries/update-an-entry.html"
+    docs: "https://elasticpath.dev/docs/api/flows/entries"
     url: "/v2/flows/{flows}/entries/{entries}"
     parent_resource_value_overrides:
       flows: slug
   create-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/entries/create-an-entry.html"
+    docs: "https://elasticpath.dev/docs/api/flows/entries"
     url: "/v2/flows/{flows}/entries"
     parent_resource_value_overrides:
       flows: slug
   delete-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/entries/delete-an-entry.html"
+    docs: "https://elasticpath.dev/docs/api/flows/entries"
     url: "/v2/flows/{flows}/entries/{entries}"
     parent_resource_value_overrides:
       flows: slug
@@ -794,29 +794,29 @@ pcm-entries:
   singular-name: pcm-entry
   json-api-type: entry
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/entries/index.html"
+  docs: "https://elasticpath.dev/docs/api/flows/entries"
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/entries/get-all-entries.html"
+    docs: "https://elasticpath.dev/docs/api/flows/get-an-entry"
     url: "/v2/flows/{flows}/entries"
     parent_resource_value_overrides:
       flows: slug
   get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/entries/get-an-entry.html"
+    docs: "https://elasticpath.dev/docs/api/flows/get-an-entry"
     url: "/v2/flows/{flows}/entries/{entries}"
     parent_resource_value_overrides:
       flows: slug
   update-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/entries/update-an-entry.html"
+    docs: "https://elasticpath.dev/docs/api/flows/entries"
     url: "/v2/flows/{flows}/entries/{entries}"
     parent_resource_value_overrides:
       flows: slug
   create-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/entries/create-an-entry.html"
+    docs: "https://elasticpath.dev/docs/api/flows/entries"
     url: "/v2/flows/{flows}/entries"
     parent_resource_value_overrides:
       flows: slug
   delete-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/entries/delete-an-entry.html"
+    docs: "https://elasticpath.dev/docs/api/flows/entries"
     url: "/v2/flows/{flows}/entries/{entries}"
     parent_resource_value_overrides:
       flows: slug
@@ -828,21 +828,21 @@ entries-relationship:
   json-api-type: entry-relationship
   json-api-format: "legacy"
   no-wrapping: true
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/entry-relationships/index.html"
+  docs: "https://elasticpath.dev/docs/api/flows/entry-relationships"
   update-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/entry-relationships/update-entry-relationships.html"
+    docs: "https://elasticpath.dev/docs/api/flows/entry-relationships"
     url: "/v2/flows/{flows}/entries/{entries}/relationships/{fields}"
     parent_resource_value_overrides:
       flows: slug
       fields: slug
   create-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/entry-relationships/create-an-entry-relationship.html"
+    docs: "https://elasticpath.dev/docs/api/flows/entry-relationships"
     url: "/v2/flows/{flows}/entries/{entries}/relationships/{fields}"
     parent_resource_value_overrides:
       flows: slug
       fields: slug
   delete-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/custom-data/entry-relationships/delete-entry-relationships.html"
+    docs: "https://elasticpath.dev/docs/api/flows/delete-an-entry-relationship"
     url: "/v2/flows/{flows}/entries/{entries}/relationships/{fields}"
     parent_resource_value_overrides:
       flows: slug
@@ -860,48 +860,48 @@ integration-jobs:
   singular-name: "integration-job"
   json-api-type: "integration-job"
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/integrations/get-integration-logs.html#get-get-jobs-for-an-integration"
+  docs: "https://elasticpath.dev/docs/api/integrations/list-integration-logs"
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/integrations/get-integration-logs.html#get-get-jobs-for-an-integration"
+    docs: "https://elasticpath.dev/docs/api/integrations/list-integration-logs"
     url: "/v2/integrations/{integrations}/jobs"
 integration-job-log:
   singular-name: "integration-job-log"
   json-api-type: "integration-job"
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/integrations/get-integration-logs.html#get-get-all-logs-for-a-job"
+  docs: "https://elasticpath.dev/docs/api/integrations/list-job-logs"
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/integrations/get-integration-logs.html#get-get-all-logs-for-a-job"
+    docs: "https://elasticpath.dev/docs/api/integrations/list-job-logs"
     url: "/v2/integrations/{integrations}/jobs/{integration_jobs}/logs"
 integration-logs:
   singular-name: "integration-log"
   json-api-type: "integration-log"
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/integrations/get-integration-logs.html"
+  docs: "https://elasticpath.dev/docs/api/integrations/list-integration-logs"
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/integrations/get-integration-logs.html#get-get-all-logs"
+    docs: "https://elasticpath.dev/docs/api/integrations/list-integration-logs"
     url: "/v2/integrations/logs"
   get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/integrations/get-integration-logs.html#get-get-logs-for-an-integration"
+    docs: "https://elasticpath.dev/docs/api/integrations/list-integration-logs"
     url: "/v2/integrations/{integrations}/logs"
 integrations:
   singular-name: "integration"
   json-api-type: "integration"
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/integrations/index.html"
+  docs: "https://elasticpath.dev/docs/api/integrations/integrations-introduction"
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/integrations/get-all-integrations.html"
+    docs: "https://elasticpath.dev/docs/api/integrations/get-integration"
     url: "/v2/integrations"
   get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/integrations/get-an-integration.html"
+    docs: "https://elasticpath.dev/docs/api/integrations/get-integration"
     url: "/v2/integrations/{integrations}"
   update-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/integrations/update-an-integration.html"
+    docs: "https://elasticpath.dev/docs/api/integrations/update-integration"
     url: "/v2/integrations/{integrations}"
   delete-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/integrations/delete-an-integration.html"
+    docs: "https://elasticpath.dev/docs/api/integrations/delete-integration"
     url: "/v2/integrations/{integrations}"
   create-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/integrations/create-an-integration.html"
+    docs: "https://elasticpath.dev/docs/api/integrations/get-integration"
     url: "/v2/integrations"
     content-type: application/json
   attributes:
@@ -951,15 +951,15 @@ inventory-transactions:
   singular-name: "inventory-transaction"
   json-api-type: "stock-transaction"
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/inventory/get-a-product-stock-transactions.html"
+  docs: "https://elasticpath.dev/docs/api/pxm/inventory/transactions"
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/inventory/get-a-product-stock-transactions.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/inventory/get-stock-transactions"
     url: "/v2/inventories/{pcm_products}/transactions"
   get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/inventory/get-a-product-stock-transaction.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/inventory/get-single-stock-transaction"
     url: "/v2/inventories/{pcm_products}/transactions/{inventory_transactions}"
   create-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/inventory/update-inventory.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/inventory/update-product-stock"
     url: "/v2/inventories/{pcm_products}/transactions"
   attributes:
     action:
@@ -970,46 +970,46 @@ catalog-products:
   singular-name: "catalog-product"
   json-api-type: "product"
   json-api-format: "compliant"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/index.html"
+  docs: "https://elasticpath.dev/docs/api/pxm/catalog/shopper-catalog-api"
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/catalogs/releases/products/get-all-products.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/catalog/get-by-context-all-products"
     url: "/catalog/products"
   get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/get-a-product.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/catalog/get-by-context-product"
     url: "/catalog/products/{catalog_products}"
 merchant-realm-mappings:
   singular-name: "merchant-realm-mapping"
   json-api-type: "merchant-realm-mappings"
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/settings/merchant-realm-mappings/index.html"
+  docs: "https://elasticpath.dev/docs/api/merchant-realm-mappings/merchant-realm-mappings-introduction"
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/settings/merchant-realm-mappings/get-merchant-realm-mapping.html"
+    docs: "https://elasticpath.dev/docs/api/merchant-realm-mappings/get-merchant-realm-mappings"
     url: "/v2/merchant-realm-mappings"
   get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/settings/merchant-realm-mappings/get-merchant-realm-mapping.html"
+    docs: "https://elasticpath.dev/docs/api/merchant-realm-mappings/get-merchant-realm-mapping"
     url: "/v2/merchant-realm-mappings"
   update-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/settings/merchant-realm-mappings/update-merchant-realm-mapping.html"
+    docs: "https://elasticpath.dev/docs/api/merchant-realm-mappings/update-merchant-realm-mapping"
     url: "/v2/merchant-realm-mappings/{merchant_realm_mappings}"
 oidc-profiles:
   singular-name: "oidc-profile"
   json-api-type: "oidc-profile"
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/oidc-profiles/index.html"
+  docs: "https://elasticpath.dev/docs/authentication/single-sign-on/openid-connect-profiles-api/openid-connect-profiles-api-overview"
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/oidc-profiles/get-all-oidc-profiles.html"
+    docs: "https://elasticpath.dev/docs/authentication/single-sign-on/openid-connect-profiles-api/get-all-oidc-profiles"
     url: "/v2/authentication-realms/{authentication_realms}/oidc-profiles"
   get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/oidc-profiles/get-an-oidc-profile.html"
+    docs: "https://elasticpath.dev/docs/authentication/single-sign-on/openid-connect-profiles-api/get-an-oidc-profile"
     url: "/v2/authentication-realms/{authentication_realms}/oidc-profiles/{oidc_profiles}"
   update-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/oidc-profiles/update-an-oidc-profile.html"
+    docs: "https://elasticpath.dev/docs/authentication/single-sign-on/openid-connect-profiles-api/update-an-oidc-profile"
     url: "/v2/authentication-realms/{authentication_realms}/oidc-profiles/{oidc_profiles}"
   delete-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/oidc-profiles/delete-an-oidc-profile.html"
+    docs: "https://elasticpath.dev/docs/authentication/single-sign-on/openid-connect-profiles-api/delete-an-oidc-profile"
     url: "/v2/authentication-realms/{authentication_realms}/oidc-profiles/{oidc_profiles}"
   create-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/oidc-profiles/create-an-oidc-profile.html"
+    docs: "https://elasticpath.dev/docs/authentication/single-sign-on/openid-connect-profiles-api/create-an-oidc-profile"
     url: "/v2/authentication-realms/{authentication_realms}/oidc-profiles"
     content-type: application/json
   attributes:
@@ -1025,12 +1025,12 @@ log-ttl-settings:
   singular-name: "log-ttl-setting"
   json-api-type: "time_to_live"
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/settings/logs-ttl-settings/index.html"
+  docs: "https://elasticpath.dev/docs/api/personal-data/logs-time-to-live-settings"
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/settings/logs-ttl-settings/get-logs-ttl-settings.html"
+    docs: "https://elasticpath.dev/docs/api/personal-data/get-logs-ttl"
     url: "/v2/settings/logs-ttl/"
   update-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/settings/logs-ttl-settings/update-logs-ttl-settings.html"
+    docs: "https://elasticpath.dev/docs/api/personal-data/put-logs-ttl"
     url: "/v2/settings/logs-ttl/"
   attributes:
     days:
@@ -1039,15 +1039,15 @@ orders:
   singular-name: "order"
   json-api-type: "order"
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/carts-and-orders/orders/index.html"
+  docs: "https://elasticpath.dev/docs/api/carts/orders"
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/carts-and-orders/orders/get-all-orders.html"
+    docs: "https://elasticpath.dev/docs/api/carts/get-customer-orders"
     url: "/v2/orders"
   get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/carts-and-orders/orders/get-an-order.html"
+    docs: "https://elasticpath.dev/docs/api/carts/update-an-order"
     url: "/v2/orders/{orders}"
   update-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/carts-and-orders/orders/update-an-order.html"
+    docs: "https://elasticpath.dev/docs/api/carts/orders"
     url: "/v2/orders/{orders}"
     content-type: application/json
   attributes:
@@ -1075,9 +1075,9 @@ order-items:
   singular-name: "order-item"
   json-api-type: "order_item"
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/carts-and-orders/orders/order-items.html"
+  docs: "https://elasticpath.dev/docs/api/carts/get-order-items"
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/carts-and-orders/orders/order-items.html#get-get-order-items"
+    docs: "https://elasticpath.dev/docs/api/carts/get-order-items#get-get-order-items"
     url: "/v2/orders/{orders}/items"
 order-payments:
   singular-name: "order-payment"
@@ -1085,9 +1085,9 @@ order-payments:
   json-api-format: legacy
   # TODO change this to not send a type
   #no-wrapping: true
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/paying-for-an-order/index.html"
+  docs: "https://elasticpath.dev/docs/api/carts/payments"
   create-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/paying-for-an-order/index.html"
+    docs: "https://elasticpath.dev/docs/api/carts/payments"
     url: "/v2/orders/{orders}/payments"
   attributes:
     payment:
@@ -1132,51 +1132,51 @@ order-transactions:
   singular-name: "order-transaction"
   json-api-type: "transaction"
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/transactions/index.html"
+  docs: "https://elasticpath.dev/docs/api/carts/transactions"
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/transactions/get-all-transactions.html"
+    docs: "https://elasticpath.dev/docs/api/carts/transactions"
     url: "/v2/orders/{orders}/transactions"
   get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/carts-and-orders/orders/get-an-order.html"
+    docs: "https://elasticpath.dev/docs/api/carts/update-an-order"
     url: "/v2/orders/{orders}/transactions/{order_transactions}"
   create-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/paying-for-an-order/manual-payments.html"
+    docs: "https://elasticpath.dev/docs/api/payments/payment-gateways-introduction"
     url: "/v2/orders/{orders}/payments"
 order-transaction-capture:
   singular-name: "order-transaction-capture"
   json-api-type: "transaction"
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/paying-for-an-order/manual-payments.html#post-capture-transaction"
+  docs: "https://elasticpath.dev/docs/api/payments/payment-gateways-introduction#post-capture-transaction"
   create-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/paying-for-an-order/manual-payments.html#post-capture-transaction"
+    docs: "https://elasticpath.dev/docs/api/payments/payment-gateways-introduction#post-capture-transaction"
     url: "/v2/orders/{orders}/transactions/{order_transactions}/capture"
 order-transaction-refund:
   singular-name: "order-transaction-refund"
   json-api-type: "transaction"
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/transactions/refund-a-transaction.html"
+  docs: "https://elasticpath.dev/docs/carts-orders/refund-a-transaction"
   create-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/transactions/refund-a-transaction.html"
+    docs: "https://elasticpath.dev/docs/carts-orders/refund-a-transaction"
     url: "/v2/orders/{orders}/transactions/{order_transactions}/refund"
 password-profiles:
   singular-name: "password-profile"
   json-api-type: "password_profile"
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/password-profiles/index.html"
+  docs: "https://elasticpath.dev/docs/authentication/single-sign-on/password-profiles-api/overview"
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/password-profiles/get-all-password-profiles.html"
+    docs: "https://elasticpath.dev/docs/authentication/single-sign-on/password-profiles-api/get-all-password-profiles"
     url: "/v2/authentication-realms/{authentication_realms}/password-profiles"
   get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/password-profiles/get-a-password-profile.html"
+    docs: "https://elasticpath.dev/docs/authentication/single-sign-on/password-profiles-api/get-a-password-profile"
     url: "/v2/authentication-realms/{authentication_realms}/password-profiles/{password_profiles}"
   update-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/password-profiles/update-a-password-profile.html"
+    docs: "https://elasticpath.dev/docs/authentication/single-sign-on/password-profiles-api/update-a-password-profile"
     url: "/v2/authentication-realms/{authentication_realms}/password-profiles/{password_profiles}"
   delete-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/password-profiles/delete-a-password-profile.html"
+    docs: "https://elasticpath.dev/docs/authentication/single-sign-on/password-profiles-api/delete-a-password-profile"
     url: "/v2/authentication-realms/{authentication_realms}/password-profiles/{password_profiles}"
   create-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/password-profiles/index.html"
+    docs: "https://elasticpath.dev/docs/authentication/single-sign-on/password-profiles-api/overview"
     url: "/v2/authentication-realms/{authentication_realms}/password-profiles"
     content-type: application/json
   attributes:
@@ -1204,21 +1204,21 @@ pcm-catalogs:
   singular-name: "pcm-catalog"
   json-api-type: "catalog"
   json-api-format: "compliant"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/catalogs/configure/get-all-catalogs.html"
+  docs: "https://elasticpath.dev/docs/api/pxm/catalog/catalogs"
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/hierarchies/get-all-hierarchies.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/catalog/get-catalogs"
     url: "/pcm/catalogs"
   get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/hierarchies/get-a-hierarchy.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/catalog/get-catalog-by-id"
     url: "/pcm/catalogs/{pcm_catalogs}"
   update-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/catalogs/configure/update-a-catalog.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/catalog/update-catalog"
     url: "/pcm/hierarchies/{pcm_hierarchies}"
   delete-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/catalogs/configure/delete-a-catalog.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/catalog/delete-catalog-by-id"
     url: "/pcm/catalogs/{pcm_catalogs}"
   create-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/catalogs/configure/create-a-catalog.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/catalog/create-catalog"
     url: "/pcm/catalogs"
     content-type: application/json
   attributes:
@@ -1234,18 +1234,18 @@ pcm-catalog-releases:
   singular-name: "pcm-catalog-release"
   json-api-type: "catalog-release"
   json-api-format: "compliant"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/catalogs/index.html"
+  docs: "https://elasticpath.dev/docs/api/pxm/catalog/releases"
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/catalogs/releases/catalog-release/get-all-releases-of-a-catalog.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/catalog/get-releases"
     url: "/pcm/catalogs/{pcm_catalogs}/releases"
   get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/catalogs/releases/get-a-release-of-a-catalog.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/catalog/get-release-by-id"
     url: "/pcm/catalogs/{pcm_catalogs}/releases/{pcm_catalog_releases}"
   delete-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/catalogs/releases/catalog-release/delete-a-published-catalog.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/catalog/delete-release-by-id"
     url: "/pcm/catalogs/{pcm_catalogs}/releases/{pcm_catalog_releases}"
   create-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/catalogs/releases/catalog-release/publish-a-catalog.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/catalog/publish-release"
     url: "/pcm/catalogs/{pcm_catalogs}/releases"
     content-type: application/json
   attributes:
@@ -1261,21 +1261,21 @@ pcm-catalog-rules:
   singular-name: "pcm-catalog-rule"
   json-api-type: "catalog_rule"
   json-api-format: "compliant"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/dashboard/pcm-catalogs/catalog-rules.html#__docusaurus"
+  docs: "https://elasticpath.dev/docs/api/pxm/catalog/rules"
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/catalogs/rules/get-all-catalog-rules.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/catalog/get-rules"
     url: "/pcm/catalogs/rules"
   get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/catalogs/rules/get-a-catalog-rule.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/catalog/get-rule-by-id"
     url: "/pcm/catalogs/rules/{pcm_catalog_rules}"
   create-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/catalogs/rules/create-a-catalog-rule.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/catalog/create-rule"
     url: "/pcm/catalogs/rules"
   update-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/catalogs/rules/update-a-catalog-rule.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/catalog/update-rule"
     url: "/pcm/catalogs/rules/{pcm_catalog_rules}"
   delete-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/catalogs/rules/delete-a-catalog-rule.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/catalog/delete-rule-by-id"
     url: "/pcm/catalogs/rules/{pcm_catalog_rules}"
   attributes:
     name:
@@ -1301,20 +1301,20 @@ payment-gateways:
   singular-name: "payment-gateway"
   json-api-type: "gateway"
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/gateways/index.html"
+  docs: "https://elasticpath.dev/docs/api/payments/gateways"
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/gateways/get-all-gateways.html"
+    docs: "https://elasticpath.dev/docs/api/payments/gateways"
     url: "/v2/gateways/"
 payment-gateways-manual:
   singular-name: "payment-gateway-manual"
   json-api-type: "gateway"
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/paying-for-an-order/manual-payments.html"
+  docs: "https://elasticpath.dev/docs/api/payments/payment-gateways-introduction"
   get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/gateways/get-a-gateway.html#get-get-a-gateway-by-slug"
+    docs: "https://elasticpath.dev/docs/api/payments/gateways"
     url: "/v2/gateways/manual"
   update-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/gateways/update-gateway-settings.html"
+    docs: "https://elasticpath.dev/docs/api/payments/update-manual-gateway"
     url: "/v2/gateways/manual"
   attributes:
     enabled:
@@ -1324,12 +1324,12 @@ payment-gateways-adyen:
   singular-name: "payment-gateway-adyen"
   json-api-type: "gateway"
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/gateways/configure-adyen.html"
+  docs: "https://elasticpath.dev/docs/api/payments/update-adyen-gateway"
   get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/gateways/get-a-gateway.html#get-get-a-gateway-by-slug"
+    docs: "https://elasticpath.dev/docs/api/payments/gateways"
     url: "/v2/gateways/adyen"
   update-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/gateways/configure-adyen.html"
+    docs: "https://elasticpath.dev/docs/api/payments/update-adyen-gateway"
     url: "/v2/gateways/adyen"
   attributes:
     enabled:
@@ -1349,12 +1349,12 @@ payment-gateways-authorize-net:
   singular-name: "payment-gateway-authorize-net"
   json-api-type: "gateway"
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/gateways/configure-authorize.net.html"
+  docs: "https://elasticpath.dev/docs/api/payments/update-authorize-net-gateway"
   get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/gateways/get-a-gateway.html#get-get-a-gateway-by-slug"
+    docs: "https://elasticpath.dev/docs/api/payments/gateways"
     url: "/v2/gateways/authorize_net"
   update-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/gateways/configure-authorize.net.html"
+    docs: "https://elasticpath.dev/docs/api/payments/update-authorize-net-gateway"
     url: "/v2/gateways/authorize_net"
   attributes:
     enabled:
@@ -1372,12 +1372,12 @@ payment-gateways-braintree:
   singular-name: "payment-gateway-braintree"
   json-api-type: "gateway"
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/gateways/configure-braintree.html"
+  docs: "https://elasticpath.dev/docs/api/payments/update-braintree-gateway"
   get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/gateways/get-a-gateway.html#get-get-a-gateway-by-slug"
+    docs: "https://elasticpath.dev/docs/api/payments/gateways"
     url: "/v2/gateways/braintree"
   update-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/gateways/configure-braintree.html"
+    docs: "https://elasticpath.dev/docs/api/payments/update-braintree-gateway"
     url: "/v2/gateways/braintree"
   attributes:
     merchant_id:
@@ -1395,12 +1395,12 @@ payment-gateways-cardconnect:
   singular-name: "payment-gateway-cardconnect"
   json-api-type: "gateway"
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/gateways/configure-cardconnect.html"
+  docs: "https://elasticpath.dev/guides/How-To/paymentgateways/generate-cardconnect-token"
   get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/gateways/get-a-gateway.html#get-get-a-gateway-by-slug"
+    docs: "https://elasticpath.dev/docs/api/payments/gateways"
     url: "/v2/gateways/card_connect"
   update-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/gateways/configure-cardconnect.html"
+    docs: "https://elasticpath.dev/guides/How-To/paymentgateways/generate-cardconnect-token"
     url: "/v2/gateways/card_connect"
   attributes:
     merchant_id:
@@ -1418,12 +1418,12 @@ payment-gateways-cybersource:
   singular-name: "payment-gateway-cybersource"
   json-api-type: "gateway"
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/gateways/configure-cybersource.html"
+  docs: "https://elasticpath.dev/docs/api/payments/update-cyber-source-gateway"
   get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/gateways/get-a-gateway.html#get-get-a-gateway-by-slug"
+    docs: "https://elasticpath.dev/docs/api/payments/gateways"
     url: "/v2/gateways/cyber_source"
   update-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/gateways/configure-cybersource.html"
+    docs: "https://elasticpath.dev/docs/api/payments/update-cyber-source-gateway"
     url: "/v2/gateways/cyber_source"
   attributes:
     login:
@@ -1439,12 +1439,12 @@ payment-gateways-paypal-express-checkout:
   singular-name: "payment-gateway-paypal-express-checkout"
   json-api-type: "gateway"
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/gateways/configure-paypal-express-checkout.html"
+  docs: "https://elasticpath.dev/docs/api/payments/update-paypal-express-checkout-gateway"
   get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/gateways/get-a-gateway.html#get-get-a-gateway-by-slug"
+    docs: "https://elasticpath.dev/docs/api/payments/gateways"
     url: "/v2/gateways/paypal_express_checkout"
   update-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/gateways/configure-paypal-express-checkout.html"
+    docs: "https://elasticpath.dev/docs/api/payments/update-paypal-express-checkout-gateway"
     url: "/v2/gateways/paypal_express_checkout"
   attributes:
     payer_id:
@@ -1458,12 +1458,12 @@ payment-gateways-stripe:
   singular-name: "payment-gateway-stripe"
   json-api-type: "gateway"
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/gateways/configure-stripe.html"
+  docs: "https://elasticpath.dev/docs/api/payments/update-stripe-gateway"
   get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/gateways/get-a-gateway.html#get-get-a-gateway-by-slug"
+    docs: "https://elasticpath.dev/docs/api/payments/gateways"
     url: "/v2/gateways/stripe"
   update-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/gateways/configure-stripe.html"
+    docs: "https://elasticpath.dev/docs/api/payments/update-stripe-gateway"
     url: "/v2/gateways/stripe"
   attributes:
     login:
@@ -1475,12 +1475,12 @@ payment-gateways-stripe-connect:
   singular-name: "payment-gateway-stripe-connect"
   json-api-type: "gateway"
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/gateways/configure-stripe-connect.html"
+  docs: "https://elasticpath.dev/docs/api/payments/update-stripe-connect-gateway"
   get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/gateways/get-a-gateway.html#get-get-a-gateway-by-slug"
+    docs: "https://elasticpath.dev/docs/api/payments/gateways"
     url: "/v2/gateways/stripe_connect"
   update-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/gateways/configure-stripe-connect.html"
+    docs: "https://elasticpath.dev/docs/api/payments/update-stripe-connect-gateway"
     url: "/v2/gateways/stripe_connect"
   attributes:
     stripe_account:
@@ -1494,12 +1494,12 @@ payment-gateways-stripe-payment-intents:
   singular-name: "payment-gateway-stripe-payment-intent"
   json-api-type: "gateway"
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/gateways/configure-stripe-payment-intents.html"
+  docs: "https://elasticpath.dev/docs/studio/Integrations/stripe-payment-intents"
   get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/gateways/get-a-gateway.html#get-get-a-gateway-by-slug"
+    docs: "https://elasticpath.dev/docs/api/payments/gateways"
     url: "/v2/gateways/stripe_payment_intents"
   update-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/gateways/configure-stripe-payment-intents.html"
+    docs: "https://elasticpath.dev/docs/studio/Integrations/stripe-payment-intents"
     url: "/v2/gateways/stripe_payment_intents"
   attributes:
     login:
@@ -1511,12 +1511,12 @@ payment-gateways-elastic-path-payments-stripe:
   singular-name: "payment-gateway-elastic-path-payments-stripe"
   json-api-type: "gateway"
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/gateways/configure-elastic-path-payments-powered-by-stripe.html"
+  docs: "https://elasticpath.dev/docs/commerce-manager/payments/ep-payments-powered-by-stripe"
   get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/gateways/get-a-gateway.html#get-get-a-gateway-by-slug"
+    docs: "https://elasticpath.dev/docs/api/payments/gateways"
     url: "/v2/gateways/stripe_payment_intents"
   update-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/payments/gateways/configure-elastic-path-payments-powered-by-stripe.html"
+    docs: "https://elasticpath.dev/docs/commerce-manager/payments/ep-payments-powered-by-stripe"
     url: "/v2/gateways/stripe_payment_intents"
   attributes:
     stripe_account:
@@ -1530,21 +1530,21 @@ pcm-hierarchies:
   singular-name: "pcm-hierarchy"
   json-api-type: "hierarchy"
   json-api-format: "compliant"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/hierarchies/index.html"
+  docs: "https://elasticpath.dev/docs/api/pxm/products/hierarchies"
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/hierarchies/get-all-hierarchies.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/products/get-hierarchy"
     url: "/pcm/hierarchies"
   get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/hierarchies/get-a-hierarchy.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/products/get-hierarchy-child"
     url: "/pcm/hierarchies/{pcm_hierarchies}"
   update-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/hierarchies/update-a-hierarchy.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/products/update-hierarchy"
     url: "/pcm/hierarchies/{pcm_hierarchies}"
   delete-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/hierarchies/delete-a-hierarchy.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/products/delete-hierarchy"
     url: "/pcm/hierarchies/{pcm_hierarchies}"
   create-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/hierarchies/create-a-hierarchy.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/products/create-hierarchy"
     url: "/pcm/hierarchies"
     content-type: application/json
   attributes:
@@ -1562,30 +1562,30 @@ pcm-hierarchy-node-children:
   singular-name: "pcm-hierarchy-node-child"
   json-api-type: "node"
   json-api-format: "compliant"
-  docs: "https://elasticpath.dev/docs/pxm-hierarchies/hierarchies-api/get-a-hierarchies-children"
+  docs: "https://elasticpath.dev/docs/api/pxm/products/get-all-children"
   get-collection:
-    docs: "https://elasticpath.dev/docs/pxm-hierarchies/hierarchies-api/get-a-hierarchies-children"
+    docs: "https://elasticpath.dev/docs/api/pxm/products/get-all-children"
     url: "/pcm/hierarchies/{pcm_hierarchies}/children"
 pcm-node-children:
   singular-name: "pcm-node-child"
   json-api-type: "node"
   json-api-format: "compliant"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/hierarchies/relationships/get-node-children.html"
+  docs: "https://elasticpath.dev/docs/api/pxm/products/get-all-node-children"
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/hierarchies/relationships/get-node-children.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/products/get-all-node-children"
     url: "/pcm/hierarchies/{pcm_hierarchies}/nodes/{pcm_nodes}/children"
 pcm-node-products:
   singular-name: "pcm-node-product"
   json-api-type: "node"
   json-api-format: "legacy"
   no-wrapping: true
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/hierarchies/relationships/get-node-products.html"
+  docs: "https://elasticpath.dev/docs/api/pxm/products/get-node-products"
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/hierarchies/relationships/get-node-products.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/products/get-node-products"
     url: "/pcm/hierarchies/{pcm_hierarchies}/nodes/{pcm_nodes}/products"
   #TBD figure out if this should be the same URL
   create-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/hierarchies/relationships/create-node-product-relationships.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/products/create-node-product-relationship"
     url: "/pcm/hierarchies/{pcm_hierarchies}/nodes/{pcm_nodes}/relationships/products"
   attributes:
     "data[n].id":
@@ -1610,7 +1610,7 @@ pcm-nodes:
   singular-name: "pcm-node"
   json-api-type: "node"
   json-api-format: "compliant"
-  docs: "https://elasticpath.dev/docs/api/pxm/products/hierarchies?utm_source=elasticpath-dev&utm_medium=dev-site&utm_campaign=fy25q1-dev#characteristics-of-hierarchies-and-nodes"
+  docs: "https://elasticpath.dev/docs/api/pxm/products/hierarchies#characteristics-of-hierarchies-and-nodes"
   get-entity:
     docs: "https://elasticpath.dev/docs/api/pxm/products/get-hierarchy-node"
     url: "/pcm/hierarchies/{pcm_hierarchies}/nodes/{pcm_nodes}"
@@ -1646,21 +1646,21 @@ pcm-product-main-image:
   singular-name: "pcm-product-main-image"
   json-api-type: "file"
   json-api-format: "compliant"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/relationships/main-image/get-main-image-relationship.html"
+  docs: "https://elasticpath.dev/docs/api/pxm/products/product-image-relationships"
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/relationships/main-image/get-main-image-relationship.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/products/get-product-main-image-relationships"
     url: "/pcm/products/{pcm_products}/relationships/main_image"
   get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/relationships/main-image/get-main-image-relationship.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/products/get-product-main-image-relationships"
     url: "/pcm/products/{pcm_products}/relationships/main_image"
   update-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/relationships/main-image/replace-main-image-relationship.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/products/update-product-main-image-relationships"
     url: "/pcm/products/{pcm_products}/relationships/main_image"
   delete-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/relationships/main-image/delete-main-image-relationship.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/products/delete-product-main-image-relationships"
     url: "/pcm/products/{pcm_products}/relationships/main_image"
   create-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/relationships/main-image/create-main-image-relationship.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/products/create-product-main-image-relationships"
     url: "/pcm/products/{pcm_products}/relationships/main_image"
     content-type: application/json
   attributes:
@@ -1670,21 +1670,21 @@ pcm-products:
   singular-name: "pcm-product"
   json-api-type: "product"
   json-api-format: "compliant"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/index.html"
+  docs: "https://elasticpath.dev/docs/api/pxm/products/products"
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/get-all-products.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/products/get-all-products"
     url: "/pcm/products"
   get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/get-a-product.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/catalog/get-by-context-product"
     url: "/pcm/products/{pcm_products}"
   update-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/update-a-product.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/products/update-product"
     url: "/pcm/products/{pcm_products}"
   delete-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/delete-a-product.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/products/delete-product"
     url: "/pcm/products/{pcm_products}"
   create-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/create-a-product.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/products/create-product"
     url: "/pcm/products"
     content-type: application/json
   attributes:
@@ -1743,15 +1743,15 @@ pcm-product-templates:
   json-api-type: "template"
   json-api-format: "legacy"
   no-wrapping: true
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/hierarchies/relationships/get-node-products.html"
+  docs: "https://elasticpath.dev/docs/api/pxm/products/extending-products-with-templates"
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/relationships/get-product-template-relationships.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/products/product-file-relationships"
     url: "/pcm/products/{pcm_products}/relationships/templates"
   create-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/relationships/create-product-template-relationships.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/products/create-product-template-relationship"
     url: "/pcm/products/{pcm_products}/relationships/templates"
   delete-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/relationships/delete-product-template-relationships.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/products/extending-products-with-templates"
     url: "/pcm/products/{pcm_products}/relationships/templates"
   attributes:
     "data[n].id":
@@ -1763,18 +1763,18 @@ pcm-product-variations:
   json-api-type: "template"
   json-api-format: "legacy"
   no-wrapping: true
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/hierarchies/relationships/get-node-products.html"
+  docs: "https://elasticpath.dev/docs/api/pxm/products/variations"
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/relationships/variations/get-variation-relationships.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/products/get-all-variations"
     url: "/pcm/products/{pcm_products}/relationships/variations"
   create-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/relationships/variations/create-variation-relationships.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/products/create-variation"
     url: "/pcm/products/{pcm_products}/relationships/variations"
   update-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/relationships/variations/replace-variation-relationships.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/products/create-variation"
     url: "/pcm/products/{pcm_products}/relationships/variations"
   delete-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/relationships/variations/delete-variation-relationships.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/products/delete-variation"
     url: "/pcm/products/{pcm_products}/relationships/variations"
   attributes:
     "data[n].id":
@@ -1786,34 +1786,34 @@ pcm-child-products:
   json-api-type: "not-used"
   no-wrapping: true
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/build-child-products.html"
+  docs: "https://elasticpath.dev/docs/api/pxm/products/build-child-products"
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/get-child-products.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/products/build-child-products"
     url: "/pcm/products/{pcm_products}/children"
   create-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/get-child-products.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/products/build-child-products"
     url: "/pcm/products/{pcm_products}/build"
 pcm-pricebooks:
   singular-name: "pcm-pricebook"
   json-api-type: "pricebook"
   json-api-format: "compliant"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/pricebooks/index.html"
+  docs: "https://elasticpath.dev/docs/api/pxm/pricebooks"
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/pricebooks/index.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/pricebooks/get-pricebooks"
     url: "/pcm/pricebooks"
     #TBD figure out if this should be the same URL
   get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/pricebooks/get-a-pricebook.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/pricebooks/get-pricebook-by-id"
     url: "/pcm/pricebooks/{pcm_pricebooks}"
   delete-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/pricebooks/delete-a-pricebook.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/pricebooks/delete-pricebook-by-id"
     url: "/pcm/pricebooks/{pcm_pricebooks}"
   create-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/pricebooks/create-a-pricebook.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/pricebooks/create-pricebook"
     url: "/pcm/pricebooks"
     content-type: application/json
   update-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/pricebooks/update-a-pricebook.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/pricebooks/update-pricebook"
     url: "/pcm/pricebooks/{pcm_pricebooks}"
     content-type: application/json
   attributes:
@@ -1827,22 +1827,22 @@ pcm-product-prices:
   singular-name: "pcm-product-price"
   json-api-type: "product-price"
   json-api-format: "compliant"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/pricebooks/prices/get-all-prices-in-a-pricebook.html"
+  docs: "https://elasticpath.dev/docs/api/pxm/pricebooks/prices"
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/pricebooks/prices/get-all-prices-in-a-pricebook.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/pricebooks/get-product-prices"
     url: "/pcm/pricebooks/{pcm_pricebooks}/prices"
   get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/pricebooks/prices/get-a-products-prices.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/pricebooks/get-product-price-by-id"
     url: "/pcm/pricebooks/{pcm_pricebooks}/prices/{pcm_product_prices}"
   delete-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/pricebooks/prices/delete-product-prices.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/pricebooks/delete-product-price"
     url: "/pcm/pricebooks/{pcm_pricebooks}/prices/{pcm_product_prices}"
   create-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/pricebooks/prices/create-product-prices.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/pricebooks/create-product-price"
     url: "/pcm/pricebooks/{pcm_pricebooks}/prices"
     content-type: application/json
   update-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/pricebooks/prices/update-product-prices.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/pricebooks/update-product-price"
     url: "/pcm/pricebooks/{pcm_pricebooks}/prices/{pcm_product_prices}"
     content-type: application/json
   attributes:
@@ -1864,21 +1864,21 @@ pcm-pricebook-modifiers:
   singular-name: "pcm-pricebook-modifier"
   json-api-format: "compliant"
   json-api-type: "price-modifier"
-  docs: "https://elasticpath.dev/docs/pxm/pricebooks/pxm-pricebooks-modifiers/get-a-price-modifier"
+  docs: "https://elasticpath.dev/docs/api/pxm/pricebooks/price-book-modifiers"
   get-collection:
-    docs: "https://elasticpath.dev/docs/pxm/pricebooks/pxm-pricebooks-modifiers/get-all-price-modifiers"
+    docs: "https://elasticpath.dev/docs/api/pxm/pricebooks/get-price-modifiers"
     url: "/pcm/pricebooks/{pcm_pricebooks}/modifiers/"
   get-entity:
-    docs: "https://elasticpath.dev/docs/pxm/pricebooks/pxm-pricebooks-modifiers/get-a-price-modifier"
+    docs: "https://elasticpath.dev/docs/api/pxm/pricebooks/price-book-modifiers"
     url: "/pcm/pricebooks/{pcm_pricebooks}/modifiers/{pcm_pricebook_modifiers}"
   create-entity:
-    docs: "https://elasticpath.dev/docs/pxm/pricebooks/pxm-pricebooks-modifiers/create-a-price-modifier"
+    docs: "https://elasticpath.dev/docs/api/pxm/pricebooks/price-book-modifiers"
     url: "/pcm/pricebooks/{pcm_pricebooks}/modifiers"
   update-entity:
-    docs: "https://elasticpath.dev/docs/pxm/pricebooks/pxm-pricebooks-modifiers/update-a-price-modifier"
+    docs: "https://elasticpath.dev/docs/api/pxm/pricebooks/price-book-modifiers"
     url: "/pcm/pricebooks/{pcm_pricebooks}/modifiers/{pcm_pricebook_modifiers}"
   delete-entity:
-    docs: "https://elasticpath.dev/docs/pxm/pricebooks/pxm-pricebooks-modifiers/delete-a-price-modifier"
+    docs: "https://elasticpath.dev/docs/api/pxm/pricebooks/price-book-modifiers"
     url: "/pcm/pricebooks/{pcm_pricebooks}/modifiers/{pcm_pricebook_modifiers}"
   attributes:
     name:
@@ -1899,21 +1899,21 @@ pcm-variations:
   singular-name: "pcm-variation"
   json-api-type: "product-variation"
   json-api-format: "compliant"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/variations/get-all-variations.html"
+  docs: "https://elasticpath.dev/docs/api/pxm/products/get-all-variations"
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/variations/get-all-variations.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/products/get-all-variations"
     url: "/pcm/variations"
   get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/variations/get-variation.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/products/get-all-variations"
     url: "/pcm/variations/{pcm_variations}"
   create-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/variations/create-variation.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/products/create-variation"
     url: "/pcm/variations"
   update-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/variations/update-variation.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/products/update-variation"
     url: "/pcm/variations/{pcm_variations}"
   delete-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/variations/delete-variation.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/products/delete-variation"
     url: "/pcm/variations/{pcm_variations}"
   attributes:
     name:
@@ -1924,21 +1924,21 @@ pcm-variation-options:
   singular-name: "pcm-variation-option"
   json-api-type: "product-variation-option"
   json-api-format: "compliant"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/options/get-all-options.html"
+  docs: "https://elasticpath.dev/docs/api/pxm/products/get-all-variation-options"
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/options/get-all-options.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/products/get-all-variation-options"
     url: "/pcm/variations/{pcm_variations}/options"
   get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/options/get-option.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/products/get-all-variation-options"
     url: "/pcm/variations/{pcm_variations}/options/{pcm_variation_options}"
   create-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/options/create-option.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/products/create-variation-option"
     url: "/pcm/variations/{pcm_variations}/options"
   update-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/options/update-option.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/products/update-variation-option"
     url: "/pcm/variations/{pcm_variations}/options/{pcm_variation_options}"
   delete-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/options/delete-option.html"
+    docs: "https://elasticpath.dev/docs/api/pxm/products/delete-variation-option"
     url: "/pcm/variations/{pcm_variations}/options/{pcm_variation_options}"
   attributes:
     name:
@@ -1951,21 +1951,21 @@ pcm-variation-modifiers:
   singular-name: "pcm-variation-modifier"
   json-api-format: "compliant"
   json-api-type: "product-variation-modifier"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/options/modifiers/modifiers.html"
+  docs: "https://elasticpath.dev/docs/api/pxm/products/delete-modifier"
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/options/modifiers/modifier-crud.html#get-get-all-modifiers"
+    docs: "https://elasticpath.dev/docs/api/pxm/pricebooks/get-price-modifiers"
     url: "/pcm/variations/{pcm_variations}/options/{pcm_variation_options}/modifiers"
   get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/options/modifiers/modifier-crud.html#get-get-a-modifier"
+    docs: "https://elasticpath.dev/docs/api/pxm/pricebooks/get-price-modifiers"
     url: "/pcm/variations/{pcm_variations}/options/{pcm_variation_options}/modifiers/{pcm_variation_modifiers}"
   create-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/options/modifiers/modifier-crud.html#post-create-a-modifier"
+    docs: "https://elasticpath.dev/docs/api/pxm/pricebooks/get-price-modifiers"
     url: "/pcm/variations/{pcm_variations}/options/{pcm_variation_options}/modifiers"
   update-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/options/modifiers/modifier-crud.html#put-update-a-modifier"
+    docs: "https://elasticpath.dev/docs/api/pxm/pricebooks/get-price-modifiers"
     url: "/pcm/variations/{pcm_variations}/options/{pcm_variation_options}/modifiers/{pcm_variation_modifiers}"
   delete-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/pcm/products/options/modifiers/modifier-crud.html#delete-delete-a-modifier"
+    docs: "https://elasticpath.dev/docs/api/pxm/pricebooks/get-price-modifiers"
     url: "/pcm/variations/{pcm_variations}/options/{pcm_variation_options}/modifiers/{pcm_variation_modifiers}"
   attributes:
     attribute.type:
@@ -1980,9 +1980,9 @@ personal-data-log-entries:
   singular-name: "personal-data-log-entry"
   json-api-type: "personal_data_log_entry"
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/personal-data/personal-data-logs/index.html"
+  docs: "https://elasticpath.dev/docs/api/personal-data/get-personal-data-logs"
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/personal-data/personal-data-logs/get-personal-data-logs.html"
+    docs: "https://elasticpath.dev/docs/api/personal-data/get-personal-data-logs"
     url: "/v2/personal-data/logs"
   attributes:
     resource_type:
@@ -1993,9 +1993,9 @@ personal-data-related-data-entries:
   singular-name: "personal-data-related-data-entry"
   json-api-type: "related_data_entry"
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/personal-data/personal-data-related-data-entries/index.html"
+  docs: "https://elasticpath.dev/docs/api/personal-data/get-related-data-entries"
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/personal-data/personal-data-related-data-entries/get-personal-data-related-data-entries.html"
+    docs: "https://elasticpath.dev/docs/api/personal-data/get-related-data-entries"
     url: "/v2/personal-data/related-data-entries"
   attributes:
     resource_type:
@@ -2006,15 +2006,15 @@ personal-data-erasure-requests:
   singular-name: "personal-data-erasure-request"
   json-api-type: "erasure_request"
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/personal-data/personal-data-erasure-requests/index.html"
+  docs: "https://elasticpath.dev/docs/api/personal-data/get-erasure-request"
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/personal-data/personal-data-erasure-requests/get-personal-data-erasure-requests.html"
+    docs: "https://elasticpath.dev/docs/api/personal-data/get-erasure-request"
     url: "/v2/personal-data/erasure-requests"
   get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/personal-data/personal-data-erasure-requests/get-personal-data-erasure-request.html"
+    docs: "https://elasticpath.dev/docs/api/personal-data/get-erasure-request"
     url: "/v2/personal-data/erasure-requests/{personal_data_erasure_requests}"
   create-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/customers-and-accounts/personal-data/personal-data-erasure-requests/create-personal-data-erasure-request.html"
+    docs: "https://elasticpath.dev/docs/api/personal-data/post-erasure-request"
     url: "/v2/personal-data/erasure-requests/"
   attributes:
     resource_type:
@@ -2025,18 +2025,18 @@ promotion-codes:
   singular-name: "promotion-code"
   json-api-type: "promotion_codes"
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/promotions/get-promotion-codes.html"
+  docs: "https://elasticpath.dev/docs/commerce-manager/promotions-builder/creating-promotion-codes"
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/promotions/get-promotion-codes.html"
+    docs: "https://elasticpath.dev/docs/api/promotions/get-promotion-codes"
     url: "/v2/promotions/{promotions}/codes"
   get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/promotions/get-promotion-codes.html"
+    docs: "https://elasticpath.dev/docs/commerce-manager/promotions-builder/creating-promotion-codes"
     url: "/v2/promotions/{promotions}/codes"
   delete-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/promotions/delete-promotion-codes.html"
+    docs: "https://elasticpath.dev/docs/api/promotions/delete-a-promotion-code"
     url: "/v2/promotions/{promotions}/codes/{promotion_codes}"
   create-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/promotions/create-promotion-codes.html"
+    docs: "https://elasticpath.dev/docs/api/promotions/create-promotion-codes"
     url: "/v2/promotions/{promotions}/codes"
     content-type: application/json
   attributes:
@@ -2052,18 +2052,18 @@ promotions:
   singular-name: "promotion"
   json-api-type: "promotion"
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/promotions/index.html"
+  docs: "https://elasticpath.dev/docs/api/promotions/update-a-promotion"
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/promotions/get-promotions.html"
+    docs: "https://elasticpath.dev/docs/api/promotions/get-all-promotions"
     url: "/v2/promotions"
   get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/promotions/get-a-promotion.html"
+    docs: "https://elasticpath.dev/docs/api/promotions/get-all-promotions"
     url: "/v2/promotions/{promotions}"
   delete-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/promotions/delete-a-promotion.html"
+    docs: "https://elasticpath.dev/docs/api/promotions/delete-a-promotion"
     url: "/v2/promotions/{promotions}"
   create-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/promotions/create-a-cart-fixed-discount-promotion.html"
+    docs: "https://elasticpath.dev/docs/api/promotions/create-a-promotion"
     url: "/v2/promotions"
     content-type: application/json
   attributes:
@@ -2102,15 +2102,15 @@ settings:
   singular-name: "setting"
   json-api-type: "settings"
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/settings/index.html"
+  docs: "https://elasticpath.dev/docs/api/settings/settings-introduction"
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/settings/get-all-settings.html"
+    docs: "https://elasticpath.dev/docs/api/settings/get-v-2-settings"
     url: "/v2/settings"
   get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/settings/get-all-settings.html"
+    docs: "https://elasticpath.dev/docs/api/settings/get-v-2-settings"
     url: "/v2/settings"
   update-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/settings/update-settings.html"
+    docs: "https://elasticpath.dev/docs/api/settings/put-v-2-settings"
     url: "/v2/settings"
   attributes:
     page_length:
@@ -2126,21 +2126,21 @@ user-authentication-infos:
   singular-name: "user-authentication-info"
   json-api-type: "user_authentication_info"
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/user-authentication-info/index.html"
+  docs: "https://elasticpath.dev/docs/authentication/single-sign-on/user-authentication-info-api/overview"
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/user-authentication-info/get-all-user-authentication-info.html"
+    docs: "https://elasticpath.dev/docs/authentication/single-sign-on/user-authentication-info-api/get-all-user-authentication-info"
     url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info"
   get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/user-authentication-info/get-a-user-authentication-info.html"
+    docs: "https://elasticpath.dev/docs/authentication/single-sign-on/user-authentication-info-api/get-a-user-authentication-info"
     url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info/{user_authentication_infos}"
   update-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/user-authentication-info/update-a-user-authentication-info.html"
+    docs: "https://elasticpath.dev/docs/authentication/single-sign-on/user-authentication-info-api/update-a-user-authentication-info"
     url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info/{user_authentication_infos}"
   delete-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/user-authentication-info/delete-a-user-authentication-info.html"
+    docs: "https://elasticpath.dev/docs/authentication/single-sign-on/user-authentication-info-api/delete-a-user-authentication-info"
     url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info/{user_authentication_infos}"
   create-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/user-authentication-info/create-a-user-authentication-info.html"
+    docs: "https://elasticpath.dev/docs/authentication/single-sign-on/user-authentication-info-api/create-a-user-authentication-info"
     url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info"
     content-type: application/json
   attributes:
@@ -2154,21 +2154,21 @@ user-authentication-oidc-profile-infos:
   singular-name: "user-authentication-oidc-profile-info"
   json-api-type: "user_authentication_oidc_profile_info"
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/user-authentication-oidc-profile-info/index.html"
+  docs: "https://elasticpath.dev/docs/authentication/single-sign-on/openid"
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/user-authentication-oidc-profile-info/get-all-user-authentication-oidc-profile-info.html"
+    docs: "https://elasticpath.dev/docs/authentication/single-sign-on/password-profiles-api/get-all-password-profiles"
     url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info/{user_authentication_infos}/user-authentication-oidc-profile-info"
   get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/user-authentication-oidc-profile-info/get-a-user-authentication-oidc-profile-info.html"
+    docs: "https://elasticpath.dev/docs/authentication/single-sign-on/password-profiles-api/get-a-password-profile"
     url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info/{user_authentication_infos}/user-authentication-oidc-profile-info/{user_authentication_oidc_profile_infos}"
   update-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/user-authentication-oidc-profile-info/update-a-user-authentication-oidc-profile-info.html"
+    docs: "https://elasticpath.dev/docs/authentication/single-sign-on/password-profiles-api/overview"
     url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info/{user_authentication_infos}/user-authentication-oidc-profile-info/{user_authentication_oidc_profile_infos}"
   delete-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/user-authentication-oidc-profile-info/delete-a-user-authentication-oidc-profile-info.html"
+    docs: "https://elasticpath.dev/docs/authentication/single-sign-on/password-profiles-api/delete-a-password-profile"
     url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info/{user_authentication_infos}/user-authentication-oidc-profile-info/{user_authentication_oidc_profile_infos}"
   create-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/user-authentication-oidc-profile-info/create-a-user-authentication-oidc-profile-info.html"
+    docs: "https://elasticpath.dev/docs/authentication/single-sign-on/password-profiles-api/overview"
     url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info/{user_authentication_infos}/user-authentication-oidc-profile-info"
     content-type: application/json
   attributes:
@@ -2182,21 +2182,21 @@ user-authentication-password-profile-infos:
   singular-name: "user-authentication-password-profile-info"
   json-api-type: "user_authentication_password_profile_info"
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/user-authentication-password-profiles/index.html"
+  docs: "https://elasticpath.dev/docs/authentication/single-sign-on/password-profiles-api/overview"
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/user-authentication-password-profiles/get-all-user-authentication-password-profile-info.html"
+    docs: "https://elasticpath.dev/docs/authentication/single-sign-on/password-profiles-api/get-all-password-profiles"
     url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info/{user_authentication_infos}/user-authentication-password-profile-info"
   get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/user-authentication-password-profiles/get-a-user-authentication-password-profile.html"
+    docs: "https://elasticpath.dev/docs/authentication/single-sign-on/password-profiles-api/get-all-password-profiles"
     url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info/{user_authentication_infos}/user-authentication-password-profile-info/{user_authentication_password_profile_infos}"
   update-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/user-authentication-password-profiles/update-a-user-authentication-password-profile.html"
+    docs: "https://elasticpath.dev/docs/authentication/single-sign-on/password-profiles-api/overview"
     url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info/{user_authentication_infos}/user-authentication-password-profile-info/{user_authentication_password_profile_infos}"
   delete-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/user-authentication-password-profiles/delete-a-user-authentication-password-profile.html"
+    docs: "https://elasticpath.dev/docs/authentication/single-sign-on/password-profiles-api/overview"
     url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info/{user_authentication_infos}/user-authentication-password-profile-info/{user_authentication_password_profile_infos}"
   create-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/single-sign-on/user-authentication-password-profiles/create-a-user-authentication-password-profile.html"
+    docs: "https://elasticpath.dev/docs/authentication/single-sign-on/password-profiles-api/overview"
     url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info/{user_authentication_infos}/user-authentication-password-profile-info"
     content-type: application/json
   attributes:
@@ -2212,21 +2212,21 @@ v2-brands:
   singular-name: "v2-brand"
   json-api-type: "brand"
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/brands/index.html"
+  docs: "n/a"
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/brands/get-all-brands.html"
+    docs: "n/a"
     url: "/v2/brands"
   get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/brands/get-a-brand.html"
+    docs: "n/a"
     url: "/v2/brands/{v2_brands}"
   create-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/brands/create-a-brand.html"
+    docs: "n/a"
     url: "/v2/brands"
   update-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/brands/update-a-brand.html"
+    docs: "n/a"
     url: "/v2/brands/{v2_brands}"
   delete-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/brands/delete-a-brand.html"
+    docs: "n/a"
     url: "/v2/brands/{v2_brands}"
   attributes:
     name:
@@ -2243,21 +2243,21 @@ v2-categories:
   singular-name: "v2-category"
   json-api-type: "category"
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/categories/index.html"
+  docs: "n/a"
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/categories/get-all-categories.html"
+    docs: "n/a"
     url: "/v2/categories"
   get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/categories/get-a-category.html"
+    docs: "n/a"
     url: "/v2/categories/{v2_categories}"
   update-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/categories/update-a-category.html"
+    docs: "n/a"
     url: "/v2/categories/{v2_categories}"
   delete-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/categories/delete-a-category.html"
+    docs: "n/a"
     url: "/v2/categories/{v2_categories}"
   create-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/categories/create-a-category.html"
+    docs: "n/a"
     url: "/v2/categories"
     content-type: application/json
   attributes:
@@ -2275,21 +2275,21 @@ v2-collections:
   singular-name: "v2-collection"
   json-api-type: "collection"
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/collections/index.html"
+  docs: "n/a"
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/collections/get-all-collections.html"
+    docs: "n/a"
     url: "/v2/collections"
   get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/collections/get-a-collection.html"
+    docs: "n/a"
     url: "/v2/collections/{v2_collections}"
   update-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/collections/update-a-collection.html"
+    docs: "n/a"
     url: "/v2/collections/{v2_collections}"
   delete-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/collections/delete-a-collection.html"
+    docs: "n/a"
     url: "/v2/collections/{v2_collections}"
   create-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/collections/create-a-collection.html"
+    docs: "n/a"
     url: "/v2/collections"
     content-type: application/json
   attributes:
@@ -2307,21 +2307,21 @@ v2-products:
   singular-name: "v2-product"
   json-api-type: "product"
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/products/index.html"
+  docs: "n/a"
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/products/get-all-products.html"
+    docs: "n/a"
     url: "/v2/products"
   get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/products/get-a-product.html"
+    docs: "n/a"
     url: "/v2/products/{v2_products}"
   update-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/products/update-a-product.html"
+    docs: "n/a"
     url: "/v2/products/{v2_products}"
   delete-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/products/delete-a-product.html"
+    docs: "n/a"
     url: "/v2/products/{v2_products}"
   create-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/products/create-a-product.html"
+    docs: "n/a"
     url: "/v2/products"
     content-type: application/json
   attributes:
@@ -2351,21 +2351,21 @@ v2-variations:
   singular-name: "v2-variation"
   json-api-type: "product-variation"
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/product-variations/index.html"
+  docs: "n/a"
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/product-variations/get-all-product-variations.html"
+    docs: "n/a"
     url: "/v2/variations"
   get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/product-variations/get-a-product-variation.html"
+    docs: "n/a"
     url: "/v2/variations/{v2_variations}"
   update-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/product-variations/update-a-product-variation.html"
+    docs: "n/a"
     url: "/v2/variations/{v2_variations}"
   delete-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/product-variations/delete-a-product-variation.html"
+    docs: "n/a"
     url: "/v2/variations/{v2_variations}"
   create-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/product-variations/create-a-product-variation.html"
+    docs: "n/a"
     url: "/v2/variations"
     content-type: application/json
   attributes:
@@ -2378,21 +2378,21 @@ v2-variation-options:
   singular-name: "v2-variation-option"
   json-api-type: "option"
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/product-variations/options/index.html"
+  docs: "n/a"
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/product-variations/options/get-all-product-variation-options.html"
+    docs: "n/a"
     url: "/v2/variations/{v2_variations}/options"
   get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/product-variations/options/get-a-product-variation-option.html"
+    docs: "n/a"
     url: "/v2/variations/{v2_variations}/options/{v2_variation_options}"
   update-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/product-variations/options/update-product-variation-option.html"
+    docs: "n/a"
     url: "/v2/variations/{v2_variations}/options/{v2_variation_options}"
   delete-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/product-variations/delete-a-product-variation.html"
+    docs: "n/a"
     url: "/v2/variations/{v2_variations}/options/{v2_variation_options}"
   create-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/product-variations/options/delete-product-variation-option.html"
+    docs: "n/a"
     url: "/v2/variations/{v2_variations}/options"
     content-type: application/json
   attributes:
@@ -2406,21 +2406,21 @@ v2-modifiers:
   singular-name: "v2-modifier"
   json-api-type: "modifier"
   json-api-format: "legacy"
-  docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/product-variations/modifiers/index.html"
+  docs: "n/a"
   get-collection:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/product-variations/modifiers/get-all-product-modifiers.html"
+    docs: "n/a"
     url: "/v2/variations/{v2_variations}/options/{v2_variation_options}/modifiers"
   get-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/product-variations/modifiers/get-a-product-modifier.html"
+    docs: "n/a"
     url: "/v2/variations/{v2_variations}/options/{v2_variation_options}/modifiers/{v2_modifiers}"
   update-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/product-variations/modifiers/update-a-product-modifier.html"
+    docs: "n/a"
     url: "/v2/variations/{v2_variations}/options/{v2_variation_options}/modifiers/{v2_modifiers}"
   delete-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/product-variations/modifiers/delete-a-product-modifier.html"
+    docs: "n/a"
     url: "/v2/variations/{v2_variations}/options/{v2_variation_options}/modifiers/{v2_modifiers}"
   create-entity:
-    docs: "https://documentation.elasticpath.com/commerce-cloud/docs/api/catalog/product-variations/modifiers/create-a-product-modifier.html"
+    docs: "n/a"
     url: "/v2/variations/{v2_variations}/options/{v2_variation_options}/modifiers"
     content-type: application/json
   attributes:
@@ -2444,12 +2444,12 @@ stores:
   singular-name: "store"
   json-api-type: "store"
   json-api-format: "legacy"
-  docs: "https://elasticpath.dev/docs/getting-started/api-reference"
+  docs: "https://elasticpath.dev/guides/key-concepts/organizations/overview"
   get-collection:
-    docs: "https://elasticpath.dev/docs/getting-started/api-reference"
+    docs: "https://elasticpath.dev/guides/key-concepts/organizations/overview"
     url: "/v2/stores/"
   get-entity:
-    docs: "https://elasticpath.dev/docs/getting-started/api-reference"
+    docs: "https://elasticpath.dev/guides/key-concepts/organizations/overview"
     url: "/v2/stores/{settings}"
 subscription-products:
   docs: "https://elasticpath.dev/docs/api/subscriptions/products"
@@ -2457,19 +2457,19 @@ subscription-products:
   json-api-format: compliant
   singular-name: subscription-product
   get-collection:
-    docs: https://elasticpath.dev/docs/api/subscriptions/list-products
+    docs: "https://elasticpath.dev/docs/api/subscriptions/list-products"
     url: /v2/subscriptions/products
   get-entity:
-    docs: https://elasticpath.dev/docs/api/subscriptions/get-product
+    docs: "https://elasticpath.dev/docs/api/subscriptions/get-product"
     url: /v2/subscriptions/products/{subscription_products}
   create-entity:
-    docs: https://elasticpath.dev/docs/api/subscriptions/create-product
+    docs: "https://elasticpath.dev/docs/api/subscriptions/create-product"
     url: /v2/subscriptions/products
   update-entity:
-    docs: https://elasticpath.dev/docs/api/subscriptions/update-product
+    docs: "https://elasticpath.dev/docs/api/subscriptions/update-product"
     url: /v2/subscriptions/products/{subscription_products}
   delete-entity:
-    docs: https://elasticpath.dev/docs/api/subscriptions/delete-product
+    docs: "https://elasticpath.dev/docs/api/subscriptions/delete-product"
     url: /v2/subscriptions/products/{subscription_products}
   attributes:
     ^price\.([a-zA-Z0-9-_]+)\.amount$:
@@ -2799,7 +2799,7 @@ mli-inventory-locations:
     singular-name: mli-inventory-location
     json-api-type: inventory_location
     json-api-format: "compliant"
-    docs: "https://elasticpath.dev/docs/api/inventory/mli-inventory-locations"
+    docs: "https://elasticpath.dev/docs/api/pxm/inventory_mli/inventories-introduction"
     delete-entity:
         docs: "https://elasticpath.dev/docs/api/pxm/inventory_mli/delete-location"
         url: "/v2/inventories/locations/{mli_inventory_locations}"
@@ -2810,7 +2810,7 @@ mli-inventory-locations:
         docs: "https://elasticpath.dev/docs/api/pxm/inventory_mli/update-location"
         url: "/v2/inventories/locations/{mli_inventory_locations}"
     get-entity:
-        docs: "https://elasticpath.dev/docs/api/inventory/get-a-mli-inventory-location"
+        docs: "https://elasticpath.dev/docs/api/pxm/inventory_mli/get-location"
         url: "/v2/inventories/locations/{mli_inventory_locations}"
     get-collection:
         docs: "https://elasticpath.dev/docs/api/pxm/inventory_mli/list-locations"
