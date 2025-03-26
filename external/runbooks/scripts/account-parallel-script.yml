@@ -1,0 +1,8 @@
+- |
+  epcc create -s account name Account1 --auto-fill 
+  epcc create -s account name Account2 --auto-fill
+
+- |
+  epcc create -s account-address name=Account1 --auto-fill
+  epcc create -s account-address name=Account2 --auto-fill
+

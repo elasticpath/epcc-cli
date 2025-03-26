@@ -15,6 +15,7 @@ import (
 	"github.com/spf13/cobra"
 	"golang.org/x/sync/semaphore"
 	"gopkg.in/yaml.v3"
+	"os"
 	"strconv"
 	"strings"
 	"sync/atomic"
@@ -35,6 +36,71 @@ func initRunbookCommands() {
 	runbookGlobalCmd.AddCommand(initRunbookRunCommands())
 	runbookGlobalCmd.AddCommand(initRunbookDevCommands())
 	runbookGlobalCmd.AddCommand(initRunbookValidateCommands())
+	runbookGlobalCmd.AddCommand(initRunbookRunScriptCmd())
+
+}
+
+func initRunbookRunScriptCmd() *cobra.Command {
+
+	var runScript = &cobra.Command{
+		Use:   "exec-script",
+		Short: "Execute a script file specified on the command line",
+		Long: `This command uses a Yaml syntax and should be an array of strings.
+
+Each element is split on new lines and processed concurrently.
+
+- epcc create account name Account1 --auto-fill
+- epcc create account name Account2 --auto-fill
+- epcc create account-address name=Account1 --auto-fill
+- epcc create account-address name=Account2 --auto-fill
+
+The above creates 2 accounts and 2 addresses, it takes 4 cycles to complete.
+
+- |
+    epcc create account name Account1 --auto-fill 
+    epcc create account name Account2 --auto-fill 
+- | 
+    epcc create account-address name=Account1 --auto-fill
+    epcc create account-address name=Account2 --auto-fill
+
+
+The above creates the same 4 resources, it takes 2 cycles to complete, each batch can be run in parallel.
+
+epcc get-all can output data in the correct format to minimize execution time.`,
+		Args: cobra.ExactArgs(1),
+		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]cobra.Completion, cobra.ShellCompDirective) {
+			return []cobra.Completion{"yaml", "yml"}, cobra.ShellCompDirectiveFilterFileExt
+		},
+	}
+
+	execTimeoutInSeconds := runScript.PersistentFlags().Int64("execution-timeout", 900, "How long should the script take to execute before timing out")
+	maxConcurrency := runScript.PersistentFlags().Int("max-concurrency", 20, "Maximum number of commands that can run simultaneously")
+
+	runScript.RunE = func(cmd *cobra.Command, args []string) error {
+
+		fileContents, err := os.ReadFile(args[0])
+		if err != nil {
+			return fmt.Errorf("Could not read file %s: %v", args[0], err)
+		}
+
+		cmds := []string{}
+
+		err = yaml.Unmarshal(fileContents, &cmds)
+
+		action := runbooks.RunbookAction{
+			Name: "exec-script",
+			Description: &runbooks.RunbookDescription{
+				Long:  "",
+				Short: "",
+			},
+			RawCommands:  cmds,
+			IgnoreErrors: false,
+			Variables:    nil,
+		}
+		return processRunBookCommands("script", map[string]*string{}, &action, maxConcurrency, execTimeoutInSeconds)
+	}
+
+	return runScript
 }
 
 var AbortRunbookExecution = atomic.Bool{}
@@ -227,175 +293,7 @@ func initRunbookRunCommands() *cobra.Command {
 				Long:  runbookAction.Description.Long,
 				Short: runbookAction.Description.Short,
 				RunE: func(cmd *cobra.Command, args []string) error {
-					numSteps := len(runbookAction.RawCommands)
-
-					parentCtx := context.Background()
-
-					ctx, cancelFunc := context.WithCancel(parentCtx)
-
-					concurrentRunSemaphore := semaphore.NewWeighted(int64(*maxConcurrency))
-					factory := pool.NewPooledObjectFactorySimple(
-						func(ctx2 context.Context) (interface{}, error) {
-							return generateRunbookCmd(), nil
-						})
-
-					objectPool := pool.NewObjectPool(ctx, factory, &pool.ObjectPoolConfig{
-						MaxTotal: *maxConcurrency,
-						MaxIdle:  *maxConcurrency,
-					})
-
-					rawCmds := runbookAction.RawCommands
-					for stepIdx := 0; stepIdx < len(rawCmds); stepIdx++ {
-
-						origIndex := &stepIdx
-						// Create a copy of loop variables
-						stepIdx := stepIdx
-						rawCmd := rawCmds[stepIdx]
-
-						templateName := fmt.Sprintf("Runbook: %s Action: %s Step: %d", runbook.Name, runbookAction.Name, stepIdx)
-						rawCmdLines, err := runbooks.RenderTemplates(templateName, rawCmd, runbookStringArguments, runbookAction.Variables)
-
-						if err != nil {
-							cancelFunc()
-							return err
-						}
-
-						joinedString := strings.Join(rawCmdLines, "\n")
-						renderedCmd := []string{}
-
-						err = yaml.Unmarshal([]byte(joinedString), &renderedCmd)
-
-						if err == nil {
-							log.Tracef("Line %d is a Yaml array %s, inserting into stack", stepIdx, joinedString)
-							newCmds := make([]string, 0, len(rawCmds)+len(renderedCmd)-1)
-							newCmds = append(newCmds, rawCmds[0:stepIdx]...)
-							newCmds = append(newCmds, renderedCmd...)
-							newCmds = append(newCmds, rawCmds[stepIdx+1:]...)
-							rawCmds = newCmds
-							*origIndex--
-							continue
-						}
-
-						log.Infof("Executing> %s", rawCmd)
-						resultChan := make(chan *commandResult, *maxConcurrency*2)
-						funcs := make([]func(), 0, len(rawCmdLines))
-
-						for commandIdx, rawCmdLine := range rawCmdLines {
-
-							commandIdx := commandIdx
-							rawCmdLine := strings.Trim(rawCmdLine, " \n")
-
-							if rawCmdLine == "" {
-								// Allow blank lines
-								continue
-							}
-
-							if !strings.HasPrefix(rawCmdLine, "epcc ") {
-								// Some commands like sleep don't have prefix
-								// This hack allows them to run
-								rawCmdLine = "epcc " + rawCmdLine
-							}
-							rawCmdArguments, err := shellwords.SplitPosix(strings.Trim(rawCmdLine, " \n"))
-
-							if err != nil {
-								cancelFunc()
-								return err
-							}
-
-							funcs = append(funcs, func() {
-
-								log.Tracef("(Step %d/%d Command %d/%d) Building Commmand", stepIdx+1, numSteps, commandIdx+1, len(funcs))
-
-								stepCmdObject, err := objectPool.BorrowObject(ctx)
-								defer objectPool.ReturnObject(ctx, stepCmdObject)
-
-								if err == nil {
-									commandAndResetFunc := stepCmdObject.(*CommandAndReset)
-									commandAndResetFunc.reset()
-									stepCmd := commandAndResetFunc.cmd
-
-									tweakedArguments := misc.AddImplicitDoubleDash(rawCmdArguments)
-									stepCmd.SetArgs(tweakedArguments[1:])
-
-									log.Tracef("(Step %d/%d Command %d/%d) Starting Command", stepIdx+1, numSteps, commandIdx+1, len(funcs))
-
-									stepCmd.ResetFlags()
-									err = stepCmd.ExecuteContext(ctx)
-									log.Tracef("(Step %d/%d Command %d/%d) Complete Command", stepIdx+1, numSteps, commandIdx+1, len(funcs))
-								}
-
-								commandResult := &commandResult{
-									stepIdx:     stepIdx,
-									commandIdx:  commandIdx,
-									commandLine: rawCmdLine,
-									error:       err,
-								}
-
-								resultChan <- commandResult
-
-							})
-
-						}
-
-						if len(funcs) > 1 {
-							log.Debugf("Running %d commands", len(funcs))
-						}
-
-						// Start processing all the functions
-						go func() {
-							for idx, fn := range funcs {
-								idx := idx
-								if shutdown.ShutdownFlag.Load() {
-									log.Infof("Aborting runbook execution, after %d scheduled executions", idx)
-									cancelFunc()
-									break
-								}
-
-								fn := fn
-								log.Tracef("Run %d is waiting on semaphore", idx)
-								if err := concurrentRunSemaphore.Acquire(ctx, 1); err == nil {
-									go func() {
-										log.Tracef("Run %d is starting", idx)
-										defer concurrentRunSemaphore.Release(1)
-										fn()
-									}()
-								} else {
-									log.Warnf("Run %d failed to get semaphore %v", idx, err)
-								}
-							}
-						}()
-
-						errorCount := 0
-						for i := 0; i < len(funcs); i++ {
-							select {
-							case result := <-resultChan:
-								if !shutdown.ShutdownFlag.Load() {
-									if result.error != nil {
-										log.Warnf("(Step %d/%d Command %d/%d) %v", result.stepIdx+1, numSteps, result.commandIdx+1, len(funcs), fmt.Errorf("error processing command [%s], %w", result.commandLine, result.error))
-										errorCount++
-									} else {
-										log.Debugf("(Step %d/%d Command %d/%d) finished successfully ", result.stepIdx+1, numSteps, result.commandIdx+1, len(funcs))
-									}
-								} else {
-									log.Tracef("Shutdown flag enabled, completion result %v", result)
-									cancelFunc()
-								}
-							case <-time.After(time.Duration(*execTimeoutInSeconds) * time.Second):
-								return fmt.Errorf("timeout of %d seconds reached, only %d of %d commands finished of step %d/%d", *execTimeoutInSeconds, i+1, len(funcs), stepIdx+1, numSteps)
-
-							}
-						}
-
-						if len(funcs) > 1 {
-							log.Debugf("Running %d commands complete", len(funcs))
-						}
-
-						if !runbookAction.IgnoreErrors && errorCount > 0 {
-							return fmt.Errorf("error occurred while processing script aborting")
-						}
-					}
-					defer cancelFunc()
-					return nil
+					return processRunBookCommands(runbook.Name, runbookStringArguments, runbookAction, maxConcurrency, execTimeoutInSeconds)
 				},
 			}
 			processRunbookVariablesOnCommand(runbookActionRunActionCommand, runbookStringArguments, runbookAction.Variables, true)
@@ -405,6 +303,179 @@ func initRunbookRunCommands() *cobra.Command {
 	}
 
 	return runbookRunCommand
+}
+
+func processRunBookCommands(runbookName string, runbookStringArguments map[string]*string, runbookAction *runbooks.RunbookAction, maxConcurrency *int, execTimeoutInSeconds *int64) error {
+	rawCmds := runbookAction.RawCommands
+
+	numSteps := len(runbookAction.RawCommands)
+
+	parentCtx := context.Background()
+
+	ctx, cancelFunc := context.WithCancel(parentCtx)
+
+	concurrentRunSemaphore := semaphore.NewWeighted(int64(*maxConcurrency))
+	factory := pool.NewPooledObjectFactorySimple(
+		func(ctx2 context.Context) (interface{}, error) {
+			return generateRunbookCmd(), nil
+		})
+
+	objectPool := pool.NewObjectPool(ctx, factory, &pool.ObjectPoolConfig{
+		MaxTotal: *maxConcurrency,
+		MaxIdle:  *maxConcurrency,
+	})
+
+	for stepIdx := 0; stepIdx < len(rawCmds); stepIdx++ {
+
+		origIndex := &stepIdx
+		// Create a copy of loop variables
+		stepIdx := stepIdx
+		rawCmd := rawCmds[stepIdx]
+
+		templateName := fmt.Sprintf("Runbook: %s Action: %s Step: %d", runbookName, runbookAction.Name, stepIdx)
+		rawCmdLines, err := runbooks.RenderTemplates(templateName, rawCmd, runbookStringArguments, runbookAction.Variables)
+
+		if err != nil {
+			cancelFunc()
+			return err
+		}
+
+		joinedString := strings.Join(rawCmdLines, "\n")
+		renderedCmd := []string{}
+
+		err = yaml.Unmarshal([]byte(joinedString), &renderedCmd)
+
+		if err == nil {
+			log.Tracef("Line %d is a Yaml array %s, inserting into stack", stepIdx, joinedString)
+			newCmds := make([]string, 0, len(rawCmds)+len(renderedCmd)-1)
+			newCmds = append(newCmds, rawCmds[0:stepIdx]...)
+			newCmds = append(newCmds, renderedCmd...)
+			newCmds = append(newCmds, rawCmds[stepIdx+1:]...)
+			rawCmds = newCmds
+			*origIndex--
+			continue
+		}
+
+		log.Infof("Executing> %s", rawCmd)
+		resultChan := make(chan *commandResult, *maxConcurrency*2)
+		funcs := make([]func(), 0, len(rawCmdLines))
+
+		for commandIdx, rawCmdLine := range rawCmdLines {
+
+			commandIdx := commandIdx
+			rawCmdLine := strings.Trim(rawCmdLine, " \n")
+
+			if rawCmdLine == "" {
+				// Allow blank lines
+				continue
+			}
+
+			if !strings.HasPrefix(rawCmdLine, "epcc ") {
+				// Some commands like sleep don't have prefix
+				// This hack allows them to run
+				rawCmdLine = "epcc " + rawCmdLine
+			}
+			rawCmdArguments, err := shellwords.SplitPosix(strings.Trim(rawCmdLine, " \n"))
+
+			if err != nil {
+				cancelFunc()
+				return err
+			}
+
+			funcs = append(funcs, func() {
+
+				log.Tracef("(Step %d/%d Command %d/%d) Building Commmand", stepIdx+1, numSteps, commandIdx+1, len(funcs))
+
+				stepCmdObject, err := objectPool.BorrowObject(ctx)
+				defer objectPool.ReturnObject(ctx, stepCmdObject)
+
+				if err == nil {
+					commandAndResetFunc := stepCmdObject.(*CommandAndReset)
+					commandAndResetFunc.reset()
+					stepCmd := commandAndResetFunc.cmd
+
+					tweakedArguments := misc.AddImplicitDoubleDash(rawCmdArguments)
+					stepCmd.SetArgs(tweakedArguments[1:])
+
+					log.Tracef("(Step %d/%d Command %d/%d) Starting Command", stepIdx+1, numSteps, commandIdx+1, len(funcs))
+
+					stepCmd.ResetFlags()
+					err = stepCmd.ExecuteContext(ctx)
+					log.Tracef("(Step %d/%d Command %d/%d) Complete Command", stepIdx+1, numSteps, commandIdx+1, len(funcs))
+				}
+
+				commandResult := &commandResult{
+					stepIdx:     stepIdx,
+					commandIdx:  commandIdx,
+					commandLine: rawCmdLine,
+					error:       err,
+				}
+
+				resultChan <- commandResult
+
+			})
+
+		}
+
+		if len(funcs) > 1 {
+			log.Debugf("Running %d commands", len(funcs))
+		}
+
+		// Start processing all the functions
+		go func() {
+			for idx, fn := range funcs {
+				idx := idx
+				if shutdown.ShutdownFlag.Load() {
+					log.Infof("Aborting runbook execution, after %d scheduled executions", idx)
+					cancelFunc()
+					break
+				}
+
+				fn := fn
+				log.Tracef("Run %d is waiting on semaphore", idx)
+				if err := concurrentRunSemaphore.Acquire(ctx, 1); err == nil {
+					go func() {
+						log.Tracef("Run %d is starting", idx)
+						defer concurrentRunSemaphore.Release(1)
+						fn()
+					}()
+				} else {
+					log.Warnf("Run %d failed to get semaphore %v", idx, err)
+				}
+			}
+		}()
+
+		errorCount := 0
+		for i := 0; i < len(funcs); i++ {
+			select {
+			case result := <-resultChan:
+				if !shutdown.ShutdownFlag.Load() {
+					if result.error != nil {
+						log.Warnf("(Step %d/%d Command %d/%d) %v", result.stepIdx+1, numSteps, result.commandIdx+1, len(funcs), fmt.Errorf("error processing command [%s], %w", result.commandLine, result.error))
+						errorCount++
+					} else {
+						log.Debugf("(Step %d/%d Command %d/%d) finished successfully ", result.stepIdx+1, numSteps, result.commandIdx+1, len(funcs))
+					}
+				} else {
+					log.Tracef("Shutdown flag enabled, completion result %v", result)
+					cancelFunc()
+				}
+			case <-time.After(time.Duration(*execTimeoutInSeconds) * time.Second):
+				return fmt.Errorf("timeout of %d seconds reached, only %d of %d commands finished of step %d/%d", *execTimeoutInSeconds, i+1, len(funcs), stepIdx+1, numSteps)
+
+			}
+		}
+
+		if len(funcs) > 1 {
+			log.Debugf("Running %d commands complete", len(funcs))
+		}
+
+		if !runbookAction.IgnoreErrors && errorCount > 0 {
+			return fmt.Errorf("error occurred while processing script aborting")
+		}
+	}
+	defer cancelFunc()
+	return nil
 }
 
 func processRunbookVariablesOnCommand(runbookActionRunActionCommand *cobra.Command, runbookStringArguments map[string]*string, variables map[string]runbooks.Variable, enableRequiredVars bool) {

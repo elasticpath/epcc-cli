@@ -137,8 +137,9 @@ func getAliasesForSingleJsonApiType(jsonApiType string) map[string]*id.IdableAtt
 func ResolveAliasValuesOrReturnIdentity(jsonApiType string, alternateJsonApiTypes []string, aliasName string, attribute string) string {
 	splitAlias := strings.Split(aliasName, "/")
 
+	// TODO  you can get weird behaviour if you use a / in an alias
+	// fix in another bug (I think the Commerce Extension Runbook also needs a fix)
 	if len(splitAlias) == 2 {
-		//
 		alternateJsonApiTypes = append(alternateJsonApiTypes, splitAlias[0])
 		aliasName = splitAlias[1]
 	}
@@ -167,7 +168,6 @@ func ResolveAliasValuesOrReturnIdentity(jsonApiType string, alternateJsonApiType
 		}
 
 		log.Warnf("Alias was found for for %s, but the attribute is unknown, must be one of {id, slug, sku, code}, but got %s", aliasName, attribute)
-
 	}
 	return aliasName
 }
