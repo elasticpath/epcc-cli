@@ -40,17 +40,17 @@ var configure = &cobra.Command{
 			profileName = text
 		}
 
-		print("API Base URL [https://api.moltin.com]:")
+		print("API Base URL [https://euwest.api.elasticpath.com]:")
 		if input := readInput(reader); input != "" {
 			newProfile.EPCC_API_BASE_URL = input
 		} else {
-			newProfile.EPCC_API_BASE_URL = "https://api.moltin.com"
+			newProfile.EPCC_API_BASE_URL = "https://euwest.api.elasticpath.com"
 		}
 		print("Client ID [None]:")
 		newProfile.EPCC_CLIENT_ID = readInput(reader)
 		print("Client Secret [None]:")
 		newProfile.EPCC_CLIENT_SECRET = readInput(reader)
-		print("Beta Features Enabled (See: https://documentation.elasticpath.com/commerce-cloud/docs/api/basics/api-contract.html#beta-apis) [None]:")
+		print("Beta Features Enabled (See: https://elasticpath.dev/guides/Getting-Started/api-contract#beta-apis) [None]:")
 		newProfile.EPCC_BETA_API_FEATURES = readInput(reader)
 
 		print("Rate Limit [10]:")

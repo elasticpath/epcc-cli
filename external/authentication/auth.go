@@ -182,6 +182,10 @@ func fetchNewAuthenticationToken(values url.Values) (*ApiTokenResponse, error) {
 		}
 	}
 
+	if reqURL.Host == "api.moltin.com" {
+		log.Warnf("The API Endpoint https://api.moltin.com is deprecated, please use https://euwest.api.elasticpath.com instead")
+	}
+
 	reqURL.Path = fmt.Sprintf("/oauth/access_token")
 
 	body := strings.NewReader(values.Encode())
