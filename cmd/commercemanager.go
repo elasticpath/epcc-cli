@@ -11,6 +11,7 @@ import (
 
 var ApiHostToUrlMap = map[string]string{
 	"api.moltin.com":             "https://euwest.cm.elasticpath.com/",
+	"euwest.api.elasticpath.com": "https://euwest.cm.elasticpath.com/",
 	"useast.api.elasticpath.com": "https://useast.cm.elasticpath.com/",
 }
 var cmCommand = &cobra.Command{

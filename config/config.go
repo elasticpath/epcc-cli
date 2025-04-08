@@ -29,4 +29,4 @@ func GetEnv() *Env {
 	return &v
 }
 
-const DefaultUrl = "https://api.moltin.com"
+const DefaultUrl = "https://euwest.api.elasticpath.com"
