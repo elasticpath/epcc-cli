@@ -20,7 +20,7 @@ Additionally, this tool is not necessarily meant to be a new command line equiva
 
 1. Download the appropriate release from the [GitHub Release Page](https://github.com/elasticpath/epcc-cli/releases).
 2. Add the `epcc` binary to your path.
-3. Load the autocompletion into your shell (See instructions [here](#completion)).
+3. Load the autocompletion into your shell (See instructions [here](#auto-completion)).
 
 It is highly recommended that new users check out the [Tutorial](docs/tutorial.md).
 
@@ -145,6 +145,10 @@ To load completions for each session, execute once:
 ##### macOS
 
 `epcc completion bash > /usr/local/etc/bash_completion.d/epcc`
+
+If installed using Homebrew, use the following command:
+
+`epcc completion bash > $(brew --prefix)/etc/bash_completion.d/epcc`
 
 #### PowerShell
 
