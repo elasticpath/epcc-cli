@@ -36,6 +36,8 @@ func NewGetCommand(parentCmd *cobra.Command) func() {
 	var repeat uint32 = 1
 	var repeatDelay uint32 = 100
 	var ignoreErrors = false
+	var logOnSuccess = ""
+	var logOnFailure = ""
 
 	resetFunc := func() {
 		overrides.QueryParameters = nil
@@ -51,6 +53,8 @@ func NewGetCommand(parentCmd *cobra.Command) func() {
 		repeat = 1
 		repeatDelay = 100
 		ignoreErrors = false
+		logOnSuccess = ""
+		logOnFailure = ""
 
 	}
 
@@ -220,7 +224,19 @@ func NewGetCommand(parentCmd *cobra.Command) func() {
 						}
 					}
 
-					return repeater(c, repeat, repeatDelay, cmd, args, ignoreErrors)
+					res := repeater(c, repeat, repeatDelay, cmd, args, ignoreErrors)
+
+					if res != nil {
+						if logOnFailure != "" {
+							log.Errorf(logOnFailure)
+						}
+					} else {
+						if logOnSuccess != "" {
+							log.Infof(logOnSuccess)
+						}
+					}
+
+					return res
 
 				},
 				ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
@@ -294,6 +310,8 @@ func NewGetCommand(parentCmd *cobra.Command) func() {
 	getCmd.MarkFlagsMutuallyExclusive("if-alias-exists", "if-alias-does-not-exist")
 	getCmd.PersistentFlags().Uint32VarP(&repeat, "repeat", "", 1, "Number of times to repeat the command")
 	getCmd.PersistentFlags().Uint32VarP(&repeatDelay, "repeat-delay", "", 100, "Delay (in ms) between repeats")
+	getCmd.PersistentFlags().StringVarP(&logOnSuccess, "log-on-success", "", "", "Output the following message as an info if the result is successful")
+	getCmd.PersistentFlags().StringVarP(&logOnFailure, "log-on-failure", "", "", "Output the following message as an error if the result fails")
 
 	_ = getCmd.RegisterFlagCompletionFunc("output-jq", jqCompletionFunc)
 
