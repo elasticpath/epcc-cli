@@ -75,7 +75,6 @@ actions:
   reset:
     ignore_errors: true
     commands:
-      - epcc delete customer email=hello@world.example
       - |
         epcc delete customer email=stephen.sloan@test.example
         epcc delete customer email=antwan.griffin@test.example
@@ -87,3 +86,4 @@ actions:
         epcc delete customer email=kelly.burns@test.example
         epcc delete customer email=mohamed.love@test.example
         epcc delete customer email=lindsey.sexton@test.example
+      - epcc delete customer email=hello@world.example --log-on-success "Successfully Reset Runbook" --log-on-failure "Could not Reset Runbook, maybe the customer does not exist"

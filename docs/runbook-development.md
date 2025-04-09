@@ -45,7 +45,7 @@ actions:
    - epcc update customer name=Hello_World name "Goodbye"
   reset:
    commands:
-   - epcc delete customer email=hello@world.example
+   - epcc delete -s customer email=hello@world.example --log-on-success "Successfully Reset Runbook" --log-on-failure "Could not Reset Runbook, maybe the customer does not exist" 
 ```
 
 A few interesting points to note about the above example:
@@ -55,6 +55,7 @@ A few interesting points to note about the above example:
 4. Conventionally a lot of runbooks use the action **reset**, to reset the store to the initial state. 
 5. Each line can be one of `epcc create`, `epcc get`, `epcc update`, `epcc delete`.
    * There is also `sleep <N>` which can be used to delay execution for a bite, this is a coarse mechanism to handle asynchronous processes.
+6. The `--log-on-success` and `--log-on-failure` flags are used to log messages when the command succeeds or fails. This can be useful to provide more context or abstract away problems in the runbook.
 
 ### Parallel Operations
 
