@@ -23,7 +23,7 @@ var docsCommand = &cobra.Command{
 					verb := args[1]
 					err = openDoc(resource, verb)
 				default:
-					return doDefault()
+					return fmt.Errorf("Unexpected number of arguments %d", len(args))
 				}
 			} else {
 				if len(args) != 2 {
@@ -72,46 +72,49 @@ var docsCommand = &cobra.Command{
 
 func openDoc(resourceDoc resources.Resource, verb string) error {
 	var err error
+	var info *resources.CrudEntityInfo
+
+	docUrl := ""
 	switch verb {
 	case "":
-		if len(resourceDoc.Docs) < 1 {
-			err = doDefault()
+		if len(resourceDoc.Docs) < 1 || resourceDoc.Docs == "n/a" {
+			return fmt.Errorf("Could not open docs for resource '%s', no documentation available", resourceDoc.PluralName)
 		}
-		err = browser.OpenUrl(resourceDoc.Docs)
+
+		docUrl = resourceDoc.Docs
 	case "get-collection":
-		if resourceDoc.GetCollectionInfo != nil && len(resourceDoc.GetCollectionInfo.Docs) < 1 {
-			err = doDefault()
-		}
-		err = browser.OpenUrl(resourceDoc.GetCollectionInfo.Docs)
+		info = resourceDoc.GetCollectionInfo
 	case "get":
-		if resourceDoc.GetEntityInfo != nil && len(resourceDoc.GetEntityInfo.Docs) < 1 {
-			err = doDefault()
-		}
-		err = browser.OpenUrl(resourceDoc.GetEntityInfo.Docs)
+		info = resourceDoc.GetEntityInfo
 	case "update":
-		if resourceDoc.UpdateEntityInfo != nil && len(resourceDoc.UpdateEntityInfo.Docs) < 1 {
-			err = doDefault()
-		}
-		err = browser.OpenUrl(resourceDoc.UpdateEntityInfo.Docs)
+		info = resourceDoc.UpdateEntityInfo
 	case "delete":
-		if resourceDoc.DeleteEntityInfo != nil && len(resourceDoc.DeleteEntityInfo.Docs) < 1 {
-			err = doDefault()
-		}
-		err = browser.OpenUrl(resourceDoc.DeleteEntityInfo.Docs)
+		info = resourceDoc.DeleteEntityInfo
 	case "create":
-		if resourceDoc.CreateEntityInfo != nil && len(resourceDoc.CreateEntityInfo.Docs) < 1 {
-			err = doDefault()
-		}
-		err = browser.OpenUrl(resourceDoc.CreateEntityInfo.Docs)
+		info = resourceDoc.CreateEntityInfo
 	default:
 		return fmt.Errorf("Unknown action for resource: [%s]", verb)
+	}
 
+	if info != nil {
+		if len(info.Docs) < 1 || info.Docs == "n/a" {
+			return fmt.Errorf("could not open docs for resource '%s', action'%s': no documentation available", resourceDoc.PluralName, verb)
+		}
+		docUrl = info.Docs
 	}
+
+	if docUrl == "" {
+		return fmt.Errorf("no documentation available available for '%s', action '%s'", resourceDoc.PluralName, verb)
+	}
+
+	err = browser.OpenUrl(docUrl)
+
 	if err != nil {
-		return fmt.Errorf("could not open docs for resource '%s', action'%s': %w", resourceDoc.PluralName, verb, err)
+		return fmt.Errorf("error opening url: %w", err)
 	}
+
 	return nil
 }
 func doDefault() error {
-	return fmt.Errorf(" You must supply a resource type to the docs command")
+	return fmt.Errorf("no documentation available")
 }
