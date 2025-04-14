@@ -2066,6 +2066,9 @@ promotions:
     docs: "https://elasticpath.dev/docs/api/promotions/create-a-promotion"
     url: "/v2/promotions"
     content-type: application/json
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/promotions/update-a-promotion"
+    url: "/v2/promotions/{promotions}"
   attributes:
     name:
       type: STRING
