@@ -1,5 +1,9 @@
 package misc
 
+import "regexp"
+
+var numericArgument = regexp.MustCompile(`^\s*-[0-9]+\s*$`)
+
 func AddImplicitDoubleDash(args []string) []string {
 
 	newArgs := make([]string, 0, len(args))
@@ -27,6 +31,22 @@ func AddImplicitDoubleDash(args []string) []string {
 		}
 		newArgs = append(newArgs, args[i])
 
+	}
+
+	if !dashesAdded {
+		if len(newArgs) >= 3 && newArgs[1] == "logs" {
+			oldArgs := newArgs
+			newArgs = make([]string, 0, len(args))
+
+			for i := 0; i < len(oldArgs); i++ {
+				if !dashesAdded && numericArgument.MatchString(oldArgs[i]) {
+					dashesAdded = true
+					newArgs = append(newArgs, "--")
+				}
+
+				newArgs = append(newArgs, oldArgs[i])
+			}
+		}
 	}
 
 	return newArgs

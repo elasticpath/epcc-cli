@@ -110,7 +110,9 @@ func InitializeCmd() {
 	log.Tracef("Building Delete All Commands")
 	NewDeleteAllCommand(RootCmd)
 
-	Logs.AddCommand(LogsList, LogsShow, LogsClear)
+	Logs.AddCommand(LogsList, LogsShow, LogsClear, LogsCurlReplay)
+
+	LogsCurlReplay.PersistentFlags().BoolVarP(&CurlInlineAuth, "inline-auth", "", false, "If set, we will replace the authorization header with a curl call and our current credentials")
 
 	testJson.ResetFlags()
 	testJson.Flags().BoolVarP(&noWrapping, "no-wrapping", "", false, "if set, we won't wrap the output the json in a data tag")
