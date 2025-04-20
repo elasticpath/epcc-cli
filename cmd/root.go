@@ -10,6 +10,7 @@ import (
 	"github.com/elasticpath/epcc-cli/external/logger"
 	"github.com/elasticpath/epcc-cli/external/misc"
 	"github.com/elasticpath/epcc-cli/external/profiles"
+	"github.com/elasticpath/epcc-cli/external/resources"
 	"github.com/elasticpath/epcc-cli/external/shutdown"
 	"github.com/elasticpath/epcc-cli/external/version"
 	log "github.com/sirupsen/logrus"
@@ -81,6 +82,7 @@ func InitializeCmd() {
 	applyLogLevelEarlyDetectionHack()
 	log.Tracef("Root Command Building In Progress")
 
+	resources.PublicInit()
 	initRunbookCommands()
 	log.Tracef("Runbooks initialized")
 	RootCmd.AddCommand(
@@ -326,6 +328,7 @@ func initConfig() {
 
 	// Override profile configuration with environment variables
 	if err := env.Parse(e); err != nil {
+		log.Fatalf("Could not process environment variables, error: %v", err)
 		panic("Could not parse environment variables")
 	}
 

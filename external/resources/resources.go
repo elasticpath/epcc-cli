@@ -2,6 +2,7 @@ package resources
 
 import (
 	_ "embed"
+	"github.com/elasticpath/epcc-cli/config"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
 	"regexp"
@@ -63,6 +64,8 @@ type Resource struct {
 	// This should only be used for cases where we manually fix things, or where
 	// a store reset would clear a resource another way (e.g., the resource represents a projection).
 	SuppressResetWarning bool `yaml:"suppress-reset-warning,omitempty"`
+
+	Legacy bool `yaml:"legacy"`
 }
 
 type CrudEntityInfo struct {
@@ -178,16 +181,23 @@ func AppendResourceData(newResources map[string]Resource) {
 	postProcessResourceMetadata()
 }
 
-func init() {
-	PublicInit()
-}
-
 func PublicInit() {
-
+	if resources != nil {
+		return
+	}
 	resourceData, err := GenerateResourceMetadataFromYaml(resourceMetaData)
 
 	if err != nil {
 		panic("Couldn't load the resource meta data: " + err.Error())
+	}
+	e := config.GetEnv()
+
+	if e.EPCC_DISABLE_LEGACY_RESOURCES {
+		for k, v := range resourceData {
+			if v.Legacy {
+				delete(resourceData, k)
+			}
+		}
 	}
 
 	resources = resourceData

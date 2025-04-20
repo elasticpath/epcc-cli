@@ -103,11 +103,10 @@ accounts:
   json-api-format: "legacy"
   docs: "https://elasticpath.dev/docs/api/accounts"
   get-collection:
-    docs: "https://elasticpath.dev/docs/api/accounts/get-v-2-accounts-account-id"
+    docs: "https://elasticpath.dev/docs/api/accounts/get-v-2-accounts"
     url: "/v2/accounts"
   get-entity:
-    #TODO this link is wrong, but the actual page doesn't exist.
-    docs: "https://elasticpath.dev/docs/api/accounts"
+    docs: "https://elasticpath.dev/docs/api/accounts/get-v-2-accounts-account-id"
     url: "/v2/accounts/{accounts}"
   update-entity:
     docs: "https://elasticpath.dev/docs/api/accounts/put-v-2-accounts-account-id"
@@ -2215,6 +2214,7 @@ v2-brands:
   singular-name: "v2-brand"
   json-api-type: "brand"
   json-api-format: "legacy"
+  legacy: true
   docs: "n/a"
   get-collection:
     docs: "n/a"
@@ -2246,6 +2246,7 @@ v2-categories:
   singular-name: "v2-category"
   json-api-type: "category"
   json-api-format: "legacy"
+  legacy: true
   docs: "n/a"
   get-collection:
     docs: "n/a"
@@ -2278,6 +2279,7 @@ v2-collections:
   singular-name: "v2-collection"
   json-api-type: "collection"
   json-api-format: "legacy"
+  legacy: true
   docs: "n/a"
   get-collection:
     docs: "n/a"
@@ -2310,6 +2312,7 @@ v2-products:
   singular-name: "v2-product"
   json-api-type: "product"
   json-api-format: "legacy"
+  legacy: true
   docs: "n/a"
   get-collection:
     docs: "n/a"
@@ -2354,6 +2357,7 @@ v2-variations:
   singular-name: "v2-variation"
   json-api-type: "product-variation"
   json-api-format: "legacy"
+  legacy: true
   docs: "n/a"
   get-collection:
     docs: "n/a"
@@ -2381,6 +2385,7 @@ v2-variation-options:
   singular-name: "v2-variation-option"
   json-api-type: "option"
   json-api-format: "legacy"
+  legacy: true
   docs: "n/a"
   get-collection:
     docs: "n/a"
@@ -2409,6 +2414,7 @@ v2-modifiers:
   singular-name: "v2-modifier"
   json-api-type: "modifier"
   json-api-format: "legacy"
+  legacy: true
   docs: "n/a"
   get-collection:
     docs: "n/a"

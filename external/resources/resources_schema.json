@@ -30,6 +30,9 @@
         "suppress-reset-warning": {
           "type": "boolean"
         },
+        "legacy": {
+          "type": "boolean"
+        },
         "docs": { "type": "string", "pattern": "^(https?://|n/a$)"  },
         "get-collection": {
           "type": "object",

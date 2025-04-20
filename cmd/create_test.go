@@ -2,10 +2,15 @@ package cmd
 
 import (
 	"github.com/elasticpath/epcc-cli/external/aliases"
+	"github.com/elasticpath/epcc-cli/external/resources"
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
+
+func init() {
+	resources.PublicInit()
+}
 
 func TestCreateCompletionReturnsSomeFields(t *testing.T) {
 
@@ -73,7 +78,7 @@ func TestCreateCompletionReturnsFirstElementParentId(t *testing.T) {
 	require.Contains(t, completionResult, "name=John")
 }
 
-func TestCreateCompletionReturnsAnValidAttributeKey(t *testing.T) {
+func TestCreateCompletionReturnsAValidAttributeKey(t *testing.T) {
 
 	// Fixture Setup
 	rootCmd := &cobra.Command{}
@@ -90,7 +95,7 @@ func TestCreateCompletionReturnsAnValidAttributeKey(t *testing.T) {
 	require.Contains(t, completionResult, "city")
 }
 
-func TestCreateCompletionReturnsAnValidAttributeKeyThatHasNotBeenUsed(t *testing.T) {
+func TestCreateCompletionReturnsAValidAttributeKeyThatHasNotBeenUsed(t *testing.T) {
 
 	// Fixture Setup
 	rootCmd := &cobra.Command{}

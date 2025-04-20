@@ -10,6 +10,7 @@ type Env struct {
 	EPCC_RATE_LIMIT                    uint16 `env:"EPCC_RATE_LIMIT"`
 	EPCC_CLI_SUPPRESS_NO_AUTH_MESSAGES bool   `env:"EPCC_CLI_SUPPRESS_NO_AUTH_MESSAGES"`
 	EPCC_RUNBOOK_DIRECTORY             string `env:"EPCC_RUNBOOK_DIRECTORY"`
+	EPCC_DISABLE_LEGACY_RESOURCES      bool   `env:"EPCC_DISABLE_LEGACY_RESOURCES"`
 }
 
 var env = atomic.Pointer[Env]{}

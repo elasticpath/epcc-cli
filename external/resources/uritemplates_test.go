@@ -5,10 +5,6 @@ import (
 	"testing"
 )
 
-func init() {
-	aliases.InitializeAliasDirectoryForTesting()
-}
-
 func TestGetNumberOfVariablesReturnsErrorOnTemplate(t *testing.T) {
 
 	// Fixture Setup
