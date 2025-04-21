@@ -7,6 +7,10 @@ import (
 	"testing"
 )
 
+func init() {
+	resources.PublicInit()
+}
+
 func TestHeaderKeyWithNilValueCompletes(t *testing.T) {
 	// Fixture Setup
 	toComplete := "EP-"

@@ -10,6 +10,7 @@ import (
 
 func init() {
 	aliases.InitializeAliasDirectoryForTesting()
+	resources.PublicInit()
 }
 
 func TestErrorMessageWhenOddNumberOfValuesPassed(t *testing.T) {
