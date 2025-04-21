@@ -11,6 +11,7 @@ import (
 	"github.com/elasticpath/epcc-cli/external/profiles"
 	"github.com/elasticpath/epcc-cli/external/shutdown"
 	"github.com/elasticpath/epcc-cli/external/version"
+	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/time/rate"
 	"io"
@@ -290,12 +291,15 @@ func doRequestInternal(ctx context.Context, method string, contentType string, p
 	}
 
 	rateLimitTime := time.Since(start)
-	log.Tracef("Rate limiter allowed call, making HTTP Request")
+	log.Tracef("Rate limiter allowed call")
 
+	corrID, _ := uuid.NewUUID()
+
+	log.Tracef("Starting HTTP Request %s %s (Correlation ID: %s [not request id])", req.Method, req.URL.String(), corrID.String())
 	resp, err := HttpClient.Do(req)
 	requestTime := time.Since(start)
 
-	log.Tracef("HTTP Request complete, waiting for stats lock")
+	log.Tracef("HTTP Request complete %s %s (Correlation ID: %s [not request id]), duration %d ms", req.Method, req.URL.String(), corrID.String(), requestTime.Milliseconds())
 	statsLock.Lock()
 
 	// Lock is not deferred (for perf reasons), so don't
