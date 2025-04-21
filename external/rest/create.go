@@ -17,7 +17,7 @@ import (
 	"strings"
 )
 
-func CreateInternal(ctx context.Context, overrides *httpclient.HttpParameterOverrides, args []string, autoFillOnCreate bool, aliasName string, skipAliases bool) (string, error) {
+func CreateInternal(ctx context.Context, overrides *httpclient.HttpParameterOverrides, args []string, autoFillOnCreate bool, aliasName string, skipAliases bool, disableConstants bool) (string, error) {
 	shutdown.OutstandingOpCounter.Add(1)
 	defer shutdown.OutstandingOpCounter.Done()
 
@@ -78,9 +78,10 @@ func CreateInternal(ctx context.Context, overrides *httpclient.HttpParameterOver
 			params.Add(keyAndValue[0], keyAndValue[1])
 		}
 
-		if !resource.NoWrapping {
+		if !resource.NoWrapping && !disableConstants {
 			args = append(args, "type", resource.JsonApiType)
 		}
+
 		// Create the body from remaining args
 
 		jsonArgs := args[(idCount + 1):]
@@ -90,7 +91,7 @@ func CreateInternal(ctx context.Context, overrides *httpclient.HttpParameterOver
 			jsonArgs = append(autofilledData, jsonArgs...)
 		}
 
-		body, err := json.ToJson(jsonArgs, resource.NoWrapping, resource.JsonApiFormat == "compliant", resource.Attributes, true)
+		body, err := json.ToJson(jsonArgs, resource.NoWrapping, resource.JsonApiFormat == "compliant", resource.Attributes, true, !disableConstants)
 
 		if err != nil {
 			return "", err

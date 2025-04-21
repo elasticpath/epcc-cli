@@ -71,7 +71,7 @@ func GetCallbackData(ctx context.Context, port uint16, r *http.Request) (*Callba
 				"oauth_authorization_code", data["code"],
 				"oauth_redirect_uri", fmt.Sprintf("http://localhost:%d/callback", port),
 				"oauth_code_verifier", verifier.Value,
-			}, false, "", true)
+			}, false, "", true, false)
 
 			if err != nil {
 				return nil, fmt.Errorf("could not get account tokens: %w", err)
@@ -101,7 +101,7 @@ func GetCallbackData(ctx context.Context, port uint16, r *http.Request) (*Callba
 				"oauth_authorization_code", data["code"],
 				"oauth_redirect_uri", fmt.Sprintf("http://localhost:%d/callback", port),
 				"oauth_code_verifier", verifier.Value,
-			}, false, "", true)
+			}, false, "", true, false)
 
 			if err != nil {
 				return nil, fmt.Errorf("could not get customer tokens: %w", err)

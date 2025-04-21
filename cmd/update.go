@@ -32,6 +32,7 @@ func NewUpdateCommand(parentCmd *cobra.Command) func() {
 	var ignoreErrors = false
 	var logOnSuccess = ""
 	var logOnFailure = ""
+	var disableConstants = false
 
 	resetFunc := func() {
 		overrides.QueryParameters = nil
@@ -47,6 +48,7 @@ func NewUpdateCommand(parentCmd *cobra.Command) func() {
 		ignoreErrors = false
 		logOnSuccess = ""
 		logOnFailure = ""
+		disableConstants = false
 	}
 
 	var updateCmd = &cobra.Command{
@@ -96,7 +98,7 @@ func NewUpdateCommand(parentCmd *cobra.Command) func() {
 						}
 					}
 
-					body, err := rest.UpdateInternal(context.Background(), overrides, skipAliases, append([]string{resourceName}, args...))
+					body, err := rest.UpdateInternal(context.Background(), overrides, skipAliases, disableConstants, append([]string{resourceName}, args...))
 
 					if err != nil {
 						return err
@@ -221,6 +223,7 @@ func NewUpdateCommand(parentCmd *cobra.Command) func() {
 	updateCmd.PersistentFlags().Uint32VarP(&repeat, "repeat", "", 1, "Number of times to repeat the command")
 	updateCmd.PersistentFlags().Uint32VarP(&repeatDelay, "repeat-delay", "", 100, "Delay (in ms) between repeats")
 
+	updateCmd.PersistentFlags().BoolVarP(&disableConstants, "no-auto-constants", "", false, "Disable setting of known constant values in the request body (e.g., `type`)")
 	updateCmd.PersistentFlags().StringVarP(&logOnSuccess, "log-on-success", "", "", "Output the following message as an info if the result is successful")
 	updateCmd.PersistentFlags().StringVarP(&logOnFailure, "log-on-failure", "", "", "Output the following message as an error if the result fails")
 

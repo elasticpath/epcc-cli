@@ -17,7 +17,7 @@ var segmentRegex = regexp.MustCompile("(.+?)(\\[[0-9]+])?$")
 
 var attributeWithArrayIndex = regexp.MustCompile("\\[[0-9]+]")
 
-func ToJson(args []string, noWrapping bool, compliant bool, attributes map[string]*resources.CrudEntityAttribute, useAliases bool) (string, error) {
+func ToJson(args []string, noWrapping bool, compliant bool, attributes map[string]*resources.CrudEntityAttribute, useAliases bool, autoAddConstantValues bool) (string, error) {
 
 	if len(args)%2 == 1 {
 		return "", fmt.Errorf("the number of arguments %d supplied isn't even, json should be passed in key value pairs. Do you have an extra/missing id?", len(args))
@@ -41,72 +41,39 @@ func ToJson(args []string, noWrapping bool, compliant bool, attributes map[strin
 	if firstArrayKeyIdx >= 0 {
 		return toJsonArray(args, noWrapping, compliant, attributes, useAliases)
 	} else {
-		return toJsonObject(args, noWrapping, compliant, attributes, useAliases)
+		return toJsonObject(args, noWrapping, compliant, attributes, useAliases, autoAddConstantValues)
 	}
 }
 
-func toJsonObject(args []string, noWrapping bool, compliant bool, attributes map[string]*resources.CrudEntityAttribute, useAliases bool) (string, error) {
+func toJsonObject(args []string, noWrapping bool, compliant bool, attributes map[string]*resources.CrudEntityAttribute, useAliases bool, autoAddConstantValues bool) (string, error) {
 
 	var result interface{} = make(map[string]interface{})
+
 	var err error
 
-	// 1. Collect all keys/values and group by prefix (e.g., data[0])
-	grouped := make(map[string]map[string]string)
+	var constAttributes = make(map[string]string)
+
+	for k, v := range attributes {
+		if strings.HasPrefix(v.Type, "CONST:") {
+			val := strings.TrimSpace(strings.Replace(v.Type, "CONST:", "", 1))
+			val = templates.Render(val)
+			val = formatValue(val)
+
+			constAttributes[k] = val
+		}
+	}
+
+	var addedAttributes = make(map[string]string)
+
+	var processedArgs = make([]string, 0, len(args))
+
 	for i := 0; i < len(args); i += 2 {
 		key := args[i]
 		val := args[i+1]
-		prefix := key
-		if idx := strings.Index(key, "."); idx != -1 {
-			prefix = key[:idx]
-		}
-		if _, ok := grouped[prefix]; !ok {
-			grouped[prefix] = make(map[string]string)
-		}
-		field := key
-		if idx := strings.Index(key, "."); idx != -1 {
-			field = key[idx+1:]
-		}
-		grouped[prefix][field] = val
-	}
 
-	// 2. Find all possible CONST attributes for data[n].*
-	constFields := map[string]*resources.CrudEntityAttribute{}
-	for attrKey, attr := range attributes {
-		if strings.Contains(attrKey, "[n].") && strings.HasPrefix(attr.Type, "CONST:") {
-			if idx := strings.Index(attrKey, "."); idx != -1 {
-				field := attrKey[idx+1:]
-				constFields[field] = attr
-			}
-		}
-	}
-
-	// 3. For each group, add missing const fields
-	for _, fields := range grouped {
-		for field, attr := range constFields {
-			if _, ok := fields[field]; !ok {
-				fields[field] = strings.TrimPrefix(attr.Type, "CONST:")
-			}
-		}
-	}
-
-	// 4. Now flatten back to args for the rest of the logic
-	flatArgs := make([]string, 0, len(args)+(len(constFields)*len(grouped)))
-	for prefix, fields := range grouped {
-		for field, val := range fields {
-			if field == prefix {
-				flatArgs = append(flatArgs, prefix, val)
-			} else {
-				flatArgs = append(flatArgs, prefix+"."+field, val)
-			}
-		}
-	}
-
-	// 5. Continue with the original logic, but using flatArgs
-	for i := 0; i < len(flatArgs); i += 2 {
-		key := flatArgs[i]
-		val := flatArgs[i+1]
-
+		// Try and process the argument as a helm template
 		val = templates.Render(val)
+
 		jsonKey := key
 		switch {
 		case key == "type" || key == "id":
@@ -116,30 +83,55 @@ func toJsonObject(args []string, noWrapping bool, compliant bool, attributes map
 		case compliant:
 			jsonKey = fmt.Sprintf("attributes.%s", key)
 		default:
+
 		}
 
 		attributeName := key
 		if strings.HasPrefix(key, "attributes.") {
 			attributeName = strings.Replace(key, "attributes.", "", 1)
 		}
+
+		// Look for a match of attribute names with [n] instead of [0] or [1] whatever the user supplied
 		attributeName = attributeWithArrayIndex.ReplaceAllString(attributeName, "[n]")
+
 		attributeInfo, hasAttribute := attributes[attributeName]
+
 		useAttribute := false
 		if hasAttribute {
 			if strings.HasPrefix(attributeInfo.Type, "RESOURCE_ID:") {
 				useAttribute = true
 			}
+
 			if strings.HasPrefix(attributeInfo.Type, "RESOURCE_ID:*") {
 				useAttribute = false
 			}
+
+			parentIdx := strings.LastIndex(attributeName, ".")
+			attributePrefix := ""
+			if parentIdx > 0 {
+				attributePrefix = attributeName[0:parentIdx]
+			}
+
+			if autoAddConstantValues {
+				for k := range constAttributes {
+					adjacentFieldsRegexp := fmt.Sprintf("^\\Q%s\\E\\.[^.]+$", attributePrefix)
+
+					if ok, _ := regexp.MatchString(adjacentFieldsRegexp, k); ok {
+						addedAttributes[key[0:parentIdx]+"."+k[parentIdx+1:]] = constAttributes[k]
+					}
+				}
+			}
 		}
+
 		if useAttribute {
 			if strings.HasPrefix(attributeInfo.Type, "RESOURCE_ID:") {
 				resourceType := strings.Replace(attributeInfo.Type, "RESOURCE_ID:", "", 1)
+
 				aliasAttributeToUse := "id"
 				if attributeInfo.AliasAttribute != "" {
 					aliasAttributeToUse = attributeInfo.AliasAttribute
 				}
+
 				if aliasType, ok := resources.GetResourceByName(resourceType); ok {
 					if useAliases {
 						val = aliases.ResolveAliasValuesOrReturnIdentity(aliasType.JsonApiType, aliasType.AlternateJsonApiTypesForAliases, val, aliasAttributeToUse)
@@ -150,6 +142,7 @@ func toJsonObject(args []string, noWrapping bool, compliant bool, attributes map
 			}
 		} else {
 			splitAlias := strings.Split(val, "/")
+
 			if len(splitAlias) == 4 {
 				if splitAlias[0] == "alias" {
 					if useAliases {
@@ -158,12 +151,31 @@ func toJsonObject(args []string, noWrapping bool, compliant bool, attributes map
 				}
 			}
 		}
+
 		val = formatValue(val)
+		processedArgs = append(processedArgs, jsonKey, val)
+	}
+
+	argsWithConsts := make([]string, 0, len(processedArgs)+len(addedAttributes)*2)
+
+	for k, v := range addedAttributes {
+		argsWithConsts = append(argsWithConsts, k, v)
+	}
+
+	argsWithConsts = append(argsWithConsts, processedArgs...)
+
+	for i := 0; i < len(argsWithConsts); i += 2 {
+		k := argsWithConsts[i]
+		val := argsWithConsts[i+1]
+
 		arrayNotationPath := ""
-		for _, str := range strings.Split(jsonKey, ".") {
+
+		for _, str := range strings.Split(k, ".") {
 			arrayNotationPath += segmentRegex.ReplaceAllString(str, "[\"$1\"]$2")
 		}
+
 		query := fmt.Sprintf(".%s=%s", arrayNotationPath, val)
+
 		result, err = RunJQ(query, result)
 		if err != nil {
 			return "{}", err
@@ -173,70 +185,44 @@ func toJsonObject(args []string, noWrapping bool, compliant bool, attributes map
 	if !noWrapping {
 		result, err = RunJQ(`{ "data": . }`, result)
 	}
+
 	jsonStr, err := gojson.Marshal(result)
+
 	return string(jsonStr), err
+
 }
 
 func toJsonArray(args []string, noWrapping bool, compliant bool, attributes map[string]*resources.CrudEntityAttribute, useAliases bool) (string, error) {
 
 	var result interface{} = make([]interface{}, 0)
+
 	var err error
 
-	// Group all keys by array index (e.g. data[0], data[1])
-	grouped := make(map[string]map[string]string)
 	for i := 0; i < len(args); i += 2 {
 		key := args[i]
 		val := args[i+1]
-		// Extract prefix up to array index, e.g. data[0]
-		prefix := key
-		if idx := strings.Index(key, "."); idx != -1 {
-			prefix = key[:idx]
+
+		jsonKey := key
+
+		val = formatValue(val)
+
+		query := fmt.Sprintf(".%s |= %s", jsonKey, val)
+
+		result, err = RunJQ(query, result)
+		if err != nil {
+			return "[]", err
 		}
-		if _, ok := grouped[prefix]; !ok {
-			grouped[prefix] = make(map[string]string)
-		}
-		field := key
-		if idx := strings.Index(key, "."); idx != -1 {
-			field = key[idx+1:]
-		}
-		grouped[prefix][field] = val
+
 	}
 
-	// Find all possible CONST attributes for data[n].*
-	constFields := map[string]*resources.CrudEntityAttribute{}
-	for attrKey, attr := range attributes {
-		if strings.Contains(attrKey, "[n].") && strings.HasPrefix(attr.Type, "CONST:") {
-			// attrKey example: data[n].type
-			if idx := strings.Index(attrKey, "."); idx != -1 {
-				field := attrKey[idx+1:]
-				constFields[field] = attr
-			}
-		}
-	}
-
-	// For each array element, add consts if not present
-	arrayResult := make([]map[string]interface{}, 0, len(grouped))
-	for _, fields := range grouped {
-		obj := map[string]interface{}{}
-		for k, v := range fields {
-			obj[k] = formatValue(v)
-		}
-		// Add missing const fields
-		for field, attr := range constFields {
-			if _, ok := obj[field]; !ok {
-				constVal := strings.TrimPrefix(attr.Type, "CONST:")
-				obj[field] = constVal
-			}
-		}
-		arrayResult = append(arrayResult, obj)
-	}
-
-	result = arrayResult
 	if !noWrapping {
-		result = map[string]interface{}{"data": result}
+		result, err = RunJQ(`{ "data": . }`, result)
 	}
+
 	jsonStr, err := gojson.Marshal(result)
+
 	return string(jsonStr), err
+
 }
 
 func RunJQOnString(queryStr string, json string) (interface{}, error) {
@@ -345,7 +331,6 @@ func RunJQWithArray(queryStr string, result interface{}) ([]interface{}, error) 
 	}
 	return queryResult, nil
 }
-
 func formatValue(v string) string {
 	if match, _ := regexp.MatchString("^(-?[0-9]+(\\.[0-9]+)?|false|true|null)$", v); match {
 		return v

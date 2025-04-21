@@ -14,7 +14,7 @@ import (
 	"strings"
 )
 
-func UpdateInternal(ctx context.Context, overrides *httpclient.HttpParameterOverrides, skipAliases bool, args []string) (string, error) {
+func UpdateInternal(ctx context.Context, overrides *httpclient.HttpParameterOverrides, skipAliases bool, disableConstants bool, args []string) (string, error) {
 	shutdown.OutstandingOpCounter.Add(1)
 	defer shutdown.OutstandingOpCounter.Done()
 
@@ -46,9 +46,12 @@ func UpdateInternal(ctx context.Context, overrides *httpclient.HttpParameterOver
 		resourceURL = overrides.OverrideUrlPath
 	}
 
-	args = append(args, "type", resource.JsonApiType)
+	if !disableConstants {
+		args = append(args, "type", resource.JsonApiType)
+	}
+
 	// Create the body from remaining args
-	body, err := json.ToJson(args[(idCount+1):], resource.NoWrapping, resource.JsonApiFormat == "compliant", resource.Attributes, true)
+	body, err := json.ToJson(args[(idCount+1):], resource.NoWrapping, resource.JsonApiFormat == "compliant", resource.Attributes, true, !disableConstants)
 	if err != nil {
 		return "", err
 	}
