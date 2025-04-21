@@ -607,3 +607,30 @@ func TestToJsonCreatesComplexSingleElementArrayOfObjectWhenArrayKeysSpecified(t 
 		t.Fatalf("Testing json conversion of empty value %s did not match\nExpected: %s\nActually: %s", input, expected, actual)
 	}
 }
+
+func TestToJsonAddsAdjacentConstantValues(t *testing.T) {
+	// Fixture Setup
+	input := []string{"data[0].id", "foo", "data[1].id", "bar", "data[0].slug", "first", "data[2].slug", "third"}
+	expected := `{"data":[{"id":"foo","slug":"first","type": "hello-world"},{"id":"bar","type":"hello-world"},{"slug":"third","type":"hello-world"}]}`
+	// Execute SUT
+
+	actual, _ := ToJson(input, true, false, map[string]*resources.CrudEntityAttribute{
+		"data[n].type": {
+			Key:  "data[n].type",
+			Type: "CONST:hello-world",
+		},
+		"data[n].id": {
+			Key:  "data[n].id",
+			Type: "STRING",
+		},
+		"data[n].slug": {
+			Key:  "data[n].slug",
+			Type: "STRING",
+		},
+	}, true)
+
+	// Verification
+	if actual != expected {
+		t.Fatalf("Testing json conversion of empty value %s did not match\nExpected: %s\nActually: %s", input, expected, actual)
+	}
+}
