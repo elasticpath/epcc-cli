@@ -95,7 +95,7 @@
               "properties": {
                 "type": {
                   "type": "string",
-                  "pattern": "^(STRING|URL|INT|ENUM:[a-z0-9A-Z._,-]+|FLOAT|BOOL|FILE|CURRENCY|SINGULAR_RESOURCE_TYPE|JSON_API_TYPE|RESOURCE_ID:([a-z0-9-]+|[*]))$"
+                  "pattern": "^(STRING|URL|INT|CONST:[a-z0-9A-Z._-]+|ENUM:[a-z0-9A-Z._,-]+|FLOAT|BOOL|FILE|CURRENCY|SINGULAR_RESOURCE_TYPE|JSON_API_TYPE|RESOURCE_ID:([a-z0-9-]+|[*]))$"
                 },
                 "autofill": {
                   "type": "string",

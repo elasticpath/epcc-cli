@@ -201,7 +201,7 @@ func resetResourcesUndeletableResources(ctx context.Context, overrides *httpclie
 	errors := make([]string, 0)
 
 	for _, resetCmd := range resetCmds {
-		body, err := rest.UpdateInternal(ctx, overrides, false, resetCmd)
+		body, err := rest.UpdateInternal(ctx, overrides, false, false, resetCmd)
 
 		if err != nil {
 			errors = append(errors, fmt.Errorf("error resetting  %s: %v", resetCmd[0], err).Error())

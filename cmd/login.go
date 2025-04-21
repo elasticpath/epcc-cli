@@ -301,7 +301,7 @@ var loginCustomer = &cobra.Command{
 		newArgs = append(newArgs, "customer-token")
 		newArgs = append(newArgs, args...)
 
-		body, err := rest.CreateInternal(ctx, overrides, newArgs, false, "", false)
+		body, err := rest.CreateInternal(ctx, overrides, newArgs, false, "", false, false)
 
 		if err != nil {
 			log.Warnf("Login not completed successfully")
@@ -511,7 +511,7 @@ var loginAccountManagement = &cobra.Command{
 		}
 
 		// Do the login and get back a list of accounts
-		body, err := rest.CreateInternal(ctx, overrides, loginArgs, false, "", false)
+		body, err := rest.CreateInternal(ctx, overrides, loginArgs, false, "", false, false)
 
 		if err != nil {
 			log.Warnf("Login not completed successfully")

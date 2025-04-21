@@ -205,7 +205,7 @@ account-cart-associations:
     data[n].id:
       type: RESOURCE_ID:account
     data[n].type:
-      type: ENUM:account
+      type: CONST:account
       autofill: VALUE:account
 application-keys:
   singular-name: "application-key"
@@ -318,7 +318,7 @@ cart-product-items:
     ^custom_inputs\.([a-zA-Z0-9_-]+)\.$:
       type: STRING
     tax[n].type:
-      type: ENUM:tax_item
+      type: CONST:tax_item
     tax[n].name:
       type: STRING
     tax[n].juristiction:
@@ -358,7 +358,7 @@ cart-custom-items:
     price.includes_tax:
       type: BOOL
     tax[n].type:
-      type: ENUM:tax_item
+      type: CONST:tax_item
     tax[n].name:
       type: STRING
     tax[n].juristiction:
@@ -546,7 +546,7 @@ customer-cart-associations:
     data[n].id:
       type: RESOURCE_ID:customer
     data[n].type:
-      type: ENUM:customer
+      type: CONST:customer
       autofill: VALUE:customer
 customer-addresses:
   singular-name: "customer-address"
@@ -743,7 +743,7 @@ fields:
     validation_rules[n].options.from:
       type: STRING
     relationships.flow.data.type:
-      type: ENUM:flow
+      type: CONST:flow
       autofill: VALUE:flow
     relationships.flow.data.id:
       type: RESOURCE_ID:flows
@@ -1590,7 +1590,7 @@ pcm-node-products:
     "data[n].id":
       type: RESOURCE_ID:pcm-product
     "data[n].type":
-      type: ENUM:product
+      type: CONST:product
 pcm-node-parents:
   singular-name: "pcm-node-parent"
   json-api-type: "node"
@@ -1638,7 +1638,7 @@ pcm-nodes:
     locales.en-US.description:
       type: STRING
     relationships.parent.data.type:
-      type: ENUM:node
+      type: CONST:node
     relationships.parent.data.id:
       type: RESOURCE_ID:pcm-nodes
 pcm-product-main-image:
@@ -1720,7 +1720,7 @@ pcm-products:
     ^custom_inputs\.([a-zA-Z0-9-_]+)\.validation_rules\[n\]$:
       type: STRING
     ^custom_inputs\.([a-zA-Z0-9-_]+)\.validation_rules\[n\]\.type$:
-      type: ENUM:string
+      type: CONST:string
     ^custom_inputs\.([a-zA-Z0-9-_]+)\.validation_rules\[n\]\.max_length$:
       type: INT
     ^custom_inputs\.([a-zA-Z0-9-_]+)\.validation_rules\[n\]\.required$:
@@ -1734,7 +1734,7 @@ pcm-products:
     ^components\.([a-zA-Z0-9-_]+)\.options\.id\[n\]$:
       type: RESOURCE_ID:pcm-products
     ^components\.([a-zA-Z0-9-_]+)\.options\.type$:
-      type: ENUM:product
+      type: CONST:product
     ^components\.([a-zA-Z0-9-_]+)\.options\.quantity$:
       type: INT
 pcm-product-templates:
@@ -1756,7 +1756,7 @@ pcm-product-templates:
     "data[n].id":
       type: RESOURCE_ID:flow
     "data[n].type":
-      type: ENUM:template
+      type: CONST:template
 pcm-product-variations:
   singular-name: "pcm-product-variation"
   json-api-type: "template"
@@ -1779,7 +1779,7 @@ pcm-product-variations:
     "data[n].id":
       type: RESOURCE_ID:pcm-variations
     "data[n].type":
-      type: ENUM:product-variation
+      type: CONST:product-variation
 pcm-child-products:
   singular-name: "pcm-child-product"
   json-api-type: "not-used"
@@ -2797,11 +2797,11 @@ custom-api-role-policies:
     delete:
       type: BOOL
     relationships.custom_api.data.type:
-      type: ENUM:custom_api
+      type: CONST:custom_api
     relationships.custom_api.data.id:
       type: RESOURCE_ID:custom-apis
     relationships.role.data.type:
-      type: ENUM:built_in_role
+      type: CONST:built_in_role
     relationships.role.data.id:
       type: RESOURCE_ID:built-in-role
 mli-inventory-locations:
@@ -2904,7 +2904,7 @@ mli-inventory-list-stocks:
     url: "/v2/inventories/multiple"
   attributes:
     data[n].type:
-      type: ENUM:stock
+      type: CONST:stock
     data[n].id:
       type: RESOURCE_ID:pcm-products
 

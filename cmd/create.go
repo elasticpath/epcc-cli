@@ -48,6 +48,7 @@ func NewCreateCommand(parentCmd *cobra.Command) func() {
 	var ignoreErrors = false
 	var logOnSuccess = ""
 	var logOnFailure = ""
+	var disableConstants = false
 
 	resetFunc := func() {
 		autoFillOnCreate = false
@@ -65,6 +66,7 @@ func NewCreateCommand(parentCmd *cobra.Command) func() {
 		ignoreErrors = false
 		logOnSuccess = ""
 		logOnFailure = ""
+		disableConstants = false
 	}
 
 	for _, resource := range resources.GetPluralResources() {
@@ -104,7 +106,7 @@ func NewCreateCommand(parentCmd *cobra.Command) func() {
 						}
 					}
 
-					body, err := rest.CreateInternal(context.Background(), overrides, append([]string{resourceName}, args...), autoFillOnCreate, setAlias, skipAliases)
+					body, err := rest.CreateInternal(context.Background(), overrides, append([]string{resourceName}, args...), autoFillOnCreate, setAlias, skipAliases, disableConstants)
 
 					if err != nil {
 						return err
@@ -247,6 +249,7 @@ func NewCreateCommand(parentCmd *cobra.Command) func() {
 	createCmd.PersistentFlags().Uint32VarP(&repeat, "repeat", "", 1, "Number of times to repeat the command")
 	createCmd.PersistentFlags().Uint32VarP(&repeatDelay, "repeat-delay", "", 100, "Delay (in ms) between repeats")
 
+	createCmd.PersistentFlags().BoolVarP(&disableConstants, "no-auto-constants", "", false, "Disable setting of known constant values in the request body")
 	createCmd.PersistentFlags().StringVarP(&logOnSuccess, "log-on-success", "", "", "Output the following message as an info if the result is successful")
 	createCmd.PersistentFlags().StringVarP(&logOnFailure, "log-on-failure", "", "", "Output the following message as an error if the result fails")
 

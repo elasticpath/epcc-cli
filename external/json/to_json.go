@@ -17,7 +17,7 @@ var segmentRegex = regexp.MustCompile("(.+?)(\\[[0-9]+])?$")
 
 var attributeWithArrayIndex = regexp.MustCompile("\\[[0-9]+]")
 
-func ToJson(args []string, noWrapping bool, compliant bool, attributes map[string]*resources.CrudEntityAttribute, useAliases bool) (string, error) {
+func ToJson(args []string, noWrapping bool, compliant bool, attributes map[string]*resources.CrudEntityAttribute, useAliases bool, autoAddConstantValues bool) (string, error) {
 
 	if len(args)%2 == 1 {
 		return "", fmt.Errorf("the number of arguments %d supplied isn't even, json should be passed in key value pairs. Do you have an extra/missing id?", len(args))
@@ -41,15 +41,31 @@ func ToJson(args []string, noWrapping bool, compliant bool, attributes map[strin
 	if firstArrayKeyIdx >= 0 {
 		return toJsonArray(args, noWrapping, compliant, attributes, useAliases)
 	} else {
-		return toJsonObject(args, noWrapping, compliant, attributes, useAliases)
+		return toJsonObject(args, noWrapping, compliant, attributes, useAliases, autoAddConstantValues)
 	}
 }
 
-func toJsonObject(args []string, noWrapping bool, compliant bool, attributes map[string]*resources.CrudEntityAttribute, useAliases bool) (string, error) {
+func toJsonObject(args []string, noWrapping bool, compliant bool, attributes map[string]*resources.CrudEntityAttribute, useAliases bool, autoAddConstantValues bool) (string, error) {
 
 	var result interface{} = make(map[string]interface{})
 
 	var err error
+
+	var constAttributes = make(map[string]string)
+
+	for k, v := range attributes {
+		if strings.HasPrefix(v.Type, "CONST:") {
+			val := strings.TrimSpace(strings.Replace(v.Type, "CONST:", "", 1))
+			val = templates.Render(val)
+			val = formatValue(val)
+
+			constAttributes[k] = val
+		}
+	}
+
+	var addedAttributes = make(map[string]string)
+
+	var processedArgs = make([]string, 0, len(args))
 
 	for i := 0; i < len(args); i += 2 {
 		key := args[i]
@@ -89,6 +105,22 @@ func toJsonObject(args []string, noWrapping bool, compliant bool, attributes map
 			if strings.HasPrefix(attributeInfo.Type, "RESOURCE_ID:*") {
 				useAttribute = false
 			}
+
+			parentIdx := strings.LastIndex(attributeName, ".")
+			attributePrefix := ""
+			if parentIdx > 0 {
+				attributePrefix = attributeName[0:parentIdx]
+			}
+
+			if autoAddConstantValues {
+				for k := range constAttributes {
+					adjacentFieldsRegexp := fmt.Sprintf("^\\Q%s\\E\\.[^.]+$", attributePrefix)
+
+					if ok, _ := regexp.MatchString(adjacentFieldsRegexp, k); ok {
+						addedAttributes[key[0:parentIdx]+"."+k[parentIdx+1:]] = constAttributes[k]
+					}
+				}
+			}
 		}
 
 		if useAttribute {
@@ -121,10 +153,24 @@ func toJsonObject(args []string, noWrapping bool, compliant bool, attributes map
 		}
 
 		val = formatValue(val)
+		processedArgs = append(processedArgs, jsonKey, val)
+	}
+
+	argsWithConsts := make([]string, 0, len(processedArgs)+len(addedAttributes)*2)
+
+	for k, v := range addedAttributes {
+		argsWithConsts = append(argsWithConsts, k, v)
+	}
+
+	argsWithConsts = append(argsWithConsts, processedArgs...)
+
+	for i := 0; i < len(argsWithConsts); i += 2 {
+		k := argsWithConsts[i]
+		val := argsWithConsts[i+1]
 
 		arrayNotationPath := ""
 
-		for _, str := range strings.Split(jsonKey, ".") {
+		for _, str := range strings.Split(k, ".") {
 			arrayNotationPath += segmentRegex.ReplaceAllString(str, "[\"$1\"]$2")
 		}
 
@@ -134,7 +180,6 @@ func toJsonObject(args []string, noWrapping bool, compliant bool, attributes map
 		if err != nil {
 			return "{}", err
 		}
-
 	}
 
 	if !noWrapping {

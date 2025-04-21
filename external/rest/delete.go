@@ -59,7 +59,7 @@ func DeleteResource(ctx context.Context, overrides *httpclient.HttpParameterOver
 
 	var payload io.Reader = nil
 	if len(jsonArgs) > 0 {
-		body, err := json.ToJson(jsonArgs, resource.NoWrapping, resource.JsonApiFormat == "compliant", resource.Attributes, true)
+		body, err := json.ToJson(jsonArgs, resource.NoWrapping, resource.JsonApiFormat == "compliant", resource.Attributes, true, true)
 
 		if err != nil {
 			return nil, err
