@@ -15,7 +15,7 @@ func CreateMapForRunbookArgumentPointers(runbookAction *RunbookAction) map[strin
 	runbookStringArguments := map[string]*string{}
 
 	for key, value := range runbookAction.Variables {
-		var s = value.Default
+		var s = templates.Render(value.Default)
 		runbookStringArguments[key] = &s
 	}
 	return runbookStringArguments
