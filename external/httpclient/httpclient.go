@@ -45,7 +45,9 @@ var stats = struct {
 	totalRateLimitedTimeInMs       int64
 	totalHttpRequestProcessingTime int64
 	totalRequests                  uint64
+	statisticsFrequency            int
 
+	rps       []float64
 	respCodes map[int]int
 }{}
 
@@ -93,6 +95,10 @@ func Initialize(rateLimit uint16, requestTimeout float32, statisticsFrequency in
 	Limit = rate.NewLimiter(rate.Limit(rateLimit), 1)
 	HttpClient.Timeout = time.Duration(int64(requestTimeout*1000) * int64(time.Millisecond))
 
+	statsLock.Lock()
+	stats.statisticsFrequency = statisticsFrequency
+	defer statsLock.Unlock()
+
 	if statisticsFrequency > 0 {
 		go func() {
 			lastTotalRequests := uint64(0)
@@ -104,6 +110,9 @@ func Initialize(rateLimit uint16, requestTimeout float32, statisticsFrequency in
 
 				deltaRequests := stats.totalRequests - lastTotalRequests
 				lastTotalRequests = stats.totalRequests
+
+				rps := float64(deltaRequests) / float64(statisticsFrequency)
+				stats.rps = append(stats.rps, rps)
 				statsLock.Unlock()
 
 				if shutdown.ShutdownFlag.Load() {
@@ -111,7 +120,7 @@ func Initialize(rateLimit uint16, requestTimeout float32, statisticsFrequency in
 				}
 
 				if deltaRequests > 0 {
-					log.Infof("Total requests %d, requests in past %d seconds %d, latest %d requests per second.", lastTotalRequests, statisticsFrequency, deltaRequests, deltaRequests/uint64(statisticsFrequency))
+					log.Infof("Total requests %d, requests in past %d seconds %d, latest %.2f requests per second.", lastTotalRequests, statisticsFrequency, deltaRequests, rps)
 				}
 
 			}
@@ -156,6 +165,11 @@ func LogStats() {
 
 	if stats.totalRequests > 3 {
 		log.Infof("Total requests %d, and total rate limiting time %d ms, and total processing time %d ms. Effective RPS: %.2f. Response Code Count: %s", stats.totalRequests, stats.totalRateLimitedTimeInMs, stats.totalHttpRequestProcessingTime, float64(stats.totalRequests)/float64(allRequestTime.Seconds()), counts)
+		if len(stats.rps) > 1 {
+			for r := range stats.rps {
+				log.Infof("Effective RPS log: %.2f at %d seconds", stats.rps[r], r*stats.statisticsFrequency)
+			}
+		}
 	} else {
 		log.Debugf("Total requests %d, and total rate limiting time %d ms and total processing time %d ms. Effective RPS: %.2f. Response Code Count: %s", stats.totalRequests, stats.totalRateLimitedTimeInMs, stats.totalHttpRequestProcessingTime, float64(stats.totalRequests)/float64(allRequestTime.Seconds()), counts)
 	}
