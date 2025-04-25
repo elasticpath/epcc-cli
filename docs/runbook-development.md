@@ -151,6 +151,23 @@ If you would like to use a dashed argument name you need to use a different synt
 {{ index . "dashed-argument-name" }}
 ```
 
+##### Templated Arguments
+
+Occasionally it can be used to have a default argument that is dynamic, for instance you might want it to be based on a the current directory, or a random number:
+
+The values supplied in a runbook can be templated using the Go Template (e.g., helm syntax) , the list of functions is avaliable here: https://masterminds.github.io/sprig/
+
+```yaml
+actions:
+  create-a-customer:
+   variables:
+    name:
+      type: STRING   
+      default: |
+         {{ env "USER" -}}
+```
+
+
 #### Showing the output
 
 You can use the show command to see what a rendered script looks like (although you will lose any information about concurrency):

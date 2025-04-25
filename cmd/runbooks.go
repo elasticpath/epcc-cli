@@ -10,6 +10,7 @@ import (
 	"github.com/elasticpath/epcc-cli/external/runbooks"
 	_ "github.com/elasticpath/epcc-cli/external/runbooks"
 	"github.com/elasticpath/epcc-cli/external/shutdown"
+	"github.com/elasticpath/epcc-cli/external/templates"
 	"github.com/jolestar/go-commons-pool/v2"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -424,7 +425,8 @@ func processRunbookVariablesOnCommand(runbookActionRunActionCommand *cobra.Comma
 			if variable.Description != nil {
 				description = variable.Description.Short
 			}
-			runbookActionRunActionCommand.Flags().StringVar(runbookStringArguments[key], key, variable.Default, description)
+
+			runbookActionRunActionCommand.Flags().StringVar(runbookStringArguments[key], key, templates.Render(variable.Default), description)
 		}
 
 		runbookActionRunActionCommand.RegisterFlagCompletionFunc(key, func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
