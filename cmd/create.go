@@ -4,6 +4,10 @@ import (
 	"context"
 	gojson "encoding/json"
 	"fmt"
+	"io"
+	"os"
+	"strings"
+
 	"github.com/elasticpath/epcc-cli/external/aliases"
 	"github.com/elasticpath/epcc-cli/external/completion"
 	"github.com/elasticpath/epcc-cli/external/httpclient"
@@ -12,7 +16,6 @@ import (
 	"github.com/elasticpath/epcc-cli/external/rest"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"strings"
 )
 
 func NewCreateCommand(parentCmd *cobra.Command) func() {
@@ -106,50 +109,67 @@ func NewCreateCommand(parentCmd *cobra.Command) func() {
 						}
 					}
 
-					body, err := rest.CreateInternal(context.Background(), overrides, append([]string{resourceName}, args...), autoFillOnCreate, setAlias, skipAliases, disableConstants)
-
-					if err != nil {
-						return err
-					}
-
-					if outputJq != "" {
-						output, err := json.RunJQOnStringWithArray(outputJq, body)
+					switch resourceName {
+					case "rule-promotions":
+						// For rule-promotions, read the full JSON body from stdin
+						body, err := io.ReadAll(os.Stdin)
+						if err != nil {
+							return fmt.Errorf("error reading rule-promotions JSON body from stdin: %w", err)
+						}
+						// Convert []byte to string for rest.CreateInternal
+						bodyStr := string(body)
+						// Use the full JSON body as the request body
+						responseBody, err := rest.CreateInternal(context.Background(), overrides, []string{resourceName}, false, bodyStr, false, false)
+						if err != nil {
+							return err
+						}
+						body = []byte(responseBody)
+						return json.PrintJson(string(body))
+					default:
+						body, err := rest.CreateInternal(context.Background(), overrides, append([]string{resourceName}, args...), autoFillOnCreate, setAlias, skipAliases, disableConstants)
 
 						if err != nil {
 							return err
 						}
 
-						for _, outputLine := range output {
-							outputJson, err := gojson.Marshal(outputLine)
+						if outputJq != "" {
+							output, err := json.RunJQOnStringWithArray(outputJq, body)
 
 							if err != nil {
 								return err
 							}
 
-							err = json.PrintJson(string(outputJson))
+							for _, outputLine := range output {
+								outputJson, err := gojson.Marshal(outputLine)
 
-							if err != nil {
-								return err
+								if err != nil {
+									return err
+								}
+
+								err = json.PrintJson(string(outputJson))
+
+								if err != nil {
+									return err
+								}
 							}
+
+							return nil
 						}
 
-						return nil
-					}
+						if noBodyPrint {
+							return nil
+						} else {
+							if compactOutput {
+								body, err = json.Compact(body)
 
-					if noBodyPrint {
-						return nil
-					} else {
-						if compactOutput {
-							body, err = json.Compact(body)
-
-							if err != nil {
-								return err
+								if err != nil {
+									return err
+								}
 							}
+
+							return json.PrintJson(body)
 						}
-
-						return json.PrintJson(body)
 					}
-
 				}
 
 				res := repeater(c, repeat, repeatDelay, cmd, args, ignoreErrors)
