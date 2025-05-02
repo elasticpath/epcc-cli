@@ -3,18 +3,19 @@ package rest
 import (
 	"context"
 	"fmt"
+	"io"
+	"net/url"
+	"strings"
+
 	"github.com/elasticpath/epcc-cli/external/aliases"
 	"github.com/elasticpath/epcc-cli/external/httpclient"
 	"github.com/elasticpath/epcc-cli/external/json"
 	"github.com/elasticpath/epcc-cli/external/resources"
 	"github.com/elasticpath/epcc-cli/external/shutdown"
 	log "github.com/sirupsen/logrus"
-	"io"
-	"net/url"
-	"strings"
 )
 
-func UpdateInternal(ctx context.Context, overrides *httpclient.HttpParameterOverrides, skipAliases bool, disableConstants bool, args []string) (string, error) {
+func UpdateInternal(ctx context.Context, overrides *httpclient.HttpParameterOverrides, skipAliases bool, disableConstants bool, args []string, data string) (string, error) {
 	shutdown.OutstandingOpCounter.Add(1)
 	defer shutdown.OutstandingOpCounter.Done()
 
@@ -46,14 +47,20 @@ func UpdateInternal(ctx context.Context, overrides *httpclient.HttpParameterOver
 		resourceURL = overrides.OverrideUrlPath
 	}
 
-	if !disableConstants {
-		args = append(args, "type", resource.JsonApiType)
-	}
+	var body string
+	if data != "" {
+		// Use the provided data as the request body
+		body = data
+	} else {
+		if !disableConstants {
+			args = append(args, "type", resource.JsonApiType)
+		}
 
-	// Create the body from remaining args
-	body, err := json.ToJson(args[(idCount+1):], resource.NoWrapping, resource.JsonApiFormat == "compliant", resource.Attributes, true, !disableConstants)
-	if err != nil {
-		return "", err
+		// Create the body from remaining args
+		body, err = json.ToJson(args[(idCount+1):], resource.NoWrapping, resource.JsonApiFormat == "compliant", resource.Attributes, true, !disableConstants)
+		if err != nil {
+			return "", err
+		}
 	}
 
 	params := url.Values{}

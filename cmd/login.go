@@ -4,6 +4,9 @@ import (
 	"context"
 	gojson "encoding/json"
 	"fmt"
+	"net/url"
+	"time"
+
 	"github.com/elasticpath/epcc-cli/config"
 	"github.com/elasticpath/epcc-cli/external/aliases"
 	"github.com/elasticpath/epcc-cli/external/authentication"
@@ -17,8 +20,6 @@ import (
 	"github.com/elasticpath/epcc-cli/external/rest"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"net/url"
-	"time"
 )
 
 const (
@@ -301,7 +302,7 @@ var loginCustomer = &cobra.Command{
 		newArgs = append(newArgs, "customer-token")
 		newArgs = append(newArgs, args...)
 
-		body, err := rest.CreateInternal(ctx, overrides, newArgs, false, "", false, false)
+		body, err := rest.CreateInternal(ctx, overrides, newArgs, false, "", false, false, "")
 
 		if err != nil {
 			log.Warnf("Login not completed successfully")
@@ -511,7 +512,7 @@ var loginAccountManagement = &cobra.Command{
 		}
 
 		// Do the login and get back a list of accounts
-		body, err := rest.CreateInternal(ctx, overrides, loginArgs, false, "", false, false)
+		body, err := rest.CreateInternal(ctx, overrides, append([]string{"account-management-authentication-token"}, args...), false, "", false, false, "")
 
 		if err != nil {
 			log.Warnf("Login not completed successfully")

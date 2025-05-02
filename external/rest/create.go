@@ -3,6 +3,11 @@ package rest
 import (
 	"context"
 	"fmt"
+	"io"
+	"net/http"
+	"net/url"
+	"strings"
+
 	"github.com/elasticpath/epcc-cli/external/aliases"
 	"github.com/elasticpath/epcc-cli/external/autofill"
 	"github.com/elasticpath/epcc-cli/external/encoding"
@@ -11,13 +16,9 @@ import (
 	"github.com/elasticpath/epcc-cli/external/resources"
 	"github.com/elasticpath/epcc-cli/external/shutdown"
 	log "github.com/sirupsen/logrus"
-	"io"
-	"net/http"
-	"net/url"
-	"strings"
 )
 
-func CreateInternal(ctx context.Context, overrides *httpclient.HttpParameterOverrides, args []string, autoFillOnCreate bool, aliasName string, skipAliases bool, disableConstants bool) (string, error) {
+func CreateInternal(ctx context.Context, overrides *httpclient.HttpParameterOverrides, args []string, autoFillOnCreate bool, aliasName string, skipAliases bool, disableConstants bool, data string) (string, error) {
 	shutdown.OutstandingOpCounter.Add(1)
 	defer shutdown.OutstandingOpCounter.Done()
 
@@ -56,7 +57,6 @@ func CreateInternal(ctx context.Context, overrides *httpclient.HttpParameterOver
 	var resBody []byte
 
 	if resource.CreateEntityInfo.ContentType == "multipart/form-data" {
-
 		byteBuf, contentType, err := encoding.ToMultiPartEncoding(args[(idCount+1):], resource.NoWrapping, resource.JsonApiFormat == "complaint", resource.Attributes)
 		if err != nil {
 			return "", err
@@ -78,28 +78,32 @@ func CreateInternal(ctx context.Context, overrides *httpclient.HttpParameterOver
 			params.Add(keyAndValue[0], keyAndValue[1])
 		}
 
-		if !resource.NoWrapping && !disableConstants {
-			args = append(args, "type", resource.JsonApiType)
-		}
+		var body string
+		var err error
 
-		// Create the body from remaining args
+		if data != "" {
+			// Use the provided data as the request body
+			body = data
+		} else {
+			if !resource.NoWrapping && !disableConstants {
+				args = append(args, "type", resource.JsonApiType)
+			}
 
-		jsonArgs := args[(idCount + 1):]
-		if autoFillOnCreate {
-			autofilledData := autofill.GetJsonArrayForResource(&resource)
+			// Create the body from remaining args
+			jsonArgs := args[(idCount + 1):]
+			if autoFillOnCreate {
+				autofilledData := autofill.GetJsonArrayForResource(&resource)
+				jsonArgs = append(autofilledData, jsonArgs...)
+			}
 
-			jsonArgs = append(autofilledData, jsonArgs...)
-		}
-
-		body, err := json.ToJson(jsonArgs, resource.NoWrapping, resource.JsonApiFormat == "compliant", resource.Attributes, true, !disableConstants)
-
-		if err != nil {
-			return "", err
+			body, err = json.ToJson(jsonArgs, resource.NoWrapping, resource.JsonApiFormat == "compliant", resource.Attributes, true, !disableConstants)
+			if err != nil {
+				return "", err
+			}
 		}
 
 		// Submit request
 		resp, err = httpclient.DoRequest(ctx, "POST", resourceURL, params.Encode(), strings.NewReader(body))
-
 	}
 
 	if err != nil {
@@ -138,5 +142,4 @@ func CreateInternal(ctx context.Context, overrides *httpclient.HttpParameterOver
 	} else {
 		return "", nil
 	}
-
 }

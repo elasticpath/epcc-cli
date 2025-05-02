@@ -5,10 +5,11 @@ import (
 	"encoding/base64"
 	gojson "encoding/json"
 	"fmt"
+	"net/http"
+
 	"github.com/elasticpath/epcc-cli/external/authentication"
 	"github.com/elasticpath/epcc-cli/external/httpclient"
 	"github.com/elasticpath/epcc-cli/external/rest"
-	"net/http"
 )
 
 type CallbackPageInfo struct {
@@ -66,12 +67,12 @@ func GetCallbackData(ctx context.Context, port uint16, r *http.Request) (*Callba
 		}
 
 		if login_type.Value == "AM" {
-			result, err := rest.CreateInternal(context.Background(), &httpclient.HttpParameterOverrides{}, []string{"account-management-authentication-token",
+			result, err := rest.CreateInternal(ctx, &httpclient.HttpParameterOverrides{}, append([]string{"account-management-authentication-token"},
 				"authentication_mechanism", "oidc",
 				"oauth_authorization_code", data["code"],
 				"oauth_redirect_uri", fmt.Sprintf("http://localhost:%d/callback", port),
 				"oauth_code_verifier", verifier.Value,
-			}, false, "", true, false)
+			), false, "", true, false, "")
 
 			if err != nil {
 				return nil, fmt.Errorf("could not get account tokens: %w", err)
@@ -96,12 +97,12 @@ func GetCallbackData(ctx context.Context, port uint16, r *http.Request) (*Callba
 
 			return &cpi, nil
 		} else if login_type.Value == "Customers" {
-			result, err := rest.CreateInternal(context.Background(), &httpclient.HttpParameterOverrides{}, []string{"customer-token",
+			result, err := rest.CreateInternal(ctx, &httpclient.HttpParameterOverrides{}, append([]string{"customer-token"},
 				"authentication_mechanism", "oidc",
 				"oauth_authorization_code", data["code"],
 				"oauth_redirect_uri", fmt.Sprintf("http://localhost:%d/callback", port),
 				"oauth_code_verifier", verifier.Value,
-			}, false, "", true, false)
+			), false, "", true, false, "")
 
 			if err != nil {
 				return nil, fmt.Errorf("could not get customer tokens: %w", err)

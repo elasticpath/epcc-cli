@@ -2907,5 +2907,66 @@ mli-inventory-list-stocks:
       type: CONST:stock
     data[n].id:
       type: RESOURCE_ID:pcm-products
+rule-promotions:
+  singular-name: "rule-promotion"
+  json-api-type: "rule_promotion"
+  json-api-format: "compliant"
+  docs: "https://elasticpath.dev/docs/promotions-builder/overview"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/promotions-builder/get-rule-promotions"
+    url: "/v2/rule-promotions"
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/promotions-builder/get-rule-promotion-by-id"
+    url: "/v2/rule-promotions/{rule_promotions}"
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/promotions-builder/create-rule-promotion"
+    url: "/v2/rule-promotions"
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/promotions-builder/update-rule-promotion"
+    url: "/v2/rule-promotions/{rule_promotions}"
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/api/promotions-builder/delete-rule-promotion"
+    url: "/v2/rule-promotions/{rule_promotions}"
+  attributes:
+    name:
+      type: STRING
+    description:
+      type: STRING
+    enabled:
+      type: BOOL
+    automatic:
+      type: BOOL
+    priority:
+      type: INT
+    stackable:
+      type: BOOL
+    start:
+      type: STRING
+    end:
+      type: STRING
+    rule_set.rules.strategy:
+      type: STRING
+    rule_set.rules.operator:
+      type: STRING
+    rule_set.rules.args[n]:
+      type: STRING
+    rule_set.rules.children[n].strategy:
+      type: STRING
+    rule_set.rules.children[n].operator:
+      type: STRING
+    rule_set.rules.children[n].args[n]:
+      type: STRING
+    rule_set.actions[n].strategy:
+      type: STRING
+    rule_set.actions[n].args[n]:
+      type: STRING
+    rule_set.actions[n].condition.strategy:
+      type: STRING
+    rule_set.actions[n].condition.operator:
+      type: STRING
+    rule_set.actions[n].condition.args[n]:
+      type: STRING
+    rule_set.actions[n].limitations.max_quantity:
+      type: INT
 
 

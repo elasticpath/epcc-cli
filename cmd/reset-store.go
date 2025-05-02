@@ -4,6 +4,12 @@ import (
 	"context"
 	gojson "encoding/json"
 	"fmt"
+	"io"
+	"net/url"
+	"regexp"
+	"sort"
+	"strings"
+
 	"github.com/elasticpath/epcc-cli/external/aliases"
 	"github.com/elasticpath/epcc-cli/external/authentication"
 	"github.com/elasticpath/epcc-cli/external/httpclient"
@@ -12,11 +18,6 @@ import (
 	"github.com/elasticpath/epcc-cli/external/rest"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"io"
-	"net/url"
-	"regexp"
-	"sort"
-	"strings"
 )
 
 var DeleteApplicationKeys = true
@@ -201,7 +202,7 @@ func resetResourcesUndeletableResources(ctx context.Context, overrides *httpclie
 	errors := make([]string, 0)
 
 	for _, resetCmd := range resetCmds {
-		body, err := rest.UpdateInternal(ctx, overrides, false, false, resetCmd)
+		body, err := rest.UpdateInternal(ctx, overrides, false, false, resetCmd, "")
 
 		if err != nil {
 			errors = append(errors, fmt.Errorf("error resetting  %s: %v", resetCmd[0], err).Error())
