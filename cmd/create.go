@@ -4,6 +4,8 @@ import (
 	"context"
 	gojson "encoding/json"
 	"fmt"
+	"strings"
+
 	"github.com/elasticpath/epcc-cli/external/aliases"
 	"github.com/elasticpath/epcc-cli/external/completion"
 	"github.com/elasticpath/epcc-cli/external/httpclient"
@@ -12,7 +14,6 @@ import (
 	"github.com/elasticpath/epcc-cli/external/rest"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"strings"
 )
 
 func NewCreateCommand(parentCmd *cobra.Command) func() {
@@ -49,6 +50,7 @@ func NewCreateCommand(parentCmd *cobra.Command) func() {
 	var logOnSuccess = ""
 	var logOnFailure = ""
 	var disableConstants = false
+	var data = ""
 
 	resetFunc := func() {
 		autoFillOnCreate = false
@@ -67,6 +69,7 @@ func NewCreateCommand(parentCmd *cobra.Command) func() {
 		logOnSuccess = ""
 		logOnFailure = ""
 		disableConstants = false
+		data = ""
 	}
 
 	for _, resource := range resources.GetPluralResources() {
@@ -106,7 +109,7 @@ func NewCreateCommand(parentCmd *cobra.Command) func() {
 						}
 					}
 
-					body, err := rest.CreateInternal(context.Background(), overrides, append([]string{resourceName}, args...), autoFillOnCreate, setAlias, skipAliases, disableConstants)
+					body, err := rest.CreateInternal(context.Background(), overrides, append([]string{resourceName}, args...), autoFillOnCreate, setAlias, skipAliases, disableConstants, data)
 
 					if err != nil {
 						return err
@@ -149,7 +152,6 @@ func NewCreateCommand(parentCmd *cobra.Command) func() {
 
 						return json.PrintJson(body)
 					}
-
 				}
 
 				res := repeater(c, repeat, repeatDelay, cmd, args, ignoreErrors)
@@ -252,6 +254,7 @@ func NewCreateCommand(parentCmd *cobra.Command) func() {
 	createCmd.PersistentFlags().BoolVarP(&disableConstants, "no-auto-constants", "", false, "Disable setting of known constant values in the request body")
 	createCmd.PersistentFlags().StringVarP(&logOnSuccess, "log-on-success", "", "", "Output the following message as an info if the result is successful")
 	createCmd.PersistentFlags().StringVarP(&logOnFailure, "log-on-failure", "", "", "Output the following message as an error if the result fails")
+	createCmd.PersistentFlags().StringVarP(&data, "data", "d", "", "Raw JSON data to use as the request body. If provided, positional arguments will be ignored.")
 
 	_ = createCmd.RegisterFlagCompletionFunc("output-jq", jqCompletionFunc)
 

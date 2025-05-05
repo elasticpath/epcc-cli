@@ -4,6 +4,7 @@ import (
 	"context"
 	gojson "encoding/json"
 	"fmt"
+
 	"github.com/elasticpath/epcc-cli/external/aliases"
 	"github.com/elasticpath/epcc-cli/external/completion"
 	"github.com/elasticpath/epcc-cli/external/httpclient"
@@ -33,6 +34,7 @@ func NewUpdateCommand(parentCmd *cobra.Command) func() {
 	var logOnSuccess = ""
 	var logOnFailure = ""
 	var disableConstants = false
+	var data = ""
 
 	resetFunc := func() {
 		overrides.QueryParameters = nil
@@ -49,6 +51,7 @@ func NewUpdateCommand(parentCmd *cobra.Command) func() {
 		logOnSuccess = ""
 		logOnFailure = ""
 		disableConstants = false
+		data = ""
 	}
 
 	var updateCmd = &cobra.Command{
@@ -98,7 +101,7 @@ func NewUpdateCommand(parentCmd *cobra.Command) func() {
 						}
 					}
 
-					body, err := rest.UpdateInternal(context.Background(), overrides, skipAliases, disableConstants, append([]string{resourceName}, args...))
+					body, err := rest.UpdateInternal(context.Background(), overrides, skipAliases, disableConstants, append([]string{resourceName}, args...), data)
 
 					if err != nil {
 						return err
@@ -226,6 +229,7 @@ func NewUpdateCommand(parentCmd *cobra.Command) func() {
 	updateCmd.PersistentFlags().BoolVarP(&disableConstants, "no-auto-constants", "", false, "Disable setting of known constant values in the request body (e.g., `type`)")
 	updateCmd.PersistentFlags().StringVarP(&logOnSuccess, "log-on-success", "", "", "Output the following message as an info if the result is successful")
 	updateCmd.PersistentFlags().StringVarP(&logOnFailure, "log-on-failure", "", "", "Output the following message as an error if the result fails")
+	updateCmd.PersistentFlags().StringVarP(&data, "data", "d", "", "Raw JSON data to use as the request body. If provided, positional arguments will be ignored.")
 
 	parentCmd.AddCommand(updateCmd)
 
