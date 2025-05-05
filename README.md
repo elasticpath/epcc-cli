@@ -20,6 +20,7 @@ Additionally, this tool is not necessarily meant to be a new command line equiva
 
 1. Download the appropriate release from the [GitHub Release Page](https://github.com/elasticpath/epcc-cli/releases).
 2. Add the `epcc` binary to your path.
+   * On macOS, since the binary is unsigned, you will need to run `xattr -dr com.apple.quarantine /path/to/epcc` to allow it to execute otherwise you will get an error.
 3. Load the autocompletion into your shell (See instructions [here](#auto-completion)).
 
 It is highly recommended that new users check out the [Tutorial](docs/tutorial.md).
