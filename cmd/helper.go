@@ -390,6 +390,8 @@ epcc %s %s%s key 'Test {{ randAlphaNum 6 | upper }} Value' => %s`,
 			value = "A three letter currency code"
 		} else if v.Type == "FILE" {
 			value = "A filename"
+		} else if v.Type == "PRIMITIVE" {
+			value = "Any of an int, float, string, or boolean value"
 		} else if v.Type == "SINGULAR_RESOURCE_TYPE" {
 			value = "A resource name used by the epcc cli"
 		} else if strings.HasPrefix(v.Type, "RESOURCE_ID") {
