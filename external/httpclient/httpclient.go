@@ -123,6 +123,9 @@ var Retry5xx = false
 var RetryConnectionErrors = false
 
 var RetryAllErrors = false
+var RetryTemporaryErrors = false
+var Retry422 = false
+
 var RetryDelay uint = 500
 
 var statsLock = &sync.Mutex{}
@@ -379,6 +382,10 @@ func doRequestInternal(ctx context.Context, method string, contentType string, p
 	displayLongFormRequestAndResponse := resp.StatusCode >= 400
 
 	if resp.StatusCode == 429 && Retry429 {
+		displayLongFormRequestAndResponse = false
+	}
+
+	if resp.StatusCode == 422 && Retry422 {
 		displayLongFormRequestAndResponse = false
 	}
 
