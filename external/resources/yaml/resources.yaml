@@ -2792,7 +2792,7 @@ custom-api-role-policies:
       type: BOOL
     read:
       type: BOOL
-    update:Const:
+    update:
       type: BOOL
     delete:
       type: BOOL
