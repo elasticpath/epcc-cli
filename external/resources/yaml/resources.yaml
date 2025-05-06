@@ -2792,7 +2792,7 @@ custom-api-role-policies:
       type: BOOL
     read:
       type: BOOL
-    update:
+    update:Const:
       type: BOOL
     delete:
       type: BOOL
@@ -2910,7 +2910,7 @@ mli-inventory-list-stocks:
 rule-promotions:
   singular-name: "rule-promotion"
   json-api-type: "rule_promotion"
-  json-api-format: "compliant"
+  json-api-format: "legacy"
   docs: "https://elasticpath.dev/docs/promotions-builder/overview"
   get-collection:
     docs: "https://elasticpath.dev/docs/api/promotions-builder/get-rule-promotions"
@@ -2950,12 +2950,14 @@ rule-promotions:
       type: STRING
     rule_set.rules.args[n]:
       type: STRING
+      usage: "test"
     rule_set.rules.children[n].strategy:
       type: STRING
     rule_set.rules.children[n].operator:
       type: STRING
     rule_set.rules.children[n].args[n]:
       type: STRING
+
     rule_set.actions[n].strategy:
       type: STRING
     rule_set.actions[n].args[n]:
@@ -2968,5 +2970,7 @@ rule-promotions:
       type: STRING
     rule_set.actions[n].limitations.max_quantity:
       type: INT
+    override_stacking:
+      type: BOOL
 
 

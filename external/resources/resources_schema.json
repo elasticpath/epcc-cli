@@ -102,6 +102,10 @@
                   "pattern": "^(FUNC:|VALUE:).+$",
                   "description": "What the value should be set to when we are using --auto-fill. FUNC: will point to a function listed here: https://github.com/brianvoe/gofakeit#function, only zero argument functions are allowed. VALUE: will set to the literal"
                 },
+                "usage": {
+                  "type": "string",
+                  "description": "Overrides the help documentation for this attribute."
+                },
                 "alias_attribute": {
                   "type": "string",
                   "enum": [
