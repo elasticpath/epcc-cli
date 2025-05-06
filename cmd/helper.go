@@ -14,6 +14,8 @@ import (
 	"math/rand"
 	"net/url"
 	"regexp"
+	"sort"
+	"strconv"
 	"strings"
 	"sync"
 )
@@ -170,7 +172,15 @@ var NonAlphaCharacter = regexp.MustCompile("[^A-Za-z]+")
 
 func GetJsonKeyValuesForUsage(resource resources.Resource) string {
 	var ret = ""
+
+	keys := []string{}
 	for k := range resource.Attributes {
+		keys = append(keys, k)
+	}
+
+	sort.Strings(keys)
+	for _, k := range keys {
+		v := resource.Attributes[k]
 
 		jsonKey := k
 		// A good example of why these are needed are pcm-products and the regex attributes
@@ -180,9 +190,34 @@ func GetJsonKeyValuesForUsage(resource resources.Resource) string {
 		jsonKey = strings.ReplaceAll(jsonKey, "\\", "")
 
 		jsonKey = strings.ReplaceAll(jsonKey, "([a-zA-Z0-9-_]+)", "*")
-		value := strings.Trim(NonAlphaCharacter.ReplaceAllString(strings.ToUpper(k), "_"), "_ ")
-		value = strings.ReplaceAll(value, "A_Z", "")
-		value = strings.ReplaceAll(value, "__", "_")
+		value := "Unknown"
+
+		// "pattern": "^(STRING|URL|INT|CONST:[a-z0-9A-Z._-]+|ENUM:[a-z0-9A-Z._,-]+|FLOAT|BOOL|FILE|CURRENCY|SINGULAR_RESOURCE_TYPE|JSON_API_TYPE|RESOURCE_ID:([a-z0-9-]+|[*]))$"
+
+		// 	// Use is the one-line usage message.
+		//	// Recommended syntax is as follows:
+		//	//   [ ] identifies an optional argument. Arguments that are not enclosed in brackets are required.
+		//	//   ... indicates that you can specify multiple values for the previous argument.
+		//	//   |   indicates mutually exclusive information. You can use the argument to the left of the separator or the
+		//	//       argument to the right of the separator. You cannot use both arguments in a single use of the command.
+		//	//   { } delimits a set of mutually exclusive arguments when one of the arguments is required. If the arguments are
+		//	//       optional, they are enclosed in brackets ([ ]).
+		//	// Example: add [-F file | -D dir]... [-f format] profile
+
+		if v.Type == "BOOL" {
+			value = "{true|false}"
+		} else if strings.HasPrefix(v.Type, "CONST:") {
+			value = strings.Trim(v.Type, " ")
+			value = strings.ReplaceAll(value, "CONST:", "")
+		} else if strings.HasPrefix(v.Type, "ENUM:") {
+			value = strings.Trim(v.Type, " ")
+			value = "{" + strings.ReplaceAll(value, "ENUM:", "") + "}"
+		} else {
+			value = strings.Trim(NonAlphaCharacter.ReplaceAllString(strings.ToUpper(k), "_"), "_ ")
+			value = strings.ReplaceAll(value, "A_Z", "")
+			value = strings.ReplaceAll(value, "__", "_")
+		}
+
 		ret += " [" + jsonKey + " " + value + "]"
 	}
 
@@ -265,7 +300,7 @@ func GetGetLong(resourceName string, resourceUrl string, usageGetType string, co
 }
 
 func GetJsonSyntaxExample(resource resources.Resource, verb string, id string) string {
-	return fmt.Sprintf(`
+	prefix := fmt.Sprintf(`
 Key Value pairs passed in will be converted to JSON with a jq like syntax.
 
 The EPCC CLI will automatically determine appropriate wrapping (i.e., wrap the values in a data key or attributes key)
@@ -314,6 +349,70 @@ epcc %s %s%s key 'Test {{ randAlphaNum 6 | upper }} Value' => %s`,
 		verb, resource.SingularName, id, toJsonExample([]string{"key.some.child", "hello", "key.some.other", "goodbye"}, resource),
 		verb, resource.SingularName, id, toJsonExample([]string{"key", "Test {{ randAlphaNum 6 | upper }} Value"}, resource),
 	)
+
+	suffix := strings.Builder{}
+
+	keys := []string{}
+	maxLengthKey := 0
+	for k := range resource.Attributes {
+		keys = append(keys, k)
+
+		maxLengthKey = max(maxLengthKey, len(k))
+	}
+
+	sort.Strings(keys)
+	for _, k := range keys {
+		v := resource.Attributes[k]
+
+		value := "Unknown:" + v.Type
+
+		//"pattern": "^(||RESOURCE_ID:([a-z0-9-]+|[*]))$"
+
+		if v.Usage != "" {
+			value = v.Usage
+		} else if v.Type == "BOOL" {
+			value = "A boolean value"
+		} else if v.Type == "STRING" {
+			value = "A string value"
+		} else if strings.HasPrefix(v.Type, "ENUM:") {
+			value = "One of the following values: " + strings.ReplaceAll(strings.ReplaceAll(v.Type, "ENUM:", ""), ",", ", ")
+		} else if strings.HasPrefix(v.Type, "CONST:") {
+			value = "Only: " + strings.ReplaceAll(strings.ReplaceAll(v.Type, "CONST:", ""), ",", ", ") + " (note: the epcc will auto-populate this if an adjacent attribute is set)"
+		} else if v.Type == "INT" {
+			value = "An integer value"
+		} else if v.Type == "FLOAT" {
+			value = "A floating point value"
+		} else if v.Type == "URL" {
+			value = "A url"
+		} else if v.Type == "JSON_API_TYPE" {
+			value = "A value that matches a `type` used by the API"
+		} else if v.Type == "CURRENCY" {
+			value = "A three letter currency code"
+		} else if v.Type == "FILE" {
+			value = "A filename"
+		} else if v.Type == "SINGULAR_RESOURCE_TYPE" {
+			value = "A resource name used by the epcc cli"
+		} else if strings.HasPrefix(v.Type, "RESOURCE_ID") {
+
+			resName := strings.ReplaceAll(v.Type, "RESOURCE_ID:", "")
+
+			if res, ok := resources.GetResourceByName(resName); ok {
+				attribute := "id"
+
+				if v.AliasAttribute != "" {
+					attribute = v.AliasAttribute
+				}
+
+				value = fmt.Sprintf("The %s of a %s resource", attribute, res.SingularName)
+			} else {
+				value = "A resource id for " + resName
+			}
+		}
+
+		suffix.WriteString(fmt.Sprintf("  %-"+strconv.Itoa(maxLengthKey)+"s -  %s\n", k, value))
+
+	}
+	return prefix + "\n\nKeys (and their expected values):\n" + suffix.String() + "\nNotes:\n - Other keys and values will work fine (e.g., if you are using an older version of this tool, and new features have been developed), or you have defined flows.\n - Keys with an [n] in them are array parameters and should be supplied with a [0], [1], [2], etc..."
 }
 
 func toJsonExample(in []string, resource resources.Resource) string {
