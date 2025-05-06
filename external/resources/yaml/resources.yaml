@@ -382,18 +382,23 @@ cart-checkout:
   attributes:
     account.id:
       type: RESOURCE_ID:account
+      usage: "The account id to associate the order with"
     account.member_id:
       type: RESOURCE_ID:account-member
+      usage: "The account member id to associate the order with"
     customer.id:
       type: RESOURCE_ID:customer
+      usage: "The id of the customer to use, not used when checking out an order for an account."
     customer.email:
       type: STRING
     customer.name:
       type: STRING
     contact.name:
       type: STRING
+      usage: "A contact name for the order, required when checking out an order for an account."
     contact.email:
       type: STRING
+      usage: "A contact e-mail for the order, required when checking out an order for an account. "
     billing_address.first_name:
       type: STRING
       autofill: FUNC:FirstName
@@ -2944,7 +2949,7 @@ mli-inventory-list-stocks:
 rule-promotions:
   singular-name: "rule-promotion"
   json-api-type: "rule_promotion"
-  json-api-format: "compliant"
+  json-api-format: "legacy"
   docs: "https://elasticpath.dev/docs/promotions-builder/overview"
   get-collection:
     docs: "https://elasticpath.dev/docs/api/promotions-builder/get-rule-promotions"
@@ -2964,43 +2969,95 @@ rule-promotions:
   attributes:
     name:
       type: STRING
+      autofill: FUNC:Name
+      usage: "The name of the promotion"
     description:
       type: STRING
+      autofill: FUNC:Phrase
+      usage: "The description of the promotion"
     enabled:
       type: BOOL
+      autofill: VALUE:true
+      usage: "Whether the promotion is enabled or not"
     automatic:
       type: BOOL
+      autofill: VALUE:true
+      usage: "If true the promtion is automatically added to cart otherwise you must create codes manually"
     priority:
       type: INT
+      usage: "A number that represents the priority order, larger numbers are higher priority promotions"
     stackable:
       type: BOOL
+      usage: "A boolean that indicates whether this promotion is stackable with other promotions"
+    override_stacking:
+      type: BOOL
+      usage: "A boolean that indicates that this promotion can be stacked with an otherwise non-stackable promotion"
     start:
       type: STRING
+      autofill: VALUE:"{{ now | date_modify "-24h" | date "2006-01-02" }}"
+      usage: "Specifies the start date and time of the promotion or the start date of the promotion"
     end:
       type: STRING
+      autofill: VALUE:"{{ now | date_modify "+168h" | date "2006-01-02" }}"
+      usage: "Specifies the end date and time of the promotion or the end date of the promotion"
     rule_set.rules.strategy:
-      type: STRING
+      type: ENUM:account_tags,cart_total,cart_custom_attribute,item_price,item_sku,item_product_id,item_quantity,item_category,item_attribute,item_identifier,items_bundle,and,or
     rule_set.rules.operator:
-      type: STRING
+      type: ENUM:in,nin,eq,lt,lte,gt,gte
+      usage: "The strategies cart_total, item_price, and item_quantity support the operators [gt, lt, gte, lte, eq].  Strategies cart_custom_attribute, item_sku, item_product_id, item_identifier, item_category, and item_attribute support the operators [in, nin]."
     rule_set.rules.args[n]:
       type: STRING
     rule_set.rules.children[n].strategy:
-      type: STRING
+      type: ENUM:account_tags,cart_total,cart_custom_attribute,item_price,item_sku,item_product_id,item_quantity,item_category,item_attribute,item_identifier,items_bundle,and,or
     rule_set.rules.children[n].operator:
-      type: STRING
+      type: ENUM:in,nin,eq,lt,lte,gt,gte
     rule_set.rules.children[n].args[n]:
       type: STRING
+    rule_set.catalog_ids[n]:
+      type: RESOURCE_ID:pcm-catalog
+      usage: "Specifies the catalogs that are eligible for the promotion (if not set it applies to all catalogs)"
+    rule_set.currencies[n]:
+      type: CURRENCY
+      usage: "Specifies the currencies that are applied to the promotion."
     rule_set.actions[n].strategy:
-      type: STRING
+      type: ENUM:cart_discount,item_discount,shipping_discount,item_bundle_discount
     rule_set.actions[n].args[n]:
-      type: STRING
+      type: PRIMITIVE
     rule_set.actions[n].condition.strategy:
-      type: STRING
+      # Looking at the code, this can accept anything
+      type: ENUM:and,or,cart_total,cart_custom_attribute,item_price,item_sku,item_product_id,item_identifier,item_quantity,item_category,item_attribute,items_bundle
     rule_set.actions[n].condition.operator:
-      type: STRING
+      type: ENUM:in,nin,eq,lt,lte,gt,gte
     rule_set.actions[n].condition.args[n]:
       type: STRING
     rule_set.actions[n].limitations.max_quantity:
       type: INT
-
-
+    rule_set.actions[n].limitations.max_discount:
+      type: INT
+    rule_set.actions[n].limitations.items[n].max_items:
+      type: INT
+    rule_set.actions[n].limitations.items[n].price_strategy:
+      type: ENUM:cheapest,expensive
+cart-settings:
+  singular-name: "cart-settings"
+  json-api-type: "settings"
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/api/settings/get-v-2-settings-cart"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/settings/get-v-2-settings-cart"
+    url: "/v2/settings/cart"
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/settings/get-v-2-settings-cart"
+    url: "/v2/settings/cart"
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/settings/get-v-2-settings-cart"
+    url: "/v2/settings/carts/{cart_settings}"
+  attributes:
+    cart_expiry_days:
+      type: INT
+    discounts.custom_discounts_enabled:
+      type: BOOL
+    discounts.use_rule_promotions:
+      type: BOOL
+    inventories.defer_inventory_check:
+      type: BOOL

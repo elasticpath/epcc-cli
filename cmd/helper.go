@@ -14,6 +14,8 @@ import (
 	"math/rand"
 	"net/url"
 	"regexp"
+	"sort"
+	"strconv"
 	"strings"
 	"sync"
 )
@@ -52,14 +54,94 @@ func GetParametersForTypes(types []string) string {
 	return r
 }
 
-func GetParameterUsageForTypes(types []string) string {
-	r := ""
+func GetParameterUsageForTypes(resource resources.Resource, types []string, bodyParameters bool) string {
 
-	for _, t := range types {
-		r += fmt.Sprintf("%-20s - An ID or alias for a %s\n", t, strings.Title(t))
+	usage := strings.Builder{}
+
+	if len(types) > 0 {
+
+		usage.WriteString("Parent Resource ID Parameters (Mandatory):\n")
+
+		for _, t := range types {
+			usage.WriteString(fmt.Sprintf("  %-20s - An ID or alias for a %s\n", t, strings.Title(t)))
+		}
 	}
 
-	return r
+	if bodyParameters {
+
+		usage.WriteString("\nBody Parameters (Specified as space separated key value pairs):\n")
+
+		keys := []string{}
+		maxLengthKey := 0
+		for k := range resource.Attributes {
+			keys = append(keys, k)
+
+			maxLengthKey = max(maxLengthKey, len(k))
+		}
+
+		sort.Strings(keys)
+		for _, k := range keys {
+			v := resource.Attributes[k]
+
+			value := "Unknown:" + v.Type
+
+			//"pattern": "^(||RESOURCE_ID:([a-z0-9-]+|[*]))$"
+
+			if v.Usage != "" {
+				value = v.Usage
+			} else if v.Type == "BOOL" {
+				value = "A boolean value"
+			} else if v.Type == "STRING" {
+				value = "A string value"
+			} else if strings.HasPrefix(v.Type, "ENUM:") {
+				value = "One of the following values: " + strings.ReplaceAll(strings.ReplaceAll(v.Type, "ENUM:", ""), ",", ", ")
+			} else if strings.HasPrefix(v.Type, "CONST:") {
+				value = "Only: " + strings.ReplaceAll(strings.ReplaceAll(v.Type, "CONST:", ""), ",", ", ") + " (note: the epcc will auto-populate this if an adjacent attribute is set)"
+			} else if v.Type == "INT" {
+				value = "An integer value"
+			} else if v.Type == "FLOAT" {
+				value = "A floating point value"
+			} else if v.Type == "URL" {
+				value = "A url"
+			} else if v.Type == "JSON_API_TYPE" {
+				value = "A value that matches a `type` used by the API"
+			} else if v.Type == "CURRENCY" {
+				value = "A three letter currency code"
+			} else if v.Type == "FILE" {
+				value = "A filename"
+			} else if v.Type == "PRIMITIVE" {
+				value = "Any of an int, float, string, or boolean value"
+			} else if v.Type == "SINGULAR_RESOURCE_TYPE" {
+				value = "A resource name used by the epcc cli"
+			} else if strings.HasPrefix(v.Type, "RESOURCE_ID") {
+
+				resName := strings.ReplaceAll(v.Type, "RESOURCE_ID:", "")
+
+				if res, ok := resources.GetResourceByName(resName); ok {
+					attribute := "id"
+
+					if v.AliasAttribute != "" {
+						attribute = v.AliasAttribute
+					}
+
+					value = fmt.Sprintf("The %s of a %s resource", attribute, res.SingularName)
+				} else {
+					value = "A resource id for " + resName
+				}
+			}
+
+			usage.WriteString(fmt.Sprintf("  %-"+strconv.Itoa(maxLengthKey)+"s -  %s\n", k, value))
+
+		}
+
+		usage.WriteString(`
+Notes:
+  - Other keys and values will work fine (e.g., if you are using an older version of this tool, and new features have been developed), or you have defined flows.
+  - Keys with an [n] in them are array parameters and should be supplied with a [0], [1], [2], etc...
+  - Mandatory body parameters are enforced by the API, and not this tool.`)
+	}
+
+	return usage.String()
 }
 
 func GetUuidsForTypes(types []string) []string {
@@ -170,7 +252,15 @@ var NonAlphaCharacter = regexp.MustCompile("[^A-Za-z]+")
 
 func GetJsonKeyValuesForUsage(resource resources.Resource) string {
 	var ret = ""
+
+	keys := []string{}
 	for k := range resource.Attributes {
+		keys = append(keys, k)
+	}
+
+	sort.Strings(keys)
+	for _, k := range keys {
+		v := resource.Attributes[k]
 
 		jsonKey := k
 		// A good example of why these are needed are pcm-products and the regex attributes
@@ -180,9 +270,34 @@ func GetJsonKeyValuesForUsage(resource resources.Resource) string {
 		jsonKey = strings.ReplaceAll(jsonKey, "\\", "")
 
 		jsonKey = strings.ReplaceAll(jsonKey, "([a-zA-Z0-9-_]+)", "*")
-		value := strings.Trim(NonAlphaCharacter.ReplaceAllString(strings.ToUpper(k), "_"), "_ ")
-		value = strings.ReplaceAll(value, "A_Z", "")
-		value = strings.ReplaceAll(value, "__", "_")
+		value := "Unknown"
+
+		// "pattern": "^(STRING|URL|INT|CONST:[a-z0-9A-Z._-]+|ENUM:[a-z0-9A-Z._,-]+|FLOAT|BOOL|FILE|CURRENCY|SINGULAR_RESOURCE_TYPE|JSON_API_TYPE|RESOURCE_ID:([a-z0-9-]+|[*]))$"
+
+		// 	// Use is the one-line usage message.
+		//	// Recommended syntax is as follows:
+		//	//   [ ] identifies an optional argument. Arguments that are not enclosed in brackets are required.
+		//	//   ... indicates that you can specify multiple values for the previous argument.
+		//	//   |   indicates mutually exclusive information. You can use the argument to the left of the separator or the
+		//	//       argument to the right of the separator. You cannot use both arguments in a single use of the command.
+		//	//   { } delimits a set of mutually exclusive arguments when one of the arguments is required. If the arguments are
+		//	//       optional, they are enclosed in brackets ([ ]).
+		//	// Example: add [-F file | -D dir]... [-f format] profile
+
+		if v.Type == "BOOL" {
+			value = "{true|false}"
+		} else if strings.HasPrefix(v.Type, "CONST:") {
+			value = strings.Trim(v.Type, " ")
+			value = strings.ReplaceAll(value, "CONST:", "")
+		} else if strings.HasPrefix(v.Type, "ENUM:") {
+			value = strings.Trim(v.Type, " ")
+			value = "{" + strings.ReplaceAll(value, "ENUM:", "") + "}"
+		} else {
+			value = strings.Trim(NonAlphaCharacter.ReplaceAllString(strings.ToUpper(k), "_"), "_ ")
+			value = strings.ReplaceAll(value, "A_Z", "")
+			value = strings.ReplaceAll(value, "__", "_")
+		}
+
 		ret += " [" + jsonKey + " " + value + "]"
 	}
 
@@ -256,7 +371,7 @@ func GetGetLong(resourceName string, resourceUrl string, usageGetType string, co
 	}
 
 	singularTypeNames := GetSingularTypeNames(types)
-	parametersLongUsage := GetParameterUsageForTypes(singularTypeNames)
+	parametersLongUsage := GetParameterUsageForTypes(resource, singularTypeNames, false)
 
 	return fmt.Sprintf(`Retrieves %s %s defined in a store/organization by calling %s.
 
@@ -264,12 +379,15 @@ func GetGetLong(resourceName string, resourceUrl string, usageGetType string, co
 `, usageGetType, resourceName, GetHelpResourceUrls(resourceUrl), parametersLongUsage)
 }
 
-func GetJsonSyntaxExample(resource resources.Resource, verb string, id string) string {
-	return fmt.Sprintf(`
+func GetJsonSyntaxExample(resource resources.Resource, verb string, parentIds string, id string) string {
+	allIds := parentIds + id
+
+	prefix := fmt.Sprintf(`
 Key Value pairs passed in will be converted to JSON with a jq like syntax.
 
 The EPCC CLI will automatically determine appropriate wrapping (i.e., wrap the values in a data key or attributes key)
 
+The following examples show JSON syntax (and also include required parent ids)
 # Simple type with key and value 
 epcc %s %s%s key value => %s
 
@@ -302,18 +420,20 @@ epcc %s %s%s key.some.child hello key.some.other goodbye => %s
 
 # Attributes can also be generated using Go templates and Sprig (https://masterminds.github.io/sprig/) functions.
 epcc %s %s%s key 'Test {{ randAlphaNum 6 | upper }} Value' => %s`,
-		verb, resource.SingularName, id, toJsonExample([]string{"key", "b"}, resource),
-		verb, resource.SingularName, id, toJsonExample([]string{"key", "1"}, resource),
-		verb, resource.SingularName, id, toJsonExample([]string{"key", "\"1\""}, resource),
-		verb, resource.SingularName, id, toJsonExample([]string{"key", "-value"}, resource),
-		verb, resource.SingularName, id, toJsonExample([]string{"key", "true"}, resource),
-		verb, resource.SingularName, id, toJsonExample([]string{"key", "null"}, resource),
-		verb, resource.SingularName, id, toJsonExample([]string{"key", "\"null\""}, resource),
-		verb, resource.SingularName, id, toJsonExample([]string{"key[0]", "a", "key[1]", "true"}, resource),
-		verb, resource.SingularName, id, toJsonExample([]string{"key", "[]"}, resource),
-		verb, resource.SingularName, id, toJsonExample([]string{"key.some.child", "hello", "key.some.other", "goodbye"}, resource),
-		verb, resource.SingularName, id, toJsonExample([]string{"key", "Test {{ randAlphaNum 6 | upper }} Value"}, resource),
+		verb, resource.SingularName, allIds, toJsonExample([]string{"key", "b"}, resource),
+		verb, resource.SingularName, allIds, toJsonExample([]string{"key", "1"}, resource),
+		verb, resource.SingularName, allIds, toJsonExample([]string{"key", "\"1\""}, resource),
+		verb, resource.SingularName, allIds, toJsonExample([]string{"key", "-value"}, resource),
+		verb, resource.SingularName, allIds, toJsonExample([]string{"key", "true"}, resource),
+		verb, resource.SingularName, allIds, toJsonExample([]string{"key", "null"}, resource),
+		verb, resource.SingularName, allIds, toJsonExample([]string{"key", "\"null\""}, resource),
+		verb, resource.SingularName, allIds, toJsonExample([]string{"key[0]", "a", "key[1]", "true"}, resource),
+		verb, resource.SingularName, allIds, toJsonExample([]string{"key", "[]"}, resource),
+		verb, resource.SingularName, allIds, toJsonExample([]string{"key.some.child", "hello", "key.some.other", "goodbye"}, resource),
+		verb, resource.SingularName, allIds, toJsonExample([]string{"key", "Test {{ randAlphaNum 6 | upper }} Value"}, resource),
 	)
+
+	return prefix
 }
 
 func toJsonExample(in []string, resource resources.Resource) string {
@@ -343,7 +463,10 @@ func GetCreateLong(resource resources.Resource) string {
 		return fmt.Sprintf("Could not generate usage string: %s", err)
 	}
 
-	parametersLongUsage := GetParameterUsageForTypes(singularTypeNames)
+	parametersLongUsage := GetParameterUsageForTypes(resource, singularTypeNames, true)
+
+	uuids := GetUuidsForTypes(singularTypeNames)
+	exampleWithIds := " " + GetArgumentExampleWithIds(singularTypeNames, uuids)
 
 	argumentsBlurb := ""
 	switch resource.CreateEntityInfo.ContentType {
@@ -355,7 +478,7 @@ func GetCreateLong(resource resources.Resource) string {
 
 Documentation:
  %s
-`, GetJsonSyntaxExample(resource, "create", ""), resource.CreateEntityInfo.Docs)
+`, GetJsonSyntaxExample(resource, "create", exampleWithIds, ""), resource.CreateEntityInfo.Docs)
 	default:
 		argumentsBlurb = fmt.Sprintf("This resource uses %s encoding, which this help doesn't know how to help you with :) Submit a bug please.\nDocumentation:\n  %s", resource.CreateEntityInfo.ContentType, resource.CreateEntityInfo.Docs)
 	}
@@ -378,7 +501,10 @@ func GetUpdateLong(resource resources.Resource) string {
 		return fmt.Sprintf("Could not generate usage string: %s", err)
 	}
 
-	parametersLongUsage := GetParameterUsageForTypes(singularTypeNames)
+	uuids := GetUuidsForTypes(singularTypeNames)
+	exampleWithIds := " " + GetArgumentExampleWithIds(singularTypeNames, uuids)
+
+	parametersLongUsage := GetParameterUsageForTypes(resource, singularTypeNames, true)
 
 	argumentsBlurb := ""
 	switch resource.UpdateEntityInfo.ContentType {
@@ -390,7 +516,7 @@ func GetUpdateLong(resource resources.Resource) string {
 
 Documentation:
  %s
-`, GetJsonSyntaxExample(resource, "update", " 00000000-feed-dada-iced-c0ffee000000"), resource.UpdateEntityInfo.Docs)
+`, GetJsonSyntaxExample(resource, "update", exampleWithIds, " 00000000-feed-dada-iced-c0ffee000000"), resource.UpdateEntityInfo.Docs)
 	default:
 		argumentsBlurb = fmt.Sprintf("This resource uses %s encoding, which this help doesn't know how to help you with :) Submit a bug please.\nDocumentation:\n  %s", resource.UpdateEntityInfo.ContentType, resource.UpdateEntityInfo.Docs)
 	}
@@ -413,7 +539,10 @@ func GetDeleteLong(resource resources.Resource) string {
 		return fmt.Sprintf("Could not generate usage string: %s", err)
 	}
 
-	parametersLongUsage := GetParameterUsageForTypes(singularTypeNames)
+	uuids := GetUuidsForTypes(singularTypeNames)
+	exampleWithIds := " " + GetArgumentExampleWithIds(singularTypeNames, uuids)
+
+	parametersLongUsage := GetParameterUsageForTypes(resource, singularTypeNames, false)
 
 	argumentsBlurb := ""
 	switch resource.DeleteEntityInfo.ContentType {
@@ -425,7 +554,7 @@ func GetDeleteLong(resource resources.Resource) string {
 
 Documentation:
  %s
-`, GetJsonSyntaxExample(resource, "delete", " 00000000-feed-dada-iced-c0ffee000000"), resource.DeleteEntityInfo.Docs)
+`, GetJsonSyntaxExample(resource, "delete", exampleWithIds, " 00000000-feed-dada-iced-c0ffee000000"), resource.DeleteEntityInfo.Docs)
 	default:
 		argumentsBlurb = fmt.Sprintf("This resource uses %s encoding, which this help doesn't know how to help you with :) Submit a bug please.\nDocumentation:\n  %s", resource.DeleteEntityInfo.ContentType, resource.DeleteEntityInfo.Docs)
 	}
@@ -665,9 +794,13 @@ func GetCreateExample(resource resources.Resource) string {
 	}
 
 	if resource.CreateEntityInfo.ContentType != "multipart/form-data" {
-		for k := range resource.Attributes {
+		for kOrig, v := range resource.Attributes {
 
-			if k[0] == '^' {
+			if kOrig[0] == '^' {
+				continue
+			}
+
+			if strings.HasPrefix(v.Type, "CONST:") {
 				continue
 			}
 
@@ -675,10 +808,12 @@ func GetCreateExample(resource resources.Resource) string {
 				Type:       completion.CompleteAttributeValue,
 				Resource:   resource,
 				Verb:       completion.Create,
-				Attribute:  k,
+				Attribute:  kOrig,
 				ToComplete: "",
 				NoAliases:  true,
 			})
+
+			k := strings.ReplaceAll(kOrig, "[n]", "[0]")
 
 			arg := `"Hello World"`
 
@@ -746,9 +881,13 @@ func GetUpdateExample(resource resources.Resource) string {
 	}
 
 	if resource.UpdateEntityInfo.ContentType != "multipart/form-data" {
-		for k := range resource.Attributes {
+		for kOrig, v := range resource.Attributes {
 
-			if k[0] == '^' {
+			if kOrig[0] == '^' {
+				continue
+			}
+
+			if strings.HasPrefix(v.Type, "CONST:") {
 				continue
 			}
 
@@ -756,10 +895,12 @@ func GetUpdateExample(resource resources.Resource) string {
 				Type:       completion.CompleteAttributeValue,
 				Resource:   resource,
 				Verb:       completion.Update,
-				Attribute:  k,
+				Attribute:  kOrig,
 				ToComplete: "",
 				NoAliases:  true,
 			})
+
+			k := strings.ReplaceAll(kOrig, "[n]", "[0]")
 
 			arg := `"Hello World"`
 
@@ -819,9 +960,13 @@ func GetDeleteExample(resource resources.Resource) string {
 	}
 
 	if resource.DeleteEntityInfo.ContentType != "multipart/form-data" {
-		for k := range resource.Attributes {
+		for kOrig, v := range resource.Attributes {
 
-			if k[0] == '^' {
+			if kOrig[0] == '^' {
+				continue
+			}
+
+			if strings.HasPrefix(v.Type, "CONST:") {
 				continue
 			}
 
@@ -829,10 +974,12 @@ func GetDeleteExample(resource resources.Resource) string {
 				Type:       completion.CompleteAttributeValue,
 				Resource:   resource,
 				Verb:       completion.Delete,
-				Attribute:  k,
+				Attribute:  kOrig,
 				ToComplete: "",
 				NoAliases:  true,
 			})
+
+			k := strings.ReplaceAll(kOrig, "[n]", "[0]")
 
 			arg := `"Hello World"`
 
