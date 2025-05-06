@@ -2957,7 +2957,7 @@ rule-promotions:
     rule_set.rules.args[n]:
       type: STRING
     rule_set.rules.children[n].strategy:
-      type: STRING
+      type: ENUM:cart_total,cart_custom_attribute,item_price,item_category,item_attribute,item_product_id,item_identifier,items_bundle,and,or
     rule_set.rules.children[n].operator:
       type: ENUM:in,nin,eq,lt,lte,gt,gte
     rule_set.rules.children[n].args[n]:
@@ -2971,10 +2971,9 @@ rule-promotions:
     rule_set.actions[n].args[n]:
       type: PRIMITIVE
     rule_set.actions[n].condition.strategy:
-      # Looking at the code, this can accept anything
       type: ENUM:and,or,cart_total,cart_custom_attribute,item_price,item_sku,item_product_id,item_identifier,item_quantity,item_category,item_attribute,items_bundle
     rule_set.actions[n].condition.operator:
-      type: ENUM:in,nin,eq,lt,lte,gt,gte
+      type: ENUM:gte,gt,lte,lt,eq,in,nin
     rule_set.actions[n].condition.args[n]:
       type: STRING
     rule_set.actions[n].limitations.max_quantity:
