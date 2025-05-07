@@ -2910,7 +2910,7 @@ mli-inventory-list-stocks:
 rule-promotions:
   singular-name: "rule-promotion"
   json-api-type: "rule_promotion"
-  json-api-format: "compliant"
+  json-api-format: "legacy"
   docs: "https://elasticpath.dev/docs/promotions-builder/overview"
   get-collection:
     docs: "https://elasticpath.dev/docs/api/promotions-builder/get-rule-promotions"
@@ -2930,43 +2930,62 @@ rule-promotions:
   attributes:
     name:
       type: STRING
+      autofill: FUNC:Name
     description:
       type: STRING
+      autofill: FUNC:Phrase
     enabled:
       type: BOOL
+      autofill: VALUE:true
     automatic:
       type: BOOL
+      autofill: VALUE:true
     priority:
       type: INT
     stackable:
       type: BOOL
     start:
       type: STRING
+      autofill: VALUE:"{{ now | date_modify "-1d" | date "2006-01-02" }}"
     end:
       type: STRING
+      autofill: VALUE:"{{ now | date_modify "+7d" | date "2006-01-02" }}"
     rule_set.rules.strategy:
-      type: STRING
+      type: ENUM:and,or,cart_total,cart_custom_attribute,item_price,item_sku,item_product_id,item_identifier,item_quantity,item_category,item_attribute,items_bundle
     rule_set.rules.operator:
-      type: STRING
+      type: ENUM:in,nin,eq,lt,lte,gt,gte
+      usage: "The strategies cart_total, item_price, and item_quantity support the operators [gt, lt, gte, lte, eq].  Strategies cart_custom_attribute, item_sku, item_product_id, item_identifier, item_category, and item_attribute support the operators [in, nin]."
     rule_set.rules.args[n]:
       type: STRING
     rule_set.rules.children[n].strategy:
-      type: STRING
+      type: ENUM:cart_total,cart_custom_attribute,item_price,item_category,item_attribute,item_product_id,item_identifier,items_bundle,and,or
     rule_set.rules.children[n].operator:
-      type: STRING
+      type: ENUM:in,nin,eq,lt,lte,gt,gte
     rule_set.rules.children[n].args[n]:
       type: STRING
+    rule_set.catalog_ids[n]:
+      type: RESOURCE_ID:pcm-catalog
+    rule_set.currencies[n]:
+      type: CURRENCY
     rule_set.actions[n].strategy:
-      type: STRING
+      type: ENUM:cart_discount,item_discount,shipping_discount,item_bundle_discount
     rule_set.actions[n].args[n]:
-      type: STRING
+      type: PRIMITIVE
     rule_set.actions[n].condition.strategy:
-      type: STRING
+      type: ENUM:and,or,cart_total,cart_custom_attribute,item_price,item_sku,item_product_id,item_identifier,item_quantity,item_category,item_attribute,items_bundle
     rule_set.actions[n].condition.operator:
-      type: STRING
+      type: ENUM:gte,gt,lte,lt,eq,in,nin
     rule_set.actions[n].condition.args[n]:
       type: STRING
     rule_set.actions[n].limitations.max_quantity:
       type: INT
+    rule_set.actions[n].limitations.max_discount:
+      type: INT
+    rule_set.actions[n].limitations.items[n].max_items:
+      type: INT
+    rule_set.actions[n].limitations.items[n].price_strategy:
+      type: ENUM:cheapest,expensive
+    override_stacking:
+      type: BOOL
 
 

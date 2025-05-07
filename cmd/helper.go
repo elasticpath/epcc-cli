@@ -14,6 +14,8 @@ import (
 	"math/rand"
 	"net/url"
 	"regexp"
+	"sort"
+	"strconv"
 	"strings"
 	"sync"
 )
@@ -170,7 +172,15 @@ var NonAlphaCharacter = regexp.MustCompile("[^A-Za-z]+")
 
 func GetJsonKeyValuesForUsage(resource resources.Resource) string {
 	var ret = ""
+
+	keys := []string{}
 	for k := range resource.Attributes {
+		keys = append(keys, k)
+	}
+
+	sort.Strings(keys)
+	for _, k := range keys {
+		v := resource.Attributes[k]
 
 		jsonKey := k
 		// A good example of why these are needed are pcm-products and the regex attributes
@@ -180,9 +190,34 @@ func GetJsonKeyValuesForUsage(resource resources.Resource) string {
 		jsonKey = strings.ReplaceAll(jsonKey, "\\", "")
 
 		jsonKey = strings.ReplaceAll(jsonKey, "([a-zA-Z0-9-_]+)", "*")
-		value := strings.Trim(NonAlphaCharacter.ReplaceAllString(strings.ToUpper(k), "_"), "_ ")
-		value = strings.ReplaceAll(value, "A_Z", "")
-		value = strings.ReplaceAll(value, "__", "_")
+		value := "Unknown"
+
+		// "pattern": "^(STRING|URL|INT|CONST:[a-z0-9A-Z._-]+|ENUM:[a-z0-9A-Z._,-]+|FLOAT|BOOL|FILE|CURRENCY|SINGULAR_RESOURCE_TYPE|JSON_API_TYPE|RESOURCE_ID:([a-z0-9-]+|[*]))$"
+
+		// 	// Use is the one-line usage message.
+		//	// Recommended syntax is as follows:
+		//	//   [ ] identifies an optional argument. Arguments that are not enclosed in brackets are required.
+		//	//   ... indicates that you can specify multiple values for the previous argument.
+		//	//   |   indicates mutually exclusive information. You can use the argument to the left of the separator or the
+		//	//       argument to the right of the separator. You cannot use both arguments in a single use of the command.
+		//	//   { } delimits a set of mutually exclusive arguments when one of the arguments is required. If the arguments are
+		//	//       optional, they are enclosed in brackets ([ ]).
+		//	// Example: add [-F file | -D dir]... [-f format] profile
+
+		if v.Type == "BOOL" {
+			value = "{true|false}"
+		} else if strings.HasPrefix(v.Type, "CONST:") {
+			value = strings.Trim(v.Type, " ")
+			value = strings.ReplaceAll(value, "CONST:", "")
+		} else if strings.HasPrefix(v.Type, "ENUM:") {
+			value = strings.Trim(v.Type, " ")
+			value = "{" + strings.ReplaceAll(value, "ENUM:", "") + "}"
+		} else {
+			value = strings.Trim(NonAlphaCharacter.ReplaceAllString(strings.ToUpper(k), "_"), "_ ")
+			value = strings.ReplaceAll(value, "A_Z", "")
+			value = strings.ReplaceAll(value, "__", "_")
+		}
+
 		ret += " [" + jsonKey + " " + value + "]"
 	}
 
@@ -265,7 +300,7 @@ func GetGetLong(resourceName string, resourceUrl string, usageGetType string, co
 }
 
 func GetJsonSyntaxExample(resource resources.Resource, verb string, id string) string {
-	return fmt.Sprintf(`
+	prefix := fmt.Sprintf(`
 Key Value pairs passed in will be converted to JSON with a jq like syntax.
 
 The EPCC CLI will automatically determine appropriate wrapping (i.e., wrap the values in a data key or attributes key)
@@ -314,6 +349,398 @@ epcc %s %s%s key 'Test {{ randAlphaNum 6 | upper }} Value' => %s`,
 		verb, resource.SingularName, id, toJsonExample([]string{"key.some.child", "hello", "key.some.other", "goodbye"}, resource),
 		verb, resource.SingularName, id, toJsonExample([]string{"key", "Test {{ randAlphaNum 6 | upper }} Value"}, resource),
 	)
+
+	if resource.SingularName == "rule-promotion" {
+		prefix = fmt.Sprintf("%s\nExamples:\n  %s", prefix,
+			`
+1. Percent cart discount
+{
+  "data": {
+    "type": "rule_promotion",
+    "name": "10% off cart rule",
+    "description": "cart rule 10% off your order!",
+    "enabled": false,
+    "automatic": false,
+    "start": "2024-01-01",
+    "end": "2025-01-01",
+    "rule_set": {
+      "rules": {
+        "strategy": "cart_total",
+        "operator": "gte",
+        "args": [
+          100
+        ]
+      },
+      "actions": [
+        {
+          "strategy": "cart_discount",
+          "args": [
+            "percent",
+            20
+          ]
+        }
+      ]
+    }
+  }
+}
+
+2. Fixed cart discount for with currency and catalog
+{
+    "data": {
+        "type": "rule_promotion",
+        "name": "$5 off cart when cart is $100 or more",
+        "description": "cart rule $5 off your order!",
+        "enabled": true,
+        "automatic": true,
+        "start": "2024-01-01",
+        "end": "2024-01-04",
+        "rule_set": {
+            "catalog_ids":["09b9359f-897f-407f-89a2-702e167fe781"],
+            "currencies":["CAD"],
+            "rules": {
+                "strategy": "cart_total",
+                "operator": "gte",
+                "args": [
+                    10000
+                ]
+            },
+            "actions": [
+                {
+                    "strategy": "cart_discount",
+                    "args": [
+                        "fixed",
+                        500
+                    ]
+                }
+            ]
+        }
+    }
+}
+
+3. Complex bundle discount
+{
+    "data": {
+        "type": "rule_promotion",
+        "name": "Bundle item with OR in requirements",
+        "description": "Buy 2 Nike shoes OR Adidas shoes AND 3 items from socks OR 2 sku1",
+        "enabled": true,
+        "automatic": false,
+        "start": "2025-02-01",
+        "end": "2025-03-31",
+        "rule_set": {
+            "rules": {
+                "strategy": "items_bundle",
+                "children": [
+                    {
+                        "strategy": "or",
+                        "children": [
+                            {
+                                "strategy": "item_attribute",
+                                "operator": "in",
+                                "args": [
+                                    "products(shoes)",
+                                    "brand",
+                                    "string",
+                                    "Nike"
+                                ],
+                                "children": [
+                                    {
+                                        "strategy": "item_quantity",
+                                        "operator": "eq",
+                                        "args": [
+                                            2
+                                        ]
+                                    },
+                                    {
+                                        "strategy": "item_category",
+                                        "operator": "in",
+                                        "args": [
+                                            "667d9fae-d8c7-4941-b556-70cb4b8612f1"
+                                        ]
+                                    }
+                                ]
+                            },
+                            {
+                                "strategy": "item_attribute",
+                                "operator": "in",
+                                "args": [
+                                    "products(shoes)",
+                                    "brand",
+                                    "string",
+                                    "Adidas"
+                                ],
+                                "children": [
+                                    {
+                                        "strategy": "item_quantity",
+                                        "operator": "eq",
+                                        "args": [
+                                            2
+                                        ]
+                                    },
+                                    {
+                                        "strategy": "item_category",
+                                        "operator": "in",
+                                        "args": [
+                                            "667d9fae-d8c7-4941-b556-70cb4b8612f1"
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "strategy": "or",
+                        "children": [
+                            {
+                                "strategy": "item_category",
+                                "operator": "in",
+                                "args": [
+                                    "7700645a-55bd-4159-a8f3-ade7fed387c4"
+                                ],
+                                "children": [
+                                    {
+                                        "strategy": "item_quantity",
+                                        "operator": "eq",
+                                        "args": [
+                                            3
+                                        ]
+                                    }
+                                ]
+                            },
+                            {
+                                "strategy": "item_sku",
+                                "operator": "in",
+                                "args": [
+                                    "sku1"
+                                ],
+                                "children": [
+                                    {
+                                        "strategy": "item_quantity",
+                                        "operator": "eq",
+                                        "args": [
+                                            2
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            "actions": [
+                {
+                    "strategy": "items_bundle_discount",
+                    "args": [
+                        "percent",
+                        10
+                    ],
+                    "condition": {
+                        "strategy": "items_bundle",
+                        "children": [
+                            {
+                                "strategy": "or",
+                                "children": [
+                                    {
+                                        "strategy": "item_attribute",
+                                        "operator": "in",
+                                        "args": [
+                                            "products(shoes)",
+                                            "brand",
+                                            "string",
+                                            "Nike"
+                                        ],
+                                        "children": [
+                                            {
+                                                "strategy": "item_quantity",
+                                                "operator": "eq",
+                                                "args": [
+                                                    2
+                                                ]
+                                            },
+                                            {
+                                                "strategy": "item_category",
+                                                "operator": "in",
+                                                "args": [
+                                                    "667d9fae-d8c7-4941-b556-70cb4b8612f1"
+                                                ]
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "strategy": "item_attribute",
+                                        "operator": "in",
+                                        "args": [
+                                            "products(shoes)",
+                                            "brand",
+                                            "string",
+                                            "Adidas"
+                                        ],
+                                        "children": [
+                                            {
+                                                "strategy": "item_quantity",
+                                                "operator": "eq",
+                                                "args": [
+                                                    2
+                                                ]
+                                            },
+                                            {
+                                                "strategy": "item_category",
+                                                "operator": "in",
+                                                "args": [
+                                                    "667d9fae-d8c7-4941-b556-70cb4b8612f1"
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                ]
+                            },
+                            {
+                                "strategy": "or",
+                                "children": [
+                                    {
+                                        "strategy": "item_category",
+                                        "operator": "in",
+                                        "args": [
+                                            "7700645a-55bd-4159-a8f3-ade7fed387c4"
+                                        ],
+                                        "children": [
+                                            {
+                                                "strategy": "item_quantity",
+                                                "operator": "eq",
+                                                "args": [
+                                                    3
+                                                ]
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "strategy": "item_sku",
+                                        "operator": "in",
+                                        "args": [
+                                            "sku1"
+                                        ],
+                                        "children": [
+                                            {
+                                                "strategy": "item_quantity",
+                                                "operator": "eq",
+                                                "args": [
+                                                    2
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    }
+}
+
+4.  Cart custom attribute strategy
+{
+    "data": {
+        "type": "rule_promotion",
+        "name": "$5 off cart with custom attribute",
+        "description": "$5 off cart with custom attribute",
+        "enabled": true,
+        "automatic": true,
+        "start": "2024-01-01",
+        "end": "2024-01-26",
+        "rule_set": {
+            "rules": {
+                "strategy": "cart_custom_attribute",
+                "operator": "in",
+                "args": [
+                    "member_status",
+                    "string",
+                    "gold",
+                    "platinum"
+                ]
+            },
+            "actions": [
+                {
+                    "strategy": "cart_discount",
+                    "args": [
+                        "fixed",
+                        500
+                    ]
+                }
+            ]
+        }
+    }
+}
+
+`,
+		)
+	}
+
+	suffix := strings.Builder{}
+
+	keys := []string{}
+	maxLengthKey := 0
+	for k := range resource.Attributes {
+		keys = append(keys, k)
+
+		maxLengthKey = max(maxLengthKey, len(k))
+	}
+
+	sort.Strings(keys)
+	for _, k := range keys {
+		v := resource.Attributes[k]
+
+		value := "Unknown:" + v.Type
+
+		//"pattern": "^(||RESOURCE_ID:([a-z0-9-]+|[*]))$"
+
+		if v.Usage != "" {
+			value = v.Usage
+		} else if v.Type == "BOOL" {
+			value = "A boolean value"
+		} else if v.Type == "STRING" {
+			value = "A string value"
+		} else if strings.HasPrefix(v.Type, "ENUM:") {
+			value = "One of the following values: " + strings.ReplaceAll(strings.ReplaceAll(v.Type, "ENUM:", ""), ",", ", ")
+		} else if strings.HasPrefix(v.Type, "CONST:") {
+			value = "Only: " + strings.ReplaceAll(strings.ReplaceAll(v.Type, "CONST:", ""), ",", ", ") + " (note: the epcc will auto-populate this if an adjacent attribute is set)"
+		} else if v.Type == "INT" {
+			value = "An integer value"
+		} else if v.Type == "FLOAT" {
+			value = "A floating point value"
+		} else if v.Type == "URL" {
+			value = "A url"
+		} else if v.Type == "JSON_API_TYPE" {
+			value = "A value that matches a `type` used by the API"
+		} else if v.Type == "CURRENCY" {
+			value = "A three letter currency code"
+		} else if v.Type == "FILE" {
+			value = "A filename"
+		} else if v.Type == "PRIMITIVE" {
+			value = "Any of an int, float, string, or boolean value"
+		} else if v.Type == "SINGULAR_RESOURCE_TYPE" {
+			value = "A resource name used by the epcc cli"
+		} else if strings.HasPrefix(v.Type, "RESOURCE_ID") {
+
+			resName := strings.ReplaceAll(v.Type, "RESOURCE_ID:", "")
+
+			if res, ok := resources.GetResourceByName(resName); ok {
+				attribute := "id"
+
+				if v.AliasAttribute != "" {
+					attribute = v.AliasAttribute
+				}
+
+				value = fmt.Sprintf("The %s of a %s resource", attribute, res.SingularName)
+			} else {
+				value = "A resource id for " + resName
+			}
+		}
+
+		suffix.WriteString(fmt.Sprintf("  %-"+strconv.Itoa(maxLengthKey)+"s -  %s\n", k, value))
+	}
+	return prefix + "\n\nKeys (and their expected values):\n" + suffix.String() + "\nNotes:\n - Other keys and values will work fine (e.g., if you are using an older version of this tool, and new features have been developed), or you have defined flows.\n - Keys with an [n] in them are array parameters and should be supplied with a [0], [1], [2], etc..."
 }
 
 func toJsonExample(in []string, resource resources.Resource) string {
