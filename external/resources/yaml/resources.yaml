@@ -2954,6 +2954,7 @@ rule-promotions:
       type: ENUM:and,or,cart_total,cart_custom_attribute,item_price,item_sku,item_product_id,item_identifier,item_quantity,item_category,item_attribute,items_bundle
     rule_set.rules.operator:
       type: ENUM:in,nin,eq,lt,lte,gt,gte
+      usage: "The strategies cart_total, item_price, and item_quantity support the operators [gt, lt, gte, lte, eq].  Strategies cart_custom_attribute, item_sku, item_product_id, item_identifier, item_category, and item_attribute support the operators [in, nin]."
     rule_set.rules.args[n]:
       type: STRING
     rule_set.rules.children[n].strategy:

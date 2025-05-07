@@ -350,6 +350,333 @@ epcc %s %s%s key 'Test {{ randAlphaNum 6 | upper }} Value' => %s`,
 		verb, resource.SingularName, id, toJsonExample([]string{"key", "Test {{ randAlphaNum 6 | upper }} Value"}, resource),
 	)
 
+	if resource.SingularName == "rule-promotion" {
+		prefix = fmt.Sprintf("%s\nExamples:\n  %s", prefix,
+			`
+1. Percent cart discount
+{
+  "data": {
+    "type": "rule_promotion",
+    "name": "10% off cart rule",
+    "description": "cart rule 10% off your order!",
+    "enabled": false,
+    "automatic": false,
+    "start": "2024-01-01",
+    "end": "2025-01-01",
+    "rule_set": {
+      "rules": {
+        "strategy": "cart_total",
+        "operator": "gte",
+        "args": [
+          100
+        ]
+      },
+      "actions": [
+        {
+          "strategy": "cart_discount",
+          "args": [
+            "percent",
+            20
+          ]
+        }
+      ]
+    }
+  }
+}
+
+2. Fixed cart discount for with currency and catalog
+{
+    "data": {
+        "type": "rule_promotion",
+        "name": "$5 off cart when cart is $100 or more",
+        "description": "cart rule $5 off your order!",
+        "enabled": true,
+        "automatic": true,
+        "start": "2024-01-01",
+        "end": "2024-01-04",
+        "rule_set": {
+            "catalog_ids":["09b9359f-897f-407f-89a2-702e167fe781"],
+            "currencies":["CAD"],
+            "rules": {
+                "strategy": "cart_total",
+                "operator": "gte",
+                "args": [
+                    10000
+                ]
+            },
+            "actions": [
+                {
+                    "strategy": "cart_discount",
+                    "args": [
+                        "fixed",
+                        500
+                    ]
+                }
+            ]
+        }
+    }
+}
+
+3. Complex bundle discount
+{
+    "data": {
+        "type": "rule_promotion",
+        "name": "Bundle item with OR in requirements",
+        "description": "Buy 2 Nike shoes OR Adidas shoes AND 3 items from socks OR 2 sku1",
+        "enabled": true,
+        "automatic": false,
+        "start": "2025-02-01",
+        "end": "2025-03-31",
+        "rule_set": {
+            "rules": {
+                "strategy": "items_bundle",
+                "children": [
+                    {
+                        "strategy": "or",
+                        "children": [
+                            {
+                                "strategy": "item_attribute",
+                                "operator": "in",
+                                "args": [
+                                    "products(shoes)",
+                                    "brand",
+                                    "string",
+                                    "Nike"
+                                ],
+                                "children": [
+                                    {
+                                        "strategy": "item_quantity",
+                                        "operator": "eq",
+                                        "args": [
+                                            2
+                                        ]
+                                    },
+                                    {
+                                        "strategy": "item_category",
+                                        "operator": "in",
+                                        "args": [
+                                            "667d9fae-d8c7-4941-b556-70cb4b8612f1"
+                                        ]
+                                    }
+                                ]
+                            },
+                            {
+                                "strategy": "item_attribute",
+                                "operator": "in",
+                                "args": [
+                                    "products(shoes)",
+                                    "brand",
+                                    "string",
+                                    "Adidas"
+                                ],
+                                "children": [
+                                    {
+                                        "strategy": "item_quantity",
+                                        "operator": "eq",
+                                        "args": [
+                                            2
+                                        ]
+                                    },
+                                    {
+                                        "strategy": "item_category",
+                                        "operator": "in",
+                                        "args": [
+                                            "667d9fae-d8c7-4941-b556-70cb4b8612f1"
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "strategy": "or",
+                        "children": [
+                            {
+                                "strategy": "item_category",
+                                "operator": "in",
+                                "args": [
+                                    "7700645a-55bd-4159-a8f3-ade7fed387c4"
+                                ],
+                                "children": [
+                                    {
+                                        "strategy": "item_quantity",
+                                        "operator": "eq",
+                                        "args": [
+                                            3
+                                        ]
+                                    }
+                                ]
+                            },
+                            {
+                                "strategy": "item_sku",
+                                "operator": "in",
+                                "args": [
+                                    "sku1"
+                                ],
+                                "children": [
+                                    {
+                                        "strategy": "item_quantity",
+                                        "operator": "eq",
+                                        "args": [
+                                            2
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            "actions": [
+                {
+                    "strategy": "items_bundle_discount",
+                    "args": [
+                        "percent",
+                        10
+                    ],
+                    "condition": {
+                        "strategy": "items_bundle",
+                        "children": [
+                            {
+                                "strategy": "or",
+                                "children": [
+                                    {
+                                        "strategy": "item_attribute",
+                                        "operator": "in",
+                                        "args": [
+                                            "products(shoes)",
+                                            "brand",
+                                            "string",
+                                            "Nike"
+                                        ],
+                                        "children": [
+                                            {
+                                                "strategy": "item_quantity",
+                                                "operator": "eq",
+                                                "args": [
+                                                    2
+                                                ]
+                                            },
+                                            {
+                                                "strategy": "item_category",
+                                                "operator": "in",
+                                                "args": [
+                                                    "667d9fae-d8c7-4941-b556-70cb4b8612f1"
+                                                ]
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "strategy": "item_attribute",
+                                        "operator": "in",
+                                        "args": [
+                                            "products(shoes)",
+                                            "brand",
+                                            "string",
+                                            "Adidas"
+                                        ],
+                                        "children": [
+                                            {
+                                                "strategy": "item_quantity",
+                                                "operator": "eq",
+                                                "args": [
+                                                    2
+                                                ]
+                                            },
+                                            {
+                                                "strategy": "item_category",
+                                                "operator": "in",
+                                                "args": [
+                                                    "667d9fae-d8c7-4941-b556-70cb4b8612f1"
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                ]
+                            },
+                            {
+                                "strategy": "or",
+                                "children": [
+                                    {
+                                        "strategy": "item_category",
+                                        "operator": "in",
+                                        "args": [
+                                            "7700645a-55bd-4159-a8f3-ade7fed387c4"
+                                        ],
+                                        "children": [
+                                            {
+                                                "strategy": "item_quantity",
+                                                "operator": "eq",
+                                                "args": [
+                                                    3
+                                                ]
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "strategy": "item_sku",
+                                        "operator": "in",
+                                        "args": [
+                                            "sku1"
+                                        ],
+                                        "children": [
+                                            {
+                                                "strategy": "item_quantity",
+                                                "operator": "eq",
+                                                "args": [
+                                                    2
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    }
+}
+
+4.  Cart custom attribute strategy
+{
+    "data": {
+        "type": "rule_promotion",
+        "name": "$5 off cart with custom attribute",
+        "description": "$5 off cart with custom attribute",
+        "enabled": true,
+        "automatic": true,
+        "start": "2024-01-01",
+        "end": "2024-01-26",
+        "rule_set": {
+            "rules": {
+                "strategy": "cart_custom_attribute",
+                "operator": "in",
+                "args": [
+                    "member_status",
+                    "string",
+                    "gold",
+                    "platinum"
+                ]
+            },
+            "actions": [
+                {
+                    "strategy": "cart_discount",
+                    "args": [
+                        "fixed",
+                        500
+                    ]
+                }
+            ]
+        }
+    }
+}
+
+`,
+		)
+	}
+
 	suffix := strings.Builder{}
 
 	keys := []string{}
@@ -412,7 +739,6 @@ epcc %s %s%s key 'Test {{ randAlphaNum 6 | upper }} Value' => %s`,
 		}
 
 		suffix.WriteString(fmt.Sprintf("  %-"+strconv.Itoa(maxLengthKey)+"s -  %s\n", k, value))
-
 	}
 	return prefix + "\n\nKeys (and their expected values):\n" + suffix.String() + "\nNotes:\n - Other keys and values will work fine (e.g., if you are using an older version of this tool, and new features have been developed), or you have defined flows.\n - Keys with an [n] in them are array parameters and should be supplied with a [0], [1], [2], etc..."
 }
