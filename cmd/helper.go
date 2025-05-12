@@ -463,6 +463,8 @@ func GetGetUsageString(resourceName string, resourceUrl string, completionVerb i
 		case "page[offset]":
 			// No example
 			usageString += fmt.Sprintf(" [page[offset] N]")
+		case "page[total_method]":
+			usageString += fmt.Sprintf(" [page[total_method] {exact,observed,estimate,lower_bound,cached,none}]")
 		case "sort":
 			usageString += fmt.Sprintf(" [sort SORT]")
 		case "filter":
