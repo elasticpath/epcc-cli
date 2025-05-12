@@ -97,6 +97,7 @@ func TestGetCompletionForCollectionWithParentResourceReturnsStandardFields(t *te
 	require.Contains(t, completionResult, "include")
 	require.Contains(t, completionResult, "page[limit]")
 	require.Contains(t, completionResult, "page[offset]")
+	require.Contains(t, completionResult, "page[total_method]")
 	require.Contains(t, completionResult, "filter")
 }
 

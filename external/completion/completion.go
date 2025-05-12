@@ -386,7 +386,7 @@ func Complete(c Request) ([]string, cobra.ShellCompDirective) {
 			}
 
 			// Static shared list
-			results = append(results, "sort", "filter", "include", "page[limit]", "page[offset]")
+			results = append(results, "sort", "filter", "include", "page[limit]", "page[offset]", "page[total_method]")
 		} else if c.Verb&Get > 0 {
 			for _, k := range strings.Split(c.Resource.GetEntityInfo.QueryParameters, ",") {
 				results = append(results, k)
@@ -419,8 +419,9 @@ func Complete(c Request) ([]string, cobra.ShellCompDirective) {
 			} else if c.QueryParam == "filter" {
 				results = append(results, GetFilterCompletion(c.ToComplete, c.Resource)...)
 				compDir = compDir | cobra.ShellCompDirectiveNoSpace
+			} else if c.QueryParam == "page[total_method]" {
+				results = append(results, "exact", "estimate", "lower_bound", "observed", "cached", "none")
 			}
-
 		}
 	}
 
