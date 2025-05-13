@@ -379,18 +379,24 @@ cart-checkout:
   attributes:
     account.id:
       type: RESOURCE_ID:account
+      usage: "The account id to associate the order with"
     account.member_id:
       type: RESOURCE_ID:account-member
-    customer.id:
-      type: RESOURCE_ID:customer
-    customer.email:
-      type: STRING
-    customer.name:
-      type: STRING
+      usage: "The account member id to associate the order with"
+#    customer.id:
+#      type: RESOURCE_ID:customer
+#      usage: "The id of the customer to use, not used when checking out an order for an account."
+#    customer.email:
+#      type: STRING
+#    customer.name:
+#      type: STRING
+#
     contact.name:
       type: STRING
+      usage: "A contact name for the order, required when checking out an order for an account."
     contact.email:
       type: STRING
+      usage: "A contact e-mail for the, required when checking out an order for an account. "
     billing_address.first_name:
       type: STRING
       autofill: FUNC:FirstName
