@@ -30,7 +30,7 @@ account-management-authentication-tokens:
     content-type: application/json
   attributes:
     authentication_mechanism:
-      type: ENUM:oidc,password,passwordless,self_signup
+      type: ENUM:oidc,password,passwordless,self_signup,account_management_authentication_token
     oauth_authorization_code:
       type: STRING
     oauth_redirect_uri:
