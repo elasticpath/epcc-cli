@@ -3,6 +3,7 @@ package httpclient
 import (
 	"bytes"
 	"context"
+	"crypto/tls"
 	"fmt"
 	"github.com/elasticpath/epcc-cli/config"
 	"github.com/elasticpath/epcc-cli/external/authentication"
@@ -35,6 +36,8 @@ const EnvUrlMatch = "EPCC_CLI_URL_MATCH_REGEXP_(\\d+)"
 
 const EnvUrlMatchPrefix = "EPCC_CLI_URL_MATCH_SUBSTITUTION_"
 
+const EnvDisableTLS = "EPCC_CLI_DISABLE_TLS_VERIFICATION"
+
 var urlSubstitions = map[*regexp.Regexp]string{}
 
 var httpHeaders = map[string]string{}
@@ -51,6 +54,12 @@ var stats = struct {
 
 func init() {
 	stats.respCodes = make(map[int]int)
+
+}
+
+var Limit *rate.Limiter = nil
+
+func Initialize(rateLimit uint16, requestTimeout float32, statisticsFrequency int) {
 
 	urlMatchRegexp := regexp.MustCompile(EnvUrlMatch)
 
@@ -70,6 +79,22 @@ func init() {
 				}
 			}
 
+			if envName == EnvDisableTLS {
+				switch strings.ToLower(strings.Trim(envValue, " ")) {
+				case "false":
+					log.Debugf("TLS Verification is enabled because of %s = %s", EnvDisableTLS, envValue)
+				case "true":
+					log.Debugf("TLS Verification is disabled because of %s = %s", EnvDisableTLS, envValue)
+					HttpClient.Transport = &http.Transport{
+						TLSClientConfig: &tls.Config{
+							InsecureSkipVerify: true,
+						},
+					}
+				default:
+					log.Warnf("Unknown value for %s %s, TLS verification is still enabled", EnvDisableTLS, envValue)
+				}
+			}
+
 			if groups := urlMatchRegexp.FindStringSubmatch(envName); groups != nil {
 				if groups != nil {
 					r, err := regexp.Compile(envValue)
@@ -83,11 +108,7 @@ func init() {
 			}
 		}
 	}
-}
 
-var Limit *rate.Limiter = nil
-
-func Initialize(rateLimit uint16, requestTimeout float32, statisticsFrequency int) {
 	Limit = rate.NewLimiter(rate.Limit(rateLimit), 1)
 	HttpClient.Timeout = time.Duration(int64(requestTimeout*1000) * int64(time.Millisecond))
 

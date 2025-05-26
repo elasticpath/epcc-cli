@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/elasticpath/epcc-cli/config"
 	"github.com/elasticpath/epcc-cli/external/aliases"
+	"github.com/elasticpath/epcc-cli/external/authentication"
 	"github.com/elasticpath/epcc-cli/external/clictx"
 	"github.com/elasticpath/epcc-cli/external/headergroups"
 	"github.com/elasticpath/epcc-cli/external/httpclient"
@@ -228,7 +229,10 @@ Environment Variables
 			if env.EPCC_RATE_LIMIT != 0 {
 				rateLimit = env.EPCC_RATE_LIMIT
 			}
+			authentication.Initialize()
+
 			log.Debugf("Rate limit set to %d request per second, printing statistics every %d seconds ", rateLimit, statisticsFrequency)
+
 			httpclient.Initialize(rateLimit, requestTimeout, int(statisticsFrequency))
 
 			for _, runFunc := range persistentPreRunFuncs {
