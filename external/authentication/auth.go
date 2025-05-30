@@ -2,6 +2,7 @@ package authentication
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"github.com/elasticpath/epcc-cli/config"
@@ -11,6 +12,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"os"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -27,6 +29,20 @@ type ApiTokenResponse struct {
 
 var HttpClient = &http.Client{
 	Timeout: time.Second * 60,
+}
+
+// Initialize checks environment variables and configures the HTTP client
+func Initialize() {
+	// Check if TLS verification should be disabled
+	if val, exists := os.LookupEnv("EPCC_CLI_DISABLE_TLS_VERIFICATION"); exists {
+		if strings.ToLower(strings.Trim(val, " ")) == "true" {
+			HttpClient.Transport = &http.Transport{
+				TLSClientConfig: &tls.Config{
+					InsecureSkipVerify: true,
+				},
+			}
+		}
+	}
 }
 
 var bearerToken atomic.Pointer[ApiTokenResponse]
@@ -51,6 +67,7 @@ func AddPostAuthHook(f func(r *http.Request, s *http.Response)) {
 	defer getTokenMutex.Unlock()
 	postAuthHook = append(postAuthHook, f)
 }
+
 func GetAuthenticationToken(useTokenFromProfileDir bool, valuesOverride *url.Values, warnOnNoAuthentication bool) (*ApiTokenResponse, error) {
 
 	if useTokenFromProfileDir {
