@@ -30,7 +30,7 @@ account-management-authentication-tokens:
     content-type: application/json
   attributes:
     authentication_mechanism:
-      type: ENUM:oidc,password,passwordless,self_signup
+      type: ENUM:oidc,password,passwordless,self_signup,account_management_authentication_token
     oauth_authorization_code:
       type: STRING
     oauth_redirect_uri:
@@ -279,7 +279,7 @@ carts:
       type: STRING
 cart-items:
   singular-name: "cart-item"
-  json-api-type: "cart_items"
+  json-api-type: "cart_item"
   json-api-format: "legacy"
   docs: "https://elasticpath.dev/docs/api/carts/cart-items"
   get-collection:
@@ -339,6 +339,9 @@ cart-custom-items:
     docs: "https://elasticpath.dev/docs/api/carts/manage-carts#add-custom-item-to-cart"
     url: "/v2/carts/{carts}/items"
     content-type: application/json
+  update-entity:
+    docs: "https://elasticpath.dev/docs/carts-orders/bulk-add-to-cart"
+    url: "/v2/carts/{carts}/items/{cart_custom_items}"
   attributes:
     sku:
       type: STRING

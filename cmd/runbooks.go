@@ -79,6 +79,21 @@ func initRunbookShowCommands() *cobra.Command {
 		SilenceUsage: true,
 	}
 
+	runbookShowCommand.PersistentFlags().Int64("execution-timeout", 900, "Does nothing, just here in case you swap run for show to debug")
+	runbookShowCommand.PersistentFlags().Int("max-concurrency", 20, "Does nothing, just here in case you swap run for show to debugy")
+
+	err := runbookShowCommand.PersistentFlags().MarkHidden("execution-timeout")
+
+	if err != nil {
+		panic(err)
+	}
+
+	err = runbookShowCommand.PersistentFlags().MarkHidden("max-concurrency")
+
+	if err != nil {
+		panic(err)
+	}
+
 	for _, runbook := range runbooks.GetRunbooks() {
 		// Create a copy of runbook scoped to the loop
 		runbook := runbook
