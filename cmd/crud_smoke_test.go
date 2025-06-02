@@ -72,6 +72,12 @@ func TestCrudOnAResource(t *testing.T) {
 	err = cmd.Execute()
 	require.Error(t, err)
 
+	// Type override error
+	cmd = getTestCommand()
+	cmd.SetArgs([]string{"create", "account", "type", "foo", "name", "bar"})
+	err = cmd.Execute()
+	require.Error(t, err)
+
 	// Resource doesn't exist
 	cmd = getTestCommand()
 	cmd.SetArgs([]string{"update", "account", "6e7e2cdb-ff61-45a9-956b-c9dfc28d11d0"})
