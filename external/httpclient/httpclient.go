@@ -52,6 +52,8 @@ var stats = struct {
 	respCodes map[int]int
 }{}
 
+var startTime = time.Now()
+
 func init() {
 	stats.respCodes = make(map[int]int)
 
@@ -171,10 +173,12 @@ func LogStats() {
 		}
 	}
 
+	allRequestTime := time.Now().Sub(startTime)
+
 	if stats.totalRequests > 3 {
-		log.Infof("Total requests %d, and total rate limiting time %d ms, and total processing time %d ms. Response Code Count: %s", stats.totalRequests, stats.totalRateLimitedTimeInMs, stats.totalHttpRequestProcessingTime, counts)
+		log.Infof("Total requests %d, and total rate limiting time %d ms, and total processing time %d ms. Effective RPS: %.2f. Response Code Count: %s", stats.totalRequests, stats.totalRateLimitedTimeInMs, stats.totalHttpRequestProcessingTime, float64(stats.totalRequests)/float64(allRequestTime.Seconds()), counts)
 	} else {
-		log.Debugf("Total requests %d, and total rate limiting time %d ms and total processing time %d ms. Response Code Count: %s", stats.totalRequests, stats.totalRateLimitedTimeInMs, stats.totalHttpRequestProcessingTime, counts)
+		log.Debugf("Total requests %d, and total rate limiting time %d ms and total processing time %d ms. Effective RPS: %.2f. Response Code Count: %s", stats.totalRequests, stats.totalRateLimitedTimeInMs, stats.totalHttpRequestProcessingTime, float64(stats.totalRequests)/float64(allRequestTime.Seconds()), counts)
 	}
 }
 func DoRequest(ctx context.Context, method string, path string, query string, payload io.Reader) (response *http.Response, error error) {
