@@ -66,7 +66,7 @@ func RenderTemplates(templateName string, rawCmd string, stringVars map[string]*
 	err = tpl.Execute(&renderedTpl, data)
 
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error executing template: %w", err)
 	}
 
 	// This algorithm is broken if you have an escaped "\n"

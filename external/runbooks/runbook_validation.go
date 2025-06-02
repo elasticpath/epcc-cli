@@ -34,7 +34,11 @@ func ValidateRunbook(runbook *Runbook) error {
 			rawCmdLines, err := RenderTemplates(templateName, rawCmd, argumentsWithDefaults, runbookAction.Variables)
 
 			if err != nil {
-				return fmt.Errorf("error rendering template: %w", err)
+				rawCmdLines := strings.Split(rawCmd, "\n")
+
+				formattedLines := strings.Join(rawCmdLines, "\n>  ")
+
+				return fmt.Errorf("error rendering template: %w, command:\n> %s", err, formattedLines)
 			}
 
 			joinedString := strings.Join(rawCmdLines, "\n")

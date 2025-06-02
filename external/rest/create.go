@@ -85,12 +85,13 @@ func CreateInternal(ctx context.Context, overrides *httpclient.HttpParameterOver
 			// Use the provided data as the request body
 			body = data
 		} else {
-			if !resource.NoWrapping && !disableConstants {
-				args = append(args, "type", resource.JsonApiType)
-			}
-
 			// Create the body from remaining args
 			jsonArgs := args[(idCount + 1):]
+
+			if !resource.NoWrapping && !disableConstants {
+				jsonArgs = append([]string{"type", resource.JsonApiType}, jsonArgs...)
+			}
+
 			if autoFillOnCreate {
 				autofilledData := autofill.GetJsonArrayForResource(&resource)
 				jsonArgs = append(autofilledData, jsonArgs...)

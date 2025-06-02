@@ -52,12 +52,15 @@ func UpdateInternal(ctx context.Context, overrides *httpclient.HttpParameterOver
 		// Use the provided data as the request body
 		body = data
 	} else {
-		if !disableConstants {
-			args = append(args, "type", resource.JsonApiType)
+		// Create the body from remaining args
+		jsonArgs := args[(idCount + 1):]
+
+		if !resource.NoWrapping && !disableConstants {
+			jsonArgs = append([]string{"type", resource.JsonApiType}, jsonArgs...)
 		}
 
 		// Create the body from remaining args
-		body, err = json.ToJson(args[(idCount+1):], resource.NoWrapping, resource.JsonApiFormat == "compliant", resource.Attributes, true, !disableConstants)
+		body, err = json.ToJson(jsonArgs, resource.NoWrapping, resource.JsonApiFormat == "compliant", resource.Attributes, true, !disableConstants)
 		if err != nil {
 			return "", err
 		}
