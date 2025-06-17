@@ -1,13 +1,11 @@
 module github.com/elasticpath/epcc-cli
 
-go 1.23.0
-
-toolchain go1.24.2
+go 1.24.3
 
 require (
 	github.com/Masterminds/sprig/v3 v3.3.0
 	github.com/brianvoe/gofakeit/v6 v6.28.0
-	github.com/buildkite/shellwords v0.0.0-20180315110454-59467a9b8e10
+	github.com/buildkite/shellwords v1.0.0
 	github.com/caarlos0/env/v6 v6.10.1
 	github.com/google/uuid v1.6.0
 	github.com/gookit/color v1.5.3
@@ -52,5 +50,4 @@ require (
 	github.com/xo/terminfo v0.0.0-20210125001918-ca9a967f8778 // indirect
 	golang.org/x/crypto v0.35.0 // indirect
 	golang.org/x/sys v0.30.0 // indirect; indirect\
-
 )
