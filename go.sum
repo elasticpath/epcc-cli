@@ -16,8 +16,8 @@ github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973/go.mod h1:Dwedo/Wpr24
 github.com/beorn7/perks v1.0.0/go.mod h1:KWe93zE9D1o94FZ5RNwFwVgaQK1VOXiVxmqh+CedLV8=
 github.com/brianvoe/gofakeit/v6 v6.28.0 h1:Xib46XXuQfmlLS2EXRuJpqcw8St6qSZz75OUo0tgAW4=
 github.com/brianvoe/gofakeit/v6 v6.28.0/go.mod h1:Xj58BMSnFqcn/fAQeSK+/PLtC5kSb7FJIq4JyGa8vEs=
-github.com/buildkite/shellwords v0.0.0-20180315110454-59467a9b8e10 h1:XwHQ5xDtYPdtBbVPyRO6UZoWZe8/mbKUb076f8x7RvI=
-github.com/buildkite/shellwords v0.0.0-20180315110454-59467a9b8e10/go.mod h1:gv0DYOzHEsKgo31lTCDGauIg4DTTGn41Bzp+t3wSOlk=
+github.com/buildkite/shellwords v1.0.0 h1:NqZ4Ynp0dar6ACdP5X2RwI8BnNSvuKFf+2StuJl8tjM=
+github.com/buildkite/shellwords v1.0.0/go.mod h1:h/h4NjidF4MJARI+cfAmA/GFChSdroL1GOJXD68s6qU=
 github.com/caarlos0/env/v6 v6.10.1 h1:t1mPSxNpei6M5yAeu1qtRdPAK29Nbcf/n3G7x+b3/II=
 github.com/caarlos0/env/v6 v6.10.1/go.mod h1:hvp/ryKXKipEkcuYjs9mI4bBCg+UI0Yhgm5Zu0ddvwc=
 github.com/cespare/xxhash v1.1.0/go.mod h1:XrSqR1VqqWfGrhpAt58auRo0WTKS1nRRg3ghfAqPWnc=
