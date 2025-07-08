@@ -220,14 +220,16 @@ Environment Variables
 - EPCC_BETA_API_FEATURES - Beta features in the API we want to enable.
 - EPCC_CLI_HTTP_HEADER_[0,1,...] - An additional HTTP header to set with all requests, the format should be "HeaderName: value"
 - EPCC_PROFILE - The name of the profile we will use (isolates namespace, credentials, etc...)
-
+- EPCC_CLI_DISABLE_TLS_VERIFICATION - Disables TLS verification
+- EPCC_RUNBOOK_DIRECTORY - Directory to scan for additional runbooks
+- EPCC_CLI_DISABLE_TEMPLATE_EXECUTION - Disables template execution (recommended if input is untrusted).
 `,
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 			log.SetLevel(logger.Loglevel)
 
-			env := config.GetEnv()
-			if env.EPCC_RATE_LIMIT != 0 {
-				rateLimit = env.EPCC_RATE_LIMIT
+			e := config.GetEnv()
+			if e.EPCC_RATE_LIMIT != 0 {
+				rateLimit = e.EPCC_RATE_LIMIT
 			}
 			authentication.Initialize()
 
