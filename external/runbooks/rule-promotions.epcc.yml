@@ -42,12 +42,22 @@ actions:
         epcc get pcm-catalog-release --retry-while-jq '.data.meta.release_status != "PUBLISHED"' name=Ranges_Catalog_for_Special_Customers pxm-how-to-create-catalog-rule
       - epcc create pcm-catalog-rule name "Catalog Rule for Civil Servants" description "Catalog Rule for Civil Servants" account_ids[0] name=Leslie_Knope catalog_id name=Ranges_Catalog_for_Special_Customers
 
-  create-sample-rule-promotions:
+  create-rule-promotions:
     description:
       short: "Create sample rule promotions"
     ignore_errors: false
     commands:
+      - # Cart Percent Discount
       - epcc create rule-promotion --auto-fill name "Cart 20% discount when total is at least $100" description "20% discount applying to the cart total" enabled false automatic false rule_set.rules.strategy cart_total rule_set.rules.operator gte rule_set.rules.args[0] 10000 rule_set.actions[0].strategy cart_discount rule_set.actions[0].args[0] percent rule_set.actions[0].args[1] 20
+        # BYGYPromotion
+      - epcc create rule-promotion --auto-fill name "Buy X get Y 50% off" description "Buy an X get item Y 50% off" enabled false automatic false rule_set.rules.strategy item_sku rule_set.rules.operator in rule_set.rules.args[0] BE-Gas-Range-2b2b rule_set.actions\[0\].strategy item_discount rule_set.actions\[0\].args\[0\] percent rule_set.actions\[0\].args\[1\] 50 rule_set.actions\[0\].condition.strategy item_sku rule_set.actions\[0\].condition.operator in  rule_set.actions\[0\].condition.args\[0\] BE-Electric-Range-1a1a
+        # Fixed Item Discount
+      - epcc create rule-promotion --auto-fill name 'Buy item get $10 off' description "Eligible Items get a fixed discount value of $10" enabled false automatic false rule_set.rules.strategy item_sku rule_set.rules.operator in rule_set.rules.args\[0\] BE-Gas-Range-2b2b  rule_set.actions\[0\].strategy item_discount rule_set.actions\[0\].args\[0\]  fixed rule_set.actions\[0\].args\[1\]  1000
+        # Item Percent With Product Attribute
+      - epcc create rule-promotion --auto-fill name "20% off Electric items" description "All items which are electric get 20% discount" automatic false enabled false rule_set.rules.strategy item_attribute rule_set.rules.operator in rule_set.rules.args\[0\] "products(product_template)" rule_set.rules.args\[1\] "type" rule_set.rules.args\[2\] "string" rule_set.rules.args\[3\] "electric" rule_set.actions\[0\].strategy item_discount rule_set.actions\[0\].args\[0\] percent rule_set.actions\[0\].args\[1\] 20
+
+
+
 
 
 
