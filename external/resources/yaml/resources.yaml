@@ -2,6 +2,7 @@ account-authentication-settings:
   singular-name: "account-authentication-setting"
   json-api-type: "account_authentication_settings"
   json-api-format: "legacy"
+  suppress-reset-warning: true
   docs: "https://elasticpath.dev/docs/api/accounts/account-authentication-settings"
   get-collection:
     docs: "https://elasticpath.dev/docs/api/accounts/get-v-2-settings-account-authentication"
@@ -3039,9 +3040,10 @@ rule-promotions:
     rule_set.actions[n].limitations.items[n].price_strategy:
       type: ENUM:cheapest,expensive
 cart-settings:
-  singular-name: "cart-settings"
+  singular-name: "cart-setting"
   json-api-type: "settings"
   json-api-format: "legacy"
+  suppress-reset-warning: true
   docs: "https://elasticpath.dev/docs/api/settings/get-v-2-settings-cart"
   get-collection:
     docs: "https://elasticpath.dev/docs/api/settings/get-v-2-settings-cart"
@@ -3051,7 +3053,7 @@ cart-settings:
     url: "/v2/settings/cart"
   update-entity:
     docs: "https://elasticpath.dev/docs/api/settings/get-v-2-settings-cart"
-    url: "/v2/settings/carts/{cart_settings}"
+    url: "/v2/settings/cart"
   attributes:
     cart_expiry_days:
       type: INT
