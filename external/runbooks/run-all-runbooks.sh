@@ -37,8 +37,6 @@ epcc runbooks run commerce-extensions delete-product-review-custom-api
 
 echo "Starting Subscriptions Tests"
 epcc reset-store .+
-epcc runbooks run subscriptions create-subscription-plans
-epcc runbooks run subscriptions create-subscription-products
 epcc runbooks run subscriptions create-subscription-offerings
 
 echo "Starting Account Cart Association Tests"
