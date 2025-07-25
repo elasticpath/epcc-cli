@@ -197,6 +197,7 @@ func resetResourcesUndeletableResources(ctx context.Context, overrides *httpclie
 		{"authentication-realm", "related_authentication_realm_for_account_authentication_settings_last_read=entity", "name", "Account Management Realm"},
 		{"account-authentication-settings", "enable_self_signup", "false", "auto_create_account_for_account_members", "false", "account_member_self_management", "disabled"},
 		{"log-ttl-settings", "days", "356"},
+		{"cart-settings", "cart_expiry_days", "7", "discounts.custom_discounts_enabled", "false", "inventories.defer_inventory_check", "false", "discounts.use_rule_promotions", "false"},
 	}
 
 	errors := make([]string, 0)
