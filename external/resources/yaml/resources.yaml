@@ -208,6 +208,53 @@ account-cart-associations:
     data[n].type:
       type: CONST:account
       autofill: VALUE:account
+account-tags:
+  singular-name: "account-tag"
+  json-api-type: "account_tag"
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/api/accounts/account-tags"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/accounts/list-account-tags"
+    url: "/v2/account-tags"
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/accounts/get-an-account-tag"
+    url: "/v2/account-tags/{account_tags}"
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/accounts/update-an-account-tag"
+    url: "/v2/account-tags/{account_tags}"
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/api/accounts/delete-an-account-tag"
+    url: "/v2/account-tags/{account_tags}"
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/accounts/create-an-account-tag"
+    url: "/v2/account-tags/"
+  attributes:
+    name:
+      type: STRING
+      autofill: FUNC:Color
+    description:
+      type: STRING
+      autofill: FUNC:Phrase
+account-tag-relationships:
+  singular-name: "account-tag-relationship"
+  json-api-type: "account_tag_relationship"
+  json-api-format: "legacy"
+  no-wrapping: true
+  docs: "https://elasticpath.dev/docs/api/accounts/account-tags"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/accounts/get-an-account-tags-relationship"
+    url: "/v2/accounts/{accounts}/relationships/account-tags"
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/accounts/add-account-tags-on-account"
+    url: "/v2/accounts/{accounts}/relationships/account-tags"
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/api/accounts/remove-account-tags-on-account"
+    url: "/v2/accounts/{accounts}/relationships/account-tags"
+  attributes:
+    data[n].id:
+      type: RESOURCE_ID:account-tag
+    data[n].type:
+      type: CONST:account_tag
 application-keys:
   singular-name: "application-key"
   json-api-type: "application_key"

@@ -389,37 +389,37 @@ The EPCC CLI will automatically determine appropriate wrapping (i.e., wrap the v
 
 The following examples show JSON syntax (and also include required parent ids)
 # Simple type with key and value 
-epcc %s %s%s key value => %s
+epcc %s %s%skey value => %s
 
 # Numeric types will be encoded as json numbers
-epcc %s %s%s key 1 => %s
+epcc %s %s%skey 1 => %s
 
 # If a value *must* be a string, you should wrap it in quotes, be mindful that your shell may require you to quote quotes :)
-epcc %s %s%s key '"1"' => %s
+epcc %s %s%skey '"1"' => %s
 
 # If a value starts with a -, you should place a -- somewhere in the string before hand, this will turn off flag intepretation
-epcc %s %s%s key -- -value => %s 
+epcc %s %s%skey -- -value => %s 
 
 # Boolean types work similarly
-epcc %s %s%s key true => %s
+epcc %s %s%skey true => %s
 
 # As does null
-epcc %s %s%s key null => %s
+epcc %s %s%skey null => %s
 
 # Which can be encoded with quotes
-epcc %s %s%s key '"null"' => %s
+epcc %s %s%skey '"null"' => %s
 
 # To send an array use the following syntax
-epcc %s %s%s key[0] a key[1] true => %s
+epcc %s %s%skey[0] a key[1] true => %s
 
 # To send an empty array use the following syntax (apologies)
-epcc %s %s%s key [] => %s
+epcc %s %s%skey [] => %s
 
 # To send a nested object use the . character to nest values deeper.
-epcc %s %s%s key.some.child hello key.some.other goodbye => %s
+epcc %s %s%skey.some.child hello key.some.other goodbye => %s
 
 # Attributes can also be generated using Go templates and Sprig (https://masterminds.github.io/sprig/) functions.
-epcc %s %s%s key 'Test {{ randAlphaNum 6 | upper }} Value' => %s`,
+epcc %s %s%skey 'Test {{ randAlphaNum 6 | upper }} Value' => %s`,
 		verb, resource.SingularName, allIds, toJsonExample([]string{"key", "b"}, resource),
 		verb, resource.SingularName, allIds, toJsonExample([]string{"key", "1"}, resource),
 		verb, resource.SingularName, allIds, toJsonExample([]string{"key", "\"1\""}, resource),
