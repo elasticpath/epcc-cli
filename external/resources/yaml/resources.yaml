@@ -3087,6 +3087,33 @@ rule-promotions:
       type: INT
     rule_set.actions[n].limitations.items[n].price_strategy:
       type: ENUM:cheapest,expensive
+rule-promotion-codes:
+  singular-name: "rule-promotion-code"
+  json-api-type: "rule-promotion_codes"
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/commerce-manager/promotions-builder/creating-promotion-codes"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/promotions-builder/get-rule-promotion-codes"
+    url: "/v2/rule-promotions/{rule_promotions}/codes"
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/promotions-builder/get-rule-promotion-codes"
+    url: "/v2/rule-promotions/{rule_promotions}/codes"
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/api/promotions/delete-a-promotion-code"
+    url: "/v2/rule-promotions/{rule_promotions}/codes/{rule_promotion_codes}"
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/promotions-builder/create-rule-promotion-codes"
+    url: "/v2/promotions/{rule_promotions}/codes"
+    content-type: application/json
+  attributes:
+    codes[n].code:
+      type: STRING
+    codes[n].uses:
+      type: INT
+    codes[n].user:
+      type: STRING
+    consume_unit:
+      type: ENUM:per_item,per_cart
 cart-settings:
   singular-name: "cart-setting"
   json-api-type: "settings"
