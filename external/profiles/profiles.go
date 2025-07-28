@@ -63,7 +63,7 @@ func GetConfigFilePath() string {
 		if err != nil {
 			log.Errorf("could not create file at %s", configPath)
 		}
-		log.Trace("creating config file at %s", configPath)
+		log.Tracef("creating config file at %s", configPath)
 	}
 
 	return configPath
