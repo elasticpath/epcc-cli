@@ -201,6 +201,13 @@ func PublicInit() {
 		}
 	}
 
+	for _, v := range e.EPCC_CLI_DISABLE_RESOURCES {
+		if _, ok := resourceData[v]; !ok {
+			log.Warnf("Trying to disable resource that doesn't exist: %s", v)
+		}
+		delete(resourceData, v)
+	}
+
 	resources = resourceData
 
 	createFlowEntityRelationships()

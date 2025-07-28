@@ -2108,6 +2108,7 @@ promotions:
   json-api-type: "promotion"
   json-api-format: "legacy"
   docs: "https://elasticpath.dev/docs/api/promotions/update-a-promotion"
+
   get-collection:
     docs: "https://elasticpath.dev/docs/api/promotions/get-all-promotions"
     url: "/v2/promotions"
