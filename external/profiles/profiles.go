@@ -61,9 +61,9 @@ func GetConfigFilePath() string {
 		file, err := os.Create(configPath)
 		defer file.Close()
 		if err != nil {
-			log.Errorf("could not create file at " + configPath)
+			log.Errorf("could not create file at %s", configPath)
 		}
-		log.Trace("creating config file at " + configPath)
+		log.Trace("creating config file at %s", configPath)
 	}
 
 	return configPath
