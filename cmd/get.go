@@ -228,11 +228,11 @@ func NewGetCommand(parentCmd *cobra.Command) func() {
 
 					if res != nil {
 						if logOnFailure != "" {
-							log.Errorf(logOnFailure)
+							log.Errorf("%s", logOnFailure)
 						}
 					} else {
 						if logOnSuccess != "" {
-							log.Infof(logOnSuccess)
+							log.Infof("%s", logOnSuccess)
 						}
 					}
 

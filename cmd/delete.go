@@ -115,11 +115,11 @@ func NewDeleteCommand(parentCmd *cobra.Command) func() {
 				res := repeater(c, repeat, repeatDelay, cmd, args, ignoreErrors)
 				if res != nil {
 					if logOnFailure != "" {
-						log.Errorf(logOnFailure)
+						log.Errorf("%s", logOnFailure)
 					}
 				} else {
 					if logOnSuccess != "" {
-						log.Infof(logOnSuccess)
+						log.Infof("%s", logOnSuccess)
 					}
 				}
 

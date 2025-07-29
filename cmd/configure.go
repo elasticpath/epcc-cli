@@ -21,7 +21,7 @@ var configure = &cobra.Command{
 		configPath := profiles.GetConfigFilePath()
 		cfg, err := ini.Load(configPath)
 		if err != nil {
-			log.Errorf("error loading to file " + configPath)
+			log.Errorf("error loading to file %s", configPath)
 			os.Exit(1)
 		}
 		newProfile := config.Env{}

@@ -7,4 +7,6 @@ var (
 
 	// goreleaser can also pass the specific commit if you want
 	Commit string = "HEAD"
+
+	Date string = "?"
 )

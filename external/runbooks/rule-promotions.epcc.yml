@@ -1,0 +1,142 @@
+name: "rule-promotions-how-to"
+description:
+  long: "Runbooks for interacting with Rule Promotions (https://elasticpath.dev/docs/api/promotions-builder/rule-promotions-api)"
+  short: "Runbooks for interacting with Rule Promotions (https://elasticpath.dev/docs/api/promotions-builder/rule-promotions-api)"
+actions:
+  create-prequisites:
+    description:
+      short: "Creates a sample catalog and publishes it."
+    commands:
+      - epcc create pcm-hierarchy name "Major Appliances" description "Free standing appliances" slug "Major-Appliances-MA0"
+      - epcc create pcm-node name=Major_Appliances name "Ranges" description "All stoves and ovens" slug "Ranges-MA1"
+      # Create some product templates
+      - epcc create flow name "Range Attributes" slug "products(ranges)" description "Range Attributes" enabled true
+      - epcc create field name "Fuel Type" slug "fuel_type" field_type string description "Fuel Type" enabled true required true order 1 omit_null false relationships.flow.data.id name=Range_Attributes
+      - |
+        epcc create pcm-node name=Major_Appliances name "Electric Ranges" description "Electric stoves and ovens" slug "Electric-Ranges-MA2" relationships.parent.data.type node relationships.parent.data.id name=Ranges
+        epcc create pcm-node name=Major_Appliances name "Gas Ranges" description "Gas stoves and ovens" slug "Gas-Ranges-MA2" relationships.parent.data.type node relationships.parent.data.id name=Ranges
+      - |
+        epcc create account name "Ron Swanson"
+        epcc create account name "Leslie Knope"
+      - epcc create pcm-product name "BestEver Electric Range" sku "BE-Electric-Range-1a1a" slug "bestever-range-1a1a" description "This electric model offers an induction heating element and convection oven." status live commodity_type physical upc_ean \"111122223333\" mpn BE-R-1111-aaaa-1a1a
+      - epcc create pcm-node-product name=Major_Appliances name=Electric_Ranges data[0].type product data[0].id name=BestEver_Electric_Range
+      - epcc create pcm-product name "BestEver Gas Range" sku "BE-Gas-Range-2b2b" slug "bestever-range-2b2b" description "This gas model includes a convection oven." status live commodity_type physical upc_ean \"222233334444\" mpn BE-R-2222-bbbb-2b2b
+      - epcc create pcm-node-product name=Major_Appliances name=Gas_Ranges data[0].type product data[0].id name=BestEver_Gas_Range
+      - epcc get currencies
+      - epcc create currency code GBP exchange_rate 1 format £{price} decimal_point "." thousand_separator , decimal_places 2 default false enabled true --if-alias-does-not-exist code=GBP
+      - |
+        epcc create pcm-product-template sku=BE-Electric-Range-1a1a data\[0\].id name=Range_Attributes
+        epcc create pcm-product-template sku=BE-Gas-Range-2b2b data\[0\].id name=Range_Attributes
+      - |
+        epcc create pcm-entry name=Range_Attributes id name=BestEver_Electric_Range fuel_type electric
+        epcc create pcm-entry name=Range_Attributes id name=BestEver_Gas_Range fuel_type gas
+      - |
+        epcc create pcm-pricebook name "Preferred Pricing" description "Catalog with pricing suitable for high-volume customers."
+        epcc create pcm-pricebook name "Loyal Civil Servants Pricing" description "Catalog with pricing suitable for loyal civil servants."
+      - |
+        epcc create pcm-product-price name=Preferred_Pricing currencies.USD.amount 300000 currencies.USD.includes_tax false currencies.GBP.amount 250000 currencies.GBP.includes_tax false sku BE-Electric-Range-1a1a
+        epcc create pcm-product-price name=Preferred_Pricing currencies.USD.amount 350000 currencies.USD.includes_tax false currencies.GBP.amount 300000 currencies.GBP.includes_tax false sku BE-Gas-Range-2b2b
+        epcc create pcm-product-price name=Loyal_Civil_Servants_Pricing currencies.USD.amount 200000 currencies.USD.includes_tax false currencies.GBP.amount 150000 currencies.GBP.includes_tax false sku BE-Electric-Range-1a1a
+        epcc create pcm-product-price name=Loyal_Civil_Servants_Pricing currencies.USD.amount 250000 currencies.USD.includes_tax false currencies.GBP.amount 200000 currencies.GBP.includes_tax false sku BE-Gas-Range-2b2b
+      - sleep 2
+      - | 
+        epcc create pcm-catalog name "Ranges Catalog" description "Ranges Catalog" pricebook_id name=Preferred_Pricing hierarchy_ids[0] name=Major_Appliances
+        epcc create pcm-catalog name "Ranges Catalog for Special Customers" description "Ranges Catalog For Loyal Civil Servants" pricebook_id name=Loyal_Civil_Servants_Pricing hierarchy_ids[0] name=Major_Appliances
+      - |
+        epcc create pcm-catalog-release --save-as-alias pxm-how-to-create-catalog-and-publish-release name=Ranges_Catalog
+        epcc create pcm-catalog-release --save-as-alias pxm-how-to-create-catalog-rule name=Ranges_Catalog_for_Special_Customers
+      # Wait for Catalogs to be Published
+      - |
+        epcc get pcm-catalog-release --retry-while-jq '.data.meta.release_status != "PUBLISHED"' name=Ranges_Catalog pxm-how-to-create-catalog-and-publish-release
+        epcc get pcm-catalog-release --retry-while-jq '.data.meta.release_status != "PUBLISHED"' name=Ranges_Catalog_for_Special_Customers pxm-how-to-create-catalog-rule
+      - epcc create pcm-catalog-rule name "Catalog Rule for Civil Servants" description "Catalog Rule for Civil Servants" account_ids[0] name=Leslie_Knope catalog_id name=Ranges_Catalog_for_Special_Customers
+
+  create-rule-promotions:
+    description:
+      short: "Create sample rule promotions"
+    ignore_errors: false
+    commands:
+      - # Cart Percent Discount
+      - epcc create rule-promotion --auto-fill name "Cart Percent Discount" description "20% discount applying to the cart total" enabled false automatic false rule_set.rules.strategy cart_total rule_set.rules.operator gte rule_set.rules.args[0] 10000 rule_set.actions[0].strategy cart_discount rule_set.actions[0].args[0] percent rule_set.actions[0].args[1] 20
+        # BYGYPromotion
+      - epcc create rule-promotion --auto-fill name "Buy X Get Y Promotion" description "Buy an X get item Y 50% off" enabled false automatic false rule_set.rules.strategy item_sku rule_set.rules.operator in rule_set.rules.args[0] BE-Gas-Range-2b2b rule_set.actions\[0\].strategy item_discount rule_set.actions\[0\].args\[0\] percent rule_set.actions\[0\].args\[1\] 50 rule_set.actions\[0\].condition.strategy item_sku rule_set.actions\[0\].condition.operator in  rule_set.actions\[0\].condition.args\[0\] BE-Electric-Range-1a1a
+        # Item Percent With Product Attribute
+      - epcc create rule-promotion --auto-fill name "Item Percent With Product Attribute" description "All items which are electric get 20% discount" automatic false enabled false rule_set.rules.strategy item_attribute rule_set.rules.operator in rule_set.rules.args\[0\] "products(ranges)" rule_set.rules.args\[1\] "type" rule_set.rules.args\[2\] "string" rule_set.rules.args\[3\] "electric" rule_set.actions\[0\].strategy item_discount rule_set.actions\[0\].args\[0\] percent rule_set.actions\[0\].args\[1\] 20
+        # Mixed Cart and Item Discount
+      - epcc create rule-promotion --auto-fill name "Mixed Cart and Item Discount Promotion" description "Buy A Gas Range at 50% off and get 20% off all orders" enabled false automatic false rule_set.rules.strategy item_sku rule_set.rules.operator in rule_set.rules.args\[0\] BE-Gas-Range-2b2b rule_set.actions\[0\].strategy item_discount rule_set.actions\[0\].args\[0\] percent rule_set.actions\[0\].args\[1\] 50 rule_set.actions\[0\].condition.strategy item_sku rule_set.actions\[0\].condition.operator in rule_set.actions\[0\].condition.args\[0\]  BE-Gas-Range-2b2b rule_set.actions\[1\].strategy cart_discount rule_set.actions\[1\].args\[0\] percent rule_set.actions\[1\].args\[1\] 20
+        # Fixed Item Discount
+      - epcc create rule-promotion --auto-fill name 'Fixed Item Discount' description "Eligible Items get a fixed discount value of $10" enabled false automatic false rule_set.rules.strategy item_sku rule_set.rules.operator in rule_set.rules.args\[0\] BE-Gas-Range-2b2b  rule_set.actions\[0\].strategy item_discount rule_set.actions\[0\].args\[0\]  fixed rule_set.actions\[0\].args\[1\]  1000
+        # Fixed Price Item Discount
+      - epcc create rule-promotion --auto-fill name 'Fixed Price Item Discount' description "Buy 2 items for $100" enabled false automatic false rule_set.rules.strategy item_sku rule_set.rules.operator in rule_set.rules.args\[0\] BE-Gas-Range-2b2b  rule_set.actions\[0\].strategy item_discount rule_set.actions\[0\].args\[0\]  fixed_price rule_set.actions\[0\].args\[1\]  2 rule_set.actions\[0\].args\[2\] 10000
+
+
+
+
+  create-cart-and-add-ranges:
+    variables:
+      cart-id:
+        type: STRING
+        default: "{{ pseudoRandAlpha 16 }}"
+      gas-range-quantity:
+        type: INT
+        default: 1
+      electric-range-quantity:
+        type: INT
+        default: 1
+    commands:
+      - epcc create -s cart name "Rule Promotion Test Cart" --save-as-alias "test-cart"
+      - |
+         {{ if gt (index . "electric-range-quantity") 0 }} epcc create -s cart-product-item test-cart sku sku=BE-Electric-Range-1a1a quantity {{ index . "electric-range-quantity" }} {{ end }}
+      - |
+         {{ if gt (index . "gas-range-quantity") 0 }} epcc create -s cart-product-item test-cart sku sku=BE-Gas-Range-2b2b quantity {{ index . "gas-range-quantity" }} {{ end }}
+      - |
+        epcc get cart test-cart --output-jq '.data | "CART: name: \\(.name), id: \\(.id), price: \\(.meta.display_price.without_discount.formatted), discount: \\(.meta.display_price.discount.formatted), total: \\(.meta.display_price.with_tax.formatted)"'
+      - |
+        epcc get cart test-cart include items --output-jq '.included.items[] | "  CART ITEM: name: \\(.name), sku: \\(.sku), price: \\(.meta.display_price.without_discount.value.formatted), discount: \\(.meta.display_price.discount.value.formatted), total: \\(.meta.display_price.with_tax.value.formatted)"'
+
+
+
+#'
+
+  reset:
+    description:
+      short: "Delete all catalogs, hierarchy and nodes"
+    ignore_errors: true
+    commands:
+      - | 
+          epcc get pcm-catalogs
+          epcc get pcm-hierarchies
+          epcc get pcm-pricebooks
+          epcc get pcm-catalog-rules
+      - |
+        epcc get pcm-catalog-releases name=Ranges_Catalog
+        epcc get pcm-catalog-releases name=Ranges_Catalog_for_Special_Customers
+      - |
+        epcc delete currency code=GBP
+        epcc delete pcm-catalog-release name=Ranges_Catalog name=Ranges_Catalog
+        epcc delete pcm-catalog-release name=Ranges_Catalog_for_Special_Customers name=Ranges_Catalog_for_Special_Customers
+        epcc delete pcm-catalog-rule name=Catalog_Rule_for_Civil_Servants    
+        
+        epcc delete pcm-product name=BestEver_Gas_Range
+        epcc delete pcm-product name=BestEver_Electric_Range
+        epcc delete pcm-product name=SKU-less_Bed_and_Ball_Bundle
+        epcc delete pcm-hierarchy name=Major_Appliances
+        epcc delete pcm-pricebook name=Preferred_Pricing
+        epcc delete pcm-pricebook name=Loyal_Civil_Servants_Pricing
+        epcc delete pcm-product name=Fluffy_Bed
+        epcc delete pcm-product name=Squeaky_Ball
+        epcc delete pcm-hierarchy name=Pet_Supplies
+        epcc delete pcm-pricebook name=VIP_Pricing
+        epcc delete account name=Ron_Swanson
+        epcc delete account name=Leslie_Knope
+        epcc delete rule-promotion name=Cart_20%_discount_when_total_is_at_least_00
+        epcc delete field name=Fuel_Type
+      - |
+        epcc delete pcm-catalog name=Ranges_Catalog
+        epcc delete pcm-catalog name=Ranges_Catalog_for_Special_Customers
+        epcc delete flow name=Range_Attributes
+        
+
+      - sleep 2
+
+

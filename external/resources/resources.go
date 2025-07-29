@@ -95,6 +95,7 @@ type CrudEntityAttribute struct {
 
 	// The type of the attribute
 	Type           string `yaml:"type"`
+	Usage          string `yaml:"usage"`
 	AutoFill       string `yaml:"autofill,omitempty"`
 	AliasAttribute string `yaml:"alias_attribute,omitempty"`
 }
@@ -198,6 +199,13 @@ func PublicInit() {
 				delete(resourceData, k)
 			}
 		}
+	}
+
+	for _, v := range e.EPCC_CLI_DISABLE_RESOURCES {
+		if _, ok := resourceData[v]; !ok {
+			log.Warnf("Trying to disable resource that doesn't exist: %s", v)
+		}
+		delete(resourceData, v)
 	}
 
 	resources = resourceData
