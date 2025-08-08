@@ -250,7 +250,7 @@ Environment Variables
 		},
 
 		SilenceUsage: true,
-		Version:      fmt.Sprintf("%s (Commit %s)", version.Version, version.Commit),
+		Version:      fmt.Sprintf("%s [commit: %s, built: %s]", version.Version, version.Commit, version.Date),
 	}
 }
 

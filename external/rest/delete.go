@@ -113,7 +113,7 @@ func DeleteInternal(ctx context.Context, overrides *httpclient.HttpParameterOver
 		// Check if error response
 		if resp.StatusCode >= 400 && resp.StatusCode <= 600 {
 			if resp.StatusCode != 404 || !allow404 {
-				return string(body), fmt.Errorf(resp.Status)
+				return string(body), fmt.Errorf("%s", resp.Status)
 			}
 		}
 
