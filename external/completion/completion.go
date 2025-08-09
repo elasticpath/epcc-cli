@@ -45,7 +45,7 @@ type Request struct {
 	Type     int
 	Resource resources.Resource
 	// These are consumed attributes
-	Attributes map[string]int
+	Attributes map[string]struct{}
 	Verb       int
 	Attribute  string
 	QueryParam string
@@ -128,7 +128,6 @@ func Complete(c Request) ([]string, cobra.ShellCompDirective) {
 
 	if c.Type&CompleteAttributeKey > 0 {
 		autoCompleteAttributes := []string{}
-		//simpleAttributes := []string{}
 
 		rt := NewRegexCompletionTree()
 		for k := range c.Resource.Attributes {
@@ -149,24 +148,54 @@ func Complete(c Request) ([]string, cobra.ShellCompDirective) {
 
 		for _, k := range autoCompleteAttributes {
 			if strings.Contains(k, "[n]") {
-				i := strings.Index(k, "[n]")
-				prefix := k[:i+1]
-				max := -1
+				// Count [n] occurrences
+				nCount := strings.Count(k, "[n]")
+
+				// Track maximum index at each [n] position
+				maxAtPosition := make([]int, nCount)
+				for i := range maxAtPosition {
+					maxAtPosition[i] = -1
+				}
+
+				// Convert pattern to regex to match existing attributes
+				regexPattern := strings.ReplaceAll(regexp.QuoteMeta(k), `\[n\]`, `\[(\d+)\]`)
+				re := regexp.MustCompile("^" + regexPattern + "$")
+
+				// Find maximum index at each position
 				for s := range c.Attributes {
-					if strings.HasPrefix(s, prefix) {
-						n := strings.TrimPrefix(s, prefix)
-						i2 := strings.Index(n, "]")
-						n = n[:i2]
-						m, _ := strconv.Atoi(n)
-						if m > max {
-							max = m
+					matches := re.FindStringSubmatch(s)
+					if matches != nil {
+						for i := 1; i < len(matches) && i-1 < len(maxAtPosition); i++ {
+							if idx, err := strconv.Atoi(matches[i]); err == nil {
+								if idx > maxAtPosition[i-1] {
+									maxAtPosition[i-1] = idx
+								}
+							}
 						}
 					}
 				}
-				for j := 0; j <= max+1; j++ {
-					l := strings.Replace(k, "[n]", "["+strconv.Itoa(j)+"]", 1)
-					if _, ok := c.Attributes[l]; !ok {
-						results = append(results, l)
+
+				// Generate new attributes by incrementing each position independently
+				for pos := 0; pos < nCount; pos++ {
+					newAttr := k
+					for i := 0; i < nCount; i++ {
+						var replaceWith string
+						if i == pos {
+							// Increment this position
+							replaceWith = "[" + strconv.Itoa(maxAtPosition[i]+1) + "]"
+						} else {
+							// Use current max for other positions (or 0 if no max found)
+							maxVal := maxAtPosition[i]
+							if maxVal < 0 {
+								maxVal = 0
+							}
+							replaceWith = "[" + strconv.Itoa(maxVal) + "]"
+						}
+						newAttr = strings.Replace(newAttr, "[n]", replaceWith, 1)
+					}
+
+					if _, ok := c.Attributes[newAttr]; !ok {
+						results = append(results, newAttr)
 					}
 				}
 			} else {
@@ -280,7 +309,7 @@ func Complete(c Request) ([]string, cobra.ShellCompDirective) {
 				} else if attribute.Type == "FILE" {
 					compDir = cobra.ShellCompDirectiveFilterFileExt
 
-					// https://documentation.elasticpath.com/commerce-cloud/docs/api/advanced/files/create-a-file.html#post-create-a-file
+					// https://documentation.elasticpath/epcc-cli/docs/api/advanced/files/create-a-file.html#post-create-a-file
 					supportedFileTypes := []string{
 						"gif",
 						"jpg", "jpeg",

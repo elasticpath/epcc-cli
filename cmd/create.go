@@ -193,9 +193,9 @@ func NewCreateCommand(parentCmd *cobra.Command) func() {
 						idCount, _ := resources.GetNumberOfVariablesNeeded(resourceURL)
 						if len(args)-idCount >= 0 { // Arg is after IDs
 							if (len(args)-idCount)%2 == 0 { // This is an attribute key
-								usedAttributes := make(map[string]int)
+								usedAttributes := make(map[string]struct{})
 								for i := idCount; i < len(args); i = i + 2 {
-									usedAttributes[args[i]] = 0
+									usedAttributes[args[i]] = struct{}{}
 								}
 
 								// I think this allows you to complete the current argument
@@ -204,7 +204,7 @@ func NewCreateCommand(parentCmd *cobra.Command) func() {
 								// I now think this does nothing.
 								toComplete := strings.ReplaceAll(toComplete, "<ENTER>", "")
 								if toComplete != "" {
-									usedAttributes[toComplete] = 0
+									usedAttributes[toComplete] = struct{}{}
 								}
 								return completion.Complete(completion.Request{
 									Type:       completion.CompleteAttributeKey,
