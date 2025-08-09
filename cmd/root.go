@@ -223,6 +223,7 @@ Environment Variables
 - EPCC_CLI_DISABLE_TLS_VERIFICATION - Disables TLS verification
 - EPCC_RUNBOOK_DIRECTORY - Directory to scan for additional runbooks
 - EPCC_CLI_DISABLE_TEMPLATE_EXECUTION - Disables template execution (recommended if input is untrusted).
+- EPCC_CLI_DISABLE_RESOURCES - A comma seperated list of resources that will be hidden in command lists
 `,
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 			log.SetLevel(logger.Loglevel)

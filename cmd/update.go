@@ -4,6 +4,7 @@ import (
 	"context"
 	gojson "encoding/json"
 	"fmt"
+	"github.com/elasticpath/epcc-cli/config"
 
 	"github.com/elasticpath/epcc-cli/external/aliases"
 	"github.com/elasticpath/epcc-cli/external/completion"
@@ -66,10 +67,27 @@ func NewUpdateCommand(parentCmd *cobra.Command) func() {
 			}
 		},
 	}
+
+	e := config.GetEnv()
+	hiddenResources := map[string]struct{}{}
+	for _, v := range e.EPCC_CLI_DISABLE_RESOURCES {
+		hiddenResources[v] = struct{}{}
+	}
+
 	for _, resource := range resources.GetPluralResources() {
 		resource := resource
 		resourceName := resource.SingularName
 		if resource.UpdateEntityInfo == nil {
+			continue
+		}
+
+		if _, ok := hiddenResources[resource.SingularName]; ok {
+			log.Tracef("Hiding resource %s", resource.SingularName)
+			continue
+		}
+
+		if _, ok := hiddenResources[resource.PluralName]; ok {
+			log.Tracef("Hiding resource %s", resource.SingularName)
 			continue
 		}
 
