@@ -177,9 +177,9 @@ func NewDeleteCommand(parentCmd *cobra.Command) func() {
 					}
 				} else {
 					if (len(args)-idCount)%2 == 0 { // This is an attribute key
-						usedAttributes := make(map[string]int)
+						usedAttributes := make(map[string]struct{})
 						for i := idCount; i < len(args); i = i + 2 {
-							usedAttributes[args[i]] = 0
+							usedAttributes[args[i]] = struct{}{}
 						}
 						return completion.Complete(completion.Request{
 							Type:       completion.CompleteAttributeKey,

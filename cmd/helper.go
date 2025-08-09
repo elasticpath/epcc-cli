@@ -591,7 +591,7 @@ func GetGetExample(resourceName string, resourceUrl string, usageGetType string,
 			attributeKeys, _ := completion.Complete(completion.Request{
 				Type:       completion.CompleteAttributeKey,
 				Resource:   resource,
-				Attributes: map[string]int{},
+				Attributes: map[string]struct{}{},
 				Verb:       completion.Create,
 			})
 
