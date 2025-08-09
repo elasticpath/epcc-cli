@@ -4,6 +4,7 @@ import (
 	"context"
 	gojson "encoding/json"
 	"fmt"
+	"github.com/elasticpath/epcc-cli/config"
 	"strings"
 
 	"github.com/elasticpath/epcc-cli/external/aliases"
@@ -72,9 +73,24 @@ func NewCreateCommand(parentCmd *cobra.Command) func() {
 		data = ""
 	}
 
-	for _, resource := range resources.GetPluralResources() {
+	e := config.GetEnv()
+	hiddenResources := map[string]struct{}{}
+	for _, v := range e.EPCC_CLI_DISABLE_RESOURCES {
+		hiddenResources[v] = struct{}{}
+	}
 
+	for _, resource := range resources.GetPluralResources() {
 		if resource.CreateEntityInfo == nil {
+			continue
+		}
+
+		if _, ok := hiddenResources[resource.SingularName]; ok {
+			log.Tracef("Hiding resource %s", resource.SingularName)
+			continue
+		}
+
+		if _, ok := hiddenResources[resource.PluralName]; ok {
+			log.Tracef("Hiding resource %s", resource.SingularName)
 			continue
 		}
 
@@ -128,7 +144,6 @@ func NewCreateCommand(parentCmd *cobra.Command) func() {
 							if err != nil {
 								return err
 							}
-
 							err = json.PrintJson(string(outputJson))
 
 							if err != nil {

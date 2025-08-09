@@ -4,6 +4,7 @@ import (
 	"context"
 	gojson "encoding/json"
 	"fmt"
+	"github.com/elasticpath/epcc-cli/config"
 	"io"
 	"net/url"
 	"regexp"
@@ -29,6 +30,12 @@ var ResetStore = &cobra.Command{
 	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := context.Background()
+
+		e := config.GetEnv()
+
+		if len(e.EPCC_CLI_DISABLE_RESOURCES) > 0 {
+			return fmt.Errorf("Cannot use the reset-store command with EPCC_CLI_DISABLE_RESOURCES set")
+		}
 
 		overrides := &httpclient.HttpParameterOverrides{
 			QueryParameters: nil,

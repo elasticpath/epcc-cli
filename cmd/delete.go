@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"github.com/elasticpath/epcc-cli/config"
 	"github.com/elasticpath/epcc-cli/external/aliases"
 	"github.com/elasticpath/epcc-cli/external/completion"
 	"github.com/elasticpath/epcc-cli/external/httpclient"
@@ -58,8 +59,24 @@ func NewDeleteCommand(parentCmd *cobra.Command) func() {
 		logOnFailure = ""
 	}
 
+	e := config.GetEnv()
+	hiddenResources := map[string]struct{}{}
+	for _, v := range e.EPCC_CLI_DISABLE_RESOURCES {
+		hiddenResources[v] = struct{}{}
+	}
+
 	for _, resource := range resources.GetPluralResources() {
 		if resource.DeleteEntityInfo == nil {
+			continue
+		}
+
+		if _, ok := hiddenResources[resource.SingularName]; ok {
+			log.Tracef("Hiding resource %s", resource.SingularName)
+			continue
+		}
+
+		if _, ok := hiddenResources[resource.PluralName]; ok {
+			log.Tracef("Hiding resource %s", resource.SingularName)
 			continue
 		}
 

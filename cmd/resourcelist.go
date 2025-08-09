@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/elasticpath/epcc-cli/config"
+	log "github.com/sirupsen/logrus"
 	"os"
 	"path/filepath"
 	"sort"
@@ -23,6 +25,12 @@ var resourceListCommand = &cobra.Command{
 		resourceInfo := resources.GetPluralResources()
 		sortedResourceNames := make([]string, 0, len(resourceInfo))
 
+		hiddenResources := map[string]struct{}{}
+		e := config.GetEnv()
+		for _, v := range e.EPCC_CLI_DISABLE_RESOURCES {
+			hiddenResources[v] = struct{}{}
+		}
+
 		for i := range resources.GetPluralResources() {
 			sortedResourceNames = append(sortedResourceNames, i)
 		}
@@ -31,6 +39,18 @@ var resourceListCommand = &cobra.Command{
 
 		// Print resource list
 		for _, resource := range sortedResourceNames {
+
+			r := resourceInfo[resource]
+			if _, ok := hiddenResources[r.SingularName]; ok {
+				log.Tracef("Hiding resource %s", r.SingularName)
+				continue
+			}
+
+			if _, ok := hiddenResources[r.PluralName]; ok {
+				log.Tracef("Hiding resource %s", r.PluralName)
+				continue
+			}
+
 			fmt.Printf("%s => json-type: %s\n", resource, resourceInfo[resource].JsonApiType)
 
 			if resourceInfo[resource].GetCollectionInfo != nil {
