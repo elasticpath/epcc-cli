@@ -95,6 +95,7 @@ type CrudEntityAttribute struct {
 
 	// The type of the attribute
 	Type           string `yaml:"type"`
+	Usage          string `yaml:"usage"`
 	AutoFill       string `yaml:"autofill,omitempty"`
 	AliasAttribute string `yaml:"alias_attribute,omitempty"`
 }

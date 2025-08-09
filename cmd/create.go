@@ -80,6 +80,7 @@ func NewCreateCommand(parentCmd *cobra.Command) func() {
 	}
 
 	for _, resource := range resources.GetPluralResources() {
+
 		if resource.CreateEntityInfo == nil {
 			continue
 		}

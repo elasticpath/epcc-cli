@@ -13,6 +13,13 @@ set -x
 #Let's test that epcc command works after an embarrassing bug that caused it to panic :(
 epcc
 
+echo "Starting Rule Promotions Runbook"
+epcc reset-store .+
+epcc runbooks run rule-promotions-how-to create-prequisites
+epcc runbooks run rule-promotions-how-to create-rule-promotions
+epcc runbooks run rule-promotions-how-to create-cart-and-add-ranges
+epcc runbooks run rule-promotions-how-to reset
+
 echo "Starting Multi Location Inventory Runbook"
 epcc reset-store .+
 epcc headers set ep-inventories-multi-location true

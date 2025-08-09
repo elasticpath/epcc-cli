@@ -2,6 +2,7 @@ account-authentication-settings:
   singular-name: "account-authentication-setting"
   json-api-type: "account_authentication_settings"
   json-api-format: "legacy"
+  suppress-reset-warning: true
   docs: "https://elasticpath.dev/docs/api/accounts/account-authentication-settings"
   get-collection:
     docs: "https://elasticpath.dev/docs/api/accounts/get-v-2-settings-account-authentication"
@@ -207,6 +208,53 @@ account-cart-associations:
     data[n].type:
       type: CONST:account
       autofill: VALUE:account
+account-tags:
+  singular-name: "account-tag"
+  json-api-type: "account_tag"
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/api/accounts/account-tags"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/accounts/list-account-tags"
+    url: "/v2/account-tags"
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/accounts/get-an-account-tag"
+    url: "/v2/account-tags/{account_tags}"
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/accounts/update-an-account-tag"
+    url: "/v2/account-tags/{account_tags}"
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/api/accounts/delete-an-account-tag"
+    url: "/v2/account-tags/{account_tags}"
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/accounts/create-an-account-tag"
+    url: "/v2/account-tags/"
+  attributes:
+    name:
+      type: STRING
+      autofill: FUNC:Color
+    description:
+      type: STRING
+      autofill: FUNC:Phrase
+account-tag-relationships:
+  singular-name: "account-tag-relationship"
+  json-api-type: "account_tag_relationship"
+  json-api-format: "legacy"
+  no-wrapping: true
+  docs: "https://elasticpath.dev/docs/api/accounts/account-tags"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/accounts/get-an-account-tags-relationship"
+    url: "/v2/accounts/{accounts}/relationships/account-tags"
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/accounts/add-account-tags-on-account"
+    url: "/v2/accounts/{accounts}/relationships/account-tags"
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/api/accounts/remove-account-tags-on-account"
+    url: "/v2/accounts/{accounts}/relationships/account-tags"
+  attributes:
+    data[n].id:
+      type: RESOURCE_ID:account-tag
+    data[n].type:
+      type: CONST:account_tag
 application-keys:
   singular-name: "application-key"
   json-api-type: "application_key"
@@ -382,18 +430,23 @@ cart-checkout:
   attributes:
     account.id:
       type: RESOURCE_ID:account
+      usage: "The account id to associate the order with"
     account.member_id:
       type: RESOURCE_ID:account-member
+      usage: "The account member id to associate the order with"
     customer.id:
       type: RESOURCE_ID:customer
+      usage: "The id of the customer to use, not used when checking out an order for an account."
     customer.email:
       type: STRING
     customer.name:
       type: STRING
     contact.name:
       type: STRING
+      usage: "A contact name for the order, required when checking out an order for an account."
     contact.email:
       type: STRING
+      usage: "A contact e-mail for the order, required when checking out an order for an account. "
     billing_address.first_name:
       type: STRING
       autofill: FUNC:FirstName
@@ -452,28 +505,6 @@ cart-checkout:
     shipping_address.country:
       type: STRING
       autofill: FUNC:Country
-cart-settings:
-  singular-name: "cart-setting"
-  json-api-type: "settings"
-  json-api-format: legacy
-  docs: "https://elasticpath.dev/docs/api/settings/get-v-2-settings-cart"
-  get-collection:
-    docs: "https://elasticpath.dev/docs/api/settings/get-v-2-settings-cart"
-    url: "/v2/settings/cart"
-  update-entity:
-    docs: "https://elasticpath.dev/docs/api/settings/get-v-2-settings-cart"
-    url: "/v2/settings/cart"
-
-  attributes:
-    cart_expiry_days:
-      type: INT
-    snapshot_date:
-      type: STRING
-    discounts.custom_discounts_enabled:
-      type: BOOL
-    discounts.use_rule_promotions:
-      type: BOOL
-
 currencies:
   singular-name: "currency"
   json-api-type: "currency"
@@ -2077,6 +2108,7 @@ promotions:
   json-api-type: "promotion"
   json-api-format: "legacy"
   docs: "https://elasticpath.dev/docs/api/promotions/update-a-promotion"
+
   get-collection:
     docs: "https://elasticpath.dev/docs/api/promotions/get-all-promotions"
     url: "/v2/promotions"
@@ -2125,60 +2157,6 @@ promotions:
       type: INT
     schema.exclude.targets[n]:
       type: STRING
-
-rule-promotions:
-  singular-name: "rule-promotion"
-  json-api-type: "rule_promotion"
-  json-api-format: "legacy"
-  docs: "https://elasticpath.dev/docs/promotions-builder/promotions-builder-api/promotions-builder-api-overview"
-  get-collection:
-    docs: "https://elasticpath.dev/docs/promotions-builder/promotions-builder-api/promotions-builder-api-overview"
-    url: "/v2/rule-promotions"
-  create-entity:
-    docs: "https://elasticpath.dev/docs/promotions-builder/promotions-builder-api/cart-level-promotions/create-a-cart-percent-discount-promotion"
-    url: "/v2/rule-promotions"
-  get-entity:
-    docs: "https://elasticpath.dev/docs/promotions-builder/promotions-builder-api/promotions-builder-api-overview"
-    url: "/v2/rule-promotions/{rule_promotion}"
-  attributes:
-    name:
-      type: STRING
-      autofill: VALUE:Promotion {{ pseudoRandAlpha 10 }}
-    start:
-      type: STRING
-      #autofill: VALUE:{{ (now | int) | div 1000000000 | sub 86400 | date "2006-01-02" }}
-      autofill: VALUE:{{ now | unixEpoch | add -86400 | date "2006-01-02" }}
-    description:
-      type: STRING
-      autofill: FUNC:Phrase
-    end:
-      type: STRING
-      autofill: VALUE:{{ now | unixEpoch | add 604800 |  date "2006-01-02" }}
-    enabled:
-      type: BOOL
-      autofill: VALUE:true
-    priority:
-      type: INT
-    rule_set.actions[n].strategy:
-      type: ENUM:cart_discount,item_discount,shipping_discount
-    rule_set.actions[n].args[n]:
-      type: STRING
-    rule_set.catalog_ids[n]:
-      type: RESOURCE_ID:pcm-catalog
-    rule_set.currencies[n]:
-      type: CURRENCY
-    rule_set.rules.strategy:
-      type: ENUM:cart_total,cart_custom_attribute,item_price,item_quantity,item_sku,item_category,item_attribute,item_product_id
-      autofill: VALUE:cart_total
-    rule_set.rules.operator:
-      type: ENUM:eq,gt,lt,gte,lte,in,nin
-    rule_set.rules.args[n]:
-      type: STRING
-    stackable:
-      type: BOOL
-
-      #autofill: VALUE:{{ (now | int) | div 1000000000 | add 604800 | date "2006-01-02" }}
-
 settings:
   singular-name: "setting"
   json-api-type: "settings"
@@ -3020,7 +2998,7 @@ mli-inventory-list-stocks:
 rule-promotions:
   singular-name: "rule-promotion"
   json-api-type: "rule_promotion"
-  json-api-format: "compliant"
+  json-api-format: "legacy"
   docs: "https://elasticpath.dev/docs/promotions-builder/overview"
   get-collection:
     docs: "https://elasticpath.dev/docs/api/promotions-builder/get-rule-promotions"
@@ -3040,43 +3018,136 @@ rule-promotions:
   attributes:
     name:
       type: STRING
+      autofill: FUNC:Name
+      usage: "The name of the promotion"
     description:
       type: STRING
+      autofill: FUNC:Phrase
+      usage: "The description of the promotion"
     enabled:
       type: BOOL
+      autofill: VALUE:true
+      usage: "Whether the promotion is enabled or not"
     automatic:
       type: BOOL
+      autofill: VALUE:true
+      usage: "If true the promtion is automatically added to cart otherwise you must create codes manually"
     priority:
       type: INT
+      usage: "A number that represents the priority order, larger numbers are higher priority promotions"
     stackable:
       type: BOOL
+      usage: "A boolean that indicates whether this promotion is stackable with other promotions"
+    override_stacking:
+      type: BOOL
+      usage: "A boolean that indicates that this promotion can be stacked with an otherwise non-stackable promotion"
     start:
       type: STRING
+      autofill: VALUE:"{{ now | date_modify "-24h" | date "2006-01-02" }}"
+      usage: "Specifies the start date and time of the promotion or the start date of the promotion"
     end:
       type: STRING
+      autofill: VALUE:"{{ now | date_modify "+168h" | date "2006-01-02" }}"
+      usage: "Specifies the end date and time of the promotion or the end date of the promotion"
     rule_set.rules.strategy:
-      type: STRING
+      type: ENUM:account_tags,cart_total,cart_custom_attribute,item_price,item_sku,item_product_id,item_quantity,item_category,item_attribute,item_identifier,items_bundle,and,or
     rule_set.rules.operator:
-      type: STRING
+      type: ENUM:in,nin,eq,lt,lte,gt,gte,range
+      usage: "The strategies cart_total, item_price, and item_quantity support the operators [gt, lt, gte, lte, eq].  Strategies cart_custom_attribute, item_sku, item_product_id, item_identifier, item_category, and item_attribute support the operators [in, nin]."
     rule_set.rules.args[n]:
       type: STRING
     rule_set.rules.children[n].strategy:
-      type: STRING
+      type: ENUM:account_tags,cart_total,cart_custom_attribute,item_price,item_sku,item_product_id,item_quantity,item_category,item_attribute,item_identifier,items_bundle,and,or
     rule_set.rules.children[n].operator:
-      type: STRING
+      type: ENUM:in,nin,eq,lt,lte,gt,gte
     rule_set.rules.children[n].args[n]:
       type: STRING
+    rule_set.catalog_ids[n]:
+      type: RESOURCE_ID:pcm-catalog
+      usage: "Specifies the catalogs that are eligible for the promotion (if not set it applies to all catalogs)"
+    rule_set.currencies[n]:
+      type: CURRENCY
+      usage: "Specifies the currencies that are applied to the promotion."
     rule_set.actions[n].strategy:
-      type: STRING
+      type: ENUM:cart_discount,item_discount,shipping_discount,item_bundle_discount
     rule_set.actions[n].args[n]:
-      type: STRING
+      type: PRIMITIVE
     rule_set.actions[n].condition.strategy:
-      type: STRING
+      # Looking at the code, this can accept anything
+      type: ENUM:and,or,cart_total,cart_custom_attribute,item_price,item_sku,item_product_id,item_identifier,item_quantity,item_category,item_attribute,items_bundle
     rule_set.actions[n].condition.operator:
-      type: STRING
+      type: ENUM:in,nin,eq,lt,lte,gt,gte
     rule_set.actions[n].condition.args[n]:
       type: STRING
     rule_set.actions[n].limitations.max_quantity:
       type: INT
+    rule_set.actions[n].limitations.max_discount:
+      type: INT
+    rule_set.actions[n].limitations.items[n].max_items:
+      type: INT
+    rule_set.actions[n].limitations.items[n].price_strategy:
+      type: ENUM:cheapest,expensive
+rule-promotion-codes:
+  singular-name: "rule-promotion-code"
+  json-api-type: "promotion_codes"
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/commerce-manager/promotions-builder/creating-promotion-codes"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/promotions-builder/get-rule-promotion-codes"
+    url: "/v2/rule-promotions/{rule_promotions}/codes"
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/promotions-builder/get-rule-promotion-codes"
+    url: "/v2/rule-promotions/{rule_promotions}/codes"
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/api/promotions/delete-a-promotion-code"
+    url: "/v2/rule-promotions/{rule_promotions}/codes/{rule_promotion_codes}"
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/promotions-builder/create-rule-promotion-codes"
+    url: "/v2/rule-promotions/{rule_promotions}/codes"
+  attributes:
+    codes[n].code:
+      type: STRING
+      usage: "The code to use for the promotion"
+    codes[n].uses:
+      type: INT
+      usage: "The number of times the code can be used."
+    codes[n].user:
+      type: STRING
+      usage: "The customer ID who can use the code, accounts are not supported."
+    codes[n].consume_unit:
+      type: ENUM:per_application,per_checkout
+      usage: "Per checkout uses one usage per cart checkout, per application can use multiple if it applies multiple times (e.g., for different items)"
+    codes[n].max_uses_per_shopper.includes_guest:
+      type: BOOL
+      usage: "If true limit the code to anonymous shoppers"
+    codes[n].max_uses_per_shopper.max_uses:
+      type: INT
+      usage: "Maximum number of times it can be used by a single shopper"
+    codes[n].is_for_new_shopper:
+      type: BOOL
+      usage: "If true this code/coupon can only apply to shoppers without any paid order."
 
-
+cart-settings:
+  singular-name: "cart-setting"
+  json-api-type: "settings"
+  json-api-format: "legacy"
+  suppress-reset-warning: true
+  docs: "https://elasticpath.dev/docs/api/settings/get-v-2-settings-cart"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/settings/get-v-2-settings-cart"
+    url: "/v2/settings/cart"
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/settings/get-v-2-settings-cart"
+    url: "/v2/settings/cart"
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/settings/get-v-2-settings-cart"
+    url: "/v2/settings/cart"
+  attributes:
+    cart_expiry_days:
+      type: INT
+    discounts.custom_discounts_enabled:
+      type: BOOL
+    discounts.use_rule_promotions:
+      type: BOOL
+    inventories.defer_inventory_check:
+      type: BOOL
