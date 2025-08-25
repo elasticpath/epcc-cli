@@ -2,13 +2,14 @@ package completion
 
 import (
 	"fmt"
-	"github.com/elasticpath/epcc-cli/external/aliases"
-	"github.com/elasticpath/epcc-cli/external/resources"
-	"github.com/spf13/cobra"
 	"os"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/elasticpath/epcc-cli/external/aliases"
+	"github.com/elasticpath/epcc-cli/external/resources"
+	"github.com/spf13/cobra"
 )
 
 const (
@@ -411,23 +412,28 @@ func Complete(c Request) ([]string, cobra.ShellCompDirective) {
 	if c.Type&CompleteQueryParamKey > 0 {
 		if c.Verb&GetAll > 0 {
 			if c.Resource.GetCollectionInfo != nil {
-				for _, param := range c.Resource.GetCollectionInfo.QueryParameters {
-					results = append(results, param.Name)
+				if len(c.Resource.GetCollectionInfo.QueryParameters) == 0 {
+					// Static shared list
+					results = append(results, "sort", "filter", "include", "page[limit]", "page[offset]", "page[total_method]")
+				} else {
+					for _, param := range c.Resource.GetCollectionInfo.QueryParameters {
+						results = append(results, param.Name)
+					}
 				}
+
 			}
 
-			// Static shared list
-			results = append(results, "sort", "filter", "include", "page[limit]", "page[offset]", "page[total_method]")
 		} else if c.Verb&Get > 0 {
 			if c.Resource.GetEntityInfo != nil {
-				for _, param := range c.Resource.GetEntityInfo.QueryParameters {
-					results = append(results, param.Name)
+				if len(c.Resource.GetEntityInfo.QueryParameters) == 0 {
+					results = append(results, "include")
+				} else {
+					for _, param := range c.Resource.GetEntityInfo.QueryParameters {
+						results = append(results, param.Name)
+					}
 				}
 			}
-
-			results = append(results, "include")
 		}
-
 	}
 
 	if c.Type&CompleteAlias > 0 {
