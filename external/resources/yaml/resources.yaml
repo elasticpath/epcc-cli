@@ -7,12 +7,15 @@ account-authentication-settings:
   get-collection:
     docs: "https://elasticpath.dev/docs/api/accounts/get-v-2-settings-account-authentication"
     url: "/v2/settings/account-authentication"
+    openapi_operation_id: "get-v2-settings-account-authentication"
   get-entity:
     docs: "https://elasticpath.dev/docs/api/accounts/get-v-2-settings-account-authentication"
     url: "/v2/settings/account-authentication"
+    openapi_operation_id: "get-v2-settings-account-authentication"
   update-entity:
     docs: "https://elasticpath.dev/docs/api/accounts/put-v-2-settings-account-authentication"
     url: "/v2/settings/account-authentication"
+    openapi_operation_id: "put-v2-settings-account-authentication"
   attributes:
     enable_self_signup:
       type: BOOL
@@ -29,6 +32,7 @@ account-management-authentication-tokens:
     docs: "https://elasticpath.dev/docs/api/accounts/post-v-2-account-members-tokens"
     url: "/v2/account-members/tokens"
     content-type: application/json
+    openapi_operation_id: "post-v2-account-members-tokens"
   attributes:
     authentication_mechanism:
       type: ENUM:oidc,password,passwordless,self_signup,account_management_authentication_token
@@ -61,9 +65,11 @@ account-members:
   get-collection:
     docs: "https://elasticpath.dev/docs/api/accounts/account-members"
     url: "/v2/account-members"
+    openapi_operation_id: "get-v2-account-members"
   get-entity:
     docs: "https://elasticpath.dev/docs/api/accounts/account-members"
     url: "/v2/account-members/{account_members}"
+    openapi_operation_id: "get-v2-account-members-accountMemberID"
   attributes:
     name:
       type: STRING
@@ -77,16 +83,20 @@ account-memberships:
   get-collection:
     docs: "https://elasticpath.dev/docs/api/accounts/account-membership"
     url: "/v2/accounts/{accounts}/account-memberships"
+    openapi_operation_id: "get-v2-accounts-accountID-account-memberships"
   get-entity:
     docs: "https://elasticpath.dev/docs/api/accounts/account-membership"
     url: "/v2/accounts/{accounts}/account-memberships/{account_memberships}"
+    openapi_operation_id: "get-v2-accounts-accountID-account-memberships-membershipID"
   delete-entity:
     docs: "https://elasticpath.dev/docs/api/accounts/delete-v-2-accounts-account-id-account-memberships-membership-id"
     url: "/v2/accounts/{accounts}/account-memberships/{account_memberships}"
+    openapi_operation_id: "delete-v2-accounts-accountID-account-memberships-membershipID"
   create-entity:
     docs: "https://elasticpath.dev/docs/api/accounts/account-membership"
     url: "/v2/accounts/{accounts}/account-memberships"
     content-type: application/json
+    openapi_operation_id: "post-v2-accounts-accountID-account-memberships"
   attributes:
     account_member_id:
       type: RESOURCE_ID:account-members
@@ -98,6 +108,7 @@ unassigned-account-memberships:
   get-collection:
     docs: "https://elasticpath.dev/docs/api/accounts/get-v-2-accounts-account-id-account-memberships-unassigned-account-members"
     url: "/v2/accounts/{accounts}/account-memberships/unassigned-account-members/"
+    openapi_operation_id: "get-v2-accounts-accountID-account-memberships-unassigned-account-members"
 accounts:
   singular-name: "account"
   json-api-type: "account"
@@ -106,15 +117,19 @@ accounts:
   get-collection:
     docs: "https://elasticpath.dev/docs/api/accounts/get-v-2-accounts"
     url: "/v2/accounts"
+    openapi_operation_id: "get-v2-accounts"
   get-entity:
     docs: "https://elasticpath.dev/docs/api/accounts/get-v-2-accounts-account-id"
     url: "/v2/accounts/{accounts}"
+    openapi_operation_id: "get-v2-accounts-accountID"
   update-entity:
     docs: "https://elasticpath.dev/docs/api/accounts/put-v-2-accounts-account-id"
     url: "/v2/accounts/{accounts}"
+    openapi_operation_id: "put-v2-accounts-accountID"
   delete-entity:
     docs: "https://elasticpath.dev/docs/api/accounts/delete-v-2-accounts-account-id"
     url: "/v2/accounts/{accounts}"
+    openapi_operation_id: "delete-v2-accounts-accountID"
   create-entity:
     docs: "https://elasticpath.dev/docs/api/accounts/post-v-2-accounts"
     url: "/v2/accounts"
@@ -217,18 +232,23 @@ account-tags:
   get-collection:
     docs: "https://elasticpath.dev/docs/api/accounts/list-account-tags"
     url: "/v2/account-tags"
+    openapi_operation_id: "ListAccountTags"
   get-entity:
     docs: "https://elasticpath.dev/docs/api/accounts/get-an-account-tag"
     url: "/v2/account-tags/{account_tags}"
+    openapi_operation_id: "GetAnAccountTag"
   update-entity:
     docs: "https://elasticpath.dev/docs/api/accounts/update-an-account-tag"
     url: "/v2/account-tags/{account_tags}"
+    openapi_operation_id: "UpdateAnAccountTag"
   delete-entity:
     docs: "https://elasticpath.dev/docs/api/accounts/delete-an-account-tag"
     url: "/v2/account-tags/{account_tags}"
+    openapi_operation_id: "DeleteAnAccountTag"
   create-entity:
     docs: "https://elasticpath.dev/docs/api/accounts/create-an-account-tag"
     url: "/v2/account-tags/"
+    openapi_operation_id: "CreateAnAccountTag"
   attributes:
     name:
       type: STRING
@@ -245,12 +265,15 @@ account-tag-relationships:
   get-collection:
     docs: "https://elasticpath.dev/docs/api/accounts/get-an-account-tags-relationship"
     url: "/v2/accounts/{accounts}/relationships/account-tags"
+    openapi_operation_id: "GetAnAccountTagsRelationship"
   create-entity:
     docs: "https://elasticpath.dev/docs/api/accounts/add-account-tags-on-account"
     url: "/v2/accounts/{accounts}/relationships/account-tags"
+    openapi_operation_id: "AddAccountTagsOnAccount"
   delete-entity:
     docs: "https://elasticpath.dev/docs/api/accounts/remove-account-tags-on-account"
     url: "/v2/accounts/{accounts}/relationships/account-tags"
+    openapi_operation_id: "RemoveAccountTagsOnAccount"
   attributes:
     data[n].id:
       type: RESOURCE_ID:account-tag
@@ -3004,18 +3027,23 @@ rule-promotions:
   get-collection:
     docs: "https://elasticpath.dev/docs/api/promotions-builder/get-rule-promotions"
     url: "/v2/rule-promotions"
+    openapi_operation_id: "getRulePromotions"
   get-entity:
     docs: "https://elasticpath.dev/docs/api/promotions-builder/get-rule-promotion-by-id"
     url: "/v2/rule-promotions/{rule_promotions}"
+    openapi_operation_id: "getRulePromotionById"
   create-entity:
     docs: "https://elasticpath.dev/docs/api/promotions-builder/create-rule-promotion"
     url: "/v2/rule-promotions"
+    openapi_operation_id: "createRulePromotion"
   update-entity:
     docs: "https://elasticpath.dev/docs/api/promotions-builder/update-rule-promotion"
     url: "/v2/rule-promotions/{rule_promotions}"
+    openapi_operation_id: "updateRulePromotion"
   delete-entity:
     docs: "https://elasticpath.dev/docs/api/promotions-builder/delete-rule-promotion"
     url: "/v2/rule-promotions/{rule_promotions}"
+    openapi_operation_id: "deleteRulePromotion"
   attributes:
     name:
       type: STRING
@@ -3096,15 +3124,19 @@ rule-promotion-codes:
   get-collection:
     docs: "https://elasticpath.dev/docs/api/promotions-builder/get-rule-promotion-codes"
     url: "/v2/rule-promotions/{rule_promotions}/codes"
+    openapi_operation_id: "getRulePromotionCodes"
   get-entity:
     docs: "https://elasticpath.dev/docs/api/promotions-builder/get-rule-promotion-codes"
     url: "/v2/rule-promotions/{rule_promotions}/codes"
+    openapi_operation_id: "getRulePromotionCodes"
   delete-entity:
     docs: "https://elasticpath.dev/docs/api/promotions/delete-a-promotion-code"
     url: "/v2/rule-promotions/{rule_promotions}/codes/{rule_promotion_codes}"
+    openapi_operation_id: "deleteSingleRulePromotionCode"
   create-entity:
     docs: "https://elasticpath.dev/docs/api/promotions-builder/create-rule-promotion-codes"
     url: "/v2/rule-promotions/{rule_promotions}/codes"
+    openapi_operation_id: "createRulePromotionCodes"
   attributes:
     codes[n].code:
       type: STRING

@@ -5,3 +5,4 @@ epcc-cli
 epcc
 .envrc
 build/
+external/openapi/specs/*.yaml

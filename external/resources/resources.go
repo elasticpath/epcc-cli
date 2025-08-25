@@ -89,7 +89,7 @@ type CrudEntityInfo struct {
 	// Override the attribute we use in the URL for a specific key
 	ParentResourceValueOverrides map[string]string `yaml:"parent_resource_value_overrides,omitempty"`
 
-	OpenApiOperationId string `yaml:"openapi-operation-id"`
+	OpenApiOperationId string `yaml:"openapi_operation_id"`
 }
 
 type CrudEntityAttribute struct {

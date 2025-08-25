@@ -116,14 +116,24 @@ func GetSpecModel(name string) (*SpecModel, error) {
 
 // OperationInfo represents information about an operation in an OpenAPI spec
 type OperationInfo struct {
-	SpecName    string
-	Path        string
-	Method      string
-	OperationID string
-	Summary     string
+	SpecName    string // Name of the OpenAPI spec file (without extension)
+	Path        string // Path in the OpenAPI spec (e.g., "/v2/products/{id}")
+	Method      string // HTTP method (e.g., "GET", "POST", etc.)
+	OperationID string // The operationId from the OpenAPI spec
+	Summary     string // Summary description of the operation
 }
 
 // FindOperationByID searches all OpenAPI specs for an operation with the given ID
+// and returns information about the operation if found.
+//
+// Example:
+//
+//	opInfo, err := FindOperationByID("getProduct")
+//	if err != nil {
+//	    log.Fatalf("Operation not found: %v", err)
+//	}
+//	fmt.Printf("Found operation in %s at path %s using method %s\n", 
+//	    opInfo.SpecName, opInfo.Path, opInfo.Method)
 func FindOperationByID(operationID string) (*OperationInfo, error) {
 	// Get all spec models
 	specModels, err := GetAllSpecModels()
@@ -147,8 +157,6 @@ func FindOperationByID(operationID string) (*OperationInfo, error) {
 		iter := paths.PathItems.FromOldest()
 
 		for path, pathItem := range iter {
-			// Get the current key and value
-
 			// Skip if we already found a match or if path is invalid
 			if found || path == "" {
 				continue
@@ -197,4 +205,92 @@ func FindOperationByID(operationID string) (*OperationInfo, error) {
 	}
 
 	return nil, fmt.Errorf("operation ID '%s' not found in any OpenAPI spec", operationID)
+}
+
+// OperationIDInfo contains information about an operation ID and where it's defined
+type OperationIDInfo struct {
+	SpecName    string // Name of the OpenAPI spec file (without extension)
+	Path        string // Path in the OpenAPI spec (e.g., "/v2/products/{id}")
+	Method      string // HTTP method (e.g., "GET", "POST", etc.)
+	Summary     string // Summary description of the operation
+}
+
+// GetAllOperationIDs returns a map of all operation IDs found in all OpenAPI specs.
+// The map key is the operation ID and the value is information about where it's defined.
+// This is useful for validating operation IDs referenced in other parts of the codebase.
+//
+// Example:
+//
+//	allOperationIDs, err := GetAllOperationIDs()
+//	if err != nil {
+//	    log.Fatalf("Failed to get operation IDs: %v", err)
+//	}
+//	
+//	// Check if a specific operation ID exists
+//	if opInfo, exists := allOperationIDs["createProduct"]; exists {
+//	    fmt.Printf("Operation found in %s at path %s using method %s\n", 
+//	        opInfo.SpecName, opInfo.Path, opInfo.Method)
+//	}
+//	
+//	// Print all operation IDs
+//	for opID, opInfo := range allOperationIDs {
+//	    fmt.Printf("%s: %s %s in %s\n", opID, opInfo.Method, opInfo.Path, opInfo.SpecName)
+//	}
+func GetAllOperationIDs() (map[string]OperationIDInfo, error) {
+	// Get all spec models
+	specModels, err := GetAllSpecModels()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get OpenAPI specs: %w", err)
+	}
+
+	// Map to store all operation IDs
+	operationIDs := make(map[string]OperationIDInfo)
+
+	// Search for operation IDs in each spec
+	for specName, spec := range specModels {
+		// Check each path
+		paths := spec.V3Model.Paths
+		if paths == nil || paths.PathItems == nil {
+			continue
+		}
+
+		// Get the iterator for paths
+		iter := paths.PathItems.FromOldest()
+
+		for path, pathItem := range iter {
+			// Skip if path is invalid
+			if path == "" {
+				continue
+			}
+
+			// Check each HTTP method for operation IDs
+			methods := []struct {
+				Method    string
+				Operation *v3.Operation
+			}{
+				{"GET", pathItem.Get},
+				{"POST", pathItem.Post},
+				{"PUT", pathItem.Put},
+				{"DELETE", pathItem.Delete},
+				{"OPTIONS", pathItem.Options},
+				{"HEAD", pathItem.Head},
+				{"PATCH", pathItem.Patch},
+				{"TRACE", pathItem.Trace},
+			}
+
+			for _, m := range methods {
+				if m.Operation != nil && m.Operation.OperationId != "" {
+					// Store the operation ID with its information
+					operationIDs[m.Operation.OperationId] = OperationIDInfo{
+						SpecName: specName,
+						Path:     path,
+						Method:   m.Method,
+						Summary:  m.Operation.Summary,
+					}
+				}
+			}
+		}
+	}
+
+	return operationIDs, nil
 }
