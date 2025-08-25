@@ -2,10 +2,11 @@ package resources
 
 import (
 	_ "embed"
+	"regexp"
+
 	"github.com/elasticpath/epcc-cli/config"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
-	"regexp"
 )
 
 //go:embed yaml/resources.yaml
@@ -87,6 +88,8 @@ type CrudEntityInfo struct {
 
 	// Override the attribute we use in the URL for a specific key
 	ParentResourceValueOverrides map[string]string `yaml:"parent_resource_value_overrides,omitempty"`
+
+	OpenApiOperationId string `yaml:"openapi-operation-id"`
 }
 
 type CrudEntityAttribute struct {

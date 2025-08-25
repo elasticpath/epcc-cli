@@ -42,7 +42,8 @@
             "url": { "type": "string" },
             "content-type": { "type": "string" },
             "parent_resource_value_overrides": { "type":  "object" },
-            "query": { "type":  "string" }
+            "query": { "type":  "string" },
+            "openapi_operation_id": { "type":  "string" }
           },
           "required": [ "url", "docs"]
         },

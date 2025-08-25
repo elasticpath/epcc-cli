@@ -119,6 +119,7 @@ accounts:
     docs: "https://elasticpath.dev/docs/api/accounts/post-v-2-accounts"
     url: "/v2/accounts"
     content-type: application/json
+    openapi_operation_id: "post-v2-accounts"
   attributes:
     name:
       type: STRING

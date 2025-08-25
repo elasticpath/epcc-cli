@@ -34,7 +34,14 @@ require (
 	github.com/mitchellh/mapstructure v1.5.0
 )
 
-require dario.cat/mergo v1.0.1 // indirect
+require (
+	dario.cat/mergo v1.0.1 // indirect
+	github.com/bahlo/generic-list-go v0.2.0 // indirect
+	github.com/buger/jsonparser v1.1.1 // indirect
+	github.com/pb33f/libopenapi v0.25.3 // indirect
+	github.com/pb33f/ordered-map/v2 v2.2.0 // indirect
+	github.com/speakeasy-api/jsonpath v0.6.2 // indirect
+)
 
 require (
 	github.com/Masterminds/goutils v1.1.1 // indirect
