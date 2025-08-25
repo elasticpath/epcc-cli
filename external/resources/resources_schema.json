@@ -42,7 +42,17 @@
             "url": { "type": "string" },
             "content-type": { "type": "string" },
             "parent_resource_value_overrides": { "type":  "object" },
-            "query": { "type":  "string" },
+            "query": { 
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" }
+                },
+                "required": ["name"],
+                "additionalProperties": false
+              }
+            },
             "openapi-operation-id": { "type":  "string" }
           },
           "required": [ "url", "docs"]
@@ -54,7 +64,18 @@
             "url": { "type": "string" },
             "content-type": { "type": "string" },
             "parent_resource_value_overrides": { "type":  "object" },
-            "query": { "type":  "string" }
+            "query": { 
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" }
+                },
+                "required": ["name"],
+                "additionalProperties": false
+              }
+            },
+            "openapi-operation-id": { "type":  "string" }
           },
           "required": [ "url", "docs"]
         },
@@ -64,7 +85,19 @@
             "docs": { "type": "string", "pattern": "^(https?://|n/a$)"  },
             "url": { "type": "string" },
             "content-type": { "type": "string" },
-            "parent_resource_value_overrides": { "type":  "object" }
+            "parent_resource_value_overrides": { "type":  "object" },
+            "query": { 
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" }
+                },
+                "required": ["name"],
+                "additionalProperties": false
+              }
+            },
+            "openapi-operation-id": { "type":  "string" }
           },
           "required": [ "url", "docs"]
         },
@@ -74,7 +107,19 @@
             "docs": { "type": "string", "pattern": "^(https?://|n/a$)"  },
             "url": { "type": "string" },
             "content-type": { "type": "string" },
-            "parent_resource_value_overrides": { "type":  "object" }
+            "parent_resource_value_overrides": { "type":  "object" },
+            "query": { 
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" }
+                },
+                "required": ["name"],
+                "additionalProperties": false
+              }
+            },
+            "openapi-operation-id": { "type":  "string" }
           },
           "required": [ "url", "docs"]
         },
@@ -83,7 +128,19 @@
           "properties" : {
             "docs": { "type": "string",  "pattern": "^(https?://|n/a$)"  },
             "url": { "type": "string" },
-            "min": { "type": "integer" }
+            "min": { "type": "integer" },
+            "query": { 
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" }
+                },
+                "required": ["name"],
+                "additionalProperties": false
+              }
+            },
+            "openapi-operation-id": { "type":  "string" }
           },
           "required": [ "url", "docs"]
         },

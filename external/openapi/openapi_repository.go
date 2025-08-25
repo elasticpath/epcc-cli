@@ -116,11 +116,12 @@ func GetSpecModel(name string) (*SpecModel, error) {
 
 // OperationInfo represents information about an operation in an OpenAPI spec
 type OperationInfo struct {
-	SpecName    string // Name of the OpenAPI spec file (without extension)
-	Path        string // Path in the OpenAPI spec (e.g., "/v2/products/{id}")
-	Method      string // HTTP method (e.g., "GET", "POST", etc.)
-	OperationID string // The operationId from the OpenAPI spec
-	Summary     string // Summary description of the operation
+	SpecName    string        // Name of the OpenAPI spec file (without extension)
+	Path        string        // Path in the OpenAPI spec (e.g., "/v2/products/{id}")
+	Method      string        // HTTP method (e.g., "GET", "POST", etc.)
+	OperationID string        // The operationId from the OpenAPI spec
+	Summary     string        // Summary description of the operation
+	Operation   *v3.Operation // The actual OpenAPI v3 Operation object
 }
 
 // FindOperationByID searches all OpenAPI specs for an operation with the given ID
@@ -187,6 +188,7 @@ func FindOperationByID(operationID string) (*OperationInfo, error) {
 						Method:      m.Method,
 						OperationID: operationID,
 						Summary:     m.Operation.Summary,
+						Operation:   m.Operation,
 					}
 					break
 				}
@@ -205,6 +207,27 @@ func FindOperationByID(operationID string) (*OperationInfo, error) {
 	}
 
 	return nil, fmt.Errorf("operation ID '%s' not found in any OpenAPI spec", operationID)
+}
+
+// GetQueryParametersForOperation returns the query parameter names for a given operation ID
+func GetQueryParametersForOperation(operationID string) ([]string, error) {
+	// Find the operation using the existing function
+	opInfo, err := FindOperationByID(operationID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Extract query parameters directly from the embedded Operation
+	var queryParams []string
+	if opInfo.Operation != nil && opInfo.Operation.Parameters != nil {
+		for _, param := range opInfo.Operation.Parameters {
+			if param != nil && param.In == "query" {
+				queryParams = append(queryParams, param.Name)
+			}
+		}
+	}
+	
+	return queryParams, nil
 }
 
 // OperationIDInfo contains information about an operation ID and where it's defined

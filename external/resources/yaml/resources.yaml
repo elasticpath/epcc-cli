@@ -66,6 +66,11 @@ account-members:
     docs: "https://elasticpath.dev/docs/api/accounts/account-members"
     url: "/v2/account-members"
     openapi-operation-id: "get-v2-account-members"
+    query:
+      - name: page[limit]
+      - name: page[offset]
+      - name: sort
+      - name: filter
   get-entity:
     docs: "https://elasticpath.dev/docs/api/accounts/account-members"
     url: "/v2/account-members/{account_members}"
@@ -84,10 +89,18 @@ account-memberships:
     docs: "https://elasticpath.dev/docs/api/accounts/account-membership"
     url: "/v2/accounts/{accounts}/account-memberships"
     openapi-operation-id: "get-v2-accounts-accountID-account-memberships"
+    query:
+      - name: filter
+      - name: sort
+      - name: page[limit]
+      - name: page[offset]
+      - name: include
   get-entity:
     docs: "https://elasticpath.dev/docs/api/accounts/account-membership"
     url: "/v2/accounts/{accounts}/account-memberships/{account_memberships}"
     openapi-operation-id: "get-v2-accounts-accountID-account-memberships-membershipID"
+    query:
+      - name: include
   delete-entity:
     docs: "https://elasticpath.dev/docs/api/accounts/delete-v-2-accounts-account-id-account-memberships-membership-id"
     url: "/v2/accounts/{accounts}/account-memberships/{account_memberships}"
@@ -109,6 +122,11 @@ unassigned-account-memberships:
     docs: "https://elasticpath.dev/docs/api/accounts/get-v-2-accounts-account-id-account-memberships-unassigned-account-members"
     url: "/v2/accounts/{accounts}/account-memberships/unassigned-account-members/"
     openapi-operation-id: "get-v2-accounts-accountID-account-memberships-unassigned-account-members"
+    query:
+      - name: page[limit]
+      - name: page[offset]
+      - name: sort
+      - name: filter
 accounts:
   singular-name: "account"
   json-api-type: "account"
@@ -118,6 +136,11 @@ accounts:
     docs: "https://elasticpath.dev/docs/api/accounts/get-v-2-accounts"
     url: "/v2/accounts"
     openapi-operation-id: "get-v2-accounts"
+    query:
+      - name: filter
+      - name: page[limit]
+      - name: page[offset]
+      - name: sort
   get-entity:
     docs: "https://elasticpath.dev/docs/api/accounts/get-v-2-accounts-account-id"
     url: "/v2/accounts/{accounts}"
@@ -233,6 +256,11 @@ account-tags:
     docs: "https://elasticpath.dev/docs/api/accounts/list-account-tags"
     url: "/v2/account-tags"
     openapi-operation-id: "ListAccountTags"
+    query:
+      - name: filter
+      - name: page[limit]
+      - name: page[offset]
+      - name: sort
   get-entity:
     docs: "https://elasticpath.dev/docs/api/accounts/get-an-account-tag"
     url: "/v2/account-tags/{account_tags}"
@@ -330,7 +358,8 @@ carts:
   get-entity:
     docs: "https://elasticpath.dev/docs/api/carts/get-a-cart"
     url: "/v2/carts/{carts}"
-    query: "include"
+    query: 
+      - name: include
   update-entity:
     docs: "https://elasticpath.dev/docs/api/carts/create-a-cart#put-update-a-cart"
     url: "/v2/carts/{carts}"
@@ -3028,6 +3057,8 @@ rule-promotions:
     docs: "https://elasticpath.dev/docs/api/promotions-builder/get-rule-promotions"
     url: "/v2/rule-promotions"
     openapi-operation-id: "getRulePromotions"
+    query:
+      - name: filter
   get-entity:
     docs: "https://elasticpath.dev/docs/api/promotions-builder/get-rule-promotion-by-id"
     url: "/v2/rule-promotions/{rule_promotions}"
@@ -3125,10 +3156,14 @@ rule-promotion-codes:
     docs: "https://elasticpath.dev/docs/api/promotions-builder/get-rule-promotion-codes"
     url: "/v2/rule-promotions/{rule_promotions}/codes"
     openapi-operation-id: "getRulePromotionCodes"
+    query:
+      - name: filter
   get-entity:
     docs: "https://elasticpath.dev/docs/api/promotions-builder/get-rule-promotion-codes"
     url: "/v2/rule-promotions/{rule_promotions}/codes"
     openapi-operation-id: "getRulePromotionCodes"
+    query:
+      - name: filter
   delete-entity:
     docs: "https://elasticpath.dev/docs/api/promotions/delete-a-promotion-code"
     url: "/v2/rule-promotions/{rule_promotions}/codes/{rule_promotion_codes}"

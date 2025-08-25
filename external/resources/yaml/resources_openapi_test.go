@@ -240,3 +240,81 @@ func TestOpenAPIOperationIDs(t *testing.T) {
 		t.Logf("All operation IDs in OpenAPI specs are referenced by resources")
 	}
 }
+
+// TestQueryParametersMatchOpenAPI validates that all query parameters defined in OpenAPI specs
+// are also defined in the corresponding resources.yaml operations
+func TestQueryParametersMatchOpenAPI(t *testing.T) {
+	// Get all resources
+	allResources := resources.GetPluralResources()
+
+	// Track validation results
+	var missingQueryParams []struct {
+		ResourceName     string
+		OperationType    string
+		OperationID      string
+		MissingParam     string
+		OpenAPIParamName string
+	}
+
+	// Check each resource operation
+	for resourceName, resource := range allResources {
+		// Check operations that might have openapi-operation-id
+		operations := map[string]*resources.CrudEntityInfo{
+			"get-collection": resource.GetCollectionInfo,
+			"get-entity":     resource.GetEntityInfo,
+			"create-entity":  resource.CreateEntityInfo,
+			"update-entity":  resource.UpdateEntityInfo,
+			"delete-entity":  resource.DeleteEntityInfo,
+		}
+
+		for opType, opInfo := range operations {
+			if opInfo == nil || opInfo.OpenApiOperationId == "" {
+				// Skip operations without OpenAPI operation ID
+				continue
+			}
+
+			// Get query parameters from OpenAPI spec
+			openAPIQueryParams, err := openapi.GetQueryParametersForOperation(opInfo.OpenApiOperationId)
+			if err != nil {
+				t.Logf("Warning: Could not find OpenAPI operation %s: %v", opInfo.OpenApiOperationId, err)
+				continue
+			}
+
+			// Convert resource query parameters to a set for easy lookup
+			resourceQueryParams := make(map[string]bool)
+			for _, param := range opInfo.QueryParameters {
+				resourceQueryParams[param.Name] = true
+			}
+
+			// Check if all OpenAPI query parameters are defined in resources.yaml
+			for _, openAPIParam := range openAPIQueryParams {
+				if !resourceQueryParams[openAPIParam] {
+					missingQueryParams = append(missingQueryParams, struct {
+						ResourceName     string
+						OperationType    string
+						OperationID      string
+						MissingParam     string
+						OpenAPIParamName string
+					}{
+						ResourceName:     resourceName,
+						OperationType:    opType,
+						OperationID:      opInfo.OpenApiOperationId,
+						MissingParam:     openAPIParam,
+						OpenAPIParamName: openAPIParam,
+					})
+				}
+			}
+		}
+	}
+
+	// Report missing query parameters
+	if len(missingQueryParams) > 0 {
+		t.Errorf("Found %d query parameters in OpenAPI specs that are missing from resources.yaml:", len(missingQueryParams))
+		for _, missing := range missingQueryParams {
+			t.Errorf("  - Resource: %s, Operation: %s, OpenAPI ID: %s, Missing Parameter: %s",
+				missing.ResourceName, missing.OperationType, missing.OperationID, missing.MissingParam)
+		}
+	} else {
+		t.Logf("All query parameters from OpenAPI specs are properly defined in resources.yaml")
+	}
+}

@@ -410,15 +410,19 @@ func Complete(c Request) ([]string, cobra.ShellCompDirective) {
 
 	if c.Type&CompleteQueryParamKey > 0 {
 		if c.Verb&GetAll > 0 {
-			for _, k := range strings.Split(c.Resource.GetCollectionInfo.QueryParameters, ",") {
-				results = append(results, k)
+			if c.Resource.GetCollectionInfo != nil {
+				for _, param := range c.Resource.GetCollectionInfo.QueryParameters {
+					results = append(results, param.Name)
+				}
 			}
 
 			// Static shared list
 			results = append(results, "sort", "filter", "include", "page[limit]", "page[offset]", "page[total_method]")
 		} else if c.Verb&Get > 0 {
-			for _, k := range strings.Split(c.Resource.GetEntityInfo.QueryParameters, ",") {
-				results = append(results, k)
+			if c.Resource.GetEntityInfo != nil {
+				for _, param := range c.Resource.GetEntityInfo.QueryParameters {
+					results = append(results, param.Name)
+				}
 			}
 
 			results = append(results, "include")
