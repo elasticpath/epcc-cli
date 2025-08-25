@@ -1,17 +1,13 @@
 package resources__test
 
 import (
-	"fmt"
-	"regexp"
-	"strings"
 	"testing"
 
 	"github.com/elasticpath/epcc-cli/external/openapi"
 	"github.com/elasticpath/epcc-cli/external/resources"
-	"github.com/yosida95/uritemplate/v3"
 )
 
-// TestOpenAPIOperationIDs verifies that all non-null openapi_operation_id values in resources.yaml
+// TestOpenAPIOperationIDs verifies that all non-null openapi-operation-id values in resources.yaml
 // actually exist in the OpenAPI specs, and that resources which should have an operation ID do have one
 func TestOpenAPIOperationIDs(t *testing.T) {
 	// Get all operation IDs from OpenAPI specs
@@ -86,9 +82,12 @@ func TestOpenAPIOperationIDs(t *testing.T) {
 	// Get all resources using the Resources API
 	allResources := resources.GetPluralResources()
 
+	// Track which operation IDs are referenced by resources
+	referencedOperationIDs := make(map[string]bool)
+
 	// Check each resource operation
 	for resourceName, resource := range allResources {
-		// Check operations that might have openapi_operation_id
+		// Check operations that might have openapi-operation-id
 		operations := map[string]*resources.CrudEntityInfo{
 			"get-collection": resource.GetCollectionInfo,
 			"get-entity":     resource.GetEntityInfo,
@@ -102,7 +101,7 @@ func TestOpenAPIOperationIDs(t *testing.T) {
 				continue
 			}
 
-			// Check if the operation has an openapi_operation_id
+			// Check if the operation has an openapi-operation-id
 			opID := opInfo.OpenApiOperationId
 
 			// If it has an operation ID, verify it exists
@@ -117,6 +116,9 @@ func TestOpenAPIOperationIDs(t *testing.T) {
 						OperationType: opType,
 						OperationID:   opID,
 					})
+				} else {
+					// Mark this operation ID as referenced
+					referencedOperationIDs[opID] = true
 				}
 				continue // Skip further checks if it already has an operation ID
 			}
@@ -183,118 +185,58 @@ func TestOpenAPIOperationIDs(t *testing.T) {
 
 	// Report invalid operation IDs
 	if len(invalidOperationIDs) > 0 {
-		t.Errorf("Found %d invalid openapi_operation_id values:", len(invalidOperationIDs))
+		t.Errorf("Found %d invalid openapi-operation-id values:", len(invalidOperationIDs))
 		for _, invalid := range invalidOperationIDs {
 			t.Errorf("  - Resource: %s, Operation: %s, ID: %s",
 				invalid.ResourceName, invalid.OperationType, invalid.OperationID)
 		}
 	} else {
-		t.Logf("All openapi_operation_id values in resources.yaml are valid")
+		t.Logf("All openapi-operation-id values in resources.yaml are valid")
 	}
 
 	// Report missing operation IDs
 	if len(missingSuggestions) > 0 {
-		t.Errorf("Found %d resources that should have an openapi_operation_id but don't:", len(missingSuggestions))
+		t.Errorf("Found %d resources that should have an openapi-operation-id but don't:", len(missingSuggestions))
 		for _, missing := range missingSuggestions {
 			t.Errorf("  - Resource: %s, Operation: %s, Path: %s, Method: %s, Suggested ID: %s",
 				missing.ResourceName, missing.OperationType, missing.Path, missing.Method, missing.SuggestedID)
 		}
 	} else {
-		t.Logf("All resources that should have an openapi_operation_id have one")
-	}
-}
-
-// normalizeURLTemplate replaces all variable names in a URL template with a standard placeholder.
-// This allows comparing URL templates that use different variable names but represent the same path structure.
-// For example, "/v2/products/{id}" and "/v2/products/{product_id}" would both normalize to "/v2/products/{var}"
-func normalizeURLTemplate(urlTemplate string) (string, error) {
-	// Parse the URL template
-	template, err := uritemplate.New(urlTemplate)
-	if err != nil {
-		return "", err
+		t.Logf("All resources that should have an openapi-operation-id have one")
 	}
 
-	// Get all variable names in the template
-	varNames := template.Varnames()
-
-	// Replace each variable with a standard placeholder
-	result := urlTemplate
-	for _, varName := range varNames {
-		// Create a pattern that matches the variable with its braces
-		pattern := "{" + varName + "}"
-		// Replace with a standard variable placeholder
-		result = strings.Replace(result, pattern, "{var}", 1)
+	// Find unreferenced operation IDs
+	var unreferencedOperations []struct {
+		OperationID string
+		Method      string
+		Path        string
+		SpecName    string
 	}
 
-	return result, nil
-}
-
-// extractPathPattern extracts the path pattern from a URL, removing any query parameters
-// and normalizing the trailing slash
-func extractPathPattern(url string) string {
-	// Remove query parameters if present
-	if idx := strings.Index(url, "?"); idx != -1 {
-		url = url[:idx]
+	for opID, opInfo := range allOperationIDs {
+		if !referencedOperationIDs[opID] {
+			unreferencedOperations = append(unreferencedOperations, struct {
+				OperationID string
+				Method      string
+				Path        string
+				SpecName    string
+			}{
+				OperationID: opID,
+				Method:      opInfo.Method,
+				Path:        opInfo.Path,
+				SpecName:    opInfo.SpecName,
+			})
+		}
 	}
 
-	// Ensure consistent trailing slash handling
-	url = strings.TrimSuffix(url, "/")
-
-	return url
-}
-
-// pathsMatch determines if two URL paths match structurally, ignoring variable names
-func pathsMatch(path1, path2 string) bool {
-	// Extract path patterns
-	pattern1 := extractPathPattern(path1)
-	pattern2 := extractPathPattern(path2)
-
-	// Normalize both templates
-	normalized1, err1 := normalizeURLTemplate(pattern1)
-	normalized2, err2 := normalizeURLTemplate(pattern2)
-
-	// If either normalization fails, they don't match
-	if err1 != nil || err2 != nil {
-		return false
+	// Report unreferenced operation IDs (informational, not a failure)
+	if len(unreferencedOperations) > 0 {
+		t.Logf("Found %d operation IDs in OpenAPI specs that are not referenced by any resource:", len(unreferencedOperations))
+		for _, unreferenced := range unreferencedOperations {
+			t.Logf("  - ID: %s, Method: %s, Path: %s, Spec: %s",
+				unreferenced.OperationID, unreferenced.Method, unreferenced.Path, unreferenced.SpecName)
+		}
+	} else {
+		t.Logf("All operation IDs in OpenAPI specs are referenced by resources")
 	}
-
-	// Compare the normalized paths
-	return normalized1 == normalized2
-}
-
-// resourceOperationToMethod maps resource operation types to HTTP methods
-func resourceOperationToMethod(operationType string) string {
-	switch operationType {
-	case "get-collection", "get-entity":
-		return "GET"
-	case "create-entity":
-		return "POST"
-	case "update-entity":
-		return "PUT"
-	case "delete-entity":
-		return "DELETE"
-	default:
-		return ""
-	}
-}
-
-// generateOperationID creates an operation ID from a method and path
-// following the convention seen in the example: get-v2-accounts
-func generateOperationID(method, path string) string {
-	// Convert method to lowercase
-	method = strings.ToLower(method)
-
-	// Remove leading slash and replace remaining slashes with hyphens
-	path = strings.TrimPrefix(path, "/")
-	path = strings.ReplaceAll(path, "/", "-")
-
-	// Remove variable placeholders like {id}
-	re := regexp.MustCompile(`\{[^}]+\}`)
-	path = re.ReplaceAllString(path, "")
-
-	// Remove any trailing hyphens
-	path = strings.TrimSuffix(path, "-")
-
-	// Combine method and path
-	return fmt.Sprintf("%s-%s", method, path)
 }
