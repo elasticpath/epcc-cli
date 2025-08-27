@@ -43,6 +43,42 @@ func GetSingularTypeNames(types []string) []string {
 func ConvertSingularTypeToCmdArg(typeName string) string {
 	return fmt.Sprintf("%s_ID", strings.ReplaceAll(strings.ToUpper(typeName), "-", "_"))
 }
+
+// getIndefiniteArticle returns "a" or "an" based on the first letter of the word
+func getIndefiniteArticle(word string) string {
+	if len(word) == 0 {
+		return "a"
+	}
+
+	firstChar := strings.ToLower(string(word[0]))
+
+	// Handle special cases where the pronunciation doesn't match the spelling
+	lowerWord := strings.ToLower(word)
+	
+	// Words that start with vowel letters but have consonant sounds
+	consonantSoundWords := []string{"university", "user", "usage", "unique", "unit", "uniform", "union"}
+	for _, csWord := range consonantSoundWords {
+		if strings.HasPrefix(lowerWord, csWord) {
+			return "a"
+		}
+	}
+	
+	// Words that start with consonant letters but have vowel sounds
+	vowelSoundWords := []string{"hour", "honest", "honor", "heir"}
+	for _, vsWord := range vowelSoundWords {
+		if strings.HasPrefix(lowerWord, vsWord) {
+			return "an"
+		}
+	}
+
+	// Standard vowel check
+	vowels := "aeiou"
+	if strings.Contains(vowels, firstChar) {
+		return "an"
+	}
+
+	return "a"
+}
 func GetParametersForTypes(types []string) string {
 	r := ""
 
@@ -63,7 +99,8 @@ func GetParameterUsageForTypes(resource resources.Resource, types []string, body
 		usage.WriteString("Parent Resource ID Parameters (Mandatory):\n")
 
 		for _, t := range types {
-			usage.WriteString(fmt.Sprintf("  %-20s - An ID or alias for a %s\n", t, strings.Title(t)))
+			article := getIndefiniteArticle(strings.Title(t))
+			usage.WriteString(fmt.Sprintf("  %-20s - An ID or alias for %s %s\n", t, article, strings.Title(t)))
 		}
 	}
 

@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/elasticpath/epcc-cli/config"
@@ -75,49 +76,209 @@ func NewResourceInfoCommand(parentCmd *cobra.Command) func() {
 	return resetFunc
 }
 
-// getIndefiniteArticle returns "a" or "an" based on the first letter/sound of the word
-func getIndefiniteArticle(word string) string {
-	if len(word) == 0 {
-		return "a"
+
+// GetOtherReferences finds commands from other resources that reference the current resource
+func GetOtherReferences(currentResource *resources.Resource) string {
+	sb := strings.Builder{}
+
+	sb.WriteString("\n\n*** Other References ***\n\n")
+
+	currentResourceName := currentResource.SingularName
+	foundUrlReferences := []string{}
+	foundBodyReferences := []string{}
+
+	// Go through all resources except the current one
+	for _, resource := range resources.GetPluralResources() {
+		if resource.SingularName == currentResourceName {
+			continue // Skip the current resource
+		}
+
+		// Skip entity-relationship resources
+		if strings.Contains(resource.SingularName, "entity-relationship") {
+			continue
+		}
+
+		// Check each operation URL for references to the current resource
+		operations := []struct {
+			info *resources.CrudEntityInfo
+			verb string
+			name string
+		}{
+			{resource.GetCollectionInfo, "get", resource.PluralName},
+			{resource.CreateEntityInfo, "create", resource.SingularName},
+			{resource.GetEntityInfo, "get", resource.SingularName},
+			{resource.UpdateEntityInfo, "update", resource.SingularName},
+			{resource.DeleteEntityInfo, "delete", resource.SingularName},
+		}
+
+		for _, op := range operations {
+			if op.info == nil {
+				continue
+			}
+
+			// Get the required parameters for this operation
+			types, err := resources.GetSingularTypesOfVariablesNeeded(op.info.Url)
+			if err != nil {
+				continue
+			}
+
+			// Check if the current resource is referenced in this operation
+			foundCurrentResource := false
+			for _, t := range types {
+				if t == currentResourceName {
+					foundCurrentResource = true
+					break
+				}
+			}
+
+			if foundCurrentResource {
+				// Build the command with just the mandatory parameters
+				cmdParts := []string{"epcc", op.verb, op.name}
+				for _, t := range types {
+					cmdParts = append(cmdParts, ConvertSingularTypeToCmdArg(t))
+				}
+
+				command := strings.Join(cmdParts, " ")
+				foundUrlReferences = append(foundUrlReferences, command)
+			}
+		}
+		
+		// Check if this resource's attributes reference the current resource in body parameters
+		for _, attr := range resource.Attributes {
+			if strings.HasPrefix(attr.Type, "RESOURCE_ID:") {
+				referencedResourceType := strings.TrimPrefix(attr.Type, "RESOURCE_ID:")
+				if referencedResourceType == currentResourceName {
+					// This resource has a body parameter that references the current resource
+					var operations []string
+					
+					if resource.CreateEntityInfo != nil {
+						operations = append(operations, "create")
+					}
+					if resource.UpdateEntityInfo != nil {
+						operations = append(operations, "update")
+					}
+					
+					if len(operations) > 0 {
+						var opString string
+						if len(operations) == 2 {
+							opString = "{create,update}"
+						} else {
+							opString = operations[0]
+						}
+						
+						bodyRef := fmt.Sprintf("Body of epcc %s %s", opString, resource.SingularName)
+						foundBodyReferences = append(foundBodyReferences, bodyRef)
+					}
+				}
+			}
+		}
 	}
 
-	// Convert to lowercase for checking
-	lower := strings.ToLower(word)
-
-	// Words that start with vowel sounds but use "a"
-	vowelExceptions := map[string]bool{
-		"university": true,
-		"user":       true,
-		"uniform":    true,
-		"unit":       true,
-		"unique":     true,
-		"usage":      true,
-		"utility":    true,
+	// Remove duplicates and sort URL references by resource name
+	uniqueUrlRefs := make(map[string]bool)
+	for _, ref := range foundUrlReferences {
+		uniqueUrlRefs[ref] = true
 	}
 
-	// Words that start with consonants but use "an"
-	consonantExceptions := map[string]bool{
-		"hour":   true,
-		"honest": true,
-		"honor":  true,
-		"heir":   true,
+	sortedUrlRefs := make([]string, 0, len(uniqueUrlRefs))
+	for ref := range uniqueUrlRefs {
+		sortedUrlRefs = append(sortedUrlRefs, ref)
 	}
 
-	// Check exceptions first
-	if vowelExceptions[lower] {
-		return "a"
-	}
-	if consonantExceptions[lower] {
-		return "an"
+	// Remove duplicates from body references
+	uniqueBodyRefs := make(map[string]bool)
+	for _, ref := range foundBodyReferences {
+		uniqueBodyRefs[ref] = true
 	}
 
-	// Default vowel rule
-	firstChar := lower[0]
-	if firstChar == 'a' || firstChar == 'e' || firstChar == 'i' || firstChar == 'o' || firstChar == 'u' {
-		return "an"
+	sortedBodyRefs := make([]string, 0, len(uniqueBodyRefs))
+	for ref := range uniqueBodyRefs {
+		sortedBodyRefs = append(sortedBodyRefs, ref)
 	}
 
-	return "a"
+	// Define verb order for sorting
+	verbOrder := map[string]int{
+		"get":    0, // get-collection will be handled by resource name (plural vs singular)
+		"create": 1,
+		"update": 2,
+		"delete": 3,
+	}
+
+	// Sort URL references by resource name first, then by verb order
+	sort.Slice(sortedUrlRefs, func(i, j int) bool {
+		// Extract resource name and verb from command
+		partsI := strings.Fields(sortedUrlRefs[i])
+		partsJ := strings.Fields(sortedUrlRefs[j])
+
+		if len(partsI) >= 3 && len(partsJ) >= 3 {
+			resourceI := partsI[2] // resource name is 3rd element
+			resourceJ := partsJ[2]
+			verbI := partsI[1]     // verb is 2nd element
+			verbJ := partsJ[1]
+
+			// If resource names are different, sort by resource name
+			if resourceI != resourceJ {
+				return resourceI < resourceJ
+			}
+
+			// Same resource, sort by verb order
+			orderI, okI := verbOrder[verbI]
+			orderJ, okJ := verbOrder[verbJ]
+
+			if okI && okJ {
+				return orderI < orderJ
+			}
+
+			// Fallback to alphabetical for unknown verbs
+			return verbI < verbJ
+		}
+
+		// Fallback to string comparison
+		return sortedUrlRefs[i] < sortedUrlRefs[j]
+	})
+
+	// Sort body references alphabetically
+	sort.Strings(sortedBodyRefs)
+
+	// Check if we have any references at all
+	if len(sortedUrlRefs) == 0 && len(sortedBodyRefs) == 0 {
+		sb.WriteString("No other commands reference this resource.\n")
+	} else {
+		// URL References subsection
+		if len(sortedUrlRefs) > 0 {
+			sb.WriteString("**** URL ****\n")
+			var lastResource string
+			for _, ref := range sortedUrlRefs {
+				// Extract resource name to detect when we switch to a new resource
+				parts := strings.Fields(ref)
+				if len(parts) >= 3 {
+					currentResource := parts[2]
+					
+					// Add a newline between different resources (but not before the first one)
+					if lastResource != "" && lastResource != currentResource {
+						sb.WriteString("\n")
+					}
+					
+					lastResource = currentResource
+				}
+				
+				sb.WriteString(ref + "\n")
+			}
+		}
+		
+		// Body Parameters subsection
+		if len(sortedBodyRefs) > 0 {
+			if len(sortedUrlRefs) > 0 {
+				sb.WriteString("\n") // Add spacing between sections
+			}
+			sb.WriteString("**** Body Parameters ****\n")
+			for _, ref := range sortedBodyRefs {
+				sb.WriteString(ref + "\n")
+			}
+		}
+	}
+
+	return sb.String()
 }
 
 func GenerateResourceInfo(r *resources.Resource) string {
@@ -140,7 +301,8 @@ func GenerateResourceInfo(r *resources.Resource) string {
 
 			for _, t := range types {
 				paramName := ConvertSingularTypeToCmdArg(t)
-				sb.WriteString(fmt.Sprintf("  %-20s - An ID or alias for a %s\n", paramName, strings.Title(t)))
+				article := getIndefiniteArticle(strings.Title(t))
+				sb.WriteString(fmt.Sprintf("  %-20s - An ID or alias for %s %s\n", paramName, article, strings.Title(t)))
 			}
 		}
 	}
@@ -158,7 +320,8 @@ func GenerateResourceInfo(r *resources.Resource) string {
 
 			for _, t := range types {
 				paramName := ConvertSingularTypeToCmdArg(t)
-				sb.WriteString(fmt.Sprintf("  %-20s - An ID or alias for a %s\n", paramName, strings.Title(t)))
+				article := getIndefiniteArticle(strings.Title(t))
+				sb.WriteString(fmt.Sprintf("  %-20s - An ID or alias for %s %s\n", paramName, article, strings.Title(t)))
 			}
 		}
 	}
@@ -177,7 +340,8 @@ func GenerateResourceInfo(r *resources.Resource) string {
 
 			for _, t := range types {
 				paramName := ConvertSingularTypeToCmdArg(t)
-				sb.WriteString(fmt.Sprintf("  %-20s - An ID or alias for a %s\n", paramName, strings.Title(t)))
+				article := getIndefiniteArticle(strings.Title(t))
+				sb.WriteString(fmt.Sprintf("  %-20s - An ID or alias for %s %s\n", paramName, article, strings.Title(t)))
 			}
 		}
 	}
@@ -196,7 +360,8 @@ func GenerateResourceInfo(r *resources.Resource) string {
 
 			for _, t := range types {
 				paramName := ConvertSingularTypeToCmdArg(t)
-				sb.WriteString(fmt.Sprintf("  %-20s - An ID or alias for a %s\n", paramName, strings.Title(t)))
+				article := getIndefiniteArticle(strings.Title(t))
+				sb.WriteString(fmt.Sprintf("  %-20s - An ID or alias for %s %s\n", paramName, article, strings.Title(t)))
 			}
 		}
 	}
@@ -215,10 +380,24 @@ func GenerateResourceInfo(r *resources.Resource) string {
 
 			for _, t := range types {
 				paramName := ConvertSingularTypeToCmdArg(t)
-				sb.WriteString(fmt.Sprintf("  %-20s - An ID or alias for a %s\n", paramName, strings.Title(t)))
+				article := getIndefiniteArticle(strings.Title(t))
+				sb.WriteString(fmt.Sprintf("  %-20s - An ID or alias for %s %s\n", paramName, article, strings.Title(t)))
 			}
 		}
 	}
+
+	// Add body parameters section at the bottom (shared across all operations)
+	if len(r.Attributes) > 0 {
+		sb.WriteString("\n")
+		bodyParamsUsage := GetParameterUsageForTypes(*r, []string{}, true)
+		sb.WriteString(bodyParamsUsage)
+	}
+
+	// Add other references section at the very end
+	otherReferences := GetOtherReferences(r)
+	sb.WriteString(otherReferences)
+
+	sb.WriteString("\n")
 
 	return sb.String()
 }

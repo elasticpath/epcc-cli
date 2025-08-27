@@ -35,8 +35,12 @@ echo "==============================="
 # Format: download_spec "URL" "filename.yaml"
 
 # Example URL provided
+download_spec "https://elasticpath.dev/assets/openapispecs/carts/OpenAPISpec.yaml" "carts-and-orders.yaml"
 download_spec "https://elasticpath.dev/assets/openapispecs/accounts/OpenAPISpec.yaml" "account-management.yaml"
 download_spec "https://elasticpath.dev/assets/openapispecs/promotions-builder/OpenAPISpec.yaml" "promotions-builder.yaml"
+
+# Integrations doesn't have matching URLs.
+#download_spec "https://elasticpath.dev/assets/openapispecs/integrations/openapi.yaml" "integrations.yaml"
 
 # Add more URLs as needed:
 # download_spec "https://api.example.org/openapi.yaml" "example-org-api.yaml"

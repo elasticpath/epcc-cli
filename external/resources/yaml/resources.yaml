@@ -237,9 +237,11 @@ account-cart-associations:
   delete-entity:
     docs: "https://elasticpath.dev/docs/api/carts/delete-customer-cart-association"
     url: "/v2/carts/{carts}/relationships/accounts"
+    openapi-operation-id: deleteAccountCartAssociation
   create-entity:
     docs: "https://elasticpath.dev/docs/api/carts/account-cart-associations"
     url: "/v2/carts/{carts}/relationships/accounts"
+    openapi-operation-id: createAccountCartAssociation
     content-type: application/json
   attributes:
     data[n].id:
@@ -355,20 +357,25 @@ carts:
   get-collection:
     docs: "https://elasticpath.dev/docs/api/carts/get-carts"
     url: "/v2/carts"
+    openapi-operation-id: getCarts
   get-entity:
     docs: "https://elasticpath.dev/docs/api/carts/get-a-cart"
     url: "/v2/carts/{carts}"
+    openapi-operation-id: getACart
     query: 
       - name: include
   update-entity:
     docs: "https://elasticpath.dev/docs/api/carts/create-a-cart#put-update-a-cart"
     url: "/v2/carts/{carts}"
+    openapi-operation-id: updateACart
   delete-entity:
     docs: "https://elasticpath.dev/docs/api/carts/delete-a-cart"
     url: "/v2/carts/{carts}"
+    openapi-operation-id: deleteACart
   create-entity:
     docs: "https://elasticpath.dev/docs/api/carts/create-a-cart"
     url: "/v2/carts"
+    openapi-operation-id: createACart
     content-type: application/json
   attributes:
     id:
@@ -386,12 +393,15 @@ cart-items:
   get-collection:
     docs: "https://elasticpath.dev/docs/api/carts/get-cart-items"
     url: "/v2/carts/{carts}/items"
+    openapi-operation-id: getCartItems
   update-entity:
     docs: "https://elasticpath.dev/docs/carts-orders/bulk-add-to-cart"
     url: "/v2/carts/{carts}/items/{cart_items}"
+    openapi-operation-id: updateACartItem
   delete-entity:
     docs: "https://elasticpath.dev/docs/api/carts/delete-a-cart-item"
     url: "/v2/carts/{carts}/items/{cart_items}"
+    openapi-operation-id: deleteACartItem
   attributes:
     sku:
       type: STRING
@@ -407,6 +417,7 @@ cart-product-items:
   create-entity:
     docs: "https://elasticpath.dev/docs/api/carts/manage-carts"
     url: "/v2/carts/{carts}/items"
+    openapi-operation-id: manageCarts
     content-type: application/json
   attributes:
     sku:
@@ -439,10 +450,12 @@ cart-custom-items:
   create-entity:
     docs: "https://elasticpath.dev/docs/api/carts/manage-carts#add-custom-item-to-cart"
     url: "/v2/carts/{carts}/items"
+    openapi-operation-id: manageCarts
     content-type: application/json
   update-entity:
     docs: "https://elasticpath.dev/docs/carts-orders/bulk-add-to-cart"
     url: "/v2/carts/{carts}/items/{cart_custom_items}"
+    openapi-operation-id: updateACartItem
   attributes:
     sku:
       type: STRING
@@ -479,6 +492,7 @@ cart-checkout:
   create-entity:
     docs: "https://elasticpath.dev/docs/api/carts/checkout"
     url: "/v2/carts/{carts}/checkout"
+    openapi-operation-id: checkoutAPI
     content-type: application/json
   attributes:
     account.id:
@@ -647,9 +661,11 @@ customer-cart-associations:
   delete-entity:
     docs: "https://elasticpath.dev/docs/api/carts/delete-customer-cart-association"
     url: "/v2/carts/{carts}/relationships/customers"
+    openapi-operation-id: deleteCustomerCartAssociation
   create-entity:
     docs: "https://elasticpath.dev/docs/api/carts/create-customer-cart-association"
     url: "/v2/carts/{carts}/relationships/customers"
+    openapi-operation-id: createCustomerCartAssociation
     content-type: application/json
   attributes:
     data[n].id:
@@ -1151,12 +1167,15 @@ orders:
   get-collection:
     docs: "https://elasticpath.dev/docs/api/carts/get-customer-orders"
     url: "/v2/orders"
+    openapi-operation-id: getCustomerOrders
   get-entity:
     docs: "https://elasticpath.dev/docs/api/carts/update-an-order"
     url: "/v2/orders/{orders}"
+    openapi-operation-id: getAnOrder
   update-entity:
     docs: "https://elasticpath.dev/docs/api/carts/orders"
     url: "/v2/orders/{orders}"
+    openapi-operation-id: updateAnOrder
     content-type: application/json
   attributes:
     shipping_address.first_name:
@@ -1187,6 +1206,7 @@ order-items:
   get-collection:
     docs: "https://elasticpath.dev/docs/api/carts/get-order-items#get-get-order-items"
     url: "/v2/orders/{orders}/items"
+    openapi-operation-id: getOrderItems
 order-payments:
   singular-name: "order-payment"
   json-api-type: "order_payment"
@@ -1197,6 +1217,7 @@ order-payments:
   create-entity:
     docs: "https://elasticpath.dev/docs/api/carts/payments"
     url: "/v2/orders/{orders}/payments"
+    openapi-operation-id: paymentSetup
   attributes:
     payment:
       type: STRING
@@ -1240,16 +1261,19 @@ order-transactions:
   singular-name: "order-transaction"
   json-api-type: "transaction"
   json-api-format: "legacy"
-  docs: "https://elasticpath.dev/docs/api/carts/transactions"
+  docs: "https://elasticpath.dev/docs/api/carts/get-order-transactions"
   get-collection:
-    docs: "https://elasticpath.dev/docs/api/carts/transactions"
+    docs: "https://elasticpath.dev/docs/api/carts/get-order-transactions"
     url: "/v2/orders/{orders}/transactions"
+    openapi-operation-id: getOrderTransactions
   get-entity:
-    docs: "https://elasticpath.dev/docs/api/carts/update-an-order"
+    docs: "https://elasticpath.dev/docs/api/carts/get-a-transaction"
     url: "/v2/orders/{orders}/transactions/{order_transactions}"
+    openapi-operation-id: getATransaction
   create-entity:
     docs: "https://elasticpath.dev/docs/api/payments/payment-gateways-introduction"
     url: "/v2/orders/{orders}/payments"
+    openapi-operation-id: paymentSetup
 order-transaction-capture:
   singular-name: "order-transaction-capture"
   json-api-type: "transaction"
@@ -1258,6 +1282,7 @@ order-transaction-capture:
   create-entity:
     docs: "https://elasticpath.dev/docs/api/payments/payment-gateways-introduction#post-capture-transaction"
     url: "/v2/orders/{orders}/transactions/{order_transactions}/capture"
+    openapi-operation-id: captureATransaction
 order-transaction-refund:
   singular-name: "order-transaction-refund"
   json-api-type: "transaction"
@@ -1266,6 +1291,7 @@ order-transaction-refund:
   create-entity:
     docs: "https://elasticpath.dev/docs/carts-orders/refund-a-transaction"
     url: "/v2/orders/{orders}/transactions/{order_transactions}/refund"
+    openapi-operation-id: refundATransaction
 password-profiles:
   singular-name: "password-profile"
   json-api-type: "password_profile"
@@ -1321,7 +1347,7 @@ pcm-catalogs:
     url: "/pcm/catalogs/{pcm_catalogs}"
   update-entity:
     docs: "https://elasticpath.dev/docs/api/pxm/catalog/update-catalog"
-    url: "/pcm/hierarchies/{pcm_hierarchies}"
+    url: "/pcm/catalogs/{pcm_catalogs}"
   delete-entity:
     docs: "https://elasticpath.dev/docs/api/pxm/catalog/delete-catalog-by-id"
     url: "/pcm/catalogs/{pcm_catalogs}"
