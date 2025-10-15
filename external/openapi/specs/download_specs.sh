@@ -15,7 +15,7 @@ download_spec() {
     echo "Downloading ${filename} from ${url}..."
 
     # Download the file using curl
-    if curl -s --fail "${url}" -o "${output_path}"; then
+    if curl --follow -s --fail "${url}" -o "${output_path}"; then
         echo "✅ Successfully downloaded ${filename}"
     else
         echo "❌ Failed to download ${filename} from ${url}"
@@ -34,10 +34,13 @@ echo "==============================="
 # Add your OpenAPI spec URLs here
 # Format: download_spec "URL" "filename.yaml"
 
+
 # Example URL provided
 download_spec "https://elasticpath.dev/assets/openapispecs/carts/OpenAPISpec.yaml" "carts-and-orders.yaml"
 download_spec "https://elasticpath.dev/assets/openapispecs/accounts/OpenAPISpec.yaml" "account-management.yaml"
 download_spec "https://elasticpath.dev/assets/openapispecs/promotions-builder/OpenAPISpec.yaml" "promotions-builder.yaml"
+download_spec "https://developer.elasticpath.com/assets/openapispecs/single-sign-on/OpenAPISpec.yaml" "single-sign-on.yaml"
+
 
 # Integrations doesn't have matching URLs.
 #download_spec "https://elasticpath.dev/assets/openapispecs/integrations/openapi.yaml" "integrations.yaml"
@@ -48,3 +51,5 @@ download_spec "https://elasticpath.dev/assets/openapispecs/promotions-builder/Op
 
 echo "==============================="
 echo "Download process completed at: $(date)"
+echo "=======[ Versions ]============"
+grep -H version: $SCRIPT_DIR/*.yaml | sed -E "s/\s*version:\s*/ /g" | sed -E "s#^.+/##g" | sort | column -t

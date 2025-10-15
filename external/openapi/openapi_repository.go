@@ -55,13 +55,9 @@ func GetAllSpecModels() (map[string]*SpecModel, error) {
 		}
 
 		// Build the V3 model
-		v3ModelResult, errors := document.BuildV3Model()
-		if len(errors) > 0 {
-			errorMsgs := make([]string, len(errors))
-			for i, e := range errors {
-				errorMsgs[i] = e.Error()
-			}
-			return nil, fmt.Errorf("failed to build V3 model for %s: %s", entry.Name(), strings.Join(errorMsgs, "; "))
+		v3ModelResult, err := document.BuildV3Model()
+		if err != nil {
+			return nil, fmt.Errorf("failed to build V3 model for %s: %s", entry.Name(), err)
 		}
 
 		// Store the model
@@ -96,13 +92,9 @@ func GetSpecModel(name string) (*SpecModel, error) {
 	}
 
 	// Build the V3 model
-	v3ModelResult, errors := document.BuildV3Model()
-	if len(errors) > 0 {
-		errorMsgs := make([]string, len(errors))
-		for i, e := range errors {
-			errorMsgs[i] = e.Error()
-		}
-		return nil, fmt.Errorf("failed to build V3 model for %s: %s", name, strings.Join(errorMsgs, "; "))
+	v3ModelResult, err := document.BuildV3Model()
+	if err != nil {
+		return nil, fmt.Errorf("failed to build V3 model for %s: %s", name, err)
 	}
 
 	// Return the model
@@ -133,7 +125,7 @@ type OperationInfo struct {
 //	if err != nil {
 //	    log.Fatalf("Operation not found: %v", err)
 //	}
-//	fmt.Printf("Found operation in %s at path %s using method %s\n", 
+//	fmt.Printf("Found operation in %s at path %s using method %s\n",
 //	    opInfo.SpecName, opInfo.Path, opInfo.Method)
 func FindOperationByID(operationID string) (*OperationInfo, error) {
 	// Get all spec models
@@ -226,16 +218,21 @@ func GetQueryParametersForOperation(operationID string) ([]string, error) {
 			}
 		}
 	}
-	
+
 	return queryParams, nil
 }
 
 // OperationIDInfo contains information about an operation ID and where it's defined
 type OperationIDInfo struct {
-	SpecName    string // Name of the OpenAPI spec file (without extension)
-	Path        string // Path in the OpenAPI spec (e.g., "/v2/products/{id}")
-	Method      string // HTTP method (e.g., "GET", "POST", etc.)
-	Summary     string // Summary description of the operation
+	SpecName string // Name of the OpenAPI spec file (without extension)
+	Path     string // Path in the OpenAPI spec (e.g., "/v2/products/{id}")
+	Method   string // HTTP method (e.g., "GET", "POST", etc.)
+	Summary  string // Summary description of the operation
+}
+
+type TagInfo struct {
+	Name        string
+	Description string
 }
 
 // GetAllOperationIDs returns a map of all operation IDs found in all OpenAPI specs.
@@ -248,13 +245,13 @@ type OperationIDInfo struct {
 //	if err != nil {
 //	    log.Fatalf("Failed to get operation IDs: %v", err)
 //	}
-//	
+//
 //	// Check if a specific operation ID exists
 //	if opInfo, exists := allOperationIDs["createProduct"]; exists {
-//	    fmt.Printf("Operation found in %s at path %s using method %s\n", 
+//	    fmt.Printf("Operation found in %s at path %s using method %s\n",
 //	        opInfo.SpecName, opInfo.Path, opInfo.Method)
 //	}
-//	
+//
 //	// Print all operation IDs
 //	for opID, opInfo := range allOperationIDs {
 //	    fmt.Printf("%s: %s %s in %s\n", opID, opInfo.Method, opInfo.Path, opInfo.SpecName)
@@ -316,4 +313,28 @@ func GetAllOperationIDs() (map[string]OperationIDInfo, error) {
 	}
 
 	return operationIDs, nil
+}
+
+func FindTagByName(tag string) (*TagInfo, string, error) {
+	// Get all spec models
+	specModels, err := GetAllSpecModels()
+	if err != nil {
+		return nil, "", fmt.Errorf("failed to get OpenAPI specs: %w", err)
+	}
+
+	// Search for the operation ID in each spec
+	for _, spec := range specModels {
+		// Check each path
+
+		for _, t := range spec.V3Model.Tags {
+			if t.Name == tag {
+				return &TagInfo{
+					Name:        t.Name,
+					Description: t.Description,
+				}, spec.V3Model.Info.Description, nil
+			}
+		}
+	}
+
+	return nil, "", fmt.Errorf("tag ID '%s' not found in any OpenAPI spec", tag)
 }

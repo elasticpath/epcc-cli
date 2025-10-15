@@ -13,7 +13,9 @@ import (
 // For example, "/v2/products/{id}" and "/v2/products/{product_id}" would both normalize to "/v2/products/{var}"
 func normalizeURLTemplate(urlTemplate string) (string, error) {
 	// Parse the URL template
-	template, err := uritemplate.New(urlTemplate)
+
+	sanitizedPath := sanitizePath(urlTemplate)
+	template, err := uritemplate.New(sanitizedPath)
 	if err != nil {
 		return "", err
 	}
@@ -101,4 +103,23 @@ func generateOperationID(method, path string) string {
 
 	// Combine method and path
 	return fmt.Sprintf("%s-%s", method, path)
+}
+
+// pathVarSanitizer is a regex that matches variable names in OpenAPI path templates
+var pathVarSanitizer = regexp.MustCompile(`\{([^}]*)\}`)
+
+// illegalCharReplacer is a regex that replaces non-alphanumeric/underscore characters with underscores
+var illegalCharReplacer = regexp.MustCompile(`[^a-zA-Z0-9_]`)
+
+// sanitizePath replaces illegal characters in URI template variable names with underscores
+// This is needed because the uritemplate package has stricter variable name requirements than OpenAPI
+func sanitizePath(path string) string {
+	return pathVarSanitizer.ReplaceAllStringFunc(path, func(match string) string {
+		// Extract the variable name without the braces
+		varName := match[1 : len(match)-1]
+		// Replace any non-alphanumeric/underscore characters with underscores
+		sanitizedVarName := illegalCharReplacer.ReplaceAllString(varName, "_")
+		// Return the sanitized variable name with braces
+		return "{" + sanitizedVarName + "}"
+	})
 }

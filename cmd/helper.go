@@ -2,6 +2,14 @@ package cmd
 
 import (
 	"fmt"
+	"math/rand"
+	"net/url"
+	"regexp"
+	"sort"
+	"strconv"
+	"strings"
+	"sync"
+
 	"github.com/elasticpath/epcc-cli/external/autofill"
 	"github.com/elasticpath/epcc-cli/external/completion"
 	"github.com/elasticpath/epcc-cli/external/json"
@@ -11,13 +19,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/yosida95/uritemplate/v3"
-	"math/rand"
-	"net/url"
-	"regexp"
-	"sort"
-	"strconv"
-	"strings"
-	"sync"
 )
 
 var DisableLongOutput = false
@@ -54,7 +55,7 @@ func getIndefiniteArticle(word string) string {
 
 	// Handle special cases where the pronunciation doesn't match the spelling
 	lowerWord := strings.ToLower(word)
-	
+
 	// Words that start with vowel letters but have consonant sounds
 	consonantSoundWords := []string{"university", "user", "usage", "unique", "unit", "uniform", "union"}
 	for _, csWord := range consonantSoundWords {
@@ -62,7 +63,7 @@ func getIndefiniteArticle(word string) string {
 			return "a"
 		}
 	}
-	
+
 	// Words that start with consonant letters but have vowel sounds
 	vowelSoundWords := []string{"hour", "honest", "honor", "heir"}
 	for _, vsWord := range vowelSoundWords {
@@ -96,7 +97,7 @@ func GetParameterUsageForTypes(resource resources.Resource, types []string, body
 
 	if len(types) > 0 {
 
-		usage.WriteString("Parent Resource ID Parameters (Mandatory):\n")
+		usage.WriteString("Resource ID Parameters (Mandatory):\n")
 
 		for _, t := range types {
 			article := getIndefiniteArticle(strings.Title(t))
@@ -679,7 +680,7 @@ func GetDeleteUsage(resource resources.Resource) string {
 		return resourceName
 	}
 
-	return resourceName + GetParametersForTypes(singularTypeNames) + GetJsonKeyValuesForUsage(resource)
+	return resourceName + GetParametersForTypes(singularTypeNames)
 }
 
 var getExampleCache sync.Map
