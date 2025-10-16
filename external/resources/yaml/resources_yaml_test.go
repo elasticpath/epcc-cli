@@ -2,6 +2,17 @@ package resources__test
 
 import (
 	"fmt"
+	"io"
+	"net/http"
+	"net/url"
+	"os"
+	"regexp"
+	"sort"
+	"strconv"
+	"strings"
+	"sync"
+	"testing"
+
 	"github.com/elasticpath/epcc-cli/external/completion"
 	"github.com/elasticpath/epcc-cli/external/resources"
 	"github.com/santhosh-tekuri/jsonschema/v4"
@@ -9,15 +20,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/yosida95/uritemplate/v3"
 	"gopkg.in/yaml.v3"
-	"io"
-	"net/http"
-	"net/url"
-	"os"
-	"regexp"
-	"sort"
-	"strings"
-	"sync"
-	"testing"
 )
 
 func TestUriTemplatesAllReferenceValidResource(t *testing.T) {
@@ -228,6 +230,13 @@ func TestResourceDocsExist(t *testing.T) {
 	oldDomain := 0
 	brokenRedirectToRoot := 0
 
+	maxLength := 0
+	for _, l := range links {
+		if len(l) > maxLength {
+			maxLength = len(l)
+		}
+	}
+
 	for _, link := range links {
 
 		if link == "n/a" {
@@ -254,8 +263,9 @@ func TestResourceDocsExist(t *testing.T) {
 
 			respString := string(resp)
 
+			prefix := "# %-" + strconv.Itoa(maxLength) + "s"
 			if strings.Index(respString, "Your Docusaurus site did not load properly") > 0 {
-				fmt.Printf(" %s => ERROR (Page Not Found (Maybe))\n", link)
+				fmt.Printf(prefix+"=> ERROR (Page Not Found (Maybe))\n", link)
 				pageNotFound++
 				continue
 			}
@@ -276,10 +286,14 @@ func TestResourceDocsExist(t *testing.T) {
 					brokenRedirectToRoot++
 				}
 			} else if rewriteUrlOne != "" {
+
 				mutex.Lock()
 				// Rewrite
-				fmt.Printf("# %s => %s\n", link, rewriteUrlOne)
-				fmt.Printf("sed  -E -i 's@%s@%s@g resources.yaml'\n", link, rewriteUrlOne)
+				if link != rewriteUrlOne {
+					fmt.Printf("# %s => %s\n", link, rewriteUrlOne)
+					fmt.Printf("sed  -E -i 's@%s@%s@g resources.yaml'\n", link, rewriteUrlOne)
+				}
+
 				mutex.Unlock()
 
 			}
@@ -295,13 +309,14 @@ func TestResourceDocsExist(t *testing.T) {
 			}
 
 			matches = titleRegex.FindStringSubmatch(respString)
+
 			if len(matches) >= 2 {
-				fmt.Printf("%s => OK (%s)\n", link, matches[1])
+				fmt.Printf(prefix+"=> OK (%s)\n", link, matches[1])
 			} else if strings.Index(respString, "openapi__method-endpoint") > 0 {
-				fmt.Printf("%s => OK\n", link)
+				fmt.Printf(prefix+" => OK\n", link)
 				continue
 			} else {
-				fmt.Printf("%s => ???\n", link)
+				fmt.Printf(prefix+" => ???\n", link)
 			}
 
 			if err := response.Body.Close(); err != nil {

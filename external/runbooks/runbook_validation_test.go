@@ -1,9 +1,10 @@
 package runbooks
 
 import (
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestThatRunbookWithNoNameFails(t *testing.T) {
@@ -454,7 +455,7 @@ actions:
 	err = ValidateRunbook(runbook)
 
 	// Verification
-	assert.ErrorContains(t, err, "Expected closing quote")
+	assert.ErrorContains(t, err, "expected closing quote")
 }
 
 func TestThatRunbookWithFailsValidationWithIntVariableNotHaveAnIntDefault(t *testing.T) {

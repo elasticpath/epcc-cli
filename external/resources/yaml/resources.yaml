@@ -337,6 +337,9 @@ authentication-realms:
     docs: "https://elasticpath.dev/docs/authentication/single-sign-on/authentication-realm-api/get-all-authentication-realms"
     url: "/v2/authentication-realms"
     openapi-operation-id: "get-v2-authentication-realms"
+    query:
+      - name: page[limit]
+      - name: page[offset]
   get-entity:
     docs: "https://elasticpath.dev/docs/authentication/single-sign-on/authentication-realm-api/get-an-authentication-realm"
     url: "/v2/authentication-realms/{authentication_realms}"
@@ -361,6 +364,10 @@ carts:
     docs: "https://elasticpath.dev/docs/api/carts/get-carts"
     url: "/v2/carts"
     openapi-operation-id: getCarts
+    query:
+      - name: include
+      - name: page[limit]
+      - name: page[offset]
   get-entity:
     docs: "https://elasticpath.dev/docs/api/carts/get-a-cart"
     url: "/v2/carts/{carts}"
@@ -397,6 +404,8 @@ cart-items:
     docs: "https://elasticpath.dev/docs/api/carts/get-cart-items"
     url: "/v2/carts/{carts}/items"
     openapi-operation-id: getCartItems
+    query:
+      - name: include
   update-entity:
     docs: "https://elasticpath.dev/docs/carts-orders/bulk-add-to-cart"
     url: "/v2/carts/{carts}/items/{cart_items}"
@@ -1127,6 +1136,9 @@ oidc-profiles:
     docs: "https://elasticpath.dev/docs/authentication/single-sign-on/openid-connect-profiles-api/get-all-oidc-profiles"
     url: "/v2/authentication-realms/{authentication_realms}/oidc-profiles"
     openapi-operation-id: "get-v2-authentication-realms-realmId-oidc-profiles"
+    query:
+      - name: page[limit]
+      - name: page[offset]
   get-entity:
     docs: "https://elasticpath.dev/docs/authentication/single-sign-on/openid-connect-profiles-api/get-an-oidc-profile"
     url: "/v2/authentication-realms/{authentication_realms}/oidc-profiles/{oidc_profiles}"
@@ -1176,10 +1188,17 @@ orders:
     docs: "https://elasticpath.dev/docs/api/carts/get-customer-orders"
     url: "/v2/orders"
     openapi-operation-id: getCustomerOrders
+    query:
+      - name: include
+      - name: page[limit]
+      - name: page[offset]
+      - name: filter
   get-entity:
     docs: "https://elasticpath.dev/docs/api/carts/update-an-order"
     url: "/v2/orders/{orders}"
     openapi-operation-id: getAnOrder
+    query:
+      - name: include
   update-entity:
     docs: "https://elasticpath.dev/docs/api/carts/orders"
     url: "/v2/orders/{orders}"
@@ -1215,6 +1234,8 @@ order-items:
     docs: "https://elasticpath.dev/docs/api/carts/get-order-items#get-get-order-items"
     url: "/v2/orders/{orders}/items"
     openapi-operation-id: getOrderItems
+    query:
+      - name: include
 order-payments:
   singular-name: "order-payment"
   json-api-type: "order_payment"
@@ -1309,6 +1330,9 @@ password-profiles:
     docs: "https://elasticpath.dev/docs/authentication/single-sign-on/password-profiles-api/get-all-password-profiles"
     url: "/v2/authentication-realms/{authentication_realms}/password-profiles"
     openapi-operation-id: "get-v2-authentication-realms-realmId-password-profiles"
+    query:
+      - name: page[limit]
+      - name: page[offset]
   get-entity:
     docs: "https://elasticpath.dev/docs/authentication/single-sign-on/password-profiles-api/get-a-password-profile"
     url: "/v2/authentication-realms/{authentication_realms}/password-profiles/{password_profiles}"
@@ -1623,12 +1647,12 @@ payment-gateways-stripe-connect:
   singular-name: "payment-gateway-stripe-connect"
   json-api-type: "gateway"
   json-api-format: "legacy"
-  docs: "https://elasticpath.dev/docs/api/payments/update-stripe-connect-gateway"
+  docs: "n/a"
   get-entity:
     docs: "https://elasticpath.dev/docs/api/payments/gateways"
     url: "/v2/gateways/stripe_connect"
   update-entity:
-    docs: "https://elasticpath.dev/docs/api/payments/update-stripe-connect-gateway"
+    docs: "n/a"
     url: "/v2/gateways/stripe_connect"
   attributes:
     stripe_account:
@@ -2283,6 +2307,11 @@ user-authentication-infos:
     docs: "https://elasticpath.dev/docs/authentication/single-sign-on/user-authentication-info-api/get-all-user-authentication-info"
     url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info"
     openapi-operation-id: "get-v2-authentication-realms-realmId-user-authentication-info"
+    query:
+      - name: page[limit]
+      - name: page[offset]
+      - name: filter
+      - name: sort
   get-entity:
     docs: "https://elasticpath.dev/docs/authentication/single-sign-on/user-authentication-info-api/get-a-user-authentication-info"
     url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info/{user_authentication_infos}"
@@ -2316,6 +2345,9 @@ user-authentication-oidc-profile-infos:
     docs: "https://elasticpath.dev/docs/authentication/single-sign-on/password-profiles-api/get-all-password-profiles"
     url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info/{user_authentication_infos}/user-authentication-oidc-profile-info"
     openapi-operation-id: "get-v2-authentication-realms-realmId-user-authentication-info-userAuthInfoId-user-authentication-oidc-profile-info"
+    query:
+      - name: page[limit]
+      - name: page[offset]
   get-entity:
     docs: "https://elasticpath.dev/docs/authentication/single-sign-on/password-profiles-api/get-a-password-profile"
     url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info/{user_authentication_infos}/user-authentication-oidc-profile-info/{user_authentication_oidc_profile_infos}"
@@ -2349,6 +2381,9 @@ user-authentication-password-profile-infos:
     docs: "https://elasticpath.dev/docs/authentication/single-sign-on/password-profiles-api/get-all-password-profiles"
     url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info/{user_authentication_infos}/user-authentication-password-profile-info"
     openapi-operation-id: "get-v2-authentication-realms-realmId-user-authentication-info-userAuthInfoId-user-authentication-password-profile-info"
+    query:
+      - name: page[limit]
+      - name: page[offset]
   get-entity:
     docs: "https://elasticpath.dev/docs/authentication/single-sign-on/password-profiles-api/get-all-password-profiles"
     url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info/{user_authentication_infos}/user-authentication-password-profile-info/{user_authentication_password_profile_infos}"
@@ -3114,6 +3149,8 @@ rule-promotions:
     openapi-operation-id: "getRulePromotions"
     query:
       - name: filter
+      - name: page[limit]
+      - name: page[offset]
   get-entity:
     docs: "https://elasticpath.dev/docs/api/promotions-builder/get-rule-promotion-by-id"
     url: "/v2/rule-promotions/{rule_promotions}"
@@ -3213,12 +3250,14 @@ rule-promotion-codes:
     openapi-operation-id: "getRulePromotionCodes"
     query:
       - name: filter
+      - name: sort
   get-entity:
     docs: "https://elasticpath.dev/docs/api/promotions-builder/get-rule-promotion-codes"
     url: "/v2/rule-promotions/{rule_promotions}/codes"
     openapi-operation-id: "getRulePromotionCodes"
     query:
       - name: filter
+      - name: sort
   delete-entity:
     docs: "https://elasticpath.dev/docs/api/promotions/delete-a-promotion-code"
     url: "/v2/rule-promotions/{rule_promotions}/codes/{rule_promotion_codes}"
