@@ -90,7 +90,7 @@ func NewResourceInfoCommand(parentCmd *cobra.Command) func() {
 func GetOtherReferences(currentResource *resources.Resource) string {
 	sb := strings.Builder{}
 
-	sb.WriteString("\n\n*** Referenced By ***\n\n")
+	sb.WriteString("\n*** Referenced By ***\n")
 
 	currentResourceName := currentResource.SingularName
 	foundUrlReferences := []string{}
@@ -166,11 +166,11 @@ func GetOtherReferences(currentResource *resources.Resource) string {
 				referencedResourceType := strings.TrimPrefix(attr.Type, "RESOURCE_ID:")
 				if currentResource.SingularName == referencedResourceType || currentResource.PluralName == referencedResourceType {
 					// Build command lines for create and update separately since they have different URLs
-					
+
 					if resource.CreateEntityInfo != nil {
 						// Build create command with URL parameters
 						cmdParts := []string{"epcc", "create", resource.SingularName}
-						
+
 						// Add URL parameters
 						types, err := resources.GetSingularTypesOfVariablesNeeded(resource.CreateEntityInfo.Url)
 						if err == nil {
@@ -178,7 +178,7 @@ func GetOtherReferences(currentResource *resources.Resource) string {
 								cmdParts = append(cmdParts, ConvertSingularTypeToCmdArg(t))
 							}
 						}
-						
+
 						// Add body parameter and its value
 						// Handle array parameters
 						if strings.Contains(k, "[n]") {
@@ -189,15 +189,15 @@ func GetOtherReferences(currentResource *resources.Resource) string {
 						} else {
 							cmdParts = append(cmdParts, k, ConvertSingularTypeToCmdArg(currentResourceName))
 						}
-						
+
 						bodyRef := strings.Join(cmdParts, " ")
 						foundBodyReferences = append(foundBodyReferences, bodyRef)
 					}
-					
+
 					if resource.UpdateEntityInfo != nil {
 						// Build update command with URL parameters
 						cmdParts := []string{"epcc", "update", resource.SingularName}
-						
+
 						// Add URL parameters
 						types, err := resources.GetSingularTypesOfVariablesNeeded(resource.UpdateEntityInfo.Url)
 						if err == nil {
@@ -205,7 +205,7 @@ func GetOtherReferences(currentResource *resources.Resource) string {
 								cmdParts = append(cmdParts, ConvertSingularTypeToCmdArg(t))
 							}
 						}
-						
+
 						// Add body parameter and its value
 						// Handle array parameters
 						if strings.Contains(k, "[n]") {
@@ -216,7 +216,7 @@ func GetOtherReferences(currentResource *resources.Resource) string {
 						} else {
 							cmdParts = append(cmdParts, k, ConvertSingularTypeToCmdArg(currentResourceName))
 						}
-						
+
 						bodyRef := strings.Join(cmdParts, " ")
 						foundBodyReferences = append(foundBodyReferences, bodyRef)
 					}
@@ -350,33 +350,33 @@ func GetOtherReferences(currentResource *resources.Resource) string {
 		// URL References subsection
 		if len(sortedUrlRefs) > 0 {
 			sb.WriteString("**** URL Parameter ****\n")
-			
+
 			// Group commands by resource name and parameters
 			type commandKey struct {
 				resource string
 				params   string
 			}
 			commandGroups := make(map[commandKey][]string)
-			
+
 			for _, ref := range sortedUrlRefs {
 				parts := strings.Fields(ref)
 				if len(parts) >= 3 {
 					verb := parts[1]
 					resource := parts[2]
 					params := strings.Join(parts[3:], " ")
-					
+
 					key := commandKey{resource: resource, params: params}
 					commandGroups[key] = append(commandGroups[key], verb)
 				}
 			}
-			
+
 			// Sort the grouped commands
 			type groupedCommand struct {
 				resource string
 				params   string
 				verbs    []string
 			}
-			
+
 			var grouped []groupedCommand
 			for key, verbs := range commandGroups {
 				// Sort verbs by the defined order
@@ -391,12 +391,12 @@ func GetOtherReferences(currentResource *resources.Resource) string {
 					verbs:    verbs,
 				})
 			}
-			
+
 			// Sort grouped commands by resource name
 			sort.Slice(grouped, func(i, j int) bool {
 				return grouped[i].resource < grouped[j].resource
 			})
-			
+
 			// Output the grouped commands
 			var lastResource string
 			for _, cmd := range grouped {
@@ -405,7 +405,7 @@ func GetOtherReferences(currentResource *resources.Resource) string {
 					sb.WriteString("\n")
 				}
 				lastResource = cmd.resource
-				
+
 				// Format the verb list
 				var verbStr string
 				if len(cmd.verbs) == 1 {
@@ -413,7 +413,7 @@ func GetOtherReferences(currentResource *resources.Resource) string {
 				} else {
 					verbStr = "{" + strings.Join(cmd.verbs, ",") + "}"
 				}
-				
+
 				// Build the command line
 				if cmd.params != "" {
 					sb.WriteString(fmt.Sprintf("epcc %s %s %s\n", verbStr, cmd.resource, cmd.params))
@@ -426,10 +426,10 @@ func GetOtherReferences(currentResource *resources.Resource) string {
 		// Body Parameters subsection
 		if len(sortedBodyRefs) > 0 {
 			if len(sortedUrlRefs) > 0 {
-				sb.WriteString("\n") // Add spacing between sections
+				sb.WriteString("\n")
 			}
 			sb.WriteString("**** Attributes ****\n")
-			
+
 			var lastResource string
 			for _, ref := range sortedBodyRefs {
 				// Extract resource name to detect when we switch to a new resource
@@ -447,12 +447,11 @@ func GetOtherReferences(currentResource *resources.Resource) string {
 
 				sb.WriteString(ref + "\n")
 			}
-			sb.WriteString("\n")
 		}
 
 		// Aliases
 		if len(sortedAliasedResources) > 0 {
-			sb.WriteString("\n**** In URL ****\n\n")
+			sb.WriteString("\n**** In URL ****\n")
 			sb.WriteString("These resources share ids and so probably have related lifecycles\n")
 
 			for _, alias := range sortedAliasedResources {
@@ -470,110 +469,156 @@ func GenerateResourceInfo(r *resources.Resource) string {
 	tabs := "  "
 	article := getIndefiniteArticle(r.SingularName)
 
-	sb.WriteString("Operations: \n")
+	sb.WriteString("Operations:\n")
+
+	// Collect all unique URL parameters across all operations
+	allUrlParams := make(map[string]bool)
 
 	if r.GetCollectionInfo != nil {
 		usageString := GetGetUsageString(r.PluralName, r.GetCollectionInfo.Url, collectionResourceRequest, *r)
 		sb.WriteString(fmt.Sprintf("%sepcc get %s - get a page of %s\n", tabs, usageString, r.PluralName))
 
 		types, _ := resources.GetSingularTypesOfVariablesNeeded(r.GetCollectionInfo.Url)
-
-		if len(types) > 0 {
-
-			sb.WriteString("\n" + tabs + tabs + "Resource ID Parameters (Mandatory):\n")
-
-			for _, t := range types {
-				paramName := ConvertSingularTypeToCmdArg(t)
-				article := getIndefiniteArticle(strings.Title(t))
-				sb.WriteString(fmt.Sprintf("    %-20s - An ID or alias for %s %s\n", paramName, article, strings.Title(t)))
-			}
+		for _, t := range types {
+			allUrlParams[t] = true
 		}
 	}
-
-	sb.WriteString("\n")
 
 	if r.CreateEntityInfo != nil {
 		usageString := GetCreateUsageString(*r)
 		sb.WriteString(fmt.Sprintf("%sepcc create %s - create %s %s\n", tabs, usageString, article, r.SingularName))
+
 		types, _ := resources.GetSingularTypesOfVariablesNeeded(r.CreateEntityInfo.Url)
-
-		if len(types) > 0 {
-
-			sb.WriteString("\n" + tabs + tabs + "Resource ID Parameters (Mandatory):\n")
-
-			for _, t := range types {
-				paramName := ConvertSingularTypeToCmdArg(t)
-				article := getIndefiniteArticle(strings.Title(t))
-				sb.WriteString(fmt.Sprintf("    %-20s - An ID or alias for %s %s\n", paramName, article, strings.Title(t)))
-			}
+		for _, t := range types {
+			allUrlParams[t] = true
 		}
 	}
-
-	sb.WriteString("\n")
 
 	if r.GetEntityInfo != nil {
 		usageString := GetGetUsageString(r.SingularName, r.GetEntityInfo.Url, singularResourceRequest, *r)
 		sb.WriteString(fmt.Sprintf("%sepcc get %s - get %s %s\n", tabs, usageString, article, r.SingularName))
 
 		types, _ := resources.GetSingularTypesOfVariablesNeeded(r.GetEntityInfo.Url)
-
-		if len(types) > 0 {
-
-			sb.WriteString("\n" + tabs + tabs + "Resource ID Parameters (Mandatory):\n")
-
-			for _, t := range types {
-				paramName := ConvertSingularTypeToCmdArg(t)
-				article := getIndefiniteArticle(strings.Title(t))
-				sb.WriteString(fmt.Sprintf("    %-20s - An ID or alias for %s %s\n", paramName, article, strings.Title(t)))
-			}
+		for _, t := range types {
+			allUrlParams[t] = true
 		}
 	}
-
-	sb.WriteString("\n")
 
 	if r.UpdateEntityInfo != nil {
 		usageString := GetUpdateUsage(*r)
 		sb.WriteString(fmt.Sprintf("%sepcc update %s - update %s %s\n", tabs, usageString, article, r.SingularName))
 
 		types, _ := resources.GetSingularTypesOfVariablesNeeded(r.UpdateEntityInfo.Url)
-
-		if len(types) > 0 {
-
-			sb.WriteString("\n" + tabs + tabs + "Resource ID Parameters (Mandatory):\n")
-
-			for _, t := range types {
-				paramName := ConvertSingularTypeToCmdArg(t)
-				article := getIndefiniteArticle(strings.Title(t))
-				sb.WriteString(fmt.Sprintf("    %-20s - An ID or alias for %s %s\n", paramName, article, strings.Title(t)))
-			}
+		for _, t := range types {
+			allUrlParams[t] = true
 		}
 	}
-
-	sb.WriteString("\n")
 
 	if r.DeleteEntityInfo != nil {
 		usageString := GetDeleteUsage(*r)
 		sb.WriteString(fmt.Sprintf("%sepcc delete %s - delete %s %s\n", tabs, usageString, article, r.SingularName))
 
 		types, _ := resources.GetSingularTypesOfVariablesNeeded(r.DeleteEntityInfo.Url)
-
-		if len(types) > 0 {
-
-			sb.WriteString("\n" + tabs + tabs + "Resource ID Parameters (Mandatory):\n")
-
-			for _, t := range types {
-				paramName := ConvertSingularTypeToCmdArg(t)
-				article := getIndefiniteArticle(strings.Title(t))
-				sb.WriteString(fmt.Sprintf("    %-20s - An ID or alias for %s %s\n", paramName, article, strings.Title(t)))
-			}
+		for _, t := range types {
+			allUrlParams[t] = true
 		}
 	}
 
-	// Add body parameters section at the bottom (shared across all operations)
-	if len(r.Attributes) > 0 {
-		sb.WriteString("\n")
-		bodyParamsUsage := GetParameterUsageForTypes(*r, []string{}, true)
-		sb.WriteString(bodyParamsUsage)
+	// Output consolidated parameters section (URL params + body params + query params)
+	if len(allUrlParams) > 0 || len(r.Attributes) > 0 {
+		sb.WriteString("\nParameters:\n")
+
+		// Collect all parameters with their descriptions
+		type paramInfo struct {
+			name        string
+			description string
+		}
+		var allParams []paramInfo
+
+		// Add URL parameters
+		for param := range allUrlParams {
+			paramName := ConvertSingularTypeToCmdArg(param)
+			article := getIndefiniteArticle(strings.Title(param))
+			description := fmt.Sprintf("An ID or alias for %s %s", article, strings.Title(param))
+			allParams = append(allParams, paramInfo{name: paramName, description: description})
+		}
+
+		// Add body parameters (converted to uppercase)
+		for k, v := range r.Attributes {
+			paramName := strings.ToUpper(k)
+
+			var description string
+			if v.Usage != "" {
+				description = v.Usage
+			} else if v.Type == "BOOL" {
+				description = "A boolean value"
+			} else if v.Type == "STRING" {
+				description = "A string value"
+			} else if strings.HasPrefix(v.Type, "ENUM:") {
+				description = "One of the following values: " + strings.ReplaceAll(strings.ReplaceAll(v.Type, "ENUM:", ""), ",", ", ")
+			} else if strings.HasPrefix(v.Type, "CONST:") {
+				description = "Only: " + strings.ReplaceAll(strings.ReplaceAll(v.Type, "CONST:", ""), ",", ", ") + " (note: the epcc will auto-populate this if an adjacent attribute is set)"
+			} else if v.Type == "INT" {
+				description = "An integer value"
+			} else if v.Type == "FLOAT" {
+				description = "A floating point value"
+			} else if v.Type == "URL" {
+				description = "A url"
+			} else if v.Type == "JSON_API_TYPE" {
+				description = "A value that matches a `type` used by the API"
+			} else if v.Type == "CURRENCY" {
+				description = "A three letter currency code"
+			} else if v.Type == "FILE" {
+				description = "A filename"
+			} else if v.Type == "PRIMITIVE" {
+				description = "Any of an int, float, string, or boolean value"
+			} else if v.Type == "SINGULAR_RESOURCE_TYPE" {
+				description = "A resource name used by the epcc cli"
+			} else if strings.HasPrefix(v.Type, "RESOURCE_ID") {
+				resName := strings.ReplaceAll(v.Type, "RESOURCE_ID:", "")
+				if res, ok := resources.GetResourceByName(resName); ok {
+					attribute := "id"
+					if v.AliasAttribute != "" {
+						attribute = v.AliasAttribute
+					}
+					description = fmt.Sprintf("The %s of a %s resource", attribute, res.SingularName)
+				} else {
+					description = "A resource id for " + resName
+				}
+			} else {
+				description = "Unknown:" + v.Type
+			}
+
+			allParams = append(allParams, paramInfo{name: paramName, description: description})
+		}
+
+		// Add INCLUDE parameter if this resource supports it
+		if r.GetCollectionInfo != nil {
+			allParams = append(allParams, paramInfo{name: "INCLUDE", description: "Related resources that can be included"})
+		}
+
+		// Sort all parameters alphabetically
+		sort.Slice(allParams, func(i, j int) bool {
+			return allParams[i].name < allParams[j].name
+		})
+
+		// Find max length for alignment
+		maxLen := 0
+		for _, p := range allParams {
+			if len(p.name) > maxLen {
+				maxLen = len(p.name)
+			}
+		}
+
+		// Output all parameters
+		for _, p := range allParams {
+			sb.WriteString(fmt.Sprintf("  %-*s - %s\n", maxLen, p.name, p.description))
+		}
+
+		sb.WriteString("\nNotes:\n")
+		sb.WriteString("  - Other keys and values will work fine (e.g., if you are using an older version of this tool, and new features have been developed), or you have defined flows.\n")
+		sb.WriteString("  - Keys with an [n] in them are array parameters and should be supplied with a [0], [1], [2], etc...\n")
+		sb.WriteString("  - Mandatory body parameters are enforced by the API, not this tool.\n")
 	}
 
 	// Add other references section at the very end

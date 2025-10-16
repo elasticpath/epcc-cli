@@ -636,14 +636,16 @@ func GetGetUsageString(resourceName string, resourceUrl string, completionVerb i
 			usageString += fmt.Sprintf(" [sort SORT]")
 		case "filter":
 			usageString += fmt.Sprintf(" [filter FILTER]")
+		case "include":
+			usageString += fmt.Sprintf(" [include INCLUDE]")
 		default:
 			usageString += fmt.Sprintf(" [%s VALUE]", qp)
 		}
-
 	}
 
 	return usageString
 }
+{{ ... }}
 func GetCreateUsageString(resource resources.Resource) string {
 	resourceName := resource.SingularName
 
