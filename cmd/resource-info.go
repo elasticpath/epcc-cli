@@ -287,22 +287,76 @@ func GetOtherReferences(currentResource *resources.Resource) string {
 		// URL References subsection
 		if len(sortedUrlRefs) > 0 {
 			sb.WriteString("**** URL Parameter ****\n")
-			var lastResource string
+			
+			// Group commands by resource name and parameters
+			type commandKey struct {
+				resource string
+				params   string
+			}
+			commandGroups := make(map[commandKey][]string)
+			
 			for _, ref := range sortedUrlRefs {
-				// Extract resource name to detect when we switch to a new resource
 				parts := strings.Fields(ref)
 				if len(parts) >= 3 {
-					currentResource := parts[2]
-
-					// Add a newline between different resources (but not before the first one)
-					if lastResource != "" && lastResource != currentResource {
-						sb.WriteString("\n")
-					}
-
-					lastResource = currentResource
+					verb := parts[1]
+					resource := parts[2]
+					params := strings.Join(parts[3:], " ")
+					
+					key := commandKey{resource: resource, params: params}
+					commandGroups[key] = append(commandGroups[key], verb)
 				}
-
-				sb.WriteString(ref + "\n")
+			}
+			
+			// Sort the grouped commands
+			type groupedCommand struct {
+				resource string
+				params   string
+				verbs    []string
+			}
+			
+			var grouped []groupedCommand
+			for key, verbs := range commandGroups {
+				// Sort verbs by the defined order
+				sort.Slice(verbs, func(i, j int) bool {
+					orderI := verbOrder[verbs[i]]
+					orderJ := verbOrder[verbs[j]]
+					return orderI < orderJ
+				})
+				grouped = append(grouped, groupedCommand{
+					resource: key.resource,
+					params:   key.params,
+					verbs:    verbs,
+				})
+			}
+			
+			// Sort grouped commands by resource name
+			sort.Slice(grouped, func(i, j int) bool {
+				return grouped[i].resource < grouped[j].resource
+			})
+			
+			// Output the grouped commands
+			var lastResource string
+			for _, cmd := range grouped {
+				// Add a newline between different resources (but not before the first one)
+				if lastResource != "" && lastResource != cmd.resource {
+					sb.WriteString("\n")
+				}
+				lastResource = cmd.resource
+				
+				// Format the verb list
+				var verbStr string
+				if len(cmd.verbs) == 1 {
+					verbStr = cmd.verbs[0]
+				} else {
+					verbStr = "{" + strings.Join(cmd.verbs, ",") + "}"
+				}
+				
+				// Build the command line
+				if cmd.params != "" {
+					sb.WriteString(fmt.Sprintf("epcc %s %s %s\n", verbStr, cmd.resource, cmd.params))
+				} else {
+					sb.WriteString(fmt.Sprintf("epcc %s %s\n", verbStr, cmd.resource))
+				}
 			}
 		}
 
