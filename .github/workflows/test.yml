@@ -43,7 +43,7 @@ jobs:
           fi
           
       - name: Download OpenAPI Specs
-        run: ./external/openapi/download-openapi-specs.sh
+        run: ./external/openapi/specs/download-openapi-specs.sh
 
       - name: Build
         run: |
