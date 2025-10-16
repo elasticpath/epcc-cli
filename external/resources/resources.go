@@ -2,10 +2,11 @@ package resources
 
 import (
 	_ "embed"
+	"regexp"
+
 	"github.com/elasticpath/epcc-cli/config"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
-	"regexp"
 )
 
 //go:embed yaml/resources.yaml
@@ -68,6 +69,11 @@ type Resource struct {
 	Legacy bool `yaml:"legacy"`
 }
 
+type QueryParameter struct {
+	// The name of the query parameter
+	Name string `yaml:"name"`
+}
+
 type CrudEntityInfo struct {
 
 	// A link to the docs specific for the Crud operation in EPCC.
@@ -80,13 +86,15 @@ type CrudEntityInfo struct {
 	ContentType string `yaml:"content-type,omitempty"`
 
 	// A list of valid query parameters
-	QueryParameters string `yaml:"query,omitempty"`
+	QueryParameters []QueryParameter `yaml:"query,omitempty"`
 
 	// Minimum resources so we don't keep trying to delete in
 	MinResources int `yaml:"min,omitempty"`
 
 	// Override the attribute we use in the URL for a specific key
 	ParentResourceValueOverrides map[string]string `yaml:"parent_resource_value_overrides,omitempty"`
+
+	OpenApiOperationId string `yaml:"openapi-operation-id"`
 }
 
 type CrudEntityAttribute struct {
@@ -247,7 +255,7 @@ func createFlowEntityRelationships() {
 				Docs:            "https://elasticpath.dev/docs/api/flows/entry-relationships",
 				Url:             val.GetEntityInfo.Url + "/relationships/{fields}",
 				ContentType:     "",
-				QueryParameters: "",
+				QueryParameters: nil,
 				MinResources:    0,
 				ParentResourceValueOverrides: map[string]string{
 					"fields": "slug",
@@ -257,7 +265,7 @@ func createFlowEntityRelationships() {
 				Docs:            "https://elasticpath.dev/docs/api/flows/entry-relationships",
 				Url:             val.GetEntityInfo.Url + "/relationships/{fields}",
 				ContentType:     "",
-				QueryParameters: "",
+				QueryParameters: nil,
 				MinResources:    0,
 				ParentResourceValueOverrides: map[string]string{
 					"fields": "slug",
@@ -267,7 +275,7 @@ func createFlowEntityRelationships() {
 				Docs:            "https://elasticpath.dev/docs/api/flows/entry-relationships",
 				Url:             val.GetEntityInfo.Url + "/relationships/{fields}",
 				ContentType:     "",
-				QueryParameters: "",
+				QueryParameters: nil,
 				MinResources:    0,
 				ParentResourceValueOverrides: map[string]string{
 					"fields": "slug",
@@ -277,7 +285,7 @@ func createFlowEntityRelationships() {
 				Docs:            "https://elasticpath.dev/docs/api/flows/delete-an-entry-relationship",
 				Url:             val.GetEntityInfo.Url + "/relationships/{fields}",
 				ContentType:     "",
-				QueryParameters: "",
+				QueryParameters: nil,
 				MinResources:    0,
 				ParentResourceValueOverrides: map[string]string{
 					"fields": "slug",

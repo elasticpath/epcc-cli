@@ -7,12 +7,15 @@ account-authentication-settings:
   get-collection:
     docs: "https://elasticpath.dev/docs/api/accounts/get-v-2-settings-account-authentication"
     url: "/v2/settings/account-authentication"
+    openapi-operation-id: "get-v2-settings-account-authentication"
   get-entity:
     docs: "https://elasticpath.dev/docs/api/accounts/get-v-2-settings-account-authentication"
     url: "/v2/settings/account-authentication"
+    openapi-operation-id: "get-v2-settings-account-authentication"
   update-entity:
     docs: "https://elasticpath.dev/docs/api/accounts/put-v-2-settings-account-authentication"
     url: "/v2/settings/account-authentication"
+    openapi-operation-id: "put-v2-settings-account-authentication"
   attributes:
     enable_self_signup:
       type: BOOL
@@ -29,6 +32,7 @@ account-management-authentication-tokens:
     docs: "https://elasticpath.dev/docs/api/accounts/post-v-2-account-members-tokens"
     url: "/v2/account-members/tokens"
     content-type: application/json
+    openapi-operation-id: "post-v2-account-members-tokens"
   attributes:
     authentication_mechanism:
       type: ENUM:oidc,password,passwordless,self_signup,account_management_authentication_token
@@ -61,9 +65,16 @@ account-members:
   get-collection:
     docs: "https://elasticpath.dev/docs/api/accounts/account-members"
     url: "/v2/account-members"
+    openapi-operation-id: "get-v2-account-members"
+    query:
+      - name: page[limit]
+      - name: page[offset]
+      - name: sort
+      - name: filter
   get-entity:
     docs: "https://elasticpath.dev/docs/api/accounts/account-members"
     url: "/v2/account-members/{account_members}"
+    openapi-operation-id: "get-v2-account-members-accountMemberID"
   attributes:
     name:
       type: STRING
@@ -77,16 +88,28 @@ account-memberships:
   get-collection:
     docs: "https://elasticpath.dev/docs/api/accounts/account-membership"
     url: "/v2/accounts/{accounts}/account-memberships"
+    openapi-operation-id: "get-v2-accounts-accountID-account-memberships"
+    query:
+      - name: filter
+      - name: sort
+      - name: page[limit]
+      - name: page[offset]
+      - name: include
   get-entity:
     docs: "https://elasticpath.dev/docs/api/accounts/account-membership"
     url: "/v2/accounts/{accounts}/account-memberships/{account_memberships}"
+    openapi-operation-id: "get-v2-accounts-accountID-account-memberships-membershipID"
+    query:
+      - name: include
   delete-entity:
     docs: "https://elasticpath.dev/docs/api/accounts/delete-v-2-accounts-account-id-account-memberships-membership-id"
     url: "/v2/accounts/{accounts}/account-memberships/{account_memberships}"
+    openapi-operation-id: "delete-v2-accounts-accountID-account-memberships-membershipID"
   create-entity:
     docs: "https://elasticpath.dev/docs/api/accounts/account-membership"
     url: "/v2/accounts/{accounts}/account-memberships"
     content-type: application/json
+    openapi-operation-id: "post-v2-accounts-accountID-account-memberships"
   attributes:
     account_member_id:
       type: RESOURCE_ID:account-members
@@ -98,6 +121,12 @@ unassigned-account-memberships:
   get-collection:
     docs: "https://elasticpath.dev/docs/api/accounts/get-v-2-accounts-account-id-account-memberships-unassigned-account-members"
     url: "/v2/accounts/{accounts}/account-memberships/unassigned-account-members/"
+    openapi-operation-id: "get-v2-accounts-accountID-account-memberships-unassigned-account-members"
+    query:
+      - name: page[limit]
+      - name: page[offset]
+      - name: sort
+      - name: filter
 accounts:
   singular-name: "account"
   json-api-type: "account"
@@ -106,19 +135,30 @@ accounts:
   get-collection:
     docs: "https://elasticpath.dev/docs/api/accounts/get-v-2-accounts"
     url: "/v2/accounts"
+    openapi-operation-id: "get-v2-accounts"
+    query:
+      - name: filter
+      - name: page[limit]
+      - name: page[offset]
+      - name: sort
+      - name: include
   get-entity:
     docs: "https://elasticpath.dev/docs/api/accounts/get-v-2-accounts-account-id"
     url: "/v2/accounts/{accounts}"
+    openapi-operation-id: "get-v2-accounts-accountID"
   update-entity:
     docs: "https://elasticpath.dev/docs/api/accounts/put-v-2-accounts-account-id"
     url: "/v2/accounts/{accounts}"
+    openapi-operation-id: "put-v2-accounts-accountID"
   delete-entity:
     docs: "https://elasticpath.dev/docs/api/accounts/delete-v-2-accounts-account-id"
     url: "/v2/accounts/{accounts}"
+    openapi-operation-id: "delete-v2-accounts-accountID"
   create-entity:
     docs: "https://elasticpath.dev/docs/api/accounts/post-v-2-accounts"
     url: "/v2/accounts"
     content-type: application/json
+    openapi-operation-id: "post-v2-accounts"
   attributes:
     name:
       type: STRING
@@ -198,9 +238,11 @@ account-cart-associations:
   delete-entity:
     docs: "https://elasticpath.dev/docs/api/carts/delete-customer-cart-association"
     url: "/v2/carts/{carts}/relationships/accounts"
+    openapi-operation-id: deleteAccountCartAssociation
   create-entity:
     docs: "https://elasticpath.dev/docs/api/carts/account-cart-associations"
     url: "/v2/carts/{carts}/relationships/accounts"
+    openapi-operation-id: createAccountCartAssociation
     content-type: application/json
   attributes:
     data[n].id:
@@ -216,18 +258,28 @@ account-tags:
   get-collection:
     docs: "https://elasticpath.dev/docs/api/accounts/list-account-tags"
     url: "/v2/account-tags"
+    openapi-operation-id: "ListAccountTags"
+    query:
+      - name: filter
+      - name: page[limit]
+      - name: page[offset]
+      - name: sort
   get-entity:
     docs: "https://elasticpath.dev/docs/api/accounts/get-an-account-tag"
     url: "/v2/account-tags/{account_tags}"
+    openapi-operation-id: "GetAnAccountTag"
   update-entity:
     docs: "https://elasticpath.dev/docs/api/accounts/update-an-account-tag"
     url: "/v2/account-tags/{account_tags}"
+    openapi-operation-id: "UpdateAnAccountTag"
   delete-entity:
     docs: "https://elasticpath.dev/docs/api/accounts/delete-an-account-tag"
     url: "/v2/account-tags/{account_tags}"
+    openapi-operation-id: "DeleteAnAccountTag"
   create-entity:
     docs: "https://elasticpath.dev/docs/api/accounts/create-an-account-tag"
     url: "/v2/account-tags/"
+    openapi-operation-id: "CreateAnAccountTag"
   attributes:
     name:
       type: STRING
@@ -244,12 +296,15 @@ account-tag-relationships:
   get-collection:
     docs: "https://elasticpath.dev/docs/api/accounts/get-an-account-tags-relationship"
     url: "/v2/accounts/{accounts}/relationships/account-tags"
+    openapi-operation-id: "GetAnAccountTagsRelationship"
   create-entity:
     docs: "https://elasticpath.dev/docs/api/accounts/add-account-tags-on-account"
     url: "/v2/accounts/{accounts}/relationships/account-tags"
+    openapi-operation-id: "AddAccountTagsOnAccount"
   delete-entity:
     docs: "https://elasticpath.dev/docs/api/accounts/remove-account-tags-on-account"
     url: "/v2/accounts/{accounts}/relationships/account-tags"
+    openapi-operation-id: "RemoveAccountTagsOnAccount"
   attributes:
     data[n].id:
       type: RESOURCE_ID:account-tag
@@ -282,12 +337,18 @@ authentication-realms:
   get-collection:
     docs: "https://elasticpath.dev/docs/authentication/single-sign-on/authentication-realm-api/get-all-authentication-realms"
     url: "/v2/authentication-realms"
+    openapi-operation-id: "get-v2-authentication-realms"
+    query:
+      - name: page[limit]
+      - name: page[offset]
   get-entity:
     docs: "https://elasticpath.dev/docs/authentication/single-sign-on/authentication-realm-api/get-an-authentication-realm"
     url: "/v2/authentication-realms/{authentication_realms}"
+    openapi-operation-id: "get-v2-authentication-realms-realmId"
   update-entity:
     docs: "https://elasticpath.dev/docs/authentication/single-sign-on/authentication-realm-api/update-an-authentication-realm"
     url: "/v2/authentication-realms/{authentication_realms}"
+    openapi-operation-id: "put-v2-authentication-realms-realmId"
   attributes:
     name:
       type: STRING
@@ -303,19 +364,29 @@ carts:
   get-collection:
     docs: "https://elasticpath.dev/docs/api/carts/get-carts"
     url: "/v2/carts"
+    openapi-operation-id: getCarts
+    query:
+      - name: include
+      - name: page[limit]
+      - name: page[offset]
   get-entity:
     docs: "https://elasticpath.dev/docs/api/carts/get-a-cart"
     url: "/v2/carts/{carts}"
-    query: "include"
+    openapi-operation-id: getACart
+    query: 
+      - name: include
   update-entity:
     docs: "https://elasticpath.dev/docs/api/carts/create-a-cart#put-update-a-cart"
     url: "/v2/carts/{carts}"
+    openapi-operation-id: updateACart
   delete-entity:
     docs: "https://elasticpath.dev/docs/api/carts/delete-a-cart"
     url: "/v2/carts/{carts}"
+    openapi-operation-id: deleteACart
   create-entity:
     docs: "https://elasticpath.dev/docs/api/carts/create-a-cart"
     url: "/v2/carts"
+    openapi-operation-id: createACart
     content-type: application/json
   attributes:
     id:
@@ -333,12 +404,17 @@ cart-items:
   get-collection:
     docs: "https://elasticpath.dev/docs/api/carts/get-cart-items"
     url: "/v2/carts/{carts}/items"
+    openapi-operation-id: getCartItems
+    query:
+      - name: include
   update-entity:
     docs: "https://elasticpath.dev/docs/carts-orders/bulk-add-to-cart"
     url: "/v2/carts/{carts}/items/{cart_items}"
+    openapi-operation-id: updateACartItem
   delete-entity:
     docs: "https://elasticpath.dev/docs/api/carts/delete-a-cart-item"
     url: "/v2/carts/{carts}/items/{cart_items}"
+    openapi-operation-id: deleteACartItem
   attributes:
     sku:
       type: STRING
@@ -354,6 +430,7 @@ cart-product-items:
   create-entity:
     docs: "https://elasticpath.dev/docs/api/carts/manage-carts"
     url: "/v2/carts/{carts}/items"
+    openapi-operation-id: manageCarts
     content-type: application/json
   attributes:
     sku:
@@ -386,10 +463,12 @@ cart-custom-items:
   create-entity:
     docs: "https://elasticpath.dev/docs/api/carts/manage-carts#add-custom-item-to-cart"
     url: "/v2/carts/{carts}/items"
+    openapi-operation-id: manageCarts
     content-type: application/json
   update-entity:
     docs: "https://elasticpath.dev/docs/carts-orders/bulk-add-to-cart"
     url: "/v2/carts/{carts}/items/{cart_custom_items}"
+    openapi-operation-id: updateACartItem
   attributes:
     sku:
       type: STRING
@@ -426,6 +505,7 @@ cart-checkout:
   create-entity:
     docs: "https://elasticpath.dev/docs/api/carts/checkout"
     url: "/v2/carts/{carts}/checkout"
+    openapi-operation-id: checkoutAPI
     content-type: application/json
   attributes:
     account.id:
@@ -594,9 +674,11 @@ customer-cart-associations:
   delete-entity:
     docs: "https://elasticpath.dev/docs/api/carts/delete-customer-cart-association"
     url: "/v2/carts/{carts}/relationships/customers"
+    openapi-operation-id: deleteCustomerCartAssociation
   create-entity:
     docs: "https://elasticpath.dev/docs/api/carts/create-customer-cart-association"
     url: "/v2/carts/{carts}/relationships/customers"
+    openapi-operation-id: createCustomerCartAssociation
     content-type: application/json
   attributes:
     data[n].id:
@@ -1054,18 +1136,26 @@ oidc-profiles:
   get-collection:
     docs: "https://elasticpath.dev/docs/authentication/single-sign-on/openid-connect-profiles-api/get-all-oidc-profiles"
     url: "/v2/authentication-realms/{authentication_realms}/oidc-profiles"
+    openapi-operation-id: "get-v2-authentication-realms-realmId-oidc-profiles"
+    query:
+      - name: page[limit]
+      - name: page[offset]
   get-entity:
     docs: "https://elasticpath.dev/docs/authentication/single-sign-on/openid-connect-profiles-api/get-an-oidc-profile"
     url: "/v2/authentication-realms/{authentication_realms}/oidc-profiles/{oidc_profiles}"
+    openapi-operation-id: "get-v2-authentication-realms-realmId-oidc-profiles-profileId"
   update-entity:
     docs: "https://elasticpath.dev/docs/authentication/single-sign-on/openid-connect-profiles-api/update-an-oidc-profile"
     url: "/v2/authentication-realms/{authentication_realms}/oidc-profiles/{oidc_profiles}"
+    openapi-operation-id: "put-v2-authentication-realms-realmId-oidc-profiles-profileId"
   delete-entity:
     docs: "https://elasticpath.dev/docs/authentication/single-sign-on/openid-connect-profiles-api/delete-an-oidc-profile"
     url: "/v2/authentication-realms/{authentication_realms}/oidc-profiles/{oidc_profiles}"
+    openapi-operation-id: "delete-v2-authentication-realms-realmId-oidc-profiles-profileId"
   create-entity:
     docs: "https://elasticpath.dev/docs/authentication/single-sign-on/openid-connect-profiles-api/create-an-oidc-profile"
     url: "/v2/authentication-realms/{authentication_realms}/oidc-profiles"
+    openapi-operation-id: "post-v2-authentication-realms-realmId-oidc-profiles"
     content-type: application/json
   attributes:
     name:
@@ -1098,12 +1188,22 @@ orders:
   get-collection:
     docs: "https://elasticpath.dev/docs/api/carts/get-customer-orders"
     url: "/v2/orders"
+    openapi-operation-id: getCustomerOrders
+    query:
+      - name: include
+      - name: page[limit]
+      - name: page[offset]
+      - name: filter
   get-entity:
     docs: "https://elasticpath.dev/docs/api/carts/update-an-order"
     url: "/v2/orders/{orders}"
+    openapi-operation-id: getAnOrder
+    query:
+      - name: include
   update-entity:
     docs: "https://elasticpath.dev/docs/api/carts/orders"
     url: "/v2/orders/{orders}"
+    openapi-operation-id: updateAnOrder
     content-type: application/json
   attributes:
     shipping_address.first_name:
@@ -1134,6 +1234,9 @@ order-items:
   get-collection:
     docs: "https://elasticpath.dev/docs/api/carts/get-order-items#get-get-order-items"
     url: "/v2/orders/{orders}/items"
+    openapi-operation-id: getOrderItems
+    query:
+      - name: include
 order-payments:
   singular-name: "order-payment"
   json-api-type: "order_payment"
@@ -1144,6 +1247,7 @@ order-payments:
   create-entity:
     docs: "https://elasticpath.dev/docs/api/carts/payments"
     url: "/v2/orders/{orders}/payments"
+    openapi-operation-id: paymentSetup
   attributes:
     payment:
       type: STRING
@@ -1187,16 +1291,19 @@ order-transactions:
   singular-name: "order-transaction"
   json-api-type: "transaction"
   json-api-format: "legacy"
-  docs: "https://elasticpath.dev/docs/api/carts/transactions"
+  docs: "https://elasticpath.dev/docs/api/carts/get-order-transactions"
   get-collection:
-    docs: "https://elasticpath.dev/docs/api/carts/transactions"
+    docs: "https://elasticpath.dev/docs/api/carts/get-order-transactions"
     url: "/v2/orders/{orders}/transactions"
+    openapi-operation-id: getOrderTransactions
   get-entity:
-    docs: "https://elasticpath.dev/docs/api/carts/update-an-order"
+    docs: "https://elasticpath.dev/docs/api/carts/get-a-transaction"
     url: "/v2/orders/{orders}/transactions/{order_transactions}"
+    openapi-operation-id: getATransaction
   create-entity:
     docs: "https://elasticpath.dev/docs/api/payments/payment-gateways-introduction"
     url: "/v2/orders/{orders}/payments"
+    openapi-operation-id: paymentSetup
 order-transaction-capture:
   singular-name: "order-transaction-capture"
   json-api-type: "transaction"
@@ -1205,6 +1312,7 @@ order-transaction-capture:
   create-entity:
     docs: "https://elasticpath.dev/docs/api/payments/payment-gateways-introduction#post-capture-transaction"
     url: "/v2/orders/{orders}/transactions/{order_transactions}/capture"
+    openapi-operation-id: captureATransaction
 order-transaction-refund:
   singular-name: "order-transaction-refund"
   json-api-type: "transaction"
@@ -1213,6 +1321,7 @@ order-transaction-refund:
   create-entity:
     docs: "https://elasticpath.dev/docs/carts-orders/refund-a-transaction"
     url: "/v2/orders/{orders}/transactions/{order_transactions}/refund"
+    openapi-operation-id: refundATransaction
 password-profiles:
   singular-name: "password-profile"
   json-api-type: "password_profile"
@@ -1221,18 +1330,26 @@ password-profiles:
   get-collection:
     docs: "https://elasticpath.dev/docs/authentication/single-sign-on/password-profiles-api/get-all-password-profiles"
     url: "/v2/authentication-realms/{authentication_realms}/password-profiles"
+    openapi-operation-id: "get-v2-authentication-realms-realmId-password-profiles"
+    query:
+      - name: page[limit]
+      - name: page[offset]
   get-entity:
     docs: "https://elasticpath.dev/docs/authentication/single-sign-on/password-profiles-api/get-a-password-profile"
     url: "/v2/authentication-realms/{authentication_realms}/password-profiles/{password_profiles}"
+    openapi-operation-id: "get-v2-authentication-realms-realmId-password-profiles-profileId"
   update-entity:
     docs: "https://elasticpath.dev/docs/authentication/single-sign-on/password-profiles-api/update-a-password-profile"
     url: "/v2/authentication-realms/{authentication_realms}/password-profiles/{password_profiles}"
+    openapi-operation-id: "put-v2-authentication-realms-realmId-password-profiles-profileId"
   delete-entity:
     docs: "https://elasticpath.dev/docs/authentication/single-sign-on/password-profiles-api/delete-a-password-profile"
     url: "/v2/authentication-realms/{authentication_realms}/password-profiles/{password_profiles}"
+    openapi-operation-id: "delete-v2-authentication-realms-realmId-password-profiles-profileId"
   create-entity:
     docs: "https://elasticpath.dev/docs/authentication/single-sign-on/password-profiles-api/overview"
     url: "/v2/authentication-realms/{authentication_realms}/password-profiles"
+    openapi-operation-id: "post-v2-authentication-realms-realmId-password-profiles"
     content-type: application/json
   attributes:
     username_format:
@@ -1249,6 +1366,7 @@ one-time-password-token-requests:
   create-entity:
     docs: "https://elasticpath.dev/docs/authentication/single-sign-on/password-profiles-api/create-one-time-password-token-request"
     url: "/v2/authentication-realms/{authentication_realms}/password-profiles/{password_profiles}/one-time-password-token-request"
+    openapi-operation-id: "post-v2-authentication-realms-realmId-password-profiles-profileId-one-time-password-token-request"
     content-type: application/json
   attributes:
     username:
@@ -1268,7 +1386,7 @@ pcm-catalogs:
     url: "/pcm/catalogs/{pcm_catalogs}"
   update-entity:
     docs: "https://elasticpath.dev/docs/api/pxm/catalog/update-catalog"
-    url: "/pcm/hierarchies/{pcm_hierarchies}"
+    url: "/pcm/catalogs/{pcm_catalogs}"
   delete-entity:
     docs: "https://elasticpath.dev/docs/api/pxm/catalog/delete-catalog-by-id"
     url: "/pcm/catalogs/{pcm_catalogs}"
@@ -1530,12 +1648,12 @@ payment-gateways-stripe-connect:
   singular-name: "payment-gateway-stripe-connect"
   json-api-type: "gateway"
   json-api-format: "legacy"
-  docs: "https://elasticpath.dev/docs/api/payments/update-stripe-connect-gateway"
+  docs: "n/a"
   get-entity:
     docs: "https://elasticpath.dev/docs/api/payments/gateways"
     url: "/v2/gateways/stripe_connect"
   update-entity:
-    docs: "https://elasticpath.dev/docs/api/payments/update-stripe-connect-gateway"
+    docs: "n/a"
     url: "/v2/gateways/stripe_connect"
   attributes:
     stripe_account:
@@ -2189,18 +2307,28 @@ user-authentication-infos:
   get-collection:
     docs: "https://elasticpath.dev/docs/authentication/single-sign-on/user-authentication-info-api/get-all-user-authentication-info"
     url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info"
+    openapi-operation-id: "get-v2-authentication-realms-realmId-user-authentication-info"
+    query:
+      - name: page[limit]
+      - name: page[offset]
+      - name: filter
+      - name: sort
   get-entity:
     docs: "https://elasticpath.dev/docs/authentication/single-sign-on/user-authentication-info-api/get-a-user-authentication-info"
     url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info/{user_authentication_infos}"
+    openapi-operation-id: "get-v2-authentication-realms-realmId-user-authentication-info-userAuthInfoId"
   update-entity:
     docs: "https://elasticpath.dev/docs/authentication/single-sign-on/user-authentication-info-api/update-a-user-authentication-info"
     url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info/{user_authentication_infos}"
+    openapi-operation-id: "put-v2-authentication-realms-realmId-user-authentication-info-userAuthInfoId"
   delete-entity:
     docs: "https://elasticpath.dev/docs/authentication/single-sign-on/user-authentication-info-api/delete-a-user-authentication-info"
     url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info/{user_authentication_infos}"
+    openapi-operation-id: "delete-v2-authentication-realms-realmId-user-authentication-info-userAuthInfoId"
   create-entity:
     docs: "https://elasticpath.dev/docs/authentication/single-sign-on/user-authentication-info-api/create-a-user-authentication-info"
     url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info"
+    openapi-operation-id: "post-v2-authentication-realms-realmId-user-authentication-info"
     content-type: application/json
   attributes:
     name:
@@ -2217,18 +2345,26 @@ user-authentication-oidc-profile-infos:
   get-collection:
     docs: "https://elasticpath.dev/docs/authentication/single-sign-on/password-profiles-api/get-all-password-profiles"
     url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info/{user_authentication_infos}/user-authentication-oidc-profile-info"
+    openapi-operation-id: "get-v2-authentication-realms-realmId-user-authentication-info-userAuthInfoId-user-authentication-oidc-profile-info"
+    query:
+      - name: page[limit]
+      - name: page[offset]
   get-entity:
     docs: "https://elasticpath.dev/docs/authentication/single-sign-on/password-profiles-api/get-a-password-profile"
     url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info/{user_authentication_infos}/user-authentication-oidc-profile-info/{user_authentication_oidc_profile_infos}"
+    openapi-operation-id: "get-v2-authentication-realms-realmId-user-authentication-info-userAuthInfoId-user-authentication-oidc-profile-info-oidcInfoId"
   update-entity:
     docs: "https://elasticpath.dev/docs/authentication/single-sign-on/password-profiles-api/overview"
     url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info/{user_authentication_infos}/user-authentication-oidc-profile-info/{user_authentication_oidc_profile_infos}"
+    openapi-operation-id: "put-v2-authentication-realms-realmId-user-authentication-info-userAuthInfoId-user-authentication-oidc-profile-info-oidcInfoId"
   delete-entity:
     docs: "https://elasticpath.dev/docs/authentication/single-sign-on/password-profiles-api/delete-a-password-profile"
     url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info/{user_authentication_infos}/user-authentication-oidc-profile-info/{user_authentication_oidc_profile_infos}"
+    openapi-operation-id: "delete-v2-authentication-realms-realmId-user-authentication-info-userAuthInfoId-user-authentication-oidc-profile-info-oidcInfoId"
   create-entity:
     docs: "https://elasticpath.dev/docs/authentication/single-sign-on/password-profiles-api/overview"
     url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info/{user_authentication_infos}/user-authentication-oidc-profile-info"
+    openapi-operation-id: "post-v2-authentication-realms-realmId-user-authentication-info-userAuthInfoId-user-authentication-oidc-profile-info"
     content-type: application/json
   attributes:
     subject:
@@ -2245,18 +2381,26 @@ user-authentication-password-profile-infos:
   get-collection:
     docs: "https://elasticpath.dev/docs/authentication/single-sign-on/password-profiles-api/get-all-password-profiles"
     url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info/{user_authentication_infos}/user-authentication-password-profile-info"
+    openapi-operation-id: "get-v2-authentication-realms-realmId-user-authentication-info-userAuthInfoId-user-authentication-password-profile-info"
+    query:
+      - name: page[limit]
+      - name: page[offset]
   get-entity:
     docs: "https://elasticpath.dev/docs/authentication/single-sign-on/password-profiles-api/get-all-password-profiles"
     url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info/{user_authentication_infos}/user-authentication-password-profile-info/{user_authentication_password_profile_infos}"
+    openapi-operation-id: "get-v2-authentication-realms-realmId-user-authentication-info-userAuthInfoId-user-authentication-password-profile-info-passwordProfileInfoId"
   update-entity:
     docs: "https://elasticpath.dev/docs/authentication/single-sign-on/password-profiles-api/overview"
     url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info/{user_authentication_infos}/user-authentication-password-profile-info/{user_authentication_password_profile_infos}"
+    openapi-operation-id: "put-v2-authentication-realms-realmId-user-authentication-info-userAuthInfoId-user-authentication-password-profile-info-passwordProfileInfoId"
   delete-entity:
     docs: "https://elasticpath.dev/docs/authentication/single-sign-on/password-profiles-api/overview"
     url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info/{user_authentication_infos}/user-authentication-password-profile-info/{user_authentication_password_profile_infos}"
+    openapi-operation-id: "delete-v2-authentication-realms-realmId-user-authentication-info-userAuthInfoId-user-authentication-password-profile-info-passwordProfileInfoId"
   create-entity:
     docs: "https://elasticpath.dev/docs/authentication/single-sign-on/password-profiles-api/overview"
     url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info/{user_authentication_infos}/user-authentication-password-profile-info"
+    openapi-operation-id: "post-v2-authentication-realms-realmId-user-authentication-info-userAuthInfoId-user-authentication-password-profile-info"
     content-type: application/json
   attributes:
     username:
@@ -3003,18 +3147,27 @@ rule-promotions:
   get-collection:
     docs: "https://elasticpath.dev/docs/api/promotions-builder/get-rule-promotions"
     url: "/v2/rule-promotions"
+    openapi-operation-id: "getRulePromotions"
+    query:
+      - name: filter
+      - name: page[limit]
+      - name: page[offset]
   get-entity:
     docs: "https://elasticpath.dev/docs/api/promotions-builder/get-rule-promotion-by-id"
     url: "/v2/rule-promotions/{rule_promotions}"
+    openapi-operation-id: "getRulePromotionById"
   create-entity:
     docs: "https://elasticpath.dev/docs/api/promotions-builder/create-rule-promotion"
     url: "/v2/rule-promotions"
+    openapi-operation-id: "createRulePromotion"
   update-entity:
     docs: "https://elasticpath.dev/docs/api/promotions-builder/update-rule-promotion"
     url: "/v2/rule-promotions/{rule_promotions}"
+    openapi-operation-id: "updateRulePromotion"
   delete-entity:
     docs: "https://elasticpath.dev/docs/api/promotions-builder/delete-rule-promotion"
     url: "/v2/rule-promotions/{rule_promotions}"
+    openapi-operation-id: "deleteRulePromotion"
   attributes:
     name:
       type: STRING
@@ -3095,15 +3248,25 @@ rule-promotion-codes:
   get-collection:
     docs: "https://elasticpath.dev/docs/api/promotions-builder/get-rule-promotion-codes"
     url: "/v2/rule-promotions/{rule_promotions}/codes"
+    openapi-operation-id: "getRulePromotionCodes"
+    query:
+      - name: filter
+      - name: sort
   get-entity:
     docs: "https://elasticpath.dev/docs/api/promotions-builder/get-rule-promotion-codes"
     url: "/v2/rule-promotions/{rule_promotions}/codes"
+    openapi-operation-id: "getRulePromotionCodes"
+    query:
+      - name: filter
+      - name: sort
   delete-entity:
     docs: "https://elasticpath.dev/docs/api/promotions/delete-a-promotion-code"
     url: "/v2/rule-promotions/{rule_promotions}/codes/{rule_promotion_codes}"
+    openapi-operation-id: "deleteSingleRulePromotionCode"
   create-entity:
     docs: "https://elasticpath.dev/docs/api/promotions-builder/create-rule-promotion-codes"
     url: "/v2/rule-promotions/{rule_promotions}/codes"
+    openapi-operation-id: "createRulePromotionCodes"
   attributes:
     codes[n].code:
       type: STRING

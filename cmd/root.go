@@ -113,6 +113,9 @@ func InitializeCmd() {
 	log.Tracef("Building Delete All Commands")
 	NewDeleteAllCommand(RootCmd)
 
+	log.Tracef("Building Resource Info Commands")
+	NewResourceInfoCommand(RootCmd)
+
 	Logs.AddCommand(LogsList, LogsShow, LogsClear, LogsCurlReplay)
 
 	LogsCurlReplay.PersistentFlags().BoolVarP(&CurlInlineAuth, "inline-auth", "", false, "If set, we will replace the authorization header with a curl call and our current credentials")

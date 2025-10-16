@@ -4,6 +4,7 @@ import (
 	"context"
 	gojson "encoding/json"
 	"fmt"
+
 	"github.com/elasticpath/epcc-cli/config"
 
 	"github.com/elasticpath/epcc-cli/external/aliases"

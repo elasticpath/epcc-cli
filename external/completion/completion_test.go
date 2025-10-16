@@ -697,3 +697,98 @@ func TestCompleteAttributeKeyWithWithMultipleArrayIndexesIncrementsAppropriately
 	require.Contains(t, completions, "rule_set.rules.children[1].args[0]")
 
 }
+
+func TestCompleteQueryParamKeyGetCollectionWithExplicitParams(t *testing.T) {
+	// Fixture Setup
+	toComplete := "pa"
+	resource, _ := resources.GetResourceByName("account-members")
+	request := Request{
+		Type:       CompleteQueryParamKey,
+		ToComplete: toComplete,
+		Resource:   resource,
+		Verb:       GetAll,
+	}
+
+	// Exercise SUT
+	completions, compDir := Complete(request)
+
+	// Verify Results
+	require.Equal(t, compDir, cobra.ShellCompDirectiveNoFileComp)
+	// Should only contain explicitly defined parameters, not hardcoded fallbacks
+	require.Contains(t, completions, "page[limit]")
+	require.Contains(t, completions, "page[offset]")
+	require.Contains(t, completions, "sort")
+	require.Contains(t, completions, "filter")
+	// Should NOT contain hardcoded fallbacks like page[total_method] or include
+	require.NotContains(t, completions, "page[total_method]")
+	require.NotContains(t, completions, "include")
+}
+
+func TestCompleteQueryParamKeyGetCollectionWithFallbackParams(t *testing.T) {
+	// Fixture Setup
+	toComplete := "pa"
+	resource, _ := resources.GetResourceByName("customers")
+	request := Request{
+		Type:       CompleteQueryParamKey,
+		ToComplete: toComplete,
+		Resource:   resource,
+		Verb:       GetAll,
+	}
+
+	// Exercise SUT
+	completions, compDir := Complete(request)
+
+	// Verify Results
+	require.Equal(t, compDir, cobra.ShellCompDirectiveNoFileComp)
+	// Should contain hardcoded fallback parameters since no explicit params defined
+	require.Contains(t, completions, "sort")
+	require.Contains(t, completions, "filter")
+	require.Contains(t, completions, "include")
+	require.Contains(t, completions, "page[limit]")
+	require.Contains(t, completions, "page[offset]")
+	require.Contains(t, completions, "page[total_method]")
+}
+
+func TestCompleteQueryParamKeyGetEntityWithExplicitParams(t *testing.T) {
+	// Fixture Setup
+	toComplete := "inc"
+	resource, _ := resources.GetResourceByName("account-memberships")
+	request := Request{
+		Type:       CompleteQueryParamKey,
+		ToComplete: toComplete,
+		Resource:   resource,
+		Verb:       Get,
+	}
+
+	// Exercise SUT
+	completions, compDir := Complete(request)
+
+	// Verify Results
+	require.Equal(t, compDir, cobra.ShellCompDirectiveNoFileComp)
+	// Should only contain explicitly defined parameter
+	require.Contains(t, completions, "include")
+	// Should be exactly 1 completion since only "include" is explicitly defined
+	require.Len(t, completions, 1)
+}
+
+func TestCompleteQueryParamKeyGetEntityWithFallbackParams(t *testing.T) {
+	// Fixture Setup
+	toComplete := "inc"
+	resource, _ := resources.GetResourceByName("customers")
+	request := Request{
+		Type:       CompleteQueryParamKey,
+		ToComplete: toComplete,
+		Resource:   resource,
+		Verb:       Get,
+	}
+
+	// Exercise SUT
+	completions, compDir := Complete(request)
+
+	// Verify Results
+	require.Equal(t, compDir, cobra.ShellCompDirectiveNoFileComp)
+	// Should contain hardcoded fallback parameter since no explicit params defined
+	require.Contains(t, completions, "include")
+	// Should be exactly 1 completion since only "include" is the fallback for get-entity
+	require.Len(t, completions, 1)
+}

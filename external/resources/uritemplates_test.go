@@ -300,7 +300,7 @@ func getValidCrudEntityInfo() CrudEntityInfo {
 		Docs:            "https://www.google.ca",
 		Url:             "/v2/flows/{flows}",
 		ContentType:     "application/json",
-		QueryParameters: "",
+		QueryParameters: nil,
 		MinResources:    0,
 	}
 }
