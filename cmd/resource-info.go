@@ -90,7 +90,7 @@ func NewResourceInfoCommand(parentCmd *cobra.Command) func() {
 func GetOtherReferences(currentResource *resources.Resource) string {
 	sb := strings.Builder{}
 
-	sb.WriteString("\n*** Referenced By ***\n")
+	sb.WriteString("\nReferenced In:\n")
 
 	currentResourceName := currentResource.SingularName
 	foundUrlReferences := []string{}
@@ -349,7 +349,6 @@ func GetOtherReferences(currentResource *resources.Resource) string {
 	} else {
 		// URL References subsection
 		if len(sortedUrlRefs) > 0 {
-			sb.WriteString("**** URL Parameter ****\n")
 
 			// Group commands by resource name and parameters
 			type commandKey struct {
@@ -416,9 +415,9 @@ func GetOtherReferences(currentResource *resources.Resource) string {
 
 				// Build the command line
 				if cmd.params != "" {
-					sb.WriteString(fmt.Sprintf("epcc %s %s %s\n", verbStr, cmd.resource, cmd.params))
+					sb.WriteString(fmt.Sprintf("  epcc %s %s %s ...\n", verbStr, cmd.resource, cmd.params))
 				} else {
-					sb.WriteString(fmt.Sprintf("epcc %s %s\n", verbStr, cmd.resource))
+					sb.WriteString(fmt.Sprintf("  epcc %s %s ...\n", verbStr, cmd.resource))
 				}
 			}
 		}
@@ -428,7 +427,6 @@ func GetOtherReferences(currentResource *resources.Resource) string {
 			if len(sortedUrlRefs) > 0 {
 				sb.WriteString("\n")
 			}
-			sb.WriteString("**** Attributes ****\n")
 
 			var lastResource string
 			for _, ref := range sortedBodyRefs {
@@ -445,14 +443,16 @@ func GetOtherReferences(currentResource *resources.Resource) string {
 					lastResource = currentResource
 				}
 
-				sb.WriteString(ref + "\n")
+				sb.WriteString("  " + ref + " ...\n")
 			}
 		}
 
 		// Aliases
 		if len(sortedAliasedResources) > 0 {
-			sb.WriteString("\n**** In URL ****\n")
-			sb.WriteString("These resources share ids and so probably have related lifecycles\n")
+			if len(sortedUrlRefs) > 0 || len(sortedBodyRefs) > 0 {
+				sb.WriteString("\n")
+			}
+			sb.WriteString("Related resources (share IDs):\n")
 
 			for _, alias := range sortedAliasedResources {
 				sb.WriteString(" - " + alias + "\n")
@@ -616,9 +616,9 @@ func GenerateResourceInfo(r *resources.Resource) string {
 		}
 
 		sb.WriteString("\nNotes:\n")
-		sb.WriteString("  - Other keys and values will work fine (e.g., if you are using an older version of this tool, and new features have been developed), or you have defined flows.\n")
-		sb.WriteString("  - Keys with an [n] in them are array parameters and should be supplied with a [0], [1], [2], etc...\n")
-		sb.WriteString("  - Mandatory body parameters are enforced by the API, not this tool.\n")
+		sb.WriteString("  - Additional parameters are supported\n")
+		sb.WriteString("  - Array parameters: use [0], [1], [2] instead of [n]\n")
+		sb.WriteString("  - Required parameters are enforced by API\n")
 	}
 
 	// Add other references section at the very end

@@ -645,7 +645,7 @@ func GetGetUsageString(resourceName string, resourceUrl string, completionVerb i
 
 	return usageString
 }
-{{ ... }}
+
 func GetCreateUsageString(resource resources.Resource) string {
 	resourceName := resource.SingularName
 
