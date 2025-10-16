@@ -15,7 +15,7 @@ download_spec() {
     echo "Downloading ${filename} from ${url}..."
 
     # Download the file using curl
-    if curl --follow -s --fail "${url}" -o "${output_path}"; then
+    if curl -s --fail "${url}" -o "${output_path}"; then
         echo "✅ Successfully downloaded ${filename}"
     else
         echo "❌ Failed to download ${filename} from ${url}"
@@ -36,9 +36,9 @@ echo "==============================="
 
 
 # Example URL provided
-download_spec "https://elasticpath.dev/assets/openapispecs/carts/OpenAPISpec.yaml" "carts-and-orders.yaml"
-download_spec "https://elasticpath.dev/assets/openapispecs/accounts/OpenAPISpec.yaml" "account-management.yaml"
-download_spec "https://elasticpath.dev/assets/openapispecs/promotions-builder/OpenAPISpec.yaml" "promotions-builder.yaml"
+download_spec "https://developer.elasticpath.com/assets/openapispecs/carts/OpenAPISpec.yaml" "carts-and-orders.yaml"
+download_spec "https://developer.elasticpath.com/assets/openapispecs/accounts/OpenAPISpec.yaml" "account-management.yaml"
+download_spec "https://developer.elasticpath.com/assets/openapispecs/promotions-builder/OpenAPISpec.yaml" "promotions-builder.yaml"
 download_spec "https://developer.elasticpath.com/assets/openapispecs/single-sign-on/OpenAPISpec.yaml" "single-sign-on.yaml"
 
 
