@@ -141,6 +141,7 @@ accounts:
       - name: page[limit]
       - name: page[offset]
       - name: sort
+      - name: include
   get-entity:
     docs: "https://elasticpath.dev/docs/api/accounts/get-v-2-accounts-account-id"
     url: "/v2/accounts/{accounts}"

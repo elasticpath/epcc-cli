@@ -65,11 +65,10 @@ func NewResourceInfoCommand(parentCmd *cobra.Command) func() {
 			Aliases: aliases,
 			Short:   fmt.Sprintf("Show information about %s resource", resource.PluralName),
 			RunE: func(cmd *cobra.Command, args []string) error {
-				// For now, just print a placeholder message
-				fmt.Printf(GenerateResourceInfo(&resource))
+				fmt.Println(GenerateResourceInfo(&resource))
 
 				if openApiFlag {
-					fmt.Printf(GenerateOpenApiInfo(&resource))
+					fmt.Println(GenerateOpenApiInfo(&resource))
 				}
 
 				return nil
@@ -675,7 +674,7 @@ func GenerateOpenApiInfo(resource *resources.Resource) string {
 			op, err := openapi.FindOperationByID(opId)
 
 			if err != nil || op == nil {
-				log.Warnf("Could not find operation id: %d", op)
+				log.Warnf("Could not find operation id: %s", opId)
 			}
 
 			found++
