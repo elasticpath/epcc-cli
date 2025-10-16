@@ -165,25 +165,59 @@ func GetOtherReferences(currentResource *resources.Resource) string {
 			if strings.HasPrefix(attr.Type, "RESOURCE_ID:") {
 				referencedResourceType := strings.TrimPrefix(attr.Type, "RESOURCE_ID:")
 				if currentResource.SingularName == referencedResourceType || currentResource.PluralName == referencedResourceType {
-					// This resource has a body parameter that references the current resource
-					var operations []string
-
+					// Build command lines for create and update separately since they have different URLs
+					
 					if resource.CreateEntityInfo != nil {
-						operations = append(operations, "create")
-					}
-					if resource.UpdateEntityInfo != nil {
-						operations = append(operations, "update")
-					}
-
-					if len(operations) > 0 {
-						var opString string
-						if len(operations) == 2 {
-							opString = "{create,update}"
-						} else {
-							opString = operations[0]
+						// Build create command with URL parameters
+						cmdParts := []string{"epcc", "create", resource.SingularName}
+						
+						// Add URL parameters
+						types, err := resources.GetSingularTypesOfVariablesNeeded(resource.CreateEntityInfo.Url)
+						if err == nil {
+							for _, t := range types {
+								cmdParts = append(cmdParts, ConvertSingularTypeToCmdArg(t))
+							}
 						}
-
-						bodyRef := fmt.Sprintf("%s in epcc %s %s", k, opString, resource.SingularName)
+						
+						// Add body parameter and its value
+						// Handle array parameters
+						if strings.Contains(k, "[n]") {
+							// Show two examples for array parameters
+							baseKey := strings.ReplaceAll(k, "[n]", "")
+							cmdParts = append(cmdParts, baseKey+"[0]", ConvertSingularTypeToCmdArg(currentResourceName))
+							cmdParts = append(cmdParts, baseKey+"[1]", ConvertSingularTypeToCmdArg(currentResourceName))
+						} else {
+							cmdParts = append(cmdParts, k, ConvertSingularTypeToCmdArg(currentResourceName))
+						}
+						
+						bodyRef := strings.Join(cmdParts, " ")
+						foundBodyReferences = append(foundBodyReferences, bodyRef)
+					}
+					
+					if resource.UpdateEntityInfo != nil {
+						// Build update command with URL parameters
+						cmdParts := []string{"epcc", "update", resource.SingularName}
+						
+						// Add URL parameters
+						types, err := resources.GetSingularTypesOfVariablesNeeded(resource.UpdateEntityInfo.Url)
+						if err == nil {
+							for _, t := range types {
+								cmdParts = append(cmdParts, ConvertSingularTypeToCmdArg(t))
+							}
+						}
+						
+						// Add body parameter and its value
+						// Handle array parameters
+						if strings.Contains(k, "[n]") {
+							// Show two examples for array parameters
+							baseKey := strings.ReplaceAll(k, "[n]", "")
+							cmdParts = append(cmdParts, baseKey+"[0]", ConvertSingularTypeToCmdArg(currentResourceName))
+							cmdParts = append(cmdParts, baseKey+"[1]", ConvertSingularTypeToCmdArg(currentResourceName))
+						} else {
+							cmdParts = append(cmdParts, k, ConvertSingularTypeToCmdArg(currentResourceName))
+						}
+						
+						bodyRef := strings.Join(cmdParts, " ")
 						foundBodyReferences = append(foundBodyReferences, bodyRef)
 					}
 				}
@@ -222,6 +256,38 @@ func GetOtherReferences(currentResource *resources.Resource) string {
 		"delete": 3,
 	}
 
+	// Sort body references by resource name first, then by verb order
+	sort.Slice(sortedBodyRefs, func(i, j int) bool {
+		partsI := strings.Fields(sortedBodyRefs[i])
+		partsJ := strings.Fields(sortedBodyRefs[j])
+
+		if len(partsI) >= 3 && len(partsJ) >= 3 {
+			resourceI := partsI[2] // resource name is 3rd element
+			resourceJ := partsJ[2]
+			verbI := partsI[1] // verb is 2nd element
+			verbJ := partsJ[1]
+
+			// If resource names are different, sort by resource name
+			if resourceI != resourceJ {
+				return resourceI < resourceJ
+			}
+
+			// Same resource, sort by verb order
+			orderI, okI := verbOrder[verbI]
+			orderJ, okJ := verbOrder[verbJ]
+
+			if okI && okJ {
+				return orderI < orderJ
+			}
+
+			// Fallback to alphabetical for unknown verbs
+			return verbI < verbJ
+		}
+
+		// Fallback to string comparison
+		return sortedBodyRefs[i] < sortedBodyRefs[j]
+	})
+
 	// Sort URL references by resource name first, then by verb order
 	sort.Slice(sortedUrlRefs, func(i, j int) bool {
 		// Extract resource name and verb from command
@@ -254,9 +320,6 @@ func GetOtherReferences(currentResource *resources.Resource) string {
 		// Fallback to string comparison
 		return sortedUrlRefs[i] < sortedUrlRefs[j]
 	})
-
-	// Sort body references alphabetically
-	sort.Strings(sortedBodyRefs)
 
 	sortedAliasedResources := []string{}
 
@@ -365,11 +428,25 @@ func GetOtherReferences(currentResource *resources.Resource) string {
 			if len(sortedUrlRefs) > 0 {
 				sb.WriteString("\n") // Add spacing between sections
 			}
-			sb.WriteString("**** Attributes ****\n\n")
+			sb.WriteString("**** Attributes ****\n")
+			
+			var lastResource string
 			for _, ref := range sortedBodyRefs {
-				sb.WriteString("  - " + ref + "\n")
-			}
+				// Extract resource name to detect when we switch to a new resource
+				parts := strings.Fields(ref)
+				if len(parts) >= 3 {
+					currentResource := parts[2]
 
+					// Add a newline between different resources (but not before the first one)
+					if lastResource != "" && lastResource != currentResource {
+						sb.WriteString("\n")
+					}
+
+					lastResource = currentResource
+				}
+
+				sb.WriteString(ref + "\n")
+			}
 			sb.WriteString("\n")
 		}
 
@@ -482,12 +559,12 @@ func GenerateResourceInfo(r *resources.Resource) string {
 
 		if len(types) > 0 {
 
-			sb.WriteString(tabs + "Resource ID Parameters (Mandatory):\n")
+			sb.WriteString("\n" + tabs + tabs + "Resource ID Parameters (Mandatory):\n")
 
 			for _, t := range types {
 				paramName := ConvertSingularTypeToCmdArg(t)
 				article := getIndefiniteArticle(strings.Title(t))
-				sb.WriteString(fmt.Sprintf("  %-20s - An ID or alias for %s %s\n", paramName, article, strings.Title(t)))
+				sb.WriteString(fmt.Sprintf("    %-20s - An ID or alias for %s %s\n", paramName, article, strings.Title(t)))
 			}
 		}
 	}
