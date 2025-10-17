@@ -80,6 +80,9 @@ account-members:
       type: STRING
     email:
       type: STRING
+  created_by:
+    - verb: create
+      resource: user-authentication-info
 account-memberships:
   singular-name: "account-membership"
   json-api-type: "account_membership"
@@ -356,6 +359,13 @@ authentication-realms:
       type: URL
     duplicate_email_policy:
       type: ENUM:allowed,api_only
+  created_by:
+    - verb: get
+      resource: account-authentication-settings
+    - verb: get
+      resource: customer-authentication-settings
+    - verb: get
+      resource: merchant-realm-mappings
 carts:
   singular-name: "cart"
   json-api-type: "cart"
@@ -507,6 +517,7 @@ cart-checkout:
     url: "/v2/carts/{carts}/checkout"
     openapi-operation-id: checkoutAPI
     content-type: application/json
+    creates: order
   attributes:
     account.id:
       type: RESOURCE_ID:account
@@ -1226,6 +1237,9 @@ orders:
       type: STRING
     shipping_address.country:
       type: STRING
+  created_by:
+    - verb: create
+      resource: cart-checkout
 order-items:
   singular-name: "order-item"
   json-api-type: "order_item"

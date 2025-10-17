@@ -506,6 +506,15 @@ func GetCreateLong(resource resources.Resource) string {
 	uuids := GetUuidsForTypes(singularTypeNames)
 	exampleWithIds := " " + GetArgumentExampleWithIds(singularTypeNames, uuids)
 
+	createsBlurb := ""
+	createdResource := resourceName
+	creates := resource.CreateEntityInfo.Creates
+
+	if creates != "" {
+		createsBlurb = fmt.Sprintf("  - This resource creates %s %s instance as a result, not %s %s ", getIndefiniteArticle(creates), creates, getIndefiniteArticle(resourceName), resourceName)
+		createdResource = resource.CreateEntityInfo.Creates
+	}
+
 	argumentsBlurb := ""
 	switch resource.CreateEntityInfo.ContentType {
 	case "multipart/form-data":
@@ -524,7 +533,8 @@ Documentation:
 	return fmt.Sprintf(`Creates a %s in a store/organization by calling %s.
 %s
 %s
-`, resourceName, GetHelpResourceUrls(resource.CreateEntityInfo.Url), parametersLongUsage, argumentsBlurb)
+%s
+`, createdResource, GetHelpResourceUrls(resource.CreateEntityInfo.Url), parametersLongUsage, createsBlurb, argumentsBlurb)
 }
 
 func GetUpdateLong(resource resources.Resource) string {
@@ -656,7 +666,9 @@ func GetCreateUsageString(resource resources.Resource) string {
 		return resourceName
 	}
 
-	return resourceName + GetParametersForTypes(singularTypeNames) + GetJsonKeyValuesForUsage(resource)
+	str := resourceName + GetParametersForTypes(singularTypeNames) + GetJsonKeyValuesForUsage(resource)
+
+	return str
 }
 
 func GetUpdateUsage(resource resources.Resource) string {
