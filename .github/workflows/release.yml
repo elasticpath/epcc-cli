@@ -26,8 +26,6 @@ jobs:
         name: Unshallow
         run: git fetch --prune --unshallow
 
-      - name: Download OpenAPI Specs
-        run: ./external/openapi/specs/download_specs.sh
       -
         name: Set up Go
         uses: actions/setup-go@v6

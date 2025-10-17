@@ -16,3 +16,7 @@ Chose 2 was chosen for a few reasons:
 Consequently, for the most part, we don't really want to leverage the OpenAPI specs "most" of the time,
 in theory someone should be able to check out the code and build the cli without the specs, with only minimal 
 loss of functionality.
+
+### Including specs in the repo.
+
+We eventually started including specs in the repo, this was because using this tool as a library was awkward. 
