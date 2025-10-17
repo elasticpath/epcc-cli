@@ -6,4 +6,3 @@ epcc
 epcc-test
 .envrc
 build/
-external/openapi/specs/*.yaml
