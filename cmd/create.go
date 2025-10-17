@@ -4,8 +4,9 @@ import (
 	"context"
 	gojson "encoding/json"
 	"fmt"
-	"github.com/elasticpath/epcc-cli/config"
 	"strings"
+
+	"github.com/elasticpath/epcc-cli/config"
 
 	"github.com/elasticpath/epcc-cli/external/aliases"
 	"github.com/elasticpath/epcc-cli/external/completion"
@@ -193,9 +194,13 @@ func NewCreateCommand(parentCmd *cobra.Command) func() {
 						idCount, _ := resources.GetNumberOfVariablesNeeded(resourceURL)
 						if len(args)-idCount >= 0 { // Arg is after IDs
 							if (len(args)-idCount)%2 == 0 { // This is an attribute key
-								usedAttributes := make(map[string]struct{})
+								usedAttributes := make(map[string]string)
 								for i := idCount; i < len(args); i = i + 2 {
-									usedAttributes[args[i]] = struct{}{}
+									if i+1 <= len(args) {
+										usedAttributes[args[i]] = args[i+1]
+									} else {
+										usedAttributes[args[i]] = ""
+									}
 								}
 
 								// I think this allows you to complete the current argument
@@ -204,8 +209,9 @@ func NewCreateCommand(parentCmd *cobra.Command) func() {
 								// I now think this does nothing.
 								toComplete := strings.ReplaceAll(toComplete, "<ENTER>", "")
 								if toComplete != "" {
-									usedAttributes[toComplete] = struct{}{}
+									usedAttributes[toComplete] = ""
 								}
+
 								return completion.Complete(completion.Request{
 									Type:       completion.CompleteAttributeKey,
 									Resource:   resource,

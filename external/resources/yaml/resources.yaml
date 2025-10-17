@@ -2913,30 +2913,43 @@ custom-fields:
       type: INT
     validation.string.min_length:
       type: INT
+      when: field_type == "string"
     validation.string.max_length:
       type: INT
+      when: field_type == "string"
     validation.string.regex:
       type: STRING
+      when: field_type == "string"
     validation.string.allow_null_values:
       type: BOOL
+      when: field_type == "string"
     validation.string.unique:
       type: ENUM:yes,no
+      when: field_type == "string"
     validation.string.unique_case_insensitivity:
       type: BOOL
+      when: field_type == "string"
     validation.string.immutable:
       type: BOOL
+      when: field_type == "string"
     validation.integer.min_value:
       type: INT
+      when: field_type == "integer"
     validation.integer.max_value:
       type: INT
+      when: field_type == "integer"
     validation.integer.allow_null_values:
       type: BOOL
+      when: field_type == "integer"
     validation.integer.immutable:
       type: BOOL
+      when: field_type == "integer"
     validation.boolean.allow_null_values:
       type: BOOL
+      when: field_type == "boolean"
     validation.boolean.immutable:
       type: BOOL
+      when: field_type == "boolean"
 custom-api-settings-entries:
   singular-name: custom-api-settings-entry
   json-api-type: custom_entry

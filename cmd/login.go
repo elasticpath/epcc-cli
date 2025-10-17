@@ -276,9 +276,13 @@ var loginCustomer = &cobra.Command{
 				Resource: res,
 			})
 		} else {
-			usedAttributes := make(map[string]struct{})
+			usedAttributes := make(map[string]string)
 			for i := 1; i < len(args); i = i + 2 {
-				usedAttributes[args[i]] = struct{}{}
+				if i+1 < len(args) {
+					usedAttributes[args[i]] = args[i+1]
+				} else {
+					usedAttributes[args[i]] = ""
+				}
 			}
 
 			return completion.Complete(completion.Request{
@@ -386,9 +390,13 @@ var loginAccountManagement = &cobra.Command{
 				Resource: res,
 			})
 		} else {
-			usedAttributes := make(map[string]struct{})
+			usedAttributes := make(map[string]string)
 			for i := 1; i < len(args); i = i + 2 {
-				usedAttributes[args[i]] = struct{}{}
+				if i+1 < len(args) {
+					usedAttributes[args[i]] = args[i+1]
+				} else {
+					usedAttributes[args[i]] = ""
+				}
 			}
 
 			if args[len(args)-1] == "account_id" {

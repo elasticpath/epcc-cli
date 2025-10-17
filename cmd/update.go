@@ -3,19 +3,31 @@ package cmd
 import (
 	"context"
 	gojson "encoding/json"
+	"errors"
 	"fmt"
+	"os"
+	"path/filepath"
+	"slices"
+	"time"
 
 	"github.com/elasticpath/epcc-cli/config"
-
 	"github.com/elasticpath/epcc-cli/external/aliases"
 	"github.com/elasticpath/epcc-cli/external/completion"
 	"github.com/elasticpath/epcc-cli/external/httpclient"
 	"github.com/elasticpath/epcc-cli/external/json"
+	"github.com/elasticpath/epcc-cli/external/profiles"
 	"github.com/elasticpath/epcc-cli/external/resources"
 	"github.com/elasticpath/epcc-cli/external/rest"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
+
+type ResourceCache struct {
+	Key       []string  `json:"key"`
+	Json      string    `json:"json"`
+	Error     bool      `json:"error"`
+	ExpiresAt time.Time `json:"expires_at"`
+}
 
 func NewUpdateCommand(parentCmd *cobra.Command) func() {
 	overrides := &httpclient.HttpParameterOverrides{
@@ -184,17 +196,54 @@ func NewUpdateCommand(parentCmd *cobra.Command) func() {
 				// Find Resource
 				resourceURL := resource.UpdateEntityInfo.Url
 				idCount, _ := resources.GetNumberOfVariablesNeeded(resourceURL)
-				if len(args)-idCount >= 0 { // Arg is after IDs
-					if (len(args)-idCount)%2 == 0 { // This is an attribute key
-						usedAttributes := make(map[string]struct{})
-						for i := idCount; i < len(args); i = i + 2 {
-							usedAttributes[args[i]] = struct{}{}
+
+				if len(args)-idCount >= 0 {
+					// If the arg is after the id, then we are completing an attribute key.
+					// Let's secretly fetch the current state of the resource so we can have better completion.
+					ids := []string{}
+					for id := 0; id < idCount; id++ {
+						ids = append(ids, args[id])
+					}
+
+					ignoreConditionalChecks := false
+
+					result, err := GetCurrentResourceState(resourceName, ids, overrides)
+
+					existingAttributes := map[string]string{}
+					if err != nil {
+						log.Warnf("Could not get current state of resource, %v", err)
+						ignoreConditionalChecks = true
+					}
+
+					if !ignoreConditionalChecks {
+						v, err := json.FromJsonToMap(result)
+
+						if err != nil {
+							log.Warnf("Could not convert state to map, %v", err)
+							ignoreConditionalChecks = true
+						} else {
+							existingAttributes = v
 						}
+					}
+
+					// Arg is after IDs
+					if (len(args)-idCount)%2 == 0 { // This is an attribute key
+						usedAttributes := make(map[string]string)
+						for i := idCount; i < len(args); i = i + 2 {
+							if i+1 <= len(args) {
+								usedAttributes[args[i]] = args[i+1]
+							} else {
+								usedAttributes[args[i]] = ""
+							}
+						}
+
 						return completion.Complete(completion.Request{
-							Type:       completion.CompleteAttributeKey,
-							Resource:   resource,
-							Attributes: usedAttributes,
-							Verb:       completion.Update,
+							Type:                       completion.CompleteAttributeKey,
+							Resource:                   resource,
+							Attributes:                 usedAttributes,
+							ExistingResourceAttributes: existingAttributes,
+							SkipWhenChecksAndAddAll:    true,
+							Verb:                       completion.Update,
 						})
 					} else { // This is an attribute value
 						return completion.Complete(completion.Request{
@@ -254,4 +303,70 @@ func NewUpdateCommand(parentCmd *cobra.Command) func() {
 
 	return resetFunc
 
+}
+
+func GetCurrentResourceState(resourceName string, ids []string, overrides *httpclient.HttpParameterOverrides) (string, error) {
+
+	cacheFile := filepath.Clean(profiles.GetProfileDataDirectory() + "/update_completion_cache.json")
+
+	myKey := append([]string{resourceName}, ids...)
+
+	f, err := os.ReadFile(cacheFile)
+
+	var cache ResourceCache
+
+	if err == nil {
+		err = gojson.Unmarshal(f, &cache)
+		if err == nil {
+
+			if slices.Equal(cache.Key, myKey) && cache.ExpiresAt.Unix() > time.Now().Unix() {
+				if cache.Error {
+					return "", errors.New("cache contains negative result")
+				} else {
+					return cache.Json, nil
+				}
+
+			}
+		} else {
+			log.Errorf("Could not unmarshal JSON cache for %s, error: %v", cacheFile, err)
+		}
+	} else {
+		if errors.Is(err, os.ErrNotExist) {
+			log.Infof("Could not read cache file %s, error: %v", cacheFile, err)
+		} else {
+			log.Warnf("Could not read cache file %s, error: %v", cacheFile, err)
+		}
+	}
+
+	result, err := rest.GetInternal(context.Background(), overrides, append([]string{resourceName}, ids...), true)
+
+	if err != nil {
+		cache = ResourceCache{
+			Key:       myKey,
+			Json:      "",
+			Error:     true,
+			ExpiresAt: time.Now().Add(time.Second * 5),
+		}
+	} else {
+		cache = ResourceCache{
+			Key:       myKey,
+			Json:      result,
+			Error:     false,
+			ExpiresAt: time.Now().Add(time.Second * 30),
+		}
+	}
+
+	v, err := gojson.Marshal(cache)
+
+	if err != nil {
+		log.Warnf("Failed to convert cache to json: %v", err)
+	} else {
+		err = os.WriteFile(cacheFile, v, 0600)
+
+		if err != nil {
+			log.Warnf("Failed to save cache to file %s, error: %v", cacheFile, err)
+		}
+	}
+
+	return result, err
 }

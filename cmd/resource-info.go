@@ -487,7 +487,7 @@ func GenerateResourceInfo(r *resources.Resource) string {
 
 	if r.GetCollectionInfo != nil {
 		usageString := GetGetUsageString(r.PluralName, r.GetCollectionInfo.Url, collectionResourceRequest, *r)
-		sb.WriteString(fmt.Sprintf("%sepcc get %s - get a page of %s\n", tabs, usageString, r.PluralName))
+		sb.WriteString(fmt.Sprintf("%sepcc get %s - get a page of %s\n\n", tabs, usageString, r.PluralName))
 
 		types, _ := resources.GetSingularTypesOfVariablesNeeded(r.GetCollectionInfo.Url)
 		for _, t := range types {
@@ -504,6 +504,7 @@ func GenerateResourceInfo(r *resources.Resource) string {
 			sb.WriteString(fmt.Sprintf("\n   Note: The created resource is %s %s", article, r.CreateEntityInfo.Creates))
 		}
 
+		sb.WriteString("\n")
 		types, _ := resources.GetSingularTypesOfVariablesNeeded(r.CreateEntityInfo.Url)
 		for _, t := range types {
 			allUrlParams[t] = true
@@ -512,7 +513,7 @@ func GenerateResourceInfo(r *resources.Resource) string {
 
 	if r.GetEntityInfo != nil {
 		usageString := GetGetUsageString(r.SingularName, r.GetEntityInfo.Url, singularResourceRequest, *r)
-		sb.WriteString(fmt.Sprintf("%sepcc get %s - get %s %s\n", tabs, usageString, article, r.SingularName))
+		sb.WriteString(fmt.Sprintf("%sepcc get %s - get %s %s\n\n", tabs, usageString, article, r.SingularName))
 
 		types, _ := resources.GetSingularTypesOfVariablesNeeded(r.GetEntityInfo.Url)
 		for _, t := range types {
@@ -522,7 +523,7 @@ func GenerateResourceInfo(r *resources.Resource) string {
 
 	if r.UpdateEntityInfo != nil {
 		usageString := GetUpdateUsage(*r)
-		sb.WriteString(fmt.Sprintf("%sepcc update %s - update %s %s\n", tabs, usageString, article, r.SingularName))
+		sb.WriteString(fmt.Sprintf("%sepcc update %s - update %s %s\n\n", tabs, usageString, article, r.SingularName))
 
 		types, _ := resources.GetSingularTypesOfVariablesNeeded(r.UpdateEntityInfo.Url)
 		for _, t := range types {
@@ -532,7 +533,7 @@ func GenerateResourceInfo(r *resources.Resource) string {
 
 	if r.DeleteEntityInfo != nil {
 		usageString := GetDeleteUsage(*r)
-		sb.WriteString(fmt.Sprintf("%sepcc delete %s - delete %s %s\n", tabs, usageString, article, r.SingularName))
+		sb.WriteString(fmt.Sprintf("%sepcc delete %s - delete %s %s\n\n", tabs, usageString, article, r.SingularName))
 
 		types, _ := resources.GetSingularTypesOfVariablesNeeded(r.DeleteEntityInfo.Url)
 		for _, t := range types {
@@ -542,21 +543,24 @@ func GenerateResourceInfo(r *resources.Resource) string {
 
 	// Output consolidated parameters section (URL params + body params + query params)
 	if len(allUrlParams) > 0 || len(r.Attributes) > 0 {
-		sb.WriteString("\nParameters:\n")
 
 		// Collect all parameters with their descriptions
 		type paramInfo struct {
 			name        string
 			description string
+			when        string
 		}
-		var allParams []paramInfo
+
+		allParams := map[string][]paramInfo{
+			"": {},
+		}
 
 		// Add URL parameters
 		for param := range allUrlParams {
 			paramName := ConvertSingularTypeToCmdArg(param)
 			article := getIndefiniteArticle(strings.Title(param))
 			description := fmt.Sprintf("An ID or alias for %s %s", article, strings.Title(param))
-			allParams = append(allParams, paramInfo{name: paramName, description: description})
+			allParams[""] = append(allParams[""], paramInfo{name: paramName, description: description})
 		}
 
 		// Add body parameters (converted to uppercase)
@@ -605,30 +609,54 @@ func GenerateResourceInfo(r *resources.Resource) string {
 				description = "Unknown:" + v.Type
 			}
 
-			allParams = append(allParams, paramInfo{name: paramName, description: description})
+			if _, ok := allParams[v.When]; !ok {
+				allParams[v.When] = []paramInfo{}
+			}
+
+			allParams[v.When] = append(allParams[v.When], paramInfo{name: paramName, description: description, when: v.When})
 		}
 
 		// Add INCLUDE parameter if this resource supports it
 		if r.GetCollectionInfo != nil {
-			allParams = append(allParams, paramInfo{name: "INCLUDE", description: "Related resources that can be included"})
+			allParams[""] = append(allParams[""], paramInfo{name: "INCLUDE", description: "Related resources that can be included"})
 		}
 
-		// Sort all parameters alphabetically
-		sort.Slice(allParams, func(i, j int) bool {
-			return allParams[i].name < allParams[j].name
-		})
+		allWhens := []string{}
+		for k := range allParams {
+			allWhens = append(allWhens, k)
+		}
 
-		// Find max length for alignment
-		maxLen := 0
-		for _, p := range allParams {
-			if len(p.name) > maxLen {
-				maxLen = len(p.name)
+		sort.Strings(allWhens)
+
+		for _, w := range allWhens {
+			if w == "" {
+				sb.WriteString("\nParameters:\n")
+			} else {
+				sb.WriteString("\nParameters when: ")
+				sb.WriteString(w)
+				sb.WriteString("\n")
 			}
-		}
 
-		// Output all parameters
-		for _, p := range allParams {
-			sb.WriteString(fmt.Sprintf("  %-*s - %s\n", maxLen, p.name, p.description))
+			paramsForWhen := allParams[w]
+
+			// Sort all parameters alphabetically
+			sort.Slice(paramsForWhen, func(i, j int) bool {
+				return paramsForWhen[i].name < paramsForWhen[j].name
+			})
+
+			// Find max length for alignment
+			maxLen := 0
+			for _, p := range paramsForWhen {
+				if len(p.name) > maxLen {
+					maxLen = len(p.name)
+				}
+			}
+
+			// Output all parameters
+			for _, p := range paramsForWhen {
+				sb.WriteString(fmt.Sprintf("  %-*s - %s\n", maxLen, p.name, p.description))
+			}
+
 		}
 
 		sb.WriteString("\nNotes:\n")

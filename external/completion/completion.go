@@ -9,6 +9,8 @@ import (
 
 	"github.com/elasticpath/epcc-cli/external/aliases"
 	"github.com/elasticpath/epcc-cli/external/resources"
+	"github.com/expr-lang/expr"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -45,12 +47,18 @@ const (
 type Request struct {
 	Type     int
 	Resource resources.Resource
+
 	// These are consumed attributes
-	Attributes map[string]struct{}
-	Verb       int
-	Attribute  string
-	QueryParam string
-	Header     string
+	Attributes map[string]string
+
+	// This only makes sense on get, and is largely the current state of the resource.
+	ExistingResourceAttributes map[string]string
+
+	SkipWhenChecksAndAddAll bool
+	Verb                    int
+	Attribute               string
+	QueryParam              string
+	Header                  string
 	// The current string argument being completed
 	ToComplete     string
 	NoAliases      bool
@@ -131,11 +139,45 @@ func Complete(c Request) ([]string, cobra.ShellCompDirective) {
 		autoCompleteAttributes := []string{}
 
 		rt := NewRegexCompletionTree()
-		for k := range c.Resource.Attributes {
+		for k, v := range c.Resource.Attributes {
 			if (strings.HasPrefix(k, "^")) && (strings.HasSuffix(k, "$")) {
+				// TBD maybe exclude this case for now.
 				rt.AddRegex(k)
 			} else {
-				autoCompleteAttributes = append(autoCompleteAttributes, k)
+				if v.When == "" || c.SkipWhenChecksAndAddAll {
+					autoCompleteAttributes = append(autoCompleteAttributes, k)
+				} else {
+					_, err := expr.Compile(v.When, expr.AsBool())
+					if err != nil {
+						log.Tracef("Invalid when condition on resource `%s` and attribute `%s`: %s", c.Resource.PluralName, k, v.When)
+						// We will add it anyway, as it's a better experience I suppose.
+						autoCompleteAttributes = append(autoCompleteAttributes, k)
+						continue
+					}
+
+					allAttributes := make(map[string]string, len(c.Attributes)+len(c.ExistingResourceAttributes))
+
+					for k, v := range c.ExistingResourceAttributes {
+						allAttributes[k] = v
+					}
+
+					for k, v := range c.Attributes {
+						allAttributes[k] = v
+					}
+
+					output, err := expr.Eval(v.When, allAttributes)
+
+					if err != nil {
+						log.Tracef("Error while evaluating `%s` and attribute `%s`: %s, with values %v", c.Resource.PluralName, k, v.When, c.Attributes)
+						continue
+					}
+
+					if output.(bool) {
+						autoCompleteAttributes = append(autoCompleteAttributes, k)
+					}
+
+				}
+
 			}
 		}
 
