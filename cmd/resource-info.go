@@ -457,6 +457,18 @@ func GetOtherReferences(currentResource *resources.Resource) string {
 				sb.WriteString(" - " + alias + "\n")
 			}
 		}
+
+		// Created By
+		if len(currentResource.CreatedBy) > 0 {
+			if len(sortedUrlRefs) > 0 || len(sortedBodyRefs) > 0 || len(sortedAliasedResources) > 0 {
+				sb.WriteString("\n")
+			}
+			sb.WriteString("Created By:\n")
+
+			for _, created := range currentResource.CreatedBy {
+				sb.WriteString(fmt.Sprintf("  epcc %s %s \n", created.Verb, created.Resource))
+			}
+		}
 	}
 
 	return sb.String()
@@ -485,7 +497,12 @@ func GenerateResourceInfo(r *resources.Resource) string {
 
 	if r.CreateEntityInfo != nil {
 		usageString := GetCreateUsageString(*r)
+
 		sb.WriteString(fmt.Sprintf("%sepcc create %s - create %s %s\n", tabs, usageString, article, r.SingularName))
+
+		if r.CreateEntityInfo.Creates != "" {
+			sb.WriteString(fmt.Sprintf("\n   Note: The created resource is %s %s", article, r.CreateEntityInfo.Creates))
+		}
 
 		types, _ := resources.GetSingularTypesOfVariablesNeeded(r.CreateEntityInfo.Url)
 		for _, t := range types {

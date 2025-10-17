@@ -22,6 +22,74 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+func TestCreatedByTemplatesAllReferenceValidResource(t *testing.T) {
+	// Fixture Setup
+	errors := ""
+
+	// Execute SUT
+	for key, val := range resources.GetPluralResources() {
+
+		for _, created := range val.CreatedBy {
+
+			targetResource, ok := resources.GetResourceByName(created.Resource)
+
+			if !ok {
+				errors += fmt.Sprintf("Resource %s references not-found resource %s in created by\n", key, created.Resource)
+				continue
+			}
+
+			var unsupported bool
+			switch created.Verb {
+			case "get":
+				unsupported = targetResource.GetEntityInfo == nil && targetResource.GetCollectionInfo == nil
+			case "delete":
+				unsupported = targetResource.DeleteEntityInfo == nil
+			case "create":
+				unsupported = targetResource.CreateEntityInfo == nil
+			case "update":
+				unsupported = targetResource.UpdateEntityInfo == nil
+			default:
+				errors += fmt.Sprintf("Resource %s references unknown verb %s for %s\n", key, created.Verb, created.Resource)
+			}
+			if unsupported {
+				errors += fmt.Sprintf("Resource %s references resource %s with unsupported verb %s in created_by\n", key, created.Resource, created.Verb)
+			}
+		}
+
+	}
+
+	// Verification
+	if len(errors) > 0 {
+		t.Errorf("Unexpected errors:\n%s", errors)
+	}
+}
+
+func TestCreatesAllReferenceValidResource(t *testing.T) {
+
+	// Fixture Setup
+	errors := ""
+
+	// Execute SUT
+	for key, val := range resources.GetPluralResources() {
+		if val.CreateEntityInfo != nil {
+			if val.CreateEntityInfo.Creates != "" {
+				_, ok := resources.GetResourceByName(val.CreateEntityInfo.Creates)
+
+				if !ok {
+					errors += fmt.Sprintf("Resource %s references not-found resource %s in create-entity.creates\n", key, val.CreateEntityInfo.Creates)
+					continue
+				}
+			}
+
+		}
+	}
+
+	// Verification
+	if len(errors) > 0 {
+		t.Errorf("Unexpected errors:\n%s", errors)
+	}
+}
+
 func TestUriTemplatesAllReferenceValidResource(t *testing.T) {
 	// Fixture Setup
 

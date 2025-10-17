@@ -67,11 +67,19 @@ type Resource struct {
 	SuppressResetWarning bool `yaml:"suppress-reset-warning,omitempty"`
 
 	Legacy bool `yaml:"legacy"`
+
+	// If another resource is used to create this resource, list it here
+	CreatedBy []VerbResource `yaml:"created_by,omitempty"`
 }
 
 type QueryParameter struct {
 	// The name of the query parameter
 	Name string `yaml:"name"`
+}
+
+type VerbResource struct {
+	Verb     string `yaml:"verb"`
+	Resource string `yaml:"resource"`
 }
 
 type CrudEntityInfo struct {
@@ -95,6 +103,9 @@ type CrudEntityInfo struct {
 	ParentResourceValueOverrides map[string]string `yaml:"parent_resource_value_overrides,omitempty"`
 
 	OpenApiOperationId string `yaml:"openapi-operation-id"`
+
+	// Only valid on create, if set we report that the type created by this is different.
+	Creates string `yaml:"creates"`
 }
 
 type CrudEntityAttribute struct {
