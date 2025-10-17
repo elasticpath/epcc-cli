@@ -15,6 +15,9 @@ import (
 
 	"github.com/elasticpath/epcc-cli/external/completion"
 	"github.com/elasticpath/epcc-cli/external/resources"
+	"github.com/expr-lang/expr"
+	"github.com/expr-lang/expr/ast"
+	"github.com/expr-lang/expr/parser"
 	"github.com/santhosh-tekuri/jsonschema/v4"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
@@ -146,6 +149,67 @@ func TestUriTemplatesAllReferenceValidResource(t *testing.T) {
 	// Verification
 	if len(errors) > 0 {
 		t.Fatalf("Errors occurred while validating URI Templates:\n%s", errors)
+	}
+}
+
+type visitor struct {
+	Identifiers []string
+}
+
+func (v *visitor) Visit(node *ast.Node) {
+	if n, ok := (*node).(*ast.IdentifierNode); ok {
+		v.Identifiers = append(v.Identifiers, n.Value)
+	}
+}
+
+func TestAllWhenConditionsAreValid(t *testing.T) {
+	// Fixture Setup
+
+	errors := ""
+	// Execute SUT
+
+	for key, val := range resources.GetPluralResources() {
+		//allAttributes := make([]string, 0, len(val.Attributes))
+		//
+		//for k := range val.Attributes {
+		//	allAttributes = append(allAttributes, k)
+		//}
+
+		for attr, attrObj := range val.Attributes {
+			if attrObj.When != "" {
+				if strings.Trim(attrObj.When, " ") != attrObj.When {
+					errors += fmt.Sprintf("\t attribute `%s` of resource `%s` has a when condition that has leading or trailing whitespace: `%s`\n", attr, key, attrObj.When)
+					continue
+				}
+
+				_, err := expr.Compile(attrObj.When, expr.AsBool())
+
+				if err != nil {
+					errors += fmt.Sprintf("\t attribute `%s` of resource `%s` has a when condition that doesn't compile: `%s`, error: `%v`\n", attr, key, attrObj.When, err)
+					continue
+				}
+
+				tree, err := parser.Parse(attrObj.When)
+				if err != nil {
+					errors += fmt.Sprintf("\t attribute `%s` of resource `%s` has a when condition that doesn't compile: `%s`, error: `%v`\n", attr, key, attrObj.When, err)
+				}
+
+				v := &visitor{}
+				ast.Walk(&tree.Node, v)
+
+				for _, id := range v.Identifiers {
+					if _, ok := val.Attributes[id]; !ok {
+						errors += fmt.Sprintf("\t attribute %s of resource `%s` has a when condition `%s` with an unspecified value: `%s`\n", attr, key, attrObj.When, id)
+						break
+					}
+				}
+			}
+		}
+	}
+	// Verification
+
+	if len(errors) > 0 {
+		t.Fatalf("Errors occurred while validating when conditions:\n%s", errors)
 	}
 }
 

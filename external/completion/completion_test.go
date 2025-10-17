@@ -1,11 +1,12 @@
 package completion
 
 import (
+	"testing"
+
 	"github.com/elasticpath/epcc-cli/external/aliases"
 	"github.com/elasticpath/epcc-cli/external/resources"
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func init() {
@@ -696,6 +697,62 @@ func TestCompleteAttributeKeyWithWithMultipleArrayIndexesIncrementsAppropriately
 	require.Contains(t, completions, "rule_set.rules.children[0].args[1]")
 	require.Contains(t, completions, "rule_set.rules.children[1].args[0]")
 
+}
+
+func TestCompleteAttributeKeyWithWhenAndEmptyExistingValuesReturnsNone(t *testing.T) {
+	// Fixture Setup
+	toComplete := ""
+	acct := resources.MustGetResourceByName("custom-fields")
+	request := Request{
+		Type:       CompleteAttributeKey,
+		Verb:       Create,
+		ToComplete: toComplete,
+		Resource:   acct,
+	}
+
+	// Exercise SUT
+	completions, compDir := Complete(request)
+
+	// Verify Results
+	require.Equal(t, compDir, cobra.ShellCompDirectiveNoFileComp)
+	require.Contains(t, completions, "name")
+	require.Contains(t, completions, "slug")
+	require.Contains(t, completions, "field_type")
+	require.Contains(t, completions, "description")
+	require.Contains(t, completions, "use_as_url_slug")
+	require.Contains(t, completions, "presentation.sort_order")
+
+	require.Len(t, completions, 6)
+}
+
+func TestCompleteAttributeKeyWithWhenAndEmptyExistingValuesReturnsSatisfiedConditions(t *testing.T) {
+	// Fixture Setup
+	toComplete := ""
+	acct := resources.MustGetResourceByName("accounts")
+	request := Request{
+		Type:       CompleteAttributeKey,
+		Verb:       Create,
+		ToComplete: toComplete,
+		Resource:   acct,
+		Attributes: map[string]struct{}{
+			"field_type": {},
+		},
+	}
+
+	// Exercise SUT
+	completions, compDir := Complete(request)
+
+	// Verify Results
+	require.Equal(t, compDir, cobra.ShellCompDirectiveNoFileComp)
+	require.Contains(t, completions, "name")
+	require.Contains(t, completions, "slug")
+	require.Contains(t, completions, "description")
+	require.Contains(t, completions, "use_as_url_slug")
+	require.Contains(t, completions, "validation.integer.max_value")
+	require.Contains(t, completions, "validation.integer.min_value")
+	require.Contains(t, completions, "validation.integer.allow_null_values")
+	require.Contains(t, completions, "validation.integer.immutable")
+	require.Len(t, completions, 9)
 }
 
 func TestCompleteQueryParamKeyGetCollectionWithExplicitParams(t *testing.T) {

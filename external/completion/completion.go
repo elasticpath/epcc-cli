@@ -9,6 +9,8 @@ import (
 
 	"github.com/elasticpath/epcc-cli/external/aliases"
 	"github.com/elasticpath/epcc-cli/external/resources"
+	"github.com/expr-lang/expr"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -131,11 +133,42 @@ func Complete(c Request) ([]string, cobra.ShellCompDirective) {
 		autoCompleteAttributes := []string{}
 
 		rt := NewRegexCompletionTree()
-		for k := range c.Resource.Attributes {
+		for k, v := range c.Resource.Attributes {
 			if (strings.HasPrefix(k, "^")) && (strings.HasSuffix(k, "$")) {
+				// TBD maybe exclude this case for now.
 				rt.AddRegex(k)
 			} else {
-				autoCompleteAttributes = append(autoCompleteAttributes, k)
+				if v.When == "" {
+					autoCompleteAttributes = append(autoCompleteAttributes, k)
+				} else {
+					_, err := expr.Compile(v.When, expr.AsBool())
+					if err != nil {
+						log.Tracef("Invalid when condition on resource `%s` and attribute `%s`: %s", c.Resource.PluralName, k, v.When)
+						// We will add it anyway, as it's a better experience I suppose.
+						autoCompleteAttributes = append(autoCompleteAttributes, k)
+						continue
+					}
+
+					output, err := expr.Eval(v.When, map[string]any{
+						"fiueld_type": "string",
+					})
+
+					//output, err := expr.Run(p, map[string]any{
+					//	"foo": "bar",
+					//})
+
+					if err != nil {
+						log.Tracef("Error while evaluating `%s` and attribute `%s`: %s, with values %v", c.Resource.PluralName, k, v.When, c.Attributes)
+						continue
+					}
+
+					if output.(bool) {
+						fmt.Printf("Result of program %s is true\n", v.When)
+						autoCompleteAttributes = append(autoCompleteAttributes, k)
+					}
+
+				}
+
 			}
 		}
 
