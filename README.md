@@ -247,7 +247,7 @@ epcc runbooks run misc get-store-info
 For development the following command using [Reflex](https://github.com/cespare/reflex) can speed up your development time, by recreating the command line tool.
 
 ```bash
-git fetch --all --tags && reflex -v -s -r '(\.go$)|(resources.yaml|go.mod)|(runbooks/.+\.ya?ml)$' -- sh -c "go build -ldflags=\"-X github.com/elasticpath/epcc-cli/external/version.Version=$(git describe --tags --abbrev=0)+1 -X github.com/elasticpath/epcc-cli/external/version.Commit=$(git rev-parse --short HEAD)-dirty -X github.com/elasticpath/epcc-cli/external/version.Date=\$(date -u +'%Y-%m-%dT%H:%M:%SZ')\" -o ./epcc" 
+git fetch --all --tags && reflex -v -s -r '(\.go$)|(\.yaml$|go.(mod|sum))|(runbooks/.+\.ya?ml)$' -- sh -c "go build -ldflags=\"-X github.com/elasticpath/epcc-cli/external/version.Version=$(git describe --tags --abbrev=0)+1 -X github.com/elasticpath/epcc-cli/external/version.Commit=$(git rev-parse --short HEAD)-dirty -X github.com/elasticpath/epcc-cli/external/version.Date=\$(date -u +'%Y-%m-%dT%H:%M:%SZ')\" -o ./epcc" 
 ```
 
 ### Git Hooks

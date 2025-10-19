@@ -1,0 +1,224 @@
+
+custom-apis:
+  singular-name: custom-api
+  json-api-type: custom_api
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/api/commerce-extensions/custom-ap-is"
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/api/commerce-extensions/delete-a-custom-api"
+    url: "/v2/settings/extensions/custom-apis/{custom_apis}"
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/commerce-extensions/create-a-custom-api"
+    url: "/v2/settings/extensions/custom-apis/"
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/commerce-extensions/update-a-custom-api"
+    url: "/v2/settings/extensions/custom-apis/{custom_apis}"
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/commerce-extensions/get-a-custom-api"
+    url: "/v2/settings/extensions/custom-apis/{custom_apis}"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/commerce-extensions/get-all-custom-apis"
+    url: "/v2/settings/extensions/custom-apis"
+  attributes:
+    name:
+      type: STRING
+      autofill: FUNC:Company
+    slug:
+      type: STRING
+    api_type:
+      type: STRING
+    description:
+      type: STRING
+      autofill: FUNC:Phrase
+    relationships.parent_apis[n].type:
+      type: ENUM:api_location,custom_api
+    relationships.parent_apis[n].id:
+      type: RESOURCE_ID:custom-apis
+custom-fields:
+  singular-name: custom-field
+  json-api-type: custom_field
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/api/commerce-extensions/custom-fields"
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/api/commerce-extensions/delete-a-custom-field"
+    url: "/v2/settings/extensions/custom-apis/{custom_apis}/fields/{custom_fields}"
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/commerce-extensions/create-a-custom-field"
+    url: "/v2/settings/extensions/custom-apis/{custom_apis}/fields"
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/commerce-extensions/update-a-custom-field"
+    url: "/v2/settings/extensions/custom-apis/{custom_apis}/fields/{custom_fields}"
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/commerce-extensions/get-a-custom-field"
+    url: "/v2/settings/extensions/custom-apis/{custom_apis}/fields/{custom_fields}"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/commerce-extensions/get-all-custom-fields"
+    url: "/v2/settings/extensions/custom-apis/{custom_apis}/fields/"
+  attributes:
+    name:
+      type: STRING
+      autofill: FUNC:Company
+    slug:
+      type: STRING
+    field_type:
+      type: ENUM:string,integer,boolean,float
+    description:
+      type: STRING
+      autofill: FUNC:Phrase
+    use_as_url_slug:
+      type: BOOL
+      autofill: VALUE:false
+    presentation.sort_order:
+      type: INT
+    validation.string.min_length:
+      type: INT
+      when: field_type == "string"
+    validation.string.max_length:
+      type: INT
+      when: field_type == "string"
+    validation.string.regex:
+      type: STRING
+      when: field_type == "string"
+    validation.string.allow_null_values:
+      type: BOOL
+      when: field_type == "string"
+    validation.string.unique:
+      type: ENUM:yes,no
+      when: field_type == "string"
+    validation.string.unique_case_insensitivity:
+      type: BOOL
+      when: field_type == "string"
+    validation.string.immutable:
+      type: BOOL
+      when: field_type == "string"
+    validation.integer.min_value:
+      type: INT
+      when: field_type == "integer"
+    validation.integer.max_value:
+      type: INT
+      when: field_type == "integer"
+    validation.integer.allow_null_values:
+      type: BOOL
+      when: field_type == "integer"
+    validation.integer.immutable:
+      type: BOOL
+      when: field_type == "integer"
+    validation.boolean.allow_null_values:
+      type: BOOL
+      when: field_type == "boolean"
+    validation.boolean.immutable:
+      type: BOOL
+      when: field_type == "boolean"
+custom-api-settings-entries:
+  singular-name: custom-api-settings-entry
+  json-api-type: custom_entry
+  json-api-format: "legacy"
+  no-wrapping: true
+  docs: "https://elasticpath.dev/docs/api/commerce-extensions/custom-api-entries"
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/api/commerce-extensions/delete-a-custom-entry"
+    url: "/v2/settings/extensions/custom-apis/{custom_apis}/entries/{custom_api_settings_entries}"
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/commerce-extensions/create-a-custom-entry"
+    url: "/v2/settings/extensions/custom-apis/{custom_apis}/entries"
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/commerce-extensions/update-a-custom-entry"
+    url: "/v2/settings/extensions/custom-apis/{custom_apis}/entries/{custom_api_settings_entries}"
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/commerce-extensions/get-a-custom-entry"
+    url: "/v2/settings/extensions/custom-apis/{custom_apis}/entries/{custom_api_settings_entries}"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/commerce-extensions/get-all-custom-entries"
+    url: "/v2/settings/extensions/custom-apis/{custom_apis}/entries/"
+  attributes:
+    data.type:
+      type: STRING
+    ^data\.(.+)$:
+      type: STRING
+custom-api-extensions-entries:
+  singular-name: custom-api-extension-entry
+  json-api-type: custom_entry
+  json-api-format: "legacy"
+  no-wrapping: true
+  docs: "https://elasticpath.dev/docs/api/commerce-extensions/custom-api-entries"
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/api/commerce-extensions/delete-a-custom-entry-settings"
+    url: "/v2/extensions/{custom_apis}/{custom_api_extensions_entries}"
+    parent_resource_value_overrides:
+      custom_apis: slug
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/commerce-extensions/create-a-custom-entry-settings"
+    url: "/v2/extensions/{custom_apis}"
+    # BUG: Why doesn't this work
+    parent_resource_value_overrides:
+      custom_apis: slug
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/commerce-extensions/put-a-custom-entry-settings"
+    url: "/v2/extensions/{custom_apis}/{custom_api_extensions_entries}"
+    parent_resource_value_overrides:
+      custom_apis: slug
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/commerce-extensions/get-a-custom-entry-settings"
+    url: "/v2/extensions/{custom_apis}/{custom_api_extensions_entries}"
+    parent_resource_value_overrides:
+      custom_apis: slug
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/commerce-extensions/get-custom-entries-settings"
+    url: "/v2/extensions/{custom_apis}/"
+    parent_resource_value_overrides:
+      custom_apis: slug
+  attributes:
+    data.type:
+      type: STRING
+    ^data\.(.+)$:
+      type: STRING
+built-in-roles:
+  singular-name: built-in-role
+  json-api-type: built_in_role
+  json-api-format: legacy
+  docs: "https://elasticpath.dev/docs/api/permissions/built-in-roles"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/permissions/list-built-in-roles"
+    url: "/v2/permissions/built-in-roles"
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/permissions/get-a-built-in-role"
+    url: "/v2/permissions/built-in-roles/{built_in_roles}"
+custom-api-role-policies:
+  singular-name: custom-api-role-policy
+  json-api-type: custom_api_role_policy
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/api/permissions/custom-api-role-policies"
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/api/permissions/delete-a-custom-api-role-policy"
+    url: "/v2/permissions/custom-api-role-policies/{custom_api_role_policies}"
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/permissions/create-a-custom-api-role-policy"
+    url: "/v2/permissions/custom-api-role-policies/"
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/permissions/update-a-custom-api-role-policy"
+    url: "/v2/permissions/custom-api-role-policies/{custom_api_role_policies}"
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/permissions/get-a-custom-api-role-policy"
+    url: "/v2/permissions/custom-api-role-policies/{custom_api_role_policies}"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/permissions/list-custom-api-role-policies"
+    url: "/v2/permissions/custom-api-role-policies"
+  attributes:
+    create:
+      type: BOOL
+    list:
+      type: BOOL
+    read:
+      type: BOOL
+    update:
+      type: BOOL
+    delete:
+      type: BOOL
+    relationships.custom_api.data.type:
+      type: CONST:custom_api
+    relationships.custom_api.data.id:
+      type: RESOURCE_ID:custom-apis
+    relationships.role.data.type:
+      type: CONST:built_in_role
+    relationships.role.data.id:
+      type: RESOURCE_ID:built-in-role

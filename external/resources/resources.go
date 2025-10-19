@@ -1,16 +1,20 @@
 package resources
 
 import (
+	"embed"
 	_ "embed"
+	"fmt"
+	"io/fs"
 	"regexp"
+	"strings"
 
 	"github.com/elasticpath/epcc-cli/config"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
 )
 
-//go:embed yaml/resources.yaml
-var resourceMetaData string
+//go:embed yaml/*.yaml
+var resourceFiles embed.FS
 
 var resources map[string]Resource
 
@@ -70,6 +74,9 @@ type Resource struct {
 
 	// If another resource is used to create this resource, list it here
 	CreatedBy []VerbResource `yaml:"created_by,omitempty"`
+
+	// Source Filename
+	SourceFile string
 }
 
 type QueryParameter struct {
@@ -182,10 +189,43 @@ func GetSingularResourceByName(name string) (Resource, bool) {
 	return Resource{}, false
 }
 
-func GenerateResourceMetadataFromYaml(yamlTxt string) (map[string]Resource, error) {
+func GenerateResourceMetadataFromYaml() (map[string]Resource, error) {
 	resources := make(map[string]Resource)
 
-	err := yaml.Unmarshal([]byte(yamlTxt), &resources)
+	entries, err := fs.ReadDir(resourceFiles, "yaml")
+
+	if err != nil {
+		return nil, err
+	}
+
+	for _, entry := range entries {
+		if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".yaml") {
+			continue
+		}
+
+		yamlBytes, err := resourceFiles.ReadFile("yaml/" + entry.Name())
+
+		if err != nil {
+			return nil, fmt.Errorf("Couldn't read resource.yaml %s: %w", entry.Name(), err)
+		}
+
+		r := map[string]Resource{}
+		err = yaml.Unmarshal(yamlBytes, &r)
+		if err != nil {
+			return nil, fmt.Errorf("Couldn't unmarshal resource.yaml %s: %w", entry.Name(), err)
+		}
+
+		for k, v := range r {
+
+			if _, ok := resources[k]; ok {
+				return nil, fmt.Errorf("Duplicate resource %s", k)
+			}
+			v.SourceFile = entry.Name()
+			log.Infof("Loaded %s from %s", k, entry.Name())
+			resources[k] = v
+		}
+	}
+
 	if err != nil {
 		return nil, err
 	}
@@ -208,7 +248,7 @@ func PublicInit() {
 	if resources != nil {
 		return
 	}
-	resourceData, err := GenerateResourceMetadataFromYaml(resourceMetaData)
+	resourceData, err := GenerateResourceMetadataFromYaml()
 
 	if err != nil {
 		panic("Couldn't load the resource meta data: " + err.Error())

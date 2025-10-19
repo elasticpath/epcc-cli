@@ -1,0 +1,11 @@
+catalog-products:
+  singular-name: "catalog-product"
+  json-api-type: "product"
+  json-api-format: "compliant"
+  docs: "https://elasticpath.dev/docs/api/pxm/catalog/shopper-catalog-api"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/pxm/catalog/get-by-context-all-products"
+    url: "/catalog/products"
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/catalog/get-by-context-product"
+    url: "/catalog/products/{catalog_products}"

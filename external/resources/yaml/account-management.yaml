@@ -1,0 +1,315 @@
+account-authentication-settings:
+  singular-name: "account-authentication-setting"
+  json-api-type: "account_authentication_settings"
+  json-api-format: "legacy"
+  suppress-reset-warning: true
+  docs: "https://elasticpath.dev/docs/api/accounts/account-authentication-settings"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/accounts/get-v-2-settings-account-authentication"
+    url: "/v2/settings/account-authentication"
+    openapi-operation-id: "get-v2-settings-account-authentication"
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/accounts/get-v-2-settings-account-authentication"
+    url: "/v2/settings/account-authentication"
+    openapi-operation-id: "get-v2-settings-account-authentication"
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/accounts/put-v-2-settings-account-authentication"
+    url: "/v2/settings/account-authentication"
+    openapi-operation-id: "put-v2-settings-account-authentication"
+  attributes:
+    enable_self_signup:
+      type: BOOL
+    auto_create_account_for_account_members:
+      type: BOOL
+    account_member_self_management:
+      type: ENUM:disabled,update_only
+account-management-authentication-tokens:
+  singular-name: "account-management-authentication-token"
+  json-api-type: "account_management_authentication_token"
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/api/accounts/account-management-authentication"
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/accounts/post-v-2-account-members-tokens"
+    url: "/v2/account-members/tokens"
+    content-type: application/json
+    openapi-operation-id: "post-v2-account-members-tokens"
+  attributes:
+    authentication_mechanism:
+      type: ENUM:oidc,password,passwordless,self_signup,account_management_authentication_token
+    oauth_authorization_code:
+      type: STRING
+    oauth_redirect_uri:
+      type: URL
+    oauth_code_verifier:
+      type: STRING
+    password_profile_id:
+      type: RESOURCE_ID:password-profiles
+    username:
+      type: STRING
+    password:
+      type: STRING
+    name:
+      type: STRING
+      autofill: FUNC:Name
+    email:
+      type: STRING
+      autofill: FUNC:Email
+  suppress-reset-warning: true
+account-members:
+  singular-name: "account-member"
+  json-api-type: "account_member"
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/api/accounts/account-members"
+  alternate-json-type-for-aliases:
+    - user_authentication_info
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/accounts/account-members"
+    url: "/v2/account-members"
+    openapi-operation-id: "get-v2-account-members"
+    query:
+      - name: page[limit]
+      - name: page[offset]
+      - name: sort
+      - name: filter
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/accounts/account-members"
+    url: "/v2/account-members/{account_members}"
+    openapi-operation-id: "get-v2-account-members-accountMemberID"
+  attributes:
+    name:
+      type: STRING
+    email:
+      type: STRING
+  created_by:
+    - verb: create
+      resource: user-authentication-info
+account-memberships:
+  singular-name: "account-membership"
+  json-api-type: "account_membership"
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/api/accounts/account-membership"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/accounts/account-membership"
+    url: "/v2/accounts/{accounts}/account-memberships"
+    openapi-operation-id: "get-v2-accounts-accountID-account-memberships"
+    query:
+      - name: filter
+      - name: sort
+      - name: page[limit]
+      - name: page[offset]
+      - name: include
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/accounts/account-membership"
+    url: "/v2/accounts/{accounts}/account-memberships/{account_memberships}"
+    openapi-operation-id: "get-v2-accounts-accountID-account-memberships-membershipID"
+    query:
+      - name: include
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/api/accounts/delete-v-2-accounts-account-id-account-memberships-membership-id"
+    url: "/v2/accounts/{accounts}/account-memberships/{account_memberships}"
+    openapi-operation-id: "delete-v2-accounts-accountID-account-memberships-membershipID"
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/accounts/account-membership"
+    url: "/v2/accounts/{accounts}/account-memberships"
+    content-type: application/json
+    openapi-operation-id: "post-v2-accounts-accountID-account-memberships"
+  attributes:
+    account_member_id:
+      type: RESOURCE_ID:account-members
+unassigned-account-memberships:
+  singular-name: "unassigned-account-membership"
+  json-api-type: "account_member"
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/api/accounts/get-v-2-accounts-account-id-account-memberships-unassigned-account-members"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/accounts/get-v-2-accounts-account-id-account-memberships-unassigned-account-members"
+    url: "/v2/accounts/{accounts}/account-memberships/unassigned-account-members/"
+    openapi-operation-id: "get-v2-accounts-accountID-account-memberships-unassigned-account-members"
+    query:
+      - name: page[limit]
+      - name: page[offset]
+      - name: sort
+      - name: filter
+accounts:
+  singular-name: "account"
+  json-api-type: "account"
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/api/accounts"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/accounts/get-v-2-accounts"
+    url: "/v2/accounts"
+    openapi-operation-id: "get-v2-accounts"
+    query:
+      - name: filter
+      - name: page[limit]
+      - name: page[offset]
+      - name: sort
+      - name: include
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/accounts/get-v-2-accounts-account-id"
+    url: "/v2/accounts/{accounts}"
+    openapi-operation-id: "get-v2-accounts-accountID"
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/accounts/put-v-2-accounts-account-id"
+    url: "/v2/accounts/{accounts}"
+    openapi-operation-id: "put-v2-accounts-accountID"
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/api/accounts/delete-v-2-accounts-account-id"
+    url: "/v2/accounts/{accounts}"
+    openapi-operation-id: "delete-v2-accounts-accountID"
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/accounts/post-v-2-accounts"
+    url: "/v2/accounts"
+    content-type: application/json
+    openapi-operation-id: "post-v2-accounts"
+  attributes:
+    name:
+      type: STRING
+      autofill: FUNC:Company
+    legal_name:
+      type: STRING
+      autofill: FUNC:Company
+    registration_id:
+      type: STRING
+    parent_id:
+      type: RESOURCE_ID:accounts
+account-addresses:
+  singular-name: "account-address"
+  json-api-type: "address"
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/api/addresses/account-addresses"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/addresses/get-v-2-account-addresses"
+    url: "/v2/accounts/{accounts}/addresses"
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/addresses/get-v-2-account-address"
+    url: "/v2/accounts/{accounts}/addresses/{account_addresses}"
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/addresses/put-v-2-account-address"
+    url: "/v2/accounts/{accounts}/addresses/{account_addresses}"
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/api/addresses/delete-v-2-account-address"
+    url: "/v2/accounts/{accounts}/addresses/{account_addresses}"
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/addresses/post-v-2-account-address"
+    url: "/v2/accounts/{accounts}/addresses"
+    content-type: application/json
+  attributes:
+    first_name:
+      type: STRING
+      autofill: FUNC:FirstName
+    last_name:
+      type: STRING
+      autofill: FUNC:LastName
+    name:
+      type: STRING
+    phone_number:
+      type: STRING
+      autofill: FUNC:PhoneFormatted
+    instructions:
+      type: STRING
+      autofill: FUNC:Phrase
+    company_name:
+      type: STRING
+      autofill: FUNC:Company
+    line_1:
+      type: STRING
+      autofill: FUNC:Street
+    line_2:
+      type: STRING
+    city:
+      type: STRING
+      autofill: FUNC:City
+    county:
+      type: STRING
+      autofill: FUNC:StateAbr
+    region:
+      type: STRING
+      autofill: FUNC:StateAbr
+    postcode:
+      type: STRING
+      autofill: FUNC:Zip
+    country:
+      type: STRING
+      autofill: FUNC:CountryAbr
+account-cart-associations:
+  singular-name: account-cart-association
+  json-api-type: account-cart-relationship
+  json-api-format: "legacy"
+  no-wrapping: true
+  docs: "https://elasticpath.dev/docs/api/carts/account-cart-associations"
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/api/carts/delete-customer-cart-association"
+    url: "/v2/carts/{carts}/relationships/accounts"
+    openapi-operation-id: deleteAccountCartAssociation
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/carts/account-cart-associations"
+    url: "/v2/carts/{carts}/relationships/accounts"
+    openapi-operation-id: createAccountCartAssociation
+    content-type: application/json
+  attributes:
+    data[n].id:
+      type: RESOURCE_ID:account
+    data[n].type:
+      type: CONST:account
+      autofill: VALUE:account
+account-tags:
+  singular-name: "account-tag"
+  json-api-type: "account_tag"
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/api/accounts/account-tags"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/accounts/list-account-tags"
+    url: "/v2/account-tags"
+    openapi-operation-id: "ListAccountTags"
+    query:
+      - name: filter
+      - name: page[limit]
+      - name: page[offset]
+      - name: sort
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/accounts/get-an-account-tag"
+    url: "/v2/account-tags/{account_tags}"
+    openapi-operation-id: "GetAnAccountTag"
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/accounts/update-an-account-tag"
+    url: "/v2/account-tags/{account_tags}"
+    openapi-operation-id: "UpdateAnAccountTag"
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/api/accounts/delete-an-account-tag"
+    url: "/v2/account-tags/{account_tags}"
+    openapi-operation-id: "DeleteAnAccountTag"
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/accounts/create-an-account-tag"
+    url: "/v2/account-tags/"
+    openapi-operation-id: "CreateAnAccountTag"
+  attributes:
+    name:
+      type: STRING
+      autofill: FUNC:Color
+    description:
+      type: STRING
+      autofill: FUNC:Phrase
+account-tag-relationships:
+  singular-name: "account-tag-relationship"
+  json-api-type: "account_tag_relationship"
+  json-api-format: "legacy"
+  no-wrapping: true
+  docs: "https://elasticpath.dev/docs/api/accounts/account-tags"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/accounts/get-an-account-tags-relationship"
+    url: "/v2/accounts/{accounts}/relationships/account-tags"
+    openapi-operation-id: "GetAnAccountTagsRelationship"
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/accounts/add-account-tags-on-account"
+    url: "/v2/accounts/{accounts}/relationships/account-tags"
+    openapi-operation-id: "AddAccountTagsOnAccount"
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/api/accounts/remove-account-tags-on-account"
+    url: "/v2/accounts/{accounts}/relationships/account-tags"
+    openapi-operation-id: "RemoveAccountTagsOnAccount"
+  attributes:
+    data[n].id:
+      type: RESOURCE_ID:account-tag
+    data[n].type:
+      type: CONST:account_tag

@@ -7,7 +7,7 @@ import (
 	"github.com/elasticpath/epcc-cli/external/resources"
 )
 
-// TestOpenAPIOperationIDs verifies that all non-null openapi-operation-id values in resources.yaml
+// TestOpenAPIOperationIDs verifies that all non-null openapi-operation-id values in resource yaml files
 // actually exist in the OpenAPI specs, and that resources which should have an operation ID do have one
 func TestOpenAPIOperationIDs(t *testing.T) {
 	// Get all operation IDs from OpenAPI specs
@@ -191,7 +191,7 @@ func TestOpenAPIOperationIDs(t *testing.T) {
 				invalid.ResourceName, invalid.OperationType, invalid.OperationID)
 		}
 	} else {
-		t.Logf("All openapi-operation-id values in resources.yaml are valid")
+		t.Logf("All openapi-operation-id values in resources yamls are valid")
 	}
 
 	// Report missing operation IDs
@@ -242,7 +242,7 @@ func TestOpenAPIOperationIDs(t *testing.T) {
 }
 
 // TestQueryParametersMatchOpenAPI validates that all query parameters defined in OpenAPI specs
-// are also defined in the corresponding resources.yaml operations
+// are also defined in the corresponding resource yaml file operations
 func TestQueryParametersMatchOpenAPI(t *testing.T) {
 	// Get all resources
 	allResources := resources.GetPluralResources()
@@ -286,7 +286,7 @@ func TestQueryParametersMatchOpenAPI(t *testing.T) {
 				resourceQueryParams[param.Name] = true
 			}
 
-			// Check if all OpenAPI query parameters are defined in resources.yaml
+			// Check if all OpenAPI query parameters are defined in resources yaml files
 			for _, openAPIParam := range openAPIQueryParams {
 				if !resourceQueryParams[openAPIParam] {
 					missingQueryParams = append(missingQueryParams, struct {
@@ -309,12 +309,12 @@ func TestQueryParametersMatchOpenAPI(t *testing.T) {
 
 	// Report missing query parameters
 	if len(missingQueryParams) > 0 {
-		t.Errorf("Found %d query parameters in OpenAPI specs that are missing from resources.yaml:", len(missingQueryParams))
+		t.Errorf("Found %d query parameters in OpenAPI specs that are missing from resource yaml files:", len(missingQueryParams))
 		for _, missing := range missingQueryParams {
 			t.Errorf("  - Resource: %s, Operation: %s, OpenAPI ID: %s, Missing Parameter: %s",
 				missing.ResourceName, missing.OperationType, missing.OperationID, missing.MissingParam)
 		}
 	} else {
-		t.Logf("All query parameters from OpenAPI specs are properly defined in resources.yaml")
+		t.Logf("All query parameters from OpenAPI specs are properly defined in resource yaml files")
 	}
 }

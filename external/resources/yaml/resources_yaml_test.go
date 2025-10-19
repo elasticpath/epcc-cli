@@ -21,9 +21,21 @@ import (
 	"github.com/santhosh-tekuri/jsonschema/v4"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/yosida95/uritemplate/v3"
 	"gopkg.in/yaml.v3"
 )
+
+// This test largely exists to ensure we don't lose resources (this was important during refactoring)
+func TestExpectedNumberOfResources(t *testing.T) {
+	// Fixture Setup
+
+	// Execute SUT
+	resourceCount := len(resources.GetPluralResources())
+
+	// Verification
+	require.Equal(t, resourceCount, 134)
+}
 
 func TestCreatedByTemplatesAllReferenceValidResource(t *testing.T) {
 	// Fixture Setup
@@ -289,19 +301,36 @@ func TestJsonSchemaValidate(t *testing.T) {
 		log.Fatalf("%#v", err)
 	}
 
-	data, err := os.ReadFile("resources.yaml")
+	dirEntries, err := os.ReadDir(".")
+
 	if err != nil {
-		log.Fatal(err)
-	}
-
-	var v interface{}
-	if err := yaml.Unmarshal(data, &v); err != nil {
-		log.Fatal(err)
-	}
-
-	if err = sch.ValidateInterface(v); err != nil {
 		log.Fatalf("%#v", err)
 	}
+
+	for _, file := range dirEntries {
+		if file.IsDir() {
+			continue
+		}
+
+		if !strings.HasSuffix(file.Name(), ".yaml") {
+			continue
+		}
+
+		data, err := os.ReadFile(file.Name())
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		var v interface{}
+		if err := yaml.Unmarshal(data, &v); err != nil {
+			log.Fatalf("error processing file %s: %#v", file.Name(), err)
+		}
+
+		if err = sch.ValidateInterface(v); err != nil {
+			log.Fatalf("error processing file %s: %#v", file.Name(), err)
+		}
+	}
+
 }
 
 var redirectRegex = regexp.MustCompile(`window\.location\.href\s*=\s*'([^']+)'`)
@@ -409,7 +438,7 @@ func TestResourceDocsExist(t *testing.T) {
 					//fmt.Printf("\t Further Redirect to %s =>  %s \n", rewriteUrlOne, matches[1])
 					//fmt.Printf("Rewrite %s => https://elasticpath.dev%s\n", link, matches[1])
 					fmt.Printf("# %s => https://elasticpath.dev%s\n", link, matches[1])
-					fmt.Printf("sed -E -i 's@%s@https://elasticpath.dev%s@g' resources.yaml\n", link, matches[1])
+					fmt.Printf("sed -E -i 's@%s@https://elasticpath.dev%s@g' *.yaml\n", link, matches[1])
 				} else if matches[1] == "/" {
 					fmt.Printf("\t Broken Redirect to =>  %s \n", matches[1])
 					brokenRedirectToRoot++
@@ -423,7 +452,7 @@ func TestResourceDocsExist(t *testing.T) {
 				// Rewrite
 				if link != rewriteUrlOne {
 					fmt.Printf("# %s => %s\n", link, rewriteUrlOne)
-					fmt.Printf("sed  -E -i 's@%s@%s@g resources.yaml'\n", link, rewriteUrlOne)
+					fmt.Printf("sed  -E -i 's@%s@%s@g *.yaml'\n", link, rewriteUrlOne)
 				}
 
 				mutex.Unlock()

@@ -1,0 +1,165 @@
+#subscription-products:
+#  docs: "https://elasticpath.dev/docs/api/subscriptions/products"
+#  json-api-type: subscription_product
+#  json-api-format: compliant
+#  singular-name: subscription-product
+#  get-collection:
+#    docs: "https://elasticpath.dev/docs/api/subscriptions/list-products"
+#    url: /v2/subscriptions/products
+#  get-entity:
+#    docs: "https://elasticpath.dev/docs/api/subscriptions/get-product"
+#    url: /v2/subscriptions/products/{subscription_products}
+#  create-entity:
+#    docs: "https://elasticpath.dev/docs/api/subscriptions/create-product"
+#    url: /v2/subscriptions/products
+#  update-entity:
+#    docs: "https://elasticpath.dev/docs/api/subscriptions/update-product"
+#    url: /v2/subscriptions/products/{subscription_products}
+#  delete-entity:
+#    docs: "https://elasticpath.dev/docs/api/subscriptions/delete-product"
+#    url: /v2/subscriptions/products/{subscription_products}
+#  attributes:
+#    ^price\.([a-zA-Z0-9-_]+)\.amount$:
+#      type: INT
+#    ^price\.([a-zA-Z0-9-_]+)\.includes_tax$:
+#      type: BOOL
+#    description:
+#      type: STRING
+#      autofill: VALUE:Auto Generated
+#    external_ref:
+#      type: STRING
+#    main_image:
+#      type: STRING
+#    name:
+#      type: STRING
+#      autofill: FUNC:Name
+#    price_units.amount:
+#      type: INT
+#    price_units.unit:
+#      type: ENUM:day,month
+#    sku:
+#      type: STRING
+#subscription-plans:
+#  docs: "https://elasticpath.dev/docs/api/subscriptions/plans"
+#  json-api-type: subscription_plan
+#  json-api-format: compliant
+#  singular-name: subscription-plan
+#  get-collection:
+#    docs: "https://elasticpath.dev/docs/api/subscriptions/list-plans"
+#    url: /v2/subscriptions/plans
+#  get-entity:
+#    docs: "https://elasticpath.dev/docs/api/subscriptions/get-plan"
+#    url: /v2/subscriptions/plans/{subscription_plans}
+#  create-entity:
+#    docs: "https://elasticpath.dev/docs/api/subscriptions/create-plan"
+#    url: /v2/subscriptions/plans
+#  update-entity:
+#    docs: "https://elasticpath.dev/docs/api/subscriptions/update-plan"
+#    url: /v2/subscriptions/plans/{subscription_plans}
+#  delete-entity:
+#    docs: "https://elasticpath.dev/docs/api/subscriptions/delete-plan"
+#    url: /v2/subscriptions/plans/{subscription_plans}
+#  attributes:
+#    ^fixed_price\.(USD|[a-zA-Z0-9-_]+)\.amount$:
+#      type: INT
+#    ^fixed_price\.(USD|[a-zA-Z0-9-_]+)\.includes_tax$:
+#      type: BOOL
+#    billing_day:
+#      type: INT
+#    billing_frequency:
+#      type: INT
+#      autofill: VALUE:1
+#    billing_interval_type:
+#      type: ENUM:day,week,month,year
+#      autofill: VALUE:day
+#    billing_month_day:
+#      type: INT
+#    can_cancel:
+#      type: BOOL
+#      autofill: VALUE:true
+#    can_pause:
+#      type: BOOL
+#      autofill: VALUE:true
+#    can_resume:
+#      type: BOOL
+#      autofill: VALUE:true
+#    description:
+#      type: STRING
+#      autofill: VALUE:Auto Generated
+#    end_behavior:
+#      type: ENUM:close,roll
+#      autofill: VALUE:close
+#    external_ref:
+#      type: STRING
+#    name:
+#      type: STRING
+#      autofill: FUNC:Name
+#    plan_length:
+#      type: INT
+#      autofill: VALUE:1
+#    status:
+#      type: ENUM:active,draft,archive
+#    trial_period:
+#      type: INT
+subscription-offerings:
+  docs: "https://elasticpath.dev/docs/api/subscriptions/offerings"
+  json-api-type: subscription_offering
+  json-api-format: compliant
+  singular-name: subscription-offering
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/create-offering"
+    url: /v2/subscriptions/offerings
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/get-offering"
+    url: /v2/subscriptions/offerings/{subscription_offerings}
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/create-offering"
+    url: /v2/subscriptions/offerings
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/update-offering"
+    url: /v2/subscriptions/offerings/{subscription_offerings}
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/delete-offering"
+    url: /v2/subscriptions/offerings/{subscription_offerings}
+  attributes:
+    description:
+      type: STRING
+      autofill: VALUE:Auto Generated
+    external_ref:
+      type: STRING
+    id:
+      type: RESOURCE_ID:subscription-offerings
+    name:
+      type: STRING
+      autofill: FUNC:Name
+    relationships.proration_policy.type:
+      type: CONST:subscription_proratiotion_policy
+    relationships.proration_policy.data.id:
+      type: RESOURCE_ID:subscription-proration-policies
+subscription-proration-policies:
+  docs: "https://elasticpath.dev/docs/api/subscriptions/create-proration-policy"
+  json-api-type: subscription_proration_policy
+  json-api-format: compliant
+  singular-name: subscription-proration-policy
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/list-proration-policies"
+    url: /v2/subscriptions/proration-policies
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/get-proration-policy"
+    url: /v2/subscriptions/proration-policies/{subscription_proration_policies}
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/create-proration-policy"
+    url: /v2/subscriptions/proration-policies
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/update-proration-policy"
+    url: /v2/subscriptions/proration-policies/{subscription_proration_policies}
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/delete-proration-policy"
+    url: /v2/subscriptions/proration-policies/{subscription_proration_policies}
+  attributes:
+    external_ref:
+      type: STRING
+    name:
+      type: STRING
+    rounding:
+      type: ENUM:up,down,nearest

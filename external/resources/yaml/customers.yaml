@@ -1,0 +1,143 @@
+customer-authentication-settings:
+  singular-name: "customer-authentication-setting"
+  json-api-type: "customer-authentication-settings"
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/authentication/single-sign-on/customer-authentication-settings/overview"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/authentication/single-sign-on/customer-authentication-settings/get-customer-authentication-settings"
+    url: "/v2/settings/customer-authentication"
+  get-entity:
+    docs: "https://elasticpath.dev/docs/authentication/single-sign-on/customer-authentication-settings/get-customer-authentication-settings"
+    url: "/v2/settings/customer-authentication/{customer_authentication_settings}"
+customers:
+  singular-name: "customer"
+  json-api-type: "customer"
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/customer-management/customer-management-api/customer-management-api-overview"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/customer-management/customer-management-api/get-all-customers"
+    url: "/v2/customers"
+  get-entity:
+    docs: "https://elasticpath.dev/docs/customer-management/customer-management-api/get-a-customer"
+    url: "/v2/customers/{customers}"
+  update-entity:
+    docs: "https://elasticpath.dev/docs/customer-management/customer-management-api/update-a-customer"
+    url: "/v2/customers/{customers}"
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/customer-management/customer-management-api/delete-a-customer"
+    url: "/v2/customers/{customers}"
+  create-entity:
+    docs: "https://elasticpath.dev/docs/customer-management/customer-management-api/create-a-customer"
+    url: "/v2/customers"
+    content-type: application/json
+  attributes:
+    name:
+      type: STRING
+      autofill: FUNC:Name
+    email:
+      type: STRING
+      autofill: FUNC:Email
+    password:
+      type: STRING
+customer-cart-associations:
+  singular-name: customer-cart-association
+  json-api-type: customer-cart-relationship
+  json-api-format: "legacy"
+  no-wrapping: true
+  docs: "https://elasticpath.dev/docs/api/carts/customer-cart-associations"
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/api/carts/delete-customer-cart-association"
+    url: "/v2/carts/{carts}/relationships/customers"
+    openapi-operation-id: deleteCustomerCartAssociation
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/carts/create-customer-cart-association"
+    url: "/v2/carts/{carts}/relationships/customers"
+    openapi-operation-id: createCustomerCartAssociation
+    content-type: application/json
+  attributes:
+    data[n].id:
+      type: RESOURCE_ID:customer
+    data[n].type:
+      type: CONST:customer
+      autofill: VALUE:customer
+customer-addresses:
+  singular-name: "customer-address"
+  json-api-type: "address"
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/api/customer-addresses/customer-addresses"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/customer-addresses/get-v-2-customer-addresses"
+    url: "/v2/customers/{customers}/addresses"
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/customer-addresses/get-v-2-customer-address"
+    url: "/v2/customers/{customers}/addresses/{customer_addresses}"
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/customer-addresses/put-v-2-customer-address"
+    url: "/v2/customers/{customers}/addresses/{customer_addresses}"
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/api/customer-addresses/delete-v-2-customer-address"
+    url: "/v2/customers/{customers}/addresses/{customer_addresses}"
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/customer-addresses/post-v-2-customer-address"
+    url: "/v2/customers/{customers}/addresses"
+    content-type: application/json
+  attributes:
+    first_name:
+      type: STRING
+      autofill: FUNC:FirstName
+    last_name:
+      type: STRING
+      autofill: FUNC:LastName
+    name:
+      type: STRING
+    phone_number:
+      type: STRING
+      autofill: FUNC:PhoneFormatted
+    instructions:
+      type: STRING
+      autofill: FUNC:Phrase
+    company_name:
+      type: STRING
+      autofill: FUNC:Company
+    line_1:
+      type: STRING
+      autofill: FUNC:Street
+    line_2:
+      type: STRING
+    city:
+      type: STRING
+      autofill: FUNC:City
+    county:
+      type: STRING
+      autofill: FUNC:StateAbr
+    region:
+      type: STRING
+      autofill: FUNC:StateAbr
+    postcode:
+      type: STRING
+      autofill: FUNC:Zip
+    country:
+      type: STRING
+      autofill: FUNC:CountryAbr
+customer-tokens:
+  singular-name: "customer-token"
+  json-api-type: "token"
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/customer-management/customer-management-api/customer-tokens"
+  create-entity:
+    docs: "https://elasticpath.dev/docs/customer-management/customer-management-api/customer-tokens"
+    url: "/v2/customers/tokens"
+  attributes:
+    password:
+      type: STRING
+    email:
+      type: STRING
+    authentication_mechanism:
+      type: ENUM:password,oidc
+    oauth_authorization_code:
+      type: STRING
+    oauth_redirect_uri:
+      type: STRING
+    oauth_code_verifier:
+      type: STRING
+  suppress-reset-warning: true
