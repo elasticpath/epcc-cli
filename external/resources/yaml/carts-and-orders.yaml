@@ -1,0 +1,377 @@
+
+carts:
+  singular-name: "cart"
+  json-api-type: "cart"
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/api/carts/cart-management"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/carts/get-carts"
+    url: "/v2/carts"
+    openapi-operation-id: getCarts
+    query:
+      - name: include
+      - name: page[limit]
+      - name: page[offset]
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/carts/get-a-cart"
+    url: "/v2/carts/{carts}"
+    openapi-operation-id: getACart
+    query:
+      - name: include
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/carts/create-a-cart#put-update-a-cart"
+    url: "/v2/carts/{carts}"
+    openapi-operation-id: updateACart
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/api/carts/delete-a-cart"
+    url: "/v2/carts/{carts}"
+    openapi-operation-id: deleteACart
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/carts/create-a-cart"
+    url: "/v2/carts"
+    openapi-operation-id: createACart
+    content-type: application/json
+  attributes:
+    id:
+      type: STRING
+    name:
+      type: STRING
+      autofill: FUNC:Noun
+    description:
+      type: STRING
+cart-items:
+  singular-name: "cart-item"
+  json-api-type: "cart_item"
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/api/carts/cart-items"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/carts/get-cart-items"
+    url: "/v2/carts/{carts}/items"
+    openapi-operation-id: getCartItems
+    query:
+      - name: include
+  update-entity:
+    docs: "https://elasticpath.dev/docs/carts-orders/bulk-add-to-cart"
+    url: "/v2/carts/{carts}/items/{cart_items}"
+    openapi-operation-id: updateACartItem
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/api/carts/delete-a-cart-item"
+    url: "/v2/carts/{carts}/items/{cart_items}"
+    openapi-operation-id: deleteACartItem
+  attributes:
+    sku:
+      type: STRING
+    quantity:
+      type: INT
+    id:
+      type: RESOURCE_ID:pcm-products
+cart-product-items:
+  singular-name: "cart-product-item"
+  json-api-type: "cart_item"
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/api/carts/cart-items"
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/carts/manage-carts"
+    url: "/v2/carts/{carts}/items"
+    openapi-operation-id: manageCarts
+    content-type: application/json
+  attributes:
+    sku:
+      type: RESOURCE_ID:pcm-products
+      alias_attribute: sku
+    quantity:
+      type: INT
+    id:
+      type: RESOURCE_ID:pcm-products
+    ^custom_inputs\.([a-zA-Z0-9_-]+)\.$:
+      type: STRING
+    tax[n].type:
+      type: CONST:tax_item
+    tax[n].name:
+      type: STRING
+    tax[n].juristiction:
+      type: STRING
+    tax[n].code:
+      type: STRING
+    tax[n].rate:
+      type: FLOAT
+    location:
+      type: RESOURCE_ID:mli-inventory-locations
+      alias_attribute: slug
+cart-custom-items:
+  singular-name: "cart-custom-item"
+  json-api-type: "custom_item"
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/api/carts/manage-carts#add-custom-item-to-cart"
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/carts/manage-carts#add-custom-item-to-cart"
+    url: "/v2/carts/{carts}/items"
+    openapi-operation-id: manageCarts
+    content-type: application/json
+  update-entity:
+    docs: "https://elasticpath.dev/docs/carts-orders/bulk-add-to-cart"
+    url: "/v2/carts/{carts}/items/{cart_custom_items}"
+    openapi-operation-id: updateACartItem
+  attributes:
+    sku:
+      type: STRING
+    quantity:
+      type: INT
+      autofill: FUNC:NonZeroUint8
+    description:
+      type: STRING
+    name:
+      type: STRING
+      autofill: FUNC:CarModel
+    ^custom_inputs\.([a-zA-Z0-9_-]+)\.$:
+      type: STRING
+    price.amount:
+      type: INT
+      autofill: FUNC:Uint16
+    price.includes_tax:
+      type: BOOL
+    tax[n].type:
+      type: CONST:tax_item
+    tax[n].name:
+      type: STRING
+    tax[n].juristiction:
+      type: STRING
+    tax[n].code:
+      type: STRING
+    tax[n].rate:
+      type: FLOAT
+cart-checkout:
+  singular-name: "cart-checkout"
+  json-api-type: "checkout"
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/api/carts/checkout"
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/carts/checkout"
+    url: "/v2/carts/{carts}/checkout"
+    openapi-operation-id: checkoutAPI
+    content-type: application/json
+    creates: order
+  attributes:
+    account.id:
+      type: RESOURCE_ID:account
+      usage: "The account id to associate the order with"
+    account.member_id:
+      type: RESOURCE_ID:account-member
+      usage: "The account member id to associate the order with"
+    customer.id:
+      type: RESOURCE_ID:customer
+      usage: "The id of the customer to use, not used when checking out an order for an account."
+    customer.email:
+      type: STRING
+    customer.name:
+      type: STRING
+    contact.name:
+      type: STRING
+      usage: "A contact name for the order, required when checking out an order for an account."
+    contact.email:
+      type: STRING
+      usage: "A contact e-mail for the order, required when checking out an order for an account. "
+    billing_address.first_name:
+      type: STRING
+      autofill: FUNC:FirstName
+    billing_address.last_name:
+      type: STRING
+      autofill: FUNC:LastName
+    billing_address.company_name:
+      type: STRING
+      autofill: FUNC:Company
+    billing_address.line_1:
+      type: STRING
+      autofill: FUNC:Street
+    billing_address.line_2:
+      type: STRING
+    billing_address.city:
+      type: STRING
+      autofill: FUNC:City
+    billing_address.county:
+      type: STRING
+      autofill: FUNC:StateAbr
+    billing_address.region:
+      type: STRING
+      autofill: FUNC:State
+    billing_address.postcode:
+      type: STRING
+      autofill: FUNC:Zip
+    billing_address.country:
+      type: STRING
+      autofill: FUNC:Country
+    shipping_address.first_name:
+      type: STRING
+      autofill: FUNC:FirstName
+    shipping_address.last_name:
+      type: STRING
+      autofill: FUNC:LastName
+    shipping_address.company_name:
+      type: STRING
+      autofill: FUNC:Company
+    shipping_address.line_1:
+      type: STRING
+      autofill: FUNC:Street
+    shipping_address.line_2:
+      type: STRING
+    shipping_address.city:
+      type: STRING
+      autofill: FUNC:City
+    shipping_address.county:
+      type: STRING
+      autofill: FUNC:StateAbr
+    shipping_address.region:
+      type: STRING
+      autofill: FUNC:StateAbr
+    shipping_address.postcode:
+      type: STRING
+      autofill: FUNC:Zip
+    shipping_address.country:
+      type: STRING
+      autofill: FUNC:Country
+
+orders:
+  singular-name: "order"
+  json-api-type: "order"
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/api/carts/orders"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/carts/get-customer-orders"
+    url: "/v2/orders"
+    openapi-operation-id: getCustomerOrders
+    query:
+      - name: include
+      - name: page[limit]
+      - name: page[offset]
+      - name: filter
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/carts/update-an-order"
+    url: "/v2/orders/{orders}"
+    openapi-operation-id: getAnOrder
+    query:
+      - name: include
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/carts/orders"
+    url: "/v2/orders/{orders}"
+    openapi-operation-id: updateAnOrder
+    content-type: application/json
+  attributes:
+    shipping_address.first_name:
+      type: STRING
+    shipping_address.last_name:
+      type: STRING
+    shipping_address.company_name:
+      type: STRING
+    shipping_address.line_1:
+      type: STRING
+    shipping_address.line_2:
+      type: STRING
+    shipping_address.city:
+      type: STRING
+    shipping_address.county:
+      type: STRING
+    shipping_address.region:
+      type: STRING
+    shipping_address.postcode:
+      type: STRING
+    shipping_address.country:
+      type: STRING
+  created_by:
+    - verb: create
+      resource: cart-checkout
+order-items:
+  singular-name: "order-item"
+  json-api-type: "order_item"
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/api/carts/get-order-items"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/carts/get-order-items#get-get-order-items"
+    url: "/v2/orders/{orders}/items"
+    openapi-operation-id: getOrderItems
+    query:
+      - name: include
+order-payments:
+  singular-name: "order-payment"
+  json-api-type: "order_payment"
+  json-api-format: legacy
+  # TODO change this to not send a type
+  #no-wrapping: true
+  docs: "https://elasticpath.dev/docs/api/carts/payments"
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/carts/payments"
+    url: "/v2/orders/{orders}/payments"
+    openapi-operation-id: paymentSetup
+  attributes:
+    payment:
+      type: STRING
+    gateway:
+      type: ENUM:adyen,authorize_net,braintree,card_connect,cyber_source,paypal_express_checkout,stripe,stripe_connect,stripe_payment_intents,elastic_path_payments_stripe
+    method:
+      type: ENUM:purchase,authorize,capture,refund
+    options.shopper_reference:
+      type: STRING
+    options.recurring_processing_model:
+      type: STRING
+    options.customer_payment_profile_id:
+      type: STRING
+    options.custom_fields:
+      type: STRING
+    options.description:
+      type: STRING
+    options.soft_descriptor:
+      type: STRING
+    options.application_context.return_url:
+      type: STRING
+    options.application_context.cancel_url:
+      type: STRING
+    options.application_context.shipping_preference:
+      type: STRING
+    options.application_context.landing_page:
+      type: ENUM:LOGIN,BILLING,NO_PREFERENCE
+    options.application_context.locale:
+      type: STRING
+    options.application_context.brand_name:
+      type: STRING
+    options.idempotency_key:
+      type: STRING
+    options.receipt_email:
+      type: STRING
+    options.customer:
+      type: STRING
+    amount:
+      type: INT
+order-transactions:
+  singular-name: "order-transaction"
+  json-api-type: "transaction"
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/api/carts/get-order-transactions"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/carts/get-order-transactions"
+    url: "/v2/orders/{orders}/transactions"
+    openapi-operation-id: getOrderTransactions
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/carts/get-a-transaction"
+    url: "/v2/orders/{orders}/transactions/{order_transactions}"
+    openapi-operation-id: getATransaction
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/payments/payment-gateways-introduction"
+    url: "/v2/orders/{orders}/payments"
+    openapi-operation-id: paymentSetup
+order-transaction-capture:
+  singular-name: "order-transaction-capture"
+  json-api-type: "transaction"
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/api/payments/payment-gateways-introduction#post-capture-transaction"
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/payments/payment-gateways-introduction#post-capture-transaction"
+    url: "/v2/orders/{orders}/transactions/{order_transactions}/capture"
+    openapi-operation-id: captureATransaction
+order-transaction-refund:
+  singular-name: "order-transaction-refund"
+  json-api-type: "transaction"
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/carts-orders/refund-a-transaction"
+  create-entity:
+    docs: "https://elasticpath.dev/docs/carts-orders/refund-a-transaction"
+    url: "/v2/orders/{orders}/transactions/{order_transactions}/refund"
+    openapi-operation-id: refundATransaction

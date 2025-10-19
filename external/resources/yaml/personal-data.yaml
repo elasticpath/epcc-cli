@@ -1,0 +1,47 @@
+
+
+personal-data-log-entries:
+  singular-name: "personal-data-log-entry"
+  json-api-type: "personal_data_log_entry"
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/api/personal-data/get-personal-data-logs"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/personal-data/get-personal-data-logs"
+    url: "/v2/personal-data/logs"
+  attributes:
+    resource_type:
+      type: JSON_API_TYPE
+    resource_id:
+      type: RESOURCE_ID:*
+personal-data-related-data-entries:
+  singular-name: "personal-data-related-data-entry"
+  json-api-type: "related_data_entry"
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/api/personal-data/get-related-data-entries"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/personal-data/get-related-data-entries"
+    url: "/v2/personal-data/related-data-entries"
+  attributes:
+    resource_type:
+      type: JSON_API_TYPE
+    resource_id:
+      type: RESOURCE_ID:*
+personal-data-erasure-requests:
+  singular-name: "personal-data-erasure-request"
+  json-api-type: "erasure_request"
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/api/personal-data/get-erasure-request"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/personal-data/get-erasure-request"
+    url: "/v2/personal-data/erasure-requests"
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/personal-data/get-erasure-request"
+    url: "/v2/personal-data/erasure-requests/{personal_data_erasure_requests}"
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/personal-data/post-erasure-request"
+    url: "/v2/personal-data/erasure-requests/"
+  attributes:
+    resource_type:
+      type: JSON_API_TYPE
+    resource_id:
+      type: RESOURCE_ID:*

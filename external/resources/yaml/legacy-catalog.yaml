@@ -1,0 +1,240 @@
+
+v2-brands:
+  singular-name: "v2-brand"
+  json-api-type: "brand"
+  json-api-format: "legacy"
+  legacy: true
+  docs: "n/a"
+  get-collection:
+    docs: "n/a"
+    url: "/v2/brands"
+  get-entity:
+    docs: "n/a"
+    url: "/v2/brands/{v2_brands}"
+  create-entity:
+    docs: "n/a"
+    url: "/v2/brands"
+  update-entity:
+    docs: "n/a"
+    url: "/v2/brands/{v2_brands}"
+  delete-entity:
+    docs: "n/a"
+    url: "/v2/brands/{v2_brands}"
+  attributes:
+    name:
+      type: STRING
+    slug:
+      type: STRING
+    description:
+      type: STRING
+    status:
+      type: ENUM:live,draft
+    id:
+      type: RESOURCE_ID:v2-brand
+v2-categories:
+  singular-name: "v2-category"
+  json-api-type: "category"
+  json-api-format: "legacy"
+  legacy: true
+  docs: "n/a"
+  get-collection:
+    docs: "n/a"
+    url: "/v2/categories"
+  get-entity:
+    docs: "n/a"
+    url: "/v2/categories/{v2_categories}"
+  update-entity:
+    docs: "n/a"
+    url: "/v2/categories/{v2_categories}"
+  delete-entity:
+    docs: "n/a"
+    url: "/v2/categories/{v2_categories}"
+  create-entity:
+    docs: "n/a"
+    url: "/v2/categories"
+    content-type: application/json
+  attributes:
+    name:
+      type: STRING
+    slug:
+      type: STRING
+    description:
+      type: STRING
+    status:
+      type: ENUM:live,draft
+    id:
+      type: RESOURCE_ID:v2-categories
+v2-collections:
+  singular-name: "v2-collection"
+  json-api-type: "collection"
+  json-api-format: "legacy"
+  legacy: true
+  docs: "n/a"
+  get-collection:
+    docs: "n/a"
+    url: "/v2/collections"
+  get-entity:
+    docs: "n/a"
+    url: "/v2/collections/{v2_collections}"
+  update-entity:
+    docs: "n/a"
+    url: "/v2/collections/{v2_collections}"
+  delete-entity:
+    docs: "n/a"
+    url: "/v2/collections/{v2_collections}"
+  create-entity:
+    docs: "n/a"
+    url: "/v2/collections"
+    content-type: application/json
+  attributes:
+    name:
+      type: STRING
+    slug:
+      type: STRING
+    description:
+      type: STRING
+    status:
+      type: ENUM:live,draft
+    id:
+      type: RESOURCE_ID:v2-collections
+v2-products:
+  singular-name: "v2-product"
+  json-api-type: "product"
+  json-api-format: "legacy"
+  legacy: true
+  docs: "n/a"
+  get-collection:
+    docs: "n/a"
+    url: "/v2/products"
+  get-entity:
+    docs: "n/a"
+    url: "/v2/products/{v2_products}"
+  update-entity:
+    docs: "n/a"
+    url: "/v2/products/{v2_products}"
+  delete-entity:
+    docs: "n/a"
+    url: "/v2/products/{v2_products}"
+  create-entity:
+    docs: "n/a"
+    url: "/v2/products"
+    content-type: application/json
+  attributes:
+    name:
+      type: STRING
+    slug:
+      type: STRING
+    sku:
+      type: STRING
+    manage_stock:
+      type: BOOL
+    description:
+      type: STRING
+    price[n].amount:
+      type: INT
+    price[n].currency:
+      type: CURRENCY
+    price[n].includes_tax:
+      type: BOOL
+    status:
+      type: ENUM:draft,live
+    commodity_type:
+      type: ENUM:physical,digital
+    id:
+      type: RESOURCE_ID:v2-products
+v2-variations:
+  singular-name: "v2-variation"
+  json-api-type: "product-variation"
+  json-api-format: "legacy"
+  legacy: true
+  docs: "n/a"
+  get-collection:
+    docs: "n/a"
+    url: "/v2/variations"
+  get-entity:
+    docs: "n/a"
+    url: "/v2/variations/{v2_variations}"
+  update-entity:
+    docs: "n/a"
+    url: "/v2/variations/{v2_variations}"
+  delete-entity:
+    docs: "n/a"
+    url: "/v2/variations/{v2_variations}"
+  create-entity:
+    docs: "n/a"
+    url: "/v2/variations"
+    content-type: application/json
+  attributes:
+    name:
+      type: STRING
+    id:
+      type: RESOURCE_ID:v2-variations
+
+v2-variation-options:
+  singular-name: "v2-variation-option"
+  json-api-type: "option"
+  json-api-format: "legacy"
+  legacy: true
+  docs: "n/a"
+  get-collection:
+    docs: "n/a"
+    url: "/v2/variations/{v2_variations}/options"
+  get-entity:
+    docs: "n/a"
+    url: "/v2/variations/{v2_variations}/options/{v2_variation_options}"
+  update-entity:
+    docs: "n/a"
+    url: "/v2/variations/{v2_variations}/options/{v2_variation_options}"
+  delete-entity:
+    docs: "n/a"
+    url: "/v2/variations/{v2_variations}/options/{v2_variation_options}"
+  create-entity:
+    docs: "n/a"
+    url: "/v2/variations/{v2_variations}/options"
+    content-type: application/json
+  attributes:
+    name:
+      type: STRING
+    description:
+      type: STRING
+    id:
+      type: RESOURCE_ID:v2-variation-option
+v2-modifiers:
+  singular-name: "v2-modifier"
+  json-api-type: "modifier"
+  json-api-format: "legacy"
+  legacy: true
+  docs: "n/a"
+  get-collection:
+    docs: "n/a"
+    url: "/v2/variations/{v2_variations}/options/{v2_variation_options}/modifiers"
+  get-entity:
+    docs: "n/a"
+    url: "/v2/variations/{v2_variations}/options/{v2_variation_options}/modifiers/{v2_modifiers}"
+  update-entity:
+    docs: "n/a"
+    url: "/v2/variations/{v2_variations}/options/{v2_variation_options}/modifiers/{v2_modifiers}"
+  delete-entity:
+    docs: "n/a"
+    url: "/v2/variations/{v2_variations}/options/{v2_variation_options}/modifiers/{v2_modifiers}"
+  create-entity:
+    docs: "n/a"
+    url: "/v2/variations/{v2_variations}/options/{v2_variation_options}/modifiers"
+    content-type: application/json
+  attributes:
+    modifier_type:
+      type: ENUM:price_increment,price_decrement,price_equals,sku_builder,slug_builder,description_equals,description_prepend,description_append,commodity_type,name_equals,name_prepend,name_append,slug_equals,slug_append,sku_equals,sku_prepend,sku_append,status
+    value:
+      type: STRING
+    value[n].amount:
+      type: INT
+    value[n].currency:
+      type: CURRENCY
+    value[n].includes_tax:
+      type: BOOL
+    value[n].seek:
+      type: STRING
+    value[n].set:
+      type: STRING
+    id:
+      type: RESOURCE_ID:v2-variation-option

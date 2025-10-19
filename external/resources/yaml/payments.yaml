@@ -1,0 +1,229 @@
+payment-gateways:
+  singular-name: "payment-gateway"
+  json-api-type: "gateway"
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/api/payments/gateways"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/payments/gateways"
+    url: "/v2/gateways/"
+payment-gateways-manual:
+  singular-name: "payment-gateway-manual"
+  json-api-type: "gateway"
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/api/payments/payment-gateways-introduction"
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/payments/gateways"
+    url: "/v2/gateways/manual"
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/payments/update-manual-gateway"
+    url: "/v2/gateways/manual"
+  attributes:
+    enabled:
+      type: BOOL
+  suppress-reset-warning: true
+payment-gateways-adyen:
+  singular-name: "payment-gateway-adyen"
+  json-api-type: "gateway"
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/api/payments/update-adyen-gateway"
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/payments/gateways"
+    url: "/v2/gateways/adyen"
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/payments/update-adyen-gateway"
+    url: "/v2/gateways/adyen"
+  attributes:
+    enabled:
+      type: BOOL
+    merchant_account:
+      type: STRING
+    username:
+      type: STRING
+    password:
+      type: STRING
+    name:
+      type: STRING
+    test:
+      type: BOOL
+  suppress-reset-warning: true
+payment-gateways-authorize-net:
+  singular-name: "payment-gateway-authorize-net"
+  json-api-type: "gateway"
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/api/payments/update-authorize-net-gateway"
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/payments/gateways"
+    url: "/v2/gateways/authorize_net"
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/payments/update-authorize-net-gateway"
+    url: "/v2/gateways/authorize_net"
+  attributes:
+    enabled:
+      type: BOOL
+    name:
+      type: STRING
+    login:
+      type: STRING
+    password:
+      type: STRING
+    test:
+      type: BOOL
+  suppress-reset-warning: true
+payment-gateways-braintree:
+  singular-name: "payment-gateway-braintree"
+  json-api-type: "gateway"
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/api/payments/update-braintree-gateway"
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/payments/gateways"
+    url: "/v2/gateways/braintree"
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/payments/update-braintree-gateway"
+    url: "/v2/gateways/braintree"
+  attributes:
+    merchant_id:
+      type: STRING
+    public_key:
+      type: STRING
+    private_key:
+      type: STRING
+    enabled:
+      type: BOOL
+    environment:
+      type: ENUM:production,sandbox
+  suppress-reset-warning: true
+payment-gateways-cardconnect:
+  singular-name: "payment-gateway-cardconnect"
+  json-api-type: "gateway"
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/guides/How-To/paymentgateways/generate-cardconnect-token"
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/payments/gateways"
+    url: "/v2/gateways/card_connect"
+  update-entity:
+    docs: "https://elasticpath.dev/guides/How-To/paymentgateways/generate-cardconnect-token"
+    url: "/v2/gateways/card_connect"
+  attributes:
+    merchant_id:
+      type: STRING
+    username:
+      type: STRING
+    password:
+      type: STRING
+    enabled:
+      type: BOOL
+    test:
+      type: BOOL
+  suppress-reset-warning: true
+payment-gateways-cybersource:
+  singular-name: "payment-gateway-cybersource"
+  json-api-type: "gateway"
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/api/payments/update-cyber-source-gateway"
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/payments/gateways"
+    url: "/v2/gateways/cyber_source"
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/payments/update-cyber-source-gateway"
+    url: "/v2/gateways/cyber_source"
+  attributes:
+    login:
+      type: STRING
+    password:
+      type: STRING
+    enabled:
+      type: BOOL
+    test:
+      type: BOOL
+  suppress-reset-warning: true
+payment-gateways-paypal-express-checkout:
+  singular-name: "payment-gateway-paypal-express-checkout"
+  json-api-type: "gateway"
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/api/payments/update-paypal-express-checkout-gateway"
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/payments/gateways"
+    url: "/v2/gateways/paypal_express_checkout"
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/payments/update-paypal-express-checkout-gateway"
+    url: "/v2/gateways/paypal_express_checkout"
+  attributes:
+    payer_id:
+      type: STRING
+    enabled:
+      type: BOOL
+    test:
+      type: BOOL
+  suppress-reset-warning: true
+payment-gateways-stripe:
+  singular-name: "payment-gateway-stripe"
+  json-api-type: "gateway"
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/api/payments/update-stripe-gateway"
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/payments/gateways"
+    url: "/v2/gateways/stripe"
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/payments/update-stripe-gateway"
+    url: "/v2/gateways/stripe"
+  attributes:
+    login:
+      type: STRING
+    enabled:
+      type: BOOL
+  suppress-reset-warning: true
+payment-gateways-stripe-connect:
+  singular-name: "payment-gateway-stripe-connect"
+  json-api-type: "gateway"
+  json-api-format: "legacy"
+  docs: "n/a"
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/payments/gateways"
+    url: "/v2/gateways/stripe_connect"
+  update-entity:
+    docs: "n/a"
+    url: "/v2/gateways/stripe_connect"
+  attributes:
+    stripe_account:
+      type: STRING
+    enabled:
+      type: BOOL
+    test:
+      type: BOOL
+  suppress-reset-warning: true
+payment-gateways-stripe-payment-intents:
+  singular-name: "payment-gateway-stripe-payment-intent"
+  json-api-type: "gateway"
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/studio/Integrations/stripe-payment-intents"
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/payments/gateways"
+    url: "/v2/gateways/stripe_payment_intents"
+  update-entity:
+    docs: "https://elasticpath.dev/docs/studio/Integrations/stripe-payment-intents"
+    url: "/v2/gateways/stripe_payment_intents"
+  attributes:
+    login:
+      type: STRING
+    enabled:
+      type: BOOL
+  suppress-reset-warning: true
+payment-gateways-elastic-path-payments-stripe:
+  singular-name: "payment-gateway-elastic-path-payments-stripe"
+  json-api-type: "gateway"
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/commerce-manager/payments/ep-payments-powered-by-stripe"
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/payments/gateways"
+    url: "/v2/gateways/stripe_payment_intents"
+  update-entity:
+    docs: "https://elasticpath.dev/docs/commerce-manager/payments/ep-payments-powered-by-stripe"
+    url: "/v2/gateways/stripe_payment_intents"
+  attributes:
+    stripe_account:
+      type: STRING
+    enabled:
+      type: BOOL
+    test:
+      type: BOOL
+  suppress-reset-warning: true

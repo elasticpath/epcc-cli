@@ -1,0 +1,548 @@
+
+pcm-catalogs:
+  singular-name: "pcm-catalog"
+  json-api-type: "catalog"
+  json-api-format: "compliant"
+  docs: "https://elasticpath.dev/docs/api/pxm/catalog/catalogs"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/pxm/catalog/get-catalogs"
+    url: "/pcm/catalogs"
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/catalog/get-catalog-by-id"
+    url: "/pcm/catalogs/{pcm_catalogs}"
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/catalog/update-catalog"
+    url: "/pcm/catalogs/{pcm_catalogs}"
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/catalog/delete-catalog-by-id"
+    url: "/pcm/catalogs/{pcm_catalogs}"
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/catalog/create-catalog"
+    url: "/pcm/catalogs"
+    content-type: application/json
+  attributes:
+    name:
+      type: STRING
+    description:
+      type: STRING
+    hierarchy_ids[n]:
+      type: RESOURCE_ID:pcm-hierarchies
+    pricebook_id:
+      type: RESOURCE_ID:pcm-pricebooks
+pcm-catalog-releases:
+  singular-name: "pcm-catalog-release"
+  json-api-type: "catalog-release"
+  json-api-format: "compliant"
+  docs: "https://elasticpath.dev/docs/api/pxm/catalog/releases"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/pxm/catalog/get-releases"
+    url: "/pcm/catalogs/{pcm_catalogs}/releases"
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/catalog/get-release-by-id"
+    url: "/pcm/catalogs/{pcm_catalogs}/releases/{pcm_catalog_releases}"
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/catalog/delete-release-by-id"
+    url: "/pcm/catalogs/{pcm_catalogs}/releases/{pcm_catalog_releases}"
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/catalog/publish-release"
+    url: "/pcm/catalogs/{pcm_catalogs}/releases"
+    content-type: application/json
+  attributes:
+    name:
+      type: STRING
+    description:
+      type: STRING
+    hierarchy_ids[n]:
+      type: RESOURCE_ID:pcm-hierarchies
+    pricebook_id:
+      type: RESOURCE_ID:pcm-pricebooks
+pcm-catalog-rules:
+  singular-name: "pcm-catalog-rule"
+  json-api-type: "catalog_rule"
+  json-api-format: "compliant"
+  docs: "https://elasticpath.dev/docs/api/pxm/catalog/rules"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/pxm/catalog/get-rules"
+    url: "/pcm/catalogs/rules"
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/catalog/get-rule-by-id"
+    url: "/pcm/catalogs/rules/{pcm_catalog_rules}"
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/catalog/create-rule"
+    url: "/pcm/catalogs/rules"
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/catalog/update-rule"
+    url: "/pcm/catalogs/rules/{pcm_catalog_rules}"
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/catalog/delete-rule-by-id"
+    url: "/pcm/catalogs/rules/{pcm_catalog_rules}"
+  attributes:
+    name:
+      type: STRING
+    description:
+      type: STRING
+    catalog_id:
+      type: RESOURCE_ID:pcm-catalogs
+    customer_ids[n]:
+      type: RESOURCE_ID:customers
+    account_ids[n]:
+      type: RESOURCE_ID:accounts
+    channels[n]:
+      type: STRING
+    tags[n]:
+      type: STRING
+    schedules[n].from:
+      type: STRING
+    schedules[n].to:
+      type: STRING
+
+pcm-hierarchies:
+  singular-name: "pcm-hierarchy"
+  json-api-type: "hierarchy"
+  json-api-format: "compliant"
+  docs: "https://elasticpath.dev/docs/api/pxm/products/hierarchies"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/pxm/products/get-hierarchy"
+    url: "/pcm/hierarchies"
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/products/get-hierarchy-child"
+    url: "/pcm/hierarchies/{pcm_hierarchies}"
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/products/update-hierarchy"
+    url: "/pcm/hierarchies/{pcm_hierarchies}"
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/products/delete-hierarchy"
+    url: "/pcm/hierarchies/{pcm_hierarchies}"
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/products/create-hierarchy"
+    url: "/pcm/hierarchies"
+    content-type: application/json
+  attributes:
+    name:
+      type: STRING
+    description:
+      type: STRING
+    slug:
+      type: STRING
+    locales.en-US.name:
+      type: STRING
+    locales.en-US.description:
+      type: STRING
+pcm-hierarchy-node-children:
+  singular-name: "pcm-hierarchy-node-child"
+  json-api-type: "node"
+  json-api-format: "compliant"
+  docs: "https://elasticpath.dev/docs/api/pxm/products/get-all-children"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/pxm/products/get-all-children"
+    url: "/pcm/hierarchies/{pcm_hierarchies}/children"
+pcm-node-children:
+  singular-name: "pcm-node-child"
+  json-api-type: "node"
+  json-api-format: "compliant"
+  docs: "https://elasticpath.dev/docs/api/pxm/products/get-all-node-children"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/pxm/products/get-all-node-children"
+    url: "/pcm/hierarchies/{pcm_hierarchies}/nodes/{pcm_nodes}/children"
+pcm-node-products:
+  singular-name: "pcm-node-product"
+  json-api-type: "node"
+  json-api-format: "legacy"
+  no-wrapping: true
+  docs: "https://elasticpath.dev/docs/api/pxm/products/get-node-products"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/pxm/products/get-node-products"
+    url: "/pcm/hierarchies/{pcm_hierarchies}/nodes/{pcm_nodes}/products"
+  #TBD figure out if this should be the same URL
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/products/create-node-product-relationship"
+    url: "/pcm/hierarchies/{pcm_hierarchies}/nodes/{pcm_nodes}/relationships/products"
+  attributes:
+    "data[n].id":
+      type: RESOURCE_ID:pcm-product
+    "data[n].type":
+      type: CONST:product
+pcm-node-parents:
+  singular-name: "pcm-node-parent"
+  json-api-type: "node"
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/api/pxm/products/update-node-parent"
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/products/delete-node-parent"
+    url: "/pcm/hierarchies/{pcm_hierarchies}/nodes/{pcm_nodes}/relationships/parent"
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/products/update-node-parent"
+    url: "/pcm/hierarchies/{pcm_hierarchies}/nodes/{pcm_nodes}/relationships/parent"
+  attributes:
+    id:
+      type: RESOURCE_ID:pcm-node
+pcm-nodes:
+  singular-name: "pcm-node"
+  json-api-type: "node"
+  json-api-format: "compliant"
+  docs: "https://elasticpath.dev/docs/api/pxm/products/hierarchies#characteristics-of-hierarchies-and-nodes"
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/products/get-hierarchy-node"
+    url: "/pcm/hierarchies/{pcm_hierarchies}/nodes/{pcm_nodes}"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/pxm/products/get-all-nodes-in-hierarchy"
+    url: "/pcm/hierarchies/{pcm_hierarchies}/nodes"
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/products/update-node"
+    url: "/pcm/hierarchies/{pcm_hierarchies}/nodes/{pcm_nodes}"
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/products/delete-node"
+    url: "/pcm/hierarchies/{pcm_hierarchies}/nodes/{pcm_nodes}"
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/products/create-node"
+    url: "/pcm/hierarchies/{pcm_hierarchies}/nodes"
+    content-type: application/json
+  attributes:
+    name:
+      type: STRING
+    description:
+      type: STRING
+    slug:
+      type: STRING
+    locales.en-US.name:
+      type: STRING
+    locales.en-US.description:
+      type: STRING
+    relationships.parent.data.type:
+      type: CONST:node
+    relationships.parent.data.id:
+      type: RESOURCE_ID:pcm-nodes
+pcm-product-main-image:
+  singular-name: "pcm-product-main-image"
+  json-api-type: "file"
+  json-api-format: "compliant"
+  docs: "https://elasticpath.dev/docs/api/pxm/products/product-image-relationships"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/pxm/products/get-product-main-image-relationships"
+    url: "/pcm/products/{pcm_products}/relationships/main_image"
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/products/get-product-main-image-relationships"
+    url: "/pcm/products/{pcm_products}/relationships/main_image"
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/products/update-product-main-image-relationships"
+    url: "/pcm/products/{pcm_products}/relationships/main_image"
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/products/delete-product-main-image-relationships"
+    url: "/pcm/products/{pcm_products}/relationships/main_image"
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/products/create-product-main-image-relationships"
+    url: "/pcm/products/{pcm_products}/relationships/main_image"
+    content-type: application/json
+  attributes:
+    id:
+      type: RESOURCE_ID:files
+pcm-products:
+  singular-name: "pcm-product"
+  json-api-type: "product"
+  json-api-format: "compliant"
+  docs: "https://elasticpath.dev/docs/api/pxm/products/products"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/pxm/products/get-all-products"
+    url: "/pcm/products"
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/catalog/get-by-context-product"
+    url: "/pcm/products/{pcm_products}"
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/products/update-product"
+    url: "/pcm/products/{pcm_products}"
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/products/delete-product"
+    url: "/pcm/products/{pcm_products}"
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/products/create-product"
+    url: "/pcm/products"
+    content-type: application/json
+  attributes:
+    name:
+      type: STRING
+      autofill: FUNC:CarModel
+    external_ref:
+      type: STRING
+      autofill: FUNC:UUID
+    commodity_type:
+      type: ENUM:physical,digital
+      autofill: VALUE:physical
+    sku:
+      type: STRING
+      autofill: FUNC:BuzzWord
+    slug:
+      type: STRING
+    description:
+      type: STRING
+      autofill: VALUE:Auto Generated
+    mpn:
+      type: STRING
+    status:
+      type: ENUM:draft,live
+      autofill: VALUE:live
+    upc_ean:
+      type: STRING
+    locales.en-US.name:
+      type: STRING
+    locales.en-US.description:
+      type: STRING
+    ^custom_inputs\.([a-zA-Z0-9-_]+)\.name$:
+      type: STRING
+    ^custom_inputs\.([a-zA-Z0-9-_]+)\.validation_rules\[n\]$:
+      type: STRING
+    ^custom_inputs\.([a-zA-Z0-9-_]+)\.validation_rules\[n\]\.type$:
+      type: CONST:string
+    ^custom_inputs\.([a-zA-Z0-9-_]+)\.validation_rules\[n\]\.max_length$:
+      type: INT
+    ^custom_inputs\.([a-zA-Z0-9-_]+)\.validation_rules\[n\]\.required$:
+      type: BOOL
+    ^components\.([a-zA-Z0-9-_]+)\.name$:
+      type: STRING
+    ^components\.([a-zA-Z0-9-_]+)\.min$:
+      type: INT
+    ^components\.([a-zA-Z0-9-_]+)\.max$:
+      type: INT
+    ^components\.([a-zA-Z0-9-_]+)\.options\.id\[n\]$:
+      type: RESOURCE_ID:pcm-products
+    ^components\.([a-zA-Z0-9-_]+)\.options\.type$:
+      type: CONST:product
+    ^components\.([a-zA-Z0-9-_]+)\.options\.quantity$:
+      type: INT
+pcm-product-templates:
+  singular-name: "pcm-product-template"
+  json-api-type: "template"
+  json-api-format: "legacy"
+  no-wrapping: true
+  docs: "https://elasticpath.dev/docs/api/pxm/products/extending-products-with-templates"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/pxm/products/product-file-relationships"
+    url: "/pcm/products/{pcm_products}/relationships/templates"
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/products/create-product-template-relationship"
+    url: "/pcm/products/{pcm_products}/relationships/templates"
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/products/extending-products-with-templates"
+    url: "/pcm/products/{pcm_products}/relationships/templates"
+  attributes:
+    "data[n].id":
+      type: RESOURCE_ID:flow
+    "data[n].type":
+      type: CONST:template
+pcm-product-variations:
+  singular-name: "pcm-product-variation"
+  json-api-type: "template"
+  json-api-format: "legacy"
+  no-wrapping: true
+  docs: "https://elasticpath.dev/docs/api/pxm/products/variations"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/pxm/products/get-all-variations"
+    url: "/pcm/products/{pcm_products}/relationships/variations"
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/products/create-variation"
+    url: "/pcm/products/{pcm_products}/relationships/variations"
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/products/create-variation"
+    url: "/pcm/products/{pcm_products}/relationships/variations"
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/products/delete-variation"
+    url: "/pcm/products/{pcm_products}/relationships/variations"
+  attributes:
+    "data[n].id":
+      type: RESOURCE_ID:pcm-variations
+    "data[n].type":
+      type: CONST:product-variation
+pcm-child-products:
+  singular-name: "pcm-child-product"
+  json-api-type: "not-used"
+  no-wrapping: true
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/api/pxm/products/build-child-products"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/pxm/products/build-child-products"
+    url: "/pcm/products/{pcm_products}/children"
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/products/build-child-products"
+    url: "/pcm/products/{pcm_products}/build"
+pcm-pricebooks:
+  singular-name: "pcm-pricebook"
+  json-api-type: "pricebook"
+  json-api-format: "compliant"
+  docs: "https://elasticpath.dev/docs/api/pxm/pricebooks"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/pxm/pricebooks/get-pricebooks"
+    url: "/pcm/pricebooks"
+    #TBD figure out if this should be the same URL
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/pricebooks/get-pricebook-by-id"
+    url: "/pcm/pricebooks/{pcm_pricebooks}"
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/pricebooks/delete-pricebook-by-id"
+    url: "/pcm/pricebooks/{pcm_pricebooks}"
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/pricebooks/create-pricebook"
+    url: "/pcm/pricebooks"
+    content-type: application/json
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/pricebooks/update-pricebook"
+    url: "/pcm/pricebooks/{pcm_pricebooks}"
+    content-type: application/json
+  attributes:
+    name:
+      type: STRING
+      autofill: FUNC:Company
+    description:
+      type: STRING
+      autofill: FUNC:Phrase
+pcm-product-prices:
+  singular-name: "pcm-product-price"
+  json-api-type: "product-price"
+  json-api-format: "compliant"
+  docs: "https://elasticpath.dev/docs/api/pxm/pricebooks/prices"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/pxm/pricebooks/get-product-prices"
+    url: "/pcm/pricebooks/{pcm_pricebooks}/prices"
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/pricebooks/get-product-price-by-id"
+    url: "/pcm/pricebooks/{pcm_pricebooks}/prices/{pcm_product_prices}"
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/pricebooks/delete-product-price"
+    url: "/pcm/pricebooks/{pcm_pricebooks}/prices/{pcm_product_prices}"
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/pricebooks/create-product-price"
+    url: "/pcm/pricebooks/{pcm_pricebooks}/prices"
+    content-type: application/json
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/pricebooks/update-product-price"
+    url: "/pcm/pricebooks/{pcm_pricebooks}/prices/{pcm_product_prices}"
+    content-type: application/json
+  attributes:
+    sku:
+      type: STRING
+    currencies.USD.amount:
+      type: INT
+    currencies.USD.includes_tax:
+      type: BOOL
+    currencies.GBP.amount:
+      type: INT
+    currencies.GBP.includes_tax:
+      type: BOOL
+    currencies.CAD.amount:
+      type: INT
+    currencies.CAD.includes_tax:
+      type: BOOL
+pcm-pricebook-modifiers:
+  singular-name: "pcm-pricebook-modifier"
+  json-api-format: "compliant"
+  json-api-type: "price-modifier"
+  docs: "https://elasticpath.dev/docs/api/pxm/pricebooks/price-book-modifiers"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/pxm/pricebooks/get-price-modifiers"
+    url: "/pcm/pricebooks/{pcm_pricebooks}/modifiers/"
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/pricebooks/price-book-modifiers"
+    url: "/pcm/pricebooks/{pcm_pricebooks}/modifiers/{pcm_pricebook_modifiers}"
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/pricebooks/price-book-modifiers"
+    url: "/pcm/pricebooks/{pcm_pricebooks}/modifiers"
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/pricebooks/price-book-modifiers"
+    url: "/pcm/pricebooks/{pcm_pricebooks}/modifiers/{pcm_pricebook_modifiers}"
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/pricebooks/price-book-modifiers"
+    url: "/pcm/pricebooks/{pcm_pricebooks}/modifiers/{pcm_pricebook_modifiers}"
+  attributes:
+    name:
+      type: STRING
+      autofill: FUNC:BuzzWord
+    modifier_type:
+      type: ENUM:price_increment,price_decrement,price_equals
+      autofill: VALUE:price_equals
+    currencies.USD.amount:
+      type: INT
+    currencies.USD.includes_tax:
+      type: BOOL
+    ^currencies\.USD\.tiers\..+\.minimum_quantity$:
+      type: INT
+    ^currencies\.USD\.tiers\..+\.amount$:
+      type: INT
+pcm-variations:
+  singular-name: "pcm-variation"
+  json-api-type: "product-variation"
+  json-api-format: "compliant"
+  docs: "https://elasticpath.dev/docs/api/pxm/products/get-all-variations"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/pxm/products/get-all-variations"
+    url: "/pcm/variations"
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/products/get-all-variations"
+    url: "/pcm/variations/{pcm_variations}"
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/products/create-variation"
+    url: "/pcm/variations"
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/products/update-variation"
+    url: "/pcm/variations/{pcm_variations}"
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/products/delete-variation"
+    url: "/pcm/variations/{pcm_variations}"
+  attributes:
+    name:
+      type: STRING
+    id:
+      type: RESOURCE_ID:pcm-variations
+pcm-variation-options:
+  singular-name: "pcm-variation-option"
+  json-api-type: "product-variation-option"
+  json-api-format: "compliant"
+  docs: "https://elasticpath.dev/docs/api/pxm/products/get-all-variation-options"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/pxm/products/get-all-variation-options"
+    url: "/pcm/variations/{pcm_variations}/options"
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/products/get-all-variation-options"
+    url: "/pcm/variations/{pcm_variations}/options/{pcm_variation_options}"
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/products/create-variation-option"
+    url: "/pcm/variations/{pcm_variations}/options"
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/products/update-variation-option"
+    url: "/pcm/variations/{pcm_variations}/options/{pcm_variation_options}"
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/products/delete-variation-option"
+    url: "/pcm/variations/{pcm_variations}/options/{pcm_variation_options}"
+  attributes:
+    name:
+      type: STRING
+    description:
+      type: STRING
+    id:
+      type: RESOURCE_ID:pcm-variation-options
+pcm-variation-modifiers:
+  singular-name: "pcm-variation-modifier"
+  json-api-format: "compliant"
+  json-api-type: "product-variation-modifier"
+  docs: "https://elasticpath.dev/docs/api/pxm/products/delete-modifier"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/pxm/pricebooks/get-price-modifiers"
+    url: "/pcm/variations/{pcm_variations}/options/{pcm_variation_options}/modifiers"
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/pricebooks/get-price-modifiers"
+    url: "/pcm/variations/{pcm_variations}/options/{pcm_variation_options}/modifiers/{pcm_variation_modifiers}"
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/pricebooks/get-price-modifiers"
+    url: "/pcm/variations/{pcm_variations}/options/{pcm_variation_options}/modifiers"
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/pricebooks/get-price-modifiers"
+    url: "/pcm/variations/{pcm_variations}/options/{pcm_variation_options}/modifiers/{pcm_variation_modifiers}"
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/pricebooks/get-price-modifiers"
+    url: "/pcm/variations/{pcm_variations}/options/{pcm_variation_options}/modifiers/{pcm_variation_modifiers}"
+  attributes:
+    attribute.type:
+      type: ENUM:commodity_type,status,description_append,description_prepend,description_equals,name_append,name_prepend,name_equals,sku_append,sku_prepend,sku_equals,slug_append,slug_prepend,slug_equals
+    attribute.value:
+      type: STRING
+    seek:
+      type: STRING
+    set:
+      type: STRING

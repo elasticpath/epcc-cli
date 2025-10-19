@@ -1,0 +1,201 @@
+flows:
+  singular-name: "flow"
+  json-api-type: "flow"
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/api/flows/get-all-flows"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/flows/get-all-flows"
+    url: "/v2/flows"
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/flows/get-all-flows"
+    url: "/v2/flows/{flows}"
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/flows/update-a-flow"
+    url: "/v2/flows/{flows}"
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/api/flows/delete-a-flow"
+    url: "/v2/flows/{flows}"
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/flows/create-a-flow"
+    url: "/v2/flows"
+    content-type: application/json
+  attributes:
+    enabled:
+      type: BOOL
+      autofill: VALUE:true
+    description:
+      type: STRING
+      autofill: VALUE:Auto Generated
+    slug:
+      type: STRING
+    name:
+      type: STRING
+      autofill: VALUE:Auto Generated
+fields:
+  singular-name: "field"
+  json-api-type: "field"
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/api/flows/create-a-field"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/flows/get-a-field"
+    url: "/v2/fields"
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/flows/get-a-field"
+    url: "/v2/fields/{fields}"
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/flows/get-a-field"
+    url: "/v2/fields/{fields}"
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/api/flows/delete-a-field"
+    url: "/v2/fields/{fields}"
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/flows/create-a-field"
+    url: "/v2/fields"
+    content-type: application/json
+  attributes:
+    name:
+      type: STRING
+      autofill: VALUE:Auto Generated
+    slug:
+      type: STRING
+    field_type:
+      type: ENUM:string,integer,boolean,float,date,relationship
+    description:
+      type: STRING
+      autofill: VALUE:Auto Generated
+    required:
+      type: BOOL
+      autofill: VALUE:true
+    default:
+      type: STRING
+    enabled:
+      type: BOOL
+      autofill: VALUE:true
+    order:
+      type: INT
+    omit_null:
+      type: BOOL
+      autofill: VALUE:true
+    validation_rules[n].type:
+      type: ENUM:enum,email,slug,between,one-to-many,one-to-one
+    validation_rules[n].options:
+      type: STRING
+    validation_rules[n].to:
+      type: STRING
+    validation_rules[n].options.to:
+      type: STRING
+    validation_rules[n].options.from:
+      type: STRING
+    relationships.flow.data.type:
+      type: CONST:flow
+      autofill: VALUE:flow
+    relationships.flow.data.id:
+      type: RESOURCE_ID:flows
+
+flow-fields:
+  singular-name: "flow-field"
+  json-api-type: "field"
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/api/flows/get-a-field#get-get-all-fields-by-flow"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/flows/get-a-field"
+    url: "/v2/flows/{flows}/fields"
+    parent_resource_value_overrides:
+      flows: slug
+entries:
+  singular-name: entry
+  json-api-type: entry
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/api/flows/entries"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/flows/get-an-entry"
+    url: "/v2/flows/{flows}/entries"
+    parent_resource_value_overrides:
+      flows: slug
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/flows/get-an-entry"
+    url: "/v2/flows/{flows}/entries/{entries}"
+    parent_resource_value_overrides:
+      flows: slug
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/flows/entries"
+    url: "/v2/flows/{flows}/entries/{entries}"
+    parent_resource_value_overrides:
+      flows: slug
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/flows/entries"
+    url: "/v2/flows/{flows}/entries"
+    parent_resource_value_overrides:
+      flows: slug
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/api/flows/entries"
+    url: "/v2/flows/{flows}/entries/{entries}"
+    parent_resource_value_overrides:
+      flows: slug
+# This is basically the same as an entry except we allow an id.
+pcm-entries:
+  singular-name: pcm-entry
+  json-api-type: entry
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/api/flows/entries"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/flows/get-an-entry"
+    url: "/v2/flows/{flows}/entries"
+    parent_resource_value_overrides:
+      flows: slug
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/flows/get-an-entry"
+    url: "/v2/flows/{flows}/entries/{entries}"
+    parent_resource_value_overrides:
+      flows: slug
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/flows/entries"
+    url: "/v2/flows/{flows}/entries/{entries}"
+    parent_resource_value_overrides:
+      flows: slug
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/flows/entries"
+    url: "/v2/flows/{flows}/entries"
+    parent_resource_value_overrides:
+      flows: slug
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/api/flows/entries"
+    url: "/v2/flows/{flows}/entries/{entries}"
+    parent_resource_value_overrides:
+      flows: slug
+  attributes:
+    id:
+      type: RESOURCE_ID:pcm-products
+entries-relationship:
+  singular-name: entry-relationship
+  json-api-type: entry-relationship
+  json-api-format: "legacy"
+  no-wrapping: true
+  docs: "https://elasticpath.dev/docs/api/flows/entry-relationships"
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/flows/entry-relationships"
+    url: "/v2/flows/{flows}/entries/{entries}/relationships/{fields}"
+    parent_resource_value_overrides:
+      flows: slug
+      fields: slug
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/flows/entry-relationships"
+    url: "/v2/flows/{flows}/entries/{entries}/relationships/{fields}"
+    parent_resource_value_overrides:
+      flows: slug
+      fields: slug
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/api/flows/delete-an-entry-relationship"
+    url: "/v2/flows/{flows}/entries/{entries}/relationships/{fields}"
+    parent_resource_value_overrides:
+      flows: slug
+      fields: slug
+  attributes:
+    data[n].id:
+      type: RESOURCE_ID:*
+    data[n].type:
+      type: JSON_API_TYPE
+    data.id:
+      type: RESOURCE_ID:*
+    data.type:
+      type: JSON_API_TYPE

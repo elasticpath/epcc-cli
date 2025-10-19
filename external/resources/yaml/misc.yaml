@@ -1,0 +1,177 @@
+application-keys:
+  singular-name: "application-key"
+  json-api-type: "application_key"
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/api/application-keys/application-keys"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/application-keys/get-all-keys"
+    url: "/v2/application-keys"
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/application-keys/create-key"
+    url: "/v2/application-keys"
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/api/application-keys/delete-key"
+    url: "/v2/application-keys/{application_keys}"
+  attributes:
+    name:
+      type: STRING
+currencies:
+  singular-name: "currency"
+  json-api-type: "currency"
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/api/pxm/currencies/currencies-introduction"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/pxm/currencies/get-all-currencies"
+    url: "/v2/currencies"
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/currencies/get-a-currency"
+    url: "/v2/currencies/{currencies}"
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/currencies/update-a-currency"
+    url: "/v2/currencies/{currencies}"
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/currencies/delete-a-currency"
+    url: "/v2/currencies/{currencies}"
+    min: 1
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/currencies/create-a-currency"
+    url: "/v2/currencies"
+    content-type: application/json
+  attributes:
+    code:
+      type: STRING
+    exchange_rate:
+      type: FLOAT
+    format:
+      type: STRING
+    decimal_point:
+      type: STRING
+    thousand_separator:
+      type: STRING
+    decimal_places:
+      type: INT
+    default:
+      type: BOOL
+    enabled:
+      type: BOOL
+
+files:
+  singular-name: "file"
+  json-api-type: "file"
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/commerce-manager/product-experience-manager/product-assets/files"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/pxm/files/get-a-file"
+    url: "/v2/files"
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/files/get-a-file"
+    url: "/v2/files/{files}"
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/files/delete-a-file"
+    url: "/v2/files/{files}"
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/pxm/files/files"
+    url: "/v2/files"
+    content-type: "multipart/form-data"
+  attributes:
+    file:
+      type: FILE
+    file_location:
+      type: URL
+    public:
+      type: BOOL
+
+merchant-realm-mappings:
+  singular-name: "merchant-realm-mapping"
+  json-api-type: "merchant-realm-mappings"
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/api/merchant-realm-mappings/merchant-realm-mappings-introduction"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/merchant-realm-mappings/get-merchant-realm-mappings"
+    url: "/v2/merchant-realm-mappings"
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/merchant-realm-mappings/get-merchant-realm-mapping"
+    url: "/v2/merchant-realm-mappings"
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/merchant-realm-mappings/update-merchant-realm-mapping"
+    url: "/v2/merchant-realm-mappings/{merchant_realm_mappings}"
+
+log-ttl-settings:
+  singular-name: "log-ttl-setting"
+  json-api-type: "time_to_live"
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/api/personal-data/logs-time-to-live-settings"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/personal-data/get-logs-ttl"
+    url: "/v2/settings/logs-ttl/"
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/personal-data/put-logs-ttl"
+    url: "/v2/settings/logs-ttl/"
+  attributes:
+    days:
+      type: INT
+
+
+
+settings:
+  singular-name: "setting"
+  json-api-type: "settings"
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/api/settings/settings-introduction"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/settings/get-v-2-settings"
+    url: "/v2/settings"
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/settings/get-v-2-settings"
+    url: "/v2/settings"
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/settings/put-v-2-settings"
+    url: "/v2/settings"
+  attributes:
+    page_length:
+      type: STRING
+    list_child_products:
+      type: BOOL
+    additional_languages[n]:
+      type: STRING
+    calculation_method:
+      type: ENUM:simple,line
+  suppress-reset-warning: true
+
+stores:
+  singular-name: "store"
+  json-api-type: "store"
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/guides/key-concepts/organizations/overview"
+  get-collection:
+    docs: "https://elasticpath.dev/guides/key-concepts/organizations/overview"
+    url: "/v2/stores/"
+  get-entity:
+    docs: "https://elasticpath.dev/guides/key-concepts/organizations/overview"
+    url: "/v2/stores/{settings}"
+
+
+cart-settings:
+  singular-name: "cart-setting"
+  json-api-type: "settings"
+  json-api-format: "legacy"
+  suppress-reset-warning: true
+  docs: "https://elasticpath.dev/docs/api/settings/get-v-2-settings-cart"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/settings/get-v-2-settings-cart"
+    url: "/v2/settings/cart"
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/settings/get-v-2-settings-cart"
+    url: "/v2/settings/cart"
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/settings/get-v-2-settings-cart"
+    url: "/v2/settings/cart"
+  attributes:
+    cart_expiry_days:
+      type: INT
+    discounts.custom_discounts_enabled:
+      type: BOOL
+    discounts.use_rule_promotions:
+      type: BOOL
+    inventories.defer_inventory_check:
+      type: BOOL

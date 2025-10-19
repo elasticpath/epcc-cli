@@ -1,0 +1,71 @@
+integration-jobs:
+  singular-name: "integration-job"
+  json-api-type: "integration-job"
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/api/integrations/list-integration-logs"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/integrations/list-integration-logs"
+    url: "/v2/integrations/{integrations}/jobs"
+integration-job-log:
+  singular-name: "integration-job-log"
+  json-api-type: "integration-job"
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/api/integrations/list-job-logs"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/integrations/list-job-logs"
+    url: "/v2/integrations/{integrations}/jobs/{integration_jobs}/logs"
+integration-logs:
+  singular-name: "integration-log"
+  json-api-type: "integration-log"
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/api/integrations/list-integration-logs"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/integrations/list-integration-logs"
+    url: "/v2/integrations/logs"
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/integrations/list-integration-logs"
+    url: "/v2/integrations/{integrations}/logs"
+integrations:
+  singular-name: "integration"
+  json-api-type: "integration"
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/api/integrations/integrations-introduction"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/integrations/get-integration"
+    url: "/v2/integrations"
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/integrations/get-integration"
+    url: "/v2/integrations/{integrations}"
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/integrations/update-integration"
+    url: "/v2/integrations/{integrations}"
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/api/integrations/delete-integration"
+    url: "/v2/integrations/{integrations}"
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/integrations/get-integration"
+    url: "/v2/integrations"
+    content-type: application/json
+  attributes:
+    enabled:
+      type: BOOL
+      autofill: VALUE:true
+    integration_type:
+      type: ENUM:webhook,aws_sqs
+    description:
+      type: STRING
+      autofill: VALUE:Auto Generated
+    name:
+      type: STRING
+    configuration.url:
+      type: URL
+    configuration.secret_key:
+      type: STRING
+    configuration.aws_access_key_id:
+      type: STRING
+    configuration.region:
+      type: ENUM:us-east-2,us-east-1,us-west-1,us-west-2,eu-west-1,eu-west-2
+    configuration.aws_secret_access_key:
+      type: STRING
+    observes[n]:
+      type: ENUM:address.created,address.updated,address.deleted,account.created,account.updated,account.deleted,account-member.created,account-member.updated,account-member.deleted,account-membership.created,account-membership.updated,account-membership.deleted,brand.created,brand.updated,brand.deleted,cart.updated,cart.deleted,category.created,category.updated,category.deleted,collection.created,collection.updated,collection.deleted,currency.created,currency.updated,currency.deleted,customer.created,customer.updated,customer.deleted,file.created,file.deleted,integration.created,integration.updated,integration.deleted,order.created,order.updated,order.fulfilled,order.authorized,order.paid,order.refunded,payment-gateway.updated,product.created,product.updated,product.deleted,settings.created,settings.updated,stock-transaction.created,transaction.created,transaction.updated,user-authentication-info.created,user-authentication-info.updated,user-authentication-info.deleted,one-time-password-token-request.created
