@@ -770,10 +770,9 @@ func GetGetExample(resourceName string, resourceUrl string, usageGetType string,
 		case "filter":
 
 			attributeKeys, _ := completion.Complete(completion.Request{
-				Type:       completion.CompleteAttributeKey,
-				Resource:   resource,
-				Attributes: map[string]struct{}{},
-				Verb:       completion.Create,
+				Type:     completion.CompleteAttributeKey,
+				Resource: resource,
+				Verb:     completion.Create,
 			})
 
 			rand.Shuffle(len(attributeKeys), func(i, j int) {

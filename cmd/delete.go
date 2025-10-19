@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+
 	"github.com/elasticpath/epcc-cli/config"
 	"github.com/elasticpath/epcc-cli/external/aliases"
 	"github.com/elasticpath/epcc-cli/external/completion"
@@ -177,9 +178,13 @@ func NewDeleteCommand(parentCmd *cobra.Command) func() {
 					}
 				} else {
 					if (len(args)-idCount)%2 == 0 { // This is an attribute key
-						usedAttributes := make(map[string]struct{})
+						usedAttributes := make(map[string]string)
 						for i := idCount; i < len(args); i = i + 2 {
-							usedAttributes[args[i]] = struct{}{}
+							if i+1 < len(args) {
+								usedAttributes[args[i]] = args[i+1]
+							} else {
+								usedAttributes[args[i]] = ""
+							}
 						}
 						return completion.Complete(completion.Request{
 							Type:       completion.CompleteAttributeKey,

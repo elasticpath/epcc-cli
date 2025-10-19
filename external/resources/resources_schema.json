@@ -154,7 +154,7 @@
               "properties": {
                 "type": {
                   "type": "string",
-                  "pattern": "^(STRING|URL|INT|CONST:[a-z0-9A-Z._-]+|ENUM:[a-z0-9A-Z._,-]+|FLOAT|BOOL|FILE|CURRENCY|SINGULAR_RESOURCE_TYPE|JSON_API_TYPE|PRIMITIVE|RESOURCE_ID:([a-z0-9-]+|[*]))$"
+                  "pattern": "^(STRING|URL|INT|CONST:[a-z0-9A-Z._-]+|ENUM:[a-z0-9A-Z._,-]+|FLOAT|BOOL|FILE|CURRENCY|SINGULAR_RESOURCE_TYPE|JSON_API_TYPE|PRIMITIVE|RESOURCE_ID:([a-z0-9-]+|[*])|CONDITIONAL)$"
                 },
                 "autofill": {
                   "type": "string",
@@ -174,6 +174,10 @@
                     "slug",
                     "name"
                   ]
+                },
+                "when": {
+                  "type": "string",
+                  "description": "An Expr (https://expr-lang.org/docs/language-definition) expression controlling when this is relevant"
                 }
               },
               "required": ["type"]

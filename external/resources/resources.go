@@ -117,6 +117,9 @@ type CrudEntityAttribute struct {
 	Usage          string `yaml:"usage"`
 	AutoFill       string `yaml:"autofill,omitempty"`
 	AliasAttribute string `yaml:"alias_attribute,omitempty"`
+
+	// Expr for when the attribute is enabled
+	When string `yaml:"when,omitempty"`
 }
 
 func GetPluralResourceNames() []string {
