@@ -883,6 +883,68 @@ func TestCompleteQueryKeyParameterForConditionalAttributeWhenConditionIsSatisfie
 	// Don't bother testing a whole ton of stuff, the API is very complex
 }
 
+//type walker struct {
+//}
+//
+//func (a *walker) Visit(node *ast.Node) {
+//
+//	if n, ok := (*node).(*ast.MemberNode); ok {
+//		v := *n
+//		v.Optional = true
+//		ast.Patch(node, &v)
+//	}
+//
+//}
+//
+//func TestExprHandling(t *testing.T) {
+//
+//	w := walker{}
+//
+//	oProg := "foo?.bar"
+//	optionalChainedFieldMap, err := expr.Compile(oProg, expr.AllowUndefinedVariables(), expr.AsAny())
+//	v, err := expr.Run(optionalChainedFieldMap, map[string]interface{}{})
+//	fmt.Printf("1.      Optional Chained Field With Map: `%10v` ==> `%10v` => v: %v, err: %v\n", oProg, optionalChainedFieldMap.Node().String(), v, err != nil)
+//
+//	oProg = "foo.bar"
+//	patchedToOptionalChainedFieldWithMap, err := expr.Compile(oProg, expr.AllowUndefinedVariables(), expr.AsAny(), expr.Patch(&w))
+//	v, err = expr.Run(optionalChainedFieldMap, map[string]interface{}{})
+//	fmt.Printf("2. Patched Optional Fi Chained With Map: `%10v` ==> `%10v` => v: %v, err: %v\n", oProg, patchedToOptionalChainedFieldWithMap.Node().String(), v, err != nil)
+//
+//	oProg = "foo?.[0]"
+//	optionalChainedWithMap, err := expr.Compile(oProg, expr.AllowUndefinedVariables(), expr.AsAny())
+//	v, err = expr.Run(optionalChainedWithMap, map[string]interface{}{})
+//	fmt.Printf("3.            Optional Chained With Map: `%10v` ==> `%10v` => v: %v, err: %v\n", oProg, optionalChainedWithMap.Node().String(), v, err != nil)
+//
+//	oProg = "foo[0]"
+//	patchedToOptionalChainWithMap, err := expr.Compile(oProg, expr.AllowUndefinedVariables(), expr.AsAny(), expr.Patch(&w))
+//	v, err = expr.Run(patchedToOptionalChainWithMap, map[string]interface{}{})
+//	fmt.Printf("4.    Patched Optional Chained With Map: `%10v` ==> `%10v` => v: %v, err: %v\n", oProg, optionalChainedWithMap.Node().String(), v, err != nil)
+//
+//	oProg = "foo?.[0]"
+//	optionalChainedWithNil, err := expr.Compile(oProg, expr.AllowUndefinedVariables(), expr.AsAny())
+//	v, err = expr.Run(optionalChainedWithNil, nil)
+//	fmt.Printf("5.            Optional Chained With Nil: `%10v` ==> `%10v` => v: %v, err: %v\n", oProg, optionalChainedWithMap.Node().String(), v, err != nil)
+//
+//	oProg = "foo[0]"
+//	patchedToOptionalChainWithNil, err := expr.Compile(oProg, expr.AllowUndefinedVariables(), expr.AsAny(), expr.Patch(&w))
+//	v, err = expr.Run(patchedToOptionalChainWithNil, nil)
+//	fmt.Printf("6.    Patched Optional Chained With Nil: `%10v` ==> `%10v` => v: %v, err: %v\n", oProg, optionalChainedWithMap.Node().String(), v, err != nil)
+//
+//	oProg = "foo?.[0]"
+//	optionalChainedWithStruct, err := expr.Compile(oProg, expr.AllowUndefinedVariables(), expr.AsAny())
+//	v, err = expr.Run(optionalChainedWithStruct, struct{}{})
+//	fmt.Printf("7.         Optional Chained With Struct: `%10v` ==> `%10v` => v: %v, err: %v\n", oProg, optionalChainedWithMap.Node().String(), v, err != nil)
+//
+//	oProg = "foo[0]"
+//	patchedToOptionalChainWithStruct, err := expr.Compile(oProg, expr.AllowUndefinedVariables(), expr.AsAny(), expr.Patch(&w))
+//	v, err = expr.Run(patchedToOptionalChainWithStruct, struct{}{})
+//	fmt.Printf("8. Patched Optional Chained With Struct: `%10v` ==> `%10v` => v: %v, err: %v\n", oProg, optionalChainedWithMap.Node().String(), v, err != nil)
+//
+//	//fmt.Println(err)
+//	//fmt.Printf("\nP1 Source: %s ==> %s \nP2 Source: %s ==> %s\n", optionalChainedWithMap.Node().String(), ocwmOutput, patchedToOptionalChainWithMap.Node().String(), pocwmOutput)
+//
+//}
+
 func TestCompleteQueryKeyParameterForConditionalAttributeWhenConditionIsNotSatisfied(t *testing.T) {
 	// Fixture Setup
 	toComplete := ""
