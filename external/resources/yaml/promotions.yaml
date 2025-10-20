@@ -166,8 +166,40 @@ rule-promotions:
       usage: "Specifies the currencies that are applied to the promotion."
     rule_set.actions[n].strategy:
       type: ENUM:cart_discount,item_discount,shipping_discount,item_bundle_discount
-    rule_set.actions[n].args[n]:
-      type: PRIMITIVE
+    rule_set.actions[n].args[0]:
+      type: CONDITIONAL
+      conditions:
+        - type: ENUM:percent,fixed
+          when: rule_set.actions[n].strategy == "cart_discount"
+        - type: ENUM:percent,fixed,fixed_price
+          when: rule_set.actions[n].strategy == "item_discount"
+        - type: ENUM:percent,fixed,fixed_price
+          when: rule_set.actions[n].strategy == "shipping_discount"
+        - type: ENUM:percent,fixed,fixed_price
+          when: rule_set.actions[n].strategy == "bundle_discount"
+    rule_set.actions[n].args[1]:
+      type: CONDITIONAL
+      conditions:
+        - type: INT
+          when: rule_set.actions[n].args[0] == "fixed"
+          usage: "The fixed amount to discount"
+        - type: INT
+          when: rule_set.actions[n].args[0] == "percent"
+          usage: "The percentage to discount"
+        - type: INT
+          when: rule_set.actions[n].args[0] == "fixed_price" && rule_set.actions[n].strategy == "item_discount"
+          usage: "Quantity of eligble items to include in the discount"
+        - type: INT
+          when: rule_set.actions[n].args[0] == "fixed_price" && rule_set.actions[n].strategy == "shipping_discount"
+          usage: "Set the amount to this value"
+        - type: INT
+          when: rule_set.actions[n].args[0] == "fixed_price" && rule_set.actions[n].strategy == "bundle_discount"
+          usage: "Set the amount to this value"
+    rule_set.actions[n].args[2]:
+      type: INT
+      when: rule_set.actions[n].strategy == "item_discount" || rule_set.actions[n].args[0] == "fixed_price"
+      usage: "The fixed price to apply to the item"
+
     rule_set.actions[n].condition.strategy:
       # Looking at the code, this can accept anything
       type: ENUM:and,or,cart_total,cart_custom_attribute,item_price,item_sku,item_product_id,item_identifier,item_quantity,item_category,item_attribute,items_bundle

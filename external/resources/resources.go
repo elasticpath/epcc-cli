@@ -126,7 +126,8 @@ type CrudEntityAttribute struct {
 	AliasAttribute string `yaml:"alias_attribute,omitempty"`
 
 	// Expr for when the attribute is enabled
-	When string `yaml:"when,omitempty"`
+	When       string                 `yaml:"when,omitempty"`
+	Conditions []*CrudEntityAttribute `yaml:"conditions"`
 }
 
 func GetPluralResourceNames() []string {
@@ -221,7 +222,6 @@ func GenerateResourceMetadataFromYaml() (map[string]Resource, error) {
 				return nil, fmt.Errorf("Duplicate resource %s", k)
 			}
 			v.SourceFile = entry.Name()
-			log.Infof("Loaded %s from %s", k, entry.Name())
 			resources[k] = v
 		}
 	}

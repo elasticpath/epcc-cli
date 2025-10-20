@@ -2,8 +2,9 @@ package completion
 
 import (
 	"fmt"
-	"github.com/quasilyte/regex/syntax"
 	"regexp"
+
+	"github.com/quasilyte/regex/syntax"
 )
 
 func NewRegexCompletionTree() *RegexTree {

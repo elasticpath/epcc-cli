@@ -1,6 +1,7 @@
 package completion
 
 import (
+	gojson "encoding/json"
 	"fmt"
 	"os"
 	"regexp"
@@ -8,8 +9,10 @@ import (
 	"strings"
 
 	"github.com/elasticpath/epcc-cli/external/aliases"
+	"github.com/elasticpath/epcc-cli/external/json"
 	"github.com/elasticpath/epcc-cli/external/resources"
 	"github.com/expr-lang/expr"
+	"github.com/expr-lang/expr/ast"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -139,45 +142,108 @@ func Complete(c Request) ([]string, cobra.ShellCompDirective) {
 		autoCompleteAttributes := []string{}
 
 		rt := NewRegexCompletionTree()
+
+		usedAttributes := []string{}
+		for s := range c.Attributes {
+			usedAttributes = append(usedAttributes, s)
+		}
+
 		for k, v := range c.Resource.Attributes {
 			if (strings.HasPrefix(k, "^")) && (strings.HasSuffix(k, "$")) {
-				// TBD maybe exclude this case for now.
+				// We don't support when: or [n] indexes on these cases.
 				rt.AddRegex(k)
 			} else {
-				if v.When == "" || c.SkipWhenChecksAndAddAll {
-					autoCompleteAttributes = append(autoCompleteAttributes, k)
-				} else {
-					_, err := expr.Compile(v.When, expr.AsBool())
-					if err != nil {
-						log.Tracef("Invalid when condition on resource `%s` and attribute `%s`: %s", c.Resource.PluralName, k, v.When)
-						// We will add it anyway, as it's a better experience I suppose.
-						autoCompleteAttributes = append(autoCompleteAttributes, k)
-						continue
-					}
+				attributesToCheck := []resources.CrudEntityAttribute{}
 
-					allAttributes := make(map[string]string, len(c.Attributes)+len(c.ExistingResourceAttributes))
+				resolvedAttributes := resolveArrayParametersForIndexes(k, usedAttributes)
 
-					for k, v := range c.ExistingResourceAttributes {
-						allAttributes[k] = v
-					}
+				for _, r := range resolvedAttributes {
+					newAttribute := *v
 
-					for k, v := range c.Attributes {
-						allAttributes[k] = v
-					}
+					newAttribute.Key = r
 
-					output, err := expr.Eval(v.When, allAttributes)
-
-					if err != nil {
-						log.Tracef("Error while evaluating `%s` and attribute `%s`: %s, with values %v", c.Resource.PluralName, k, v.When, c.Attributes)
-						continue
-					}
-
-					if output.(bool) {
-						autoCompleteAttributes = append(autoCompleteAttributes, k)
-					}
-
+					attributesToCheck = append(attributesToCheck, newAttribute)
 				}
 
+				for _, attr := range attributesToCheck {
+					if (attr.When == "" && attr.Type != "CONDITIONAL") || c.SkipWhenChecksAndAddAll {
+						autoCompleteAttributes = append(autoCompleteAttributes, attr.Key)
+					} else {
+						// Conditional attributes may occur when the main attribute itself has a when or not.
+						orClauses := []string{}
+
+						for _, cond := range attr.Conditions {
+							orClauses = append(orClauses, cond.When)
+						}
+
+						whenCondition := ""
+						if len(strings.Trim(attr.When, " ")) == 0 {
+							whenCondition = "(" + strings.Join(orClauses, " || ") + ")"
+						} else if len(orClauses) == 0 {
+							whenCondition = attr.When
+						} else {
+							whenCondition = "( " + attr.When + " ) && (" + strings.Join(orClauses, " || ") + ")"
+						}
+						patcher := arrayReferencePatcher{
+							attr: attr.Key,
+						}
+
+						prog, err := expr.Compile(whenCondition, expr.AsBool(), expr.Patch(&patcher))
+
+						newWhenCondition := prog.Node().String()
+						log.Infof("New Program: %s", newWhenCondition)
+						// We will need to visit the resulting compiled expression and rewrite anything with "[n]"
+						if err != nil {
+							log.Tracef("Invalid when condition on resource `%s` and attribute `%s`: %s", c.Resource.PluralName, attr.Key, whenCondition)
+							// We will add it anyway, as it's a better experience I suppose.
+							autoCompleteAttributes = append(autoCompleteAttributes, attr.Key)
+							continue
+						}
+
+						allAttributes := make(map[string]string, len(c.Attributes)+len(c.ExistingResourceAttributes))
+
+						flatAttributes := make([]string, 0, len(c.Attributes)+len(c.ExistingResourceAttributes))
+						for k, v := range c.ExistingResourceAttributes {
+							allAttributes[k] = v
+
+							flatAttributes = append(flatAttributes, k, v)
+						}
+
+						for k, v := range c.Attributes {
+							allAttributes[k] = v
+							flatAttributes = append(flatAttributes, k, v)
+						}
+
+						// TODO clean up all these different json formats
+						jsonTxt, err := json.ToJson(flatAttributes, true, false, make(map[string]*resources.CrudEntityAttribute), false, false)
+
+						if err == nil {
+							var jsonBlob any
+							gojson.Unmarshal([]byte(jsonTxt), &jsonBlob)
+
+							var output any
+
+							//output, err = expr.Eval(newWhenCondition, jsonBlob)
+
+							output, err = expr.Run(prog, jsonBlob)
+
+							if err != nil {
+								log.Warnf("Program did not successfully output: %v", err)
+							} else if output.(bool) {
+								resolvedAttributes := resolveArrayParametersForIndexes(k, usedAttributes)
+
+								autoCompleteAttributes = append(autoCompleteAttributes, resolvedAttributes...)
+							}
+						} else {
+							log.Tracef("Error while evaluating `%s` and attribute `%s`: %s, with values %v", c.Resource.PluralName, k, whenCondition, c.Attributes)
+						}
+
+						if err != nil {
+
+							continue
+						}
+					}
+				}
 			}
 		}
 
@@ -186,70 +252,22 @@ func Complete(c Request) ([]string, cobra.ShellCompDirective) {
 		}
 
 		if regexOptions, err := rt.GetCompletionOptions(); err == nil {
-			autoCompleteAttributes = append(autoCompleteAttributes, regexOptions...)
+			for _, v := range regexOptions {
+				resolvedAttributes := resolveArrayParametersForIndexes(v, usedAttributes)
+				autoCompleteAttributes = append(autoCompleteAttributes, resolvedAttributes...)
+			}
+
 		}
 
 		for _, k := range autoCompleteAttributes {
-			if strings.Contains(k, "[n]") {
-				// Count [n] occurrences
-				nCount := strings.Count(k, "[n]")
-
-				// Track maximum index at each [n] position
-				maxAtPosition := make([]int, nCount)
-				for i := range maxAtPosition {
-					maxAtPosition[i] = -1
-				}
-
-				// Convert pattern to regex to match existing attributes
-				regexPattern := strings.ReplaceAll(regexp.QuoteMeta(k), `\[n\]`, `\[(\d+)\]`)
-				re := regexp.MustCompile("^" + regexPattern + "$")
-
-				// Find maximum index at each position
-				for s := range c.Attributes {
-					matches := re.FindStringSubmatch(s)
-					if matches != nil {
-						for i := 1; i < len(matches) && i-1 < len(maxAtPosition); i++ {
-							if idx, err := strconv.Atoi(matches[i]); err == nil {
-								if idx > maxAtPosition[i-1] {
-									maxAtPosition[i-1] = idx
-								}
-							}
-						}
-					}
-				}
-
-				// Generate new attributes by incrementing each position independently
-				for pos := 0; pos < nCount; pos++ {
-					newAttr := k
-					for i := 0; i < nCount; i++ {
-						var replaceWith string
-						if i == pos {
-							// Increment this position
-							replaceWith = "[" + strconv.Itoa(maxAtPosition[i]+1) + "]"
-						} else {
-							// Use current max for other positions (or 0 if no max found)
-							maxVal := maxAtPosition[i]
-							if maxVal < 0 {
-								maxVal = 0
-							}
-							replaceWith = "[" + strconv.Itoa(maxVal) + "]"
-						}
-						newAttr = strings.Replace(newAttr, "[n]", replaceWith, 1)
-					}
-
-					if _, ok := c.Attributes[newAttr]; !ok {
-						results = append(results, newAttr)
-					}
-				}
-			} else {
-				if _, ok := c.Attributes[k]; !ok {
-					results = append(results, k)
-				}
+			if _, ok := c.Attributes[k]; !ok {
+				results = append(results, k)
 			}
 		}
 	}
 
 	if c.Type&CompleteAttributeValue > 0 {
+		panic("Uh you will need to handle CONDITIONAL attributes here")
 		if c.Attribute != "" {
 			attr := c.Attribute
 			i := strings.Index(attr, "[")
@@ -572,4 +590,113 @@ func Complete(c Request) ([]string, cobra.ShellCompDirective) {
 	}
 
 	return newResults, compDir
+}
+
+func resolveArrayParametersForIndexes(key string, attributes []string) []string {
+
+	if !strings.Contains(key, "[n]") {
+		return []string{key}
+	}
+
+	// Count [n] occurrences
+	nCount := strings.Count(key, "[n]")
+
+	// Track maximum index at each [n] position
+	maxAtPosition := make([]int, nCount)
+	for i := range maxAtPosition {
+		maxAtPosition[i] = -1
+	}
+
+	// Convert pattern to regex to match existing attributes
+	regexPattern := strings.ReplaceAll(regexp.QuoteMeta(key), `\[n\]`, `\[(\d+)\]`)
+	re := regexp.MustCompile("^" + regexPattern + "$")
+
+	// Find maximum index at each position
+	for _, s := range attributes {
+		matches := re.FindStringSubmatch(s)
+		if matches != nil {
+			for i := 1; i < len(matches) && i-1 < len(maxAtPosition); i++ {
+				if idx, err := strconv.Atoi(matches[i]); err == nil {
+					if idx > maxAtPosition[i-1] {
+						maxAtPosition[i-1] = idx
+					}
+				}
+			}
+		}
+	}
+
+	attributes = []string{}
+
+	// Generate new attributes by incrementing each position independently
+	for pos := 0; pos < nCount; pos++ {
+		newAttr := key
+		for i := 0; i < nCount; i++ {
+			var replaceWith string
+			if i == pos {
+				// Increment this position
+				replaceWith = "[" + strconv.Itoa(maxAtPosition[i]+1) + "]"
+			} else {
+				// Use current max for other positions (or 0 if no max found)
+				maxVal := maxAtPosition[i]
+				if maxVal < 0 {
+					maxVal = 0
+				}
+				replaceWith = "[" + strconv.Itoa(maxVal) + "]"
+			}
+			newAttr = strings.Replace(newAttr, "[n]", replaceWith, 1)
+		}
+
+		attributes = append(attributes, newAttr)
+
+	}
+
+	return attributes
+}
+
+type arrayReferencePatcher struct {
+	attr       string
+	lastMember string
+}
+
+func (a *arrayReferencePatcher) Visit(node *ast.Node) {
+	if n, ok := (*node).(*ast.MemberNode); ok {
+		a.lastMember = n.String()
+		log.Tracef("found member, %v: %v", n, a.lastMember)
+		v := *n
+		v.Optional = true
+		ast.Patch(node, &v)
+	}
+
+	if n, ok := (*node).(*ast.ChainNode); ok {
+		log.Tracef("found operator, %v: %v", n, a.lastMember)
+	}
+
+	if n, ok := (*node).(*ast.IdentifierNode); ok {
+		if n.Value == "n" {
+			log.Tracef("found identifier %v[%v] while checking %v ", a.lastMember, n.Value, a.attr)
+
+			regexPattern := strings.ReplaceAll(regexp.QuoteMeta(a.lastMember+"[n]"), `\[n\]`, `\[(\d+)\]`)
+			re, err := regexp.Compile("^" + regexPattern)
+			if err != nil {
+				log.Warnf("Could not compile regex %v", err)
+				return
+			}
+
+			matches := re.FindStringSubmatch(a.attr)
+
+			if len(matches) == 2 {
+				m, err := strconv.Atoi(matches[1])
+
+				if err != nil {
+					// regex should only match integers.
+					panic(err)
+				}
+
+				log.Tracef("Found match %v", m)
+				ast.Patch(node, &ast.IntegerNode{Value: m})
+			}
+
+		}
+
+	}
 }

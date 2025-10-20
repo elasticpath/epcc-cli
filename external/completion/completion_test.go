@@ -859,6 +859,54 @@ func TestCompleteAttributeKeyWithWhenSkippingWhen(t *testing.T) {
 	require.Len(t, completions, 18)
 }
 
+func TestCompleteQueryKeyParameterForConditionalAttributeWhenConditionIsSatisfied(t *testing.T) {
+	// Fixture Setup
+	toComplete := ""
+	acct := resources.MustGetResourceByName("rule-promotion")
+	request := Request{
+		Type:       CompleteAttributeKey,
+		Verb:       Create,
+		ToComplete: toComplete,
+		Resource:   acct,
+		Attributes: map[string]string{
+			"name":                         "My Promotion",
+			"rule_set.actions[0].strategy": "cart_discount",
+		},
+	}
+
+	// Exercise SUT
+	completions, compDir := Complete(request)
+
+	// Verify Results
+	require.Equal(t, compDir, cobra.ShellCompDirectiveNoFileComp)
+	require.Contains(t, completions, "rule_set.actions[0].args[0]")
+	// Don't bother testing a whole ton of stuff, the API is very complex
+}
+
+func TestCompleteQueryKeyParameterForConditionalAttributeWhenConditionIsNotSatisfied(t *testing.T) {
+	// Fixture Setup
+	toComplete := ""
+	acct := resources.MustGetResourceByName("rule-promotion")
+	request := Request{
+		Type:       CompleteAttributeKey,
+		Verb:       Create,
+		ToComplete: toComplete,
+		Resource:   acct,
+		Attributes: map[string]string{
+			"name": "My Promotion",
+			//This is not set: "rule_set.actions[0].strategy": "cart_discount",
+		},
+	}
+
+	// Exercise SUT
+	completions, compDir := Complete(request)
+
+	// Verify Results
+	require.Equal(t, compDir, cobra.ShellCompDirectiveNoFileComp)
+	require.NotContains(t, completions, "rule_set.actions[0].args[0]")
+	// Don't bother testing a whole ton of stuff, the API is very complex
+}
+
 func TestCompleteQueryParamKeyGetCollectionWithExplicitParams(t *testing.T) {
 	// Fixture Setup
 	toComplete := "pa"

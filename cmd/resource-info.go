@@ -567,53 +567,21 @@ func GenerateResourceInfo(r *resources.Resource) string {
 		for k, v := range r.Attributes {
 			paramName := strings.ToUpper(k)
 
-			var description string
-			if v.Usage != "" {
-				description = v.Usage
-			} else if v.Type == "BOOL" {
-				description = "A boolean value"
-			} else if v.Type == "STRING" {
-				description = "A string value"
-			} else if strings.HasPrefix(v.Type, "ENUM:") {
-				description = "One of the following values: " + strings.ReplaceAll(strings.ReplaceAll(v.Type, "ENUM:", ""), ",", ", ")
-			} else if strings.HasPrefix(v.Type, "CONST:") {
-				description = "Only: " + strings.ReplaceAll(strings.ReplaceAll(v.Type, "CONST:", ""), ",", ", ") + " (note: the epcc will auto-populate this if an adjacent attribute is set)"
-			} else if v.Type == "INT" {
-				description = "An integer value"
-			} else if v.Type == "FLOAT" {
-				description = "A floating point value"
-			} else if v.Type == "URL" {
-				description = "A url"
-			} else if v.Type == "JSON_API_TYPE" {
-				description = "A value that matches a `type` used by the API"
-			} else if v.Type == "CURRENCY" {
-				description = "A three letter currency code"
-			} else if v.Type == "FILE" {
-				description = "A filename"
-			} else if v.Type == "PRIMITIVE" {
-				description = "Any of an int, float, string, or boolean value"
-			} else if v.Type == "SINGULAR_RESOURCE_TYPE" {
-				description = "A resource name used by the epcc cli"
-			} else if strings.HasPrefix(v.Type, "RESOURCE_ID") {
-				resName := strings.ReplaceAll(v.Type, "RESOURCE_ID:", "")
-				if res, ok := resources.GetResourceByName(resName); ok {
-					attribute := "id"
-					if v.AliasAttribute != "" {
-						attribute = v.AliasAttribute
-					}
-					description = fmt.Sprintf("The %s of a %s resource", attribute, res.SingularName)
-				} else {
-					description = "A resource id for " + resName
+			if v.Type != "CONDITIONAL" {
+				description := GetDescription(v)
+
+				if _, ok := allParams[v.When]; !ok {
+					allParams[v.When] = []paramInfo{}
 				}
+
+				allParams[v.When] = append(allParams[v.When], paramInfo{name: paramName, description: description, when: v.When})
 			} else {
-				description = "Unknown:" + v.Type
+				for _, v2 := range v.Conditions {
+					description := GetDescription(v2)
+					allParams[v2.When] = append(allParams[v2.When], paramInfo{name: paramName, description: description, when: v2.When})
+				}
 			}
 
-			if _, ok := allParams[v.When]; !ok {
-				allParams[v.When] = []paramInfo{}
-			}
-
-			allParams[v.When] = append(allParams[v.When], paramInfo{name: paramName, description: description, when: v.When})
 		}
 
 		// Add INCLUDE parameter if this resource supports it
@@ -672,6 +640,51 @@ func GenerateResourceInfo(r *resources.Resource) string {
 	sb.WriteString("\n")
 
 	return sb.String()
+}
+
+func GetDescription(v *resources.CrudEntityAttribute) string {
+	var description string
+	if v.Usage != "" {
+		description = v.Usage
+	} else if v.Type == "BOOL" {
+		description = "A boolean value"
+	} else if v.Type == "STRING" {
+		description = "A string value"
+	} else if strings.HasPrefix(v.Type, "ENUM:") {
+		description = "One of the following values: " + strings.ReplaceAll(strings.ReplaceAll(v.Type, "ENUM:", ""), ",", ", ")
+	} else if strings.HasPrefix(v.Type, "CONST:") {
+		description = "Only: " + strings.ReplaceAll(strings.ReplaceAll(v.Type, "CONST:", ""), ",", ", ") + " (note: the epcc will auto-populate this if an adjacent attribute is set)"
+	} else if v.Type == "INT" {
+		description = "An integer value"
+	} else if v.Type == "FLOAT" {
+		description = "A floating point value"
+	} else if v.Type == "URL" {
+		description = "A url"
+	} else if v.Type == "JSON_API_TYPE" {
+		description = "A value that matches a `type` used by the API"
+	} else if v.Type == "CURRENCY" {
+		description = "A three letter currency code"
+	} else if v.Type == "FILE" {
+		description = "A filename"
+	} else if v.Type == "PRIMITIVE" {
+		description = "Any of an int, float, string, or boolean value"
+	} else if v.Type == "SINGULAR_RESOURCE_TYPE" {
+		description = "A resource name used by the epcc cli"
+	} else if strings.HasPrefix(v.Type, "RESOURCE_ID") {
+		resName := strings.ReplaceAll(v.Type, "RESOURCE_ID:", "")
+		if res, ok := resources.GetResourceByName(resName); ok {
+			attribute := "id"
+			if v.AliasAttribute != "" {
+				attribute = v.AliasAttribute
+			}
+			description = fmt.Sprintf("The %s of a %s resource", attribute, res.SingularName)
+		} else {
+			description = "A resource id for " + resName
+		}
+	} else {
+		description = "Unknown:" + v.Type
+	}
+	return description
 }
 
 func GenerateOpenApiInfo(resource *resources.Resource) string {

@@ -19,8 +19,8 @@ func TestFilteringCompletion(t *testing.T) {
 		{"Full binary operator match", "eq(", []string{"eq(name,", "eq(legal_name,", "eq(registration_id,", "eq(parent_id,", "eq(id,", "eq(updated_at,", "eq(created_at,"}},
 		{"Full variable operator match", "in(", []string{"in(name,", "in(legal_name,", "in(registration_id,", "in(parent_id,", "in(id,", "in(updated_at,", "in(created_at,"}},
 		// The shell is responsible for filtering out things that don't match
-		{"Full binary operator match with attribute prefix", "eq(n", []string{"eq(name,", "eq(legal_name,", "eq(registration_id,", "eq(parent_id,", "eq(id,", "eq(updated_at,", "eq(created_at,"}},
-		{"Full variable operator match with attribute prefix", "in(n", []string{"in(name,", "in(legal_name,", "in(registration_id,", "in(parent_id,", "in(id,", "in(updated_at,", "in(created_at,"}},
+		{"Full binary operator match with attribute attr", "eq(n", []string{"eq(name,", "eq(legal_name,", "eq(registration_id,", "eq(parent_id,", "eq(id,", "eq(updated_at,", "eq(created_at,"}},
+		{"Full variable operator match with attribute attr", "in(n", []string{"in(name,", "in(legal_name,", "in(registration_id,", "in(parent_id,", "in(id,", "in(updated_at,", "in(created_at,"}},
 		{"Full binary operator match with full attribute", "eq(name", []string{"eq(name,", "eq(legal_name,", "eq(registration_id,", "eq(parent_id,", "eq(id,", "eq(updated_at,", "eq(created_at,"}},
 		{"Full vararg operator match with full attribute", "in(name", []string{"in(name,", "in(legal_name,", "in(registration_id,", "in(parent_id,", "in(id,", "in(updated_at,", "in(created_at,"}},
 		{"Full binary operator match with full attribute and comma has no completions", "eq(name,", []string{}},
