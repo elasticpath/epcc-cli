@@ -3,20 +3,23 @@ package rest
 import (
 	"context"
 	"fmt"
-	"github.com/elasticpath/epcc-cli/external/aliases"
-	"github.com/elasticpath/epcc-cli/external/httpclient"
-	"github.com/elasticpath/epcc-cli/external/json"
-	"github.com/elasticpath/epcc-cli/external/resources"
-	"github.com/elasticpath/epcc-cli/external/shutdown"
-	log "github.com/sirupsen/logrus"
 	"io"
 	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/elasticpath/epcc-cli/external/aliases"
+	"github.com/elasticpath/epcc-cli/external/autofill"
+	"github.com/elasticpath/epcc-cli/external/httpclient"
+	"github.com/elasticpath/epcc-cli/external/json"
+	"github.com/elasticpath/epcc-cli/external/resources"
+	"github.com/elasticpath/epcc-cli/external/shutdown"
+	"github.com/elasticpath/epcc-cli/external/templates"
+	log "github.com/sirupsen/logrus"
 )
 
-func GetInternal(ctx context.Context, overrides *httpclient.HttpParameterOverrides, args []string, skipAliases bool) (string, error) {
-	resp, err := GetResource(ctx, overrides, args)
+func GetInternal(ctx context.Context, overrides *httpclient.HttpParameterOverrides, args []string, autoFillOnGet bool, skipAliases bool) (string, error) {
+	resp, err := GetResource(ctx, overrides, args, autoFillOnGet)
 
 	if err != nil {
 		return "", err
@@ -66,7 +69,7 @@ func GetUrl(resource resources.Resource, args []string) (*resources.CrudEntityIn
 	}
 }
 
-func GetResource(ctx context.Context, overrides *httpclient.HttpParameterOverrides, args []string) (*http.Response, error) {
+func GetResource(ctx context.Context, overrides *httpclient.HttpParameterOverrides, args []string, autoFill bool) (*http.Response, error) {
 	shutdown.OutstandingOpCounter.Add(1)
 	defer shutdown.OutstandingOpCounter.Done()
 
@@ -103,6 +106,16 @@ func GetResource(ctx context.Context, overrides *httpclient.HttpParameterOverrid
 
 	// Add remaining args as query params
 	params := url.Values{}
+
+	if autoFill {
+		autoFillQueryParams := autofill.GetAutoFillQueryParameters(resource.SingularName, resourceUrlInfo.QueryParameters)
+
+		for i := 0; i < len(autoFillQueryParams); i += 2 {
+			val := templates.Render(autoFillQueryParams[i+1])
+			params.Add(autoFillQueryParams[i], val)
+		}
+	}
+
 	for i := idCount + 1; i+1 < len(args); i = i + 2 {
 		params.Add(args[i], args[i+1])
 	}

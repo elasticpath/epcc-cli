@@ -256,6 +256,15 @@ func TestQueryParametersMatchOpenAPI(t *testing.T) {
 		OpenAPIParamName string
 	}
 
+	var typeMismatchQueryParams []struct {
+		ResourceName      string
+		OperationType     string
+		OperationID       string
+		OpenAPIParamName  string
+		OpenAPIParamType  string
+		ResourceParamType string
+	}
+
 	// Check each resource operation
 	for resourceName, resource := range allResources {
 		// Check operations that might have openapi-operation-id
@@ -281,14 +290,14 @@ func TestQueryParametersMatchOpenAPI(t *testing.T) {
 			}
 
 			// Convert resource query parameters to a set for easy lookup
-			resourceQueryParams := make(map[string]bool)
+			resourceQueryParams := make(map[string]string)
 			for _, param := range opInfo.QueryParameters {
-				resourceQueryParams[param.Name] = true
+				resourceQueryParams[param.Name] = param.Type
 			}
 
 			// Check if all OpenAPI query parameters are defined in resources yaml files
 			for _, openAPIParam := range openAPIQueryParams {
-				if !resourceQueryParams[openAPIParam] {
+				if _, ok := resourceQueryParams[openAPIParam.Name]; !ok {
 					missingQueryParams = append(missingQueryParams, struct {
 						ResourceName     string
 						OperationType    string
@@ -299,8 +308,35 @@ func TestQueryParametersMatchOpenAPI(t *testing.T) {
 						ResourceName:     resourceName,
 						OperationType:    opType,
 						OperationID:      opInfo.OpenApiOperationId,
-						MissingParam:     openAPIParam,
-						OpenAPIParamName: openAPIParam,
+						MissingParam:     openAPIParam.Name,
+						OpenAPIParamName: openAPIParam.Name,
+					})
+				}
+
+				// Check if the type matches
+				resourceYamlType := resourceQueryParams[openAPIParam.Name]
+				openapiType := openAPIParam.EpccCliType
+
+				if resourceYamlType != openapiType {
+					if resourceYamlType == "CURRENCY" && openapiType == "STRING" {
+						// The epcc cli type just provides better usability
+						continue
+					}
+
+					typeMismatchQueryParams = append(typeMismatchQueryParams, struct {
+						ResourceName      string
+						OperationType     string
+						OperationID       string
+						OpenAPIParamName  string
+						OpenAPIParamType  string
+						ResourceParamType string
+					}{
+						ResourceName:      resourceName,
+						OperationType:     opType,
+						OperationID:       opInfo.OpenApiOperationId,
+						OpenAPIParamName:  openAPIParam.Name,
+						OpenAPIParamType:  openapiType,
+						ResourceParamType: resourceYamlType,
 					})
 				}
 			}
@@ -316,5 +352,16 @@ func TestQueryParametersMatchOpenAPI(t *testing.T) {
 		}
 	} else {
 		t.Logf("All query parameters from OpenAPI specs are properly defined in resource yaml files")
+	}
+
+	// Report type mismatch query parameters
+	if len(typeMismatchQueryParams) > 0 {
+		t.Errorf("Found %d query parameters in OpenAPI specs that have a type mismatch with resource yaml files:", len(typeMismatchQueryParams))
+		for _, mismatch := range typeMismatchQueryParams {
+			t.Errorf("  - Resource: %s, Operation: %s, OpenAPI ID: %s, Query Param: %s OpenAPI Type: [%s], Resource Type: [%s]",
+				mismatch.ResourceName, mismatch.OperationType, mismatch.OperationID, mismatch.OpenAPIParamName, mismatch.OpenAPIParamType, mismatch.ResourceParamType)
+		}
+	} else {
+		t.Logf("All query parameters from OpenAPI specs have a type match in resource yaml files")
 	}
 }

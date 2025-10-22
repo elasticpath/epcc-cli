@@ -9,6 +9,7 @@ import (
 
 	"github.com/pb33f/libopenapi"
 	v3 "github.com/pb33f/libopenapi/datamodel/high/v3"
+	log "github.com/sirupsen/logrus"
 )
 
 //go:embed specs/*.yaml
@@ -201,8 +202,13 @@ func FindOperationByID(operationID string) (*OperationInfo, error) {
 	return nil, fmt.Errorf("operation ID '%s' not found in any OpenAPI spec", operationID)
 }
 
+type QueryParamInfo struct {
+	Name        string
+	EpccCliType string
+}
+
 // GetQueryParametersForOperation returns the query parameter names for a given operation ID
-func GetQueryParametersForOperation(operationID string) ([]string, error) {
+func GetQueryParametersForOperation(operationID string) ([]*QueryParamInfo, error) {
 	// Find the operation using the existing function
 	opInfo, err := FindOperationByID(operationID)
 	if err != nil {
@@ -210,11 +216,54 @@ func GetQueryParametersForOperation(operationID string) ([]string, error) {
 	}
 
 	// Extract query parameters directly from the embedded Operation
-	var queryParams []string
+	var queryParams []*QueryParamInfo
 	if opInfo.Operation != nil && opInfo.Operation.Parameters != nil {
 		for _, param := range opInfo.Operation.Parameters {
 			if param != nil && param.In == "query" {
-				queryParams = append(queryParams, param.Name)
+
+				schemaInfo, err := param.Schema.BuildSchema()
+
+				qp := &QueryParamInfo{
+					Name:        param.Name,
+					EpccCliType: "STRING",
+				}
+
+				if err == nil {
+					if len(schemaInfo.Type) == 1 {
+						switch strings.ToLower(schemaInfo.Type[0]) {
+						case "integer":
+							qp.EpccCliType = "INT"
+						case "string":
+							qp.EpccCliType = "STRING"
+						case "array":
+							qp.EpccCliType = "STRING"
+						default:
+
+							log.Warnf("Unknown Type: %v", schemaInfo.Type[0])
+						}
+
+					} else {
+						log.Warnf("Too many types: %v", schemaInfo.Type)
+					}
+
+					if schemaInfo.Enum != nil {
+						values := []string{}
+
+						for _, enumValue := range schemaInfo.Enum {
+							if len(enumValue.Value) == 0 {
+								log.Warnf("Empty enum value, probably unhanded OpenAPI case")
+							} else {
+								values = append(values, enumValue.Value)
+							}
+						}
+
+						if len(values) > 0 {
+							qp.EpccCliType = "ENUM:" + strings.Join(values, ",")
+						}
+					}
+				}
+
+				queryParams = append(queryParams, qp)
 			}
 		}
 	}

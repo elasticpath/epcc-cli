@@ -338,7 +338,7 @@ func GetCurrentResourceState(resourceName string, ids []string, overrides *httpc
 		}
 	}
 
-	result, err := rest.GetInternal(context.Background(), overrides, append([]string{resourceName}, ids...), true)
+	result, err := rest.GetInternal(context.Background(), overrides, append([]string{resourceName}, ids...), false, true)
 
 	if err != nil {
 		cache = ResourceCache{

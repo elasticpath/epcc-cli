@@ -336,7 +336,7 @@ var loginCustomer = &cobra.Command{
 		if customerTokenResponse != nil {
 
 			// Get the customer so we have aliases where we need the id.
-			getCustomerBody, err := rest.GetInternal(ctx, overrides, []string{"customer", customerTokenResponse.Data.CustomerId}, false)
+			getCustomerBody, err := rest.GetInternal(ctx, overrides, []string{"customer", customerTokenResponse.Data.CustomerId}, false, false)
 
 			if err != nil {
 				log.Warnf("Could not retrieve customer")
@@ -440,7 +440,7 @@ var loginAccountManagement = &cobra.Command{
 		}
 
 		// Populate an alias to get the authentication_realm.
-		_, err := rest.GetInternal(ctx, overrides, []string{"account-authentication-settings"}, false)
+		_, err := rest.GetInternal(ctx, overrides, []string{"account-authentication-settings"}, false, false)
 
 		if err != nil {
 			return fmt.Errorf("couldn't determine authentication realm: %w", err)
@@ -465,7 +465,7 @@ var loginAccountManagement = &cobra.Command{
 
 		// Try and auto-detect the password profile id
 		if passwordAuthentication {
-			resp, err := rest.GetInternal(ctx, overrides, []string{"password-profiles", "related_authentication_realm_for_account_authentication_settings_last_read=entity"}, false)
+			resp, err := rest.GetInternal(ctx, overrides, []string{"password-profiles", "related_authentication_realm_for_account_authentication_settings_last_read=entity"}, false, false)
 
 			if err != nil {
 				return fmt.Errorf("couldn't determine password profile: %w", err)
@@ -580,7 +580,7 @@ var loginAccountManagement = &cobra.Command{
 
 		authentication.SaveAccountManagementAuthenticationToken(*selectedAccount)
 
-		accountMembers, err := rest.GetInternal(ctx, overrides, []string{"account-members"}, false)
+		accountMembers, err := rest.GetInternal(ctx, overrides, []string{"account-members"}, false, false)
 
 		if err == nil {
 			accountMemberId, _ := json.RunJQOnString(".data[0].id", accountMembers)

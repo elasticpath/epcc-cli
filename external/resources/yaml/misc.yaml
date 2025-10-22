@@ -149,8 +149,6 @@ stores:
   get-entity:
     docs: "https://elasticpath.dev/guides/key-concepts/organizations/overview"
     url: "/v2/stores/{settings}"
-
-
 cart-settings:
   singular-name: "cart-setting"
   json-api-type: "settings"

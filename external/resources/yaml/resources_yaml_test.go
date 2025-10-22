@@ -34,7 +34,7 @@ func TestExpectedNumberOfResources(t *testing.T) {
 	resourceCount := len(resources.GetPluralResources())
 
 	// Verification
-	require.Equal(t, resourceCount, 134)
+	require.Equal(t, resourceCount, 138)
 }
 
 func TestCreatedByTemplatesAllReferenceValidResource(t *testing.T) {
@@ -327,7 +327,12 @@ func TestJsonSchemaValidate(t *testing.T) {
 		}
 
 		if err = sch.ValidateInterface(v); err != nil {
-			log.Fatalf("error processing file %s: %#v", file.Name(), err)
+			if e2, ok := err.(*jsonschema.ValidationError); ok {
+				t.Errorf("Error processing file %s:\n%s", file.Name(), e2.GoString())
+			} else {
+				t.Errorf("Error processing file %s:\n%#v", file.Name(), err)
+			}
+
 		}
 	}
 

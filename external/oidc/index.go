@@ -6,6 +6,7 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"fmt"
+
 	"github.com/elasticpath/epcc-cli/external/httpclient"
 	"github.com/elasticpath/epcc-cli/external/json"
 	"github.com/elasticpath/epcc-cli/external/rest"
@@ -34,13 +35,13 @@ func GetIndexData(ctx context.Context, port uint16) (*LoginPageInfo, error) {
 	}
 
 	// Get customer and account authentication settings to populate the aliases
-	customerAuthSettings, err := rest.GetInternal(ctx, overrides, []string{"customer-authentication-settings"}, false)
+	customerAuthSettings, err := rest.GetInternal(ctx, overrides, []string{"customer-authentication-settings"}, false, false)
 
 	if err != nil {
 		return nil, fmt.Errorf("could not retrieve customer authentication settings: %w", err)
 	}
 
-	accountAuthSettings, err := rest.GetInternal(ctx, overrides, []string{"account-authentication-settings"}, false)
+	accountAuthSettings, err := rest.GetInternal(ctx, overrides, []string{"account-authentication-settings"}, false, false)
 
 	if err != nil {
 		return nil, fmt.Errorf("could not retrieve account authentication settings: %w", err)
@@ -110,7 +111,7 @@ func GetIndexData(ctx context.Context, port uint16) (*LoginPageInfo, error) {
 }
 
 func getOidcProfilesForRealm(ctx context.Context, overrides *httpclient.HttpParameterOverrides, realmId string) ([]OidcProfileInfo, error) {
-	res, err := rest.GetInternal(ctx, overrides, []string{"oidc-profiles", realmId}, false)
+	res, err := rest.GetInternal(ctx, overrides, []string{"oidc-profiles", realmId}, false, false)
 
 	if err != nil {
 		return nil, err

@@ -4,6 +4,8 @@ import (
 	"context"
 	gojson "encoding/json"
 	"fmt"
+	"time"
+
 	"github.com/elasticpath/epcc-cli/config"
 	"github.com/elasticpath/epcc-cli/external/aliases"
 	"github.com/elasticpath/epcc-cli/external/completion"
@@ -13,7 +15,6 @@ import (
 	"github.com/elasticpath/epcc-cli/external/rest"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"time"
 )
 
 const singularResourceRequest = 0
@@ -27,6 +28,7 @@ func NewGetCommand(parentCmd *cobra.Command) func() {
 
 	// Ensure that any new options here are added to the resetFunc
 	var outputJq = ""
+	var autoFillOnGet = false
 	var compactOutput = false
 	var noBodyPrint = false
 	var retryWhileJQ = ""
@@ -44,6 +46,7 @@ func NewGetCommand(parentCmd *cobra.Command) func() {
 		overrides.QueryParameters = nil
 		overrides.OverrideUrlPath = ""
 		outputJq = ""
+		autoFillOnGet = false
 		compactOutput = false
 		noBodyPrint = false
 		retryWhileJQ = ""
@@ -168,7 +171,7 @@ func NewGetCommand(parentCmd *cobra.Command) func() {
 						retriesFailedError := fmt.Errorf("Maximum number of retries hit %d and condition [%s] always true", retryWhileJQMaxAttempts, retryWhileJQ)
 
 						for attempt := uint16(0); attempt < retryWhileJQMaxAttempts; attempt++ {
-							body, err = rest.GetInternal(context.Background(), overrides, append([]string{resourceName}, args...), skipAliases)
+							body, err = rest.GetInternal(context.Background(), overrides, append([]string{resourceName}, args...), autoFillOnGet, skipAliases)
 							if retryWhileJQ == "" {
 								retriesFailedError = nil
 								break
@@ -316,6 +319,7 @@ func NewGetCommand(parentCmd *cobra.Command) func() {
 	}
 
 	getCmd.PersistentFlags().BoolVarP(&noBodyPrint, "silent", "s", false, "Don't print the body on success")
+	getCmd.PersistentFlags().BoolVarP(&autoFillOnGet, "auto-fill", "", false, "Auto generate value for fields")
 	getCmd.PersistentFlags().StringVar(&overrides.OverrideUrlPath, "override-url-path", "", "Override the URL that will be used for the Request")
 	getCmd.PersistentFlags().StringSliceVarP(&overrides.QueryParameters, "query-parameters", "q", []string{}, "Pass in key=value an they will be added as query parameters")
 	getCmd.PersistentFlags().StringVarP(&outputJq, "output-jq", "", "", "A jq expression, if set we will restrict output to only this")

@@ -93,8 +93,11 @@ rule-promotions:
     openapi-operation-id: "getRulePromotions"
     query:
       - name: filter
+        type: STRING
       - name: page[limit]
+        type: INT
       - name: page[offset]
+        type: INT
   get-entity:
     docs: "https://elasticpath.dev/docs/api/promotions-builder/get-rule-promotion-by-id"
     url: "/v2/rule-promotions/{rule_promotions}"
@@ -194,14 +197,18 @@ rule-promotion-codes:
     openapi-operation-id: "getRulePromotionCodes"
     query:
       - name: filter
+        type: STRING
       - name: sort
+        type: ENUM:code,-code
   get-entity:
     docs: "https://elasticpath.dev/docs/api/promotions-builder/get-rule-promotion-codes"
     url: "/v2/rule-promotions/{rule_promotions}/codes"
     openapi-operation-id: "getRulePromotionCodes"
     query:
       - name: filter
+        type: STRING
       - name: sort
+        type: ENUM:code,-code
   delete-entity:
     docs: "https://elasticpath.dev/docs/api/promotions/delete-a-promotion-code"
     url: "/v2/rule-promotions/{rule_promotions}/codes/{rule_promotion_codes}"
