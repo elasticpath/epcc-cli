@@ -170,34 +170,34 @@ rule-promotions:
       type: CONDITIONAL
       conditions:
         - type: ENUM:percent,fixed
-          when: rule_set.actions[n].strategy == "cart_discount"
+          when: rule_set?.actions?.[n]?.strategy == "cart_discount"
         - type: ENUM:percent,fixed,fixed_price
-          when: rule_set.actions[n].strategy == "item_discount"
+          when: rule_set?.actions?.[n]?.strategy == "item_discount"
         - type: ENUM:percent,fixed,fixed_price
-          when: rule_set.actions[n].strategy == "shipping_discount"
+          when: rule_set?.actions?.[n]?.strategy == "shipping_discount"
         - type: ENUM:percent,fixed,fixed_price
-          when: rule_set.actions[n].strategy == "bundle_discount"
+          when: rule_set?.actions?.[n]?.strategy == "bundle_discount"
     rule_set.actions[n].args[1]:
       type: CONDITIONAL
       conditions:
         - type: INT
-          when: rule_set.actions[n].args[0] == "fixed"
+          when: rule_set?.actions?.[n]?.args?.[0] == "fixed"
           usage: "The fixed amount to discount"
         - type: INT
-          when: rule_set.actions[n].args[0] == "percent"
+          when: rule_set?.actions?.[n]?.args?.[0] == "percent"
           usage: "The percentage to discount"
         - type: INT
-          when: rule_set.actions[n].args[0] == "fixed_price" && rule_set.actions[n].strategy == "item_discount"
-          usage: "Quantity of eligble items to include in the discount"
+          when: rule_set?.actions?.[n]?.args?.[0] == "fixed_price" && rule_set.actions[n].strategy == "item_discount"
+          usage: "Quantity of eligible items to include in the discount"
         - type: INT
-          when: rule_set.actions[n].args[0] == "fixed_price" && rule_set.actions[n].strategy == "shipping_discount"
+          when: rule_set?.actions?.[n].args?.[0] == "fixed_price" && rule_set.actions[n].strategy == "shipping_discount"
           usage: "Set the amount to this value"
         - type: INT
-          when: rule_set.actions[n].args[0] == "fixed_price" && rule_set.actions[n].strategy == "bundle_discount"
+          when: rule_set?.actions?.[n].args?.[0] == "fixed_price" && rule_set.actions[n].strategy == "bundle_discount"
           usage: "Set the amount to this value"
     rule_set.actions[n].args[2]:
       type: INT
-      when: rule_set.actions[n].strategy == "item_discount" || rule_set.actions[n].args[0] == "fixed_price"
+      when: rule_set?.actions?.[n].strategy == "item_discount" || rule_set?.actions?.[n].args?.[0] == "fixed_price"
       usage: "The fixed price to apply to the item"
 
     rule_set.actions[n].condition.strategy:

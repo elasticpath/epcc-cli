@@ -188,10 +188,10 @@ func Complete(c Request) ([]string, cobra.ShellCompDirective) {
 							attr: attr.Key,
 						}
 
-						prog, err := expr.Compile(whenCondition, expr.AsBool(), expr.Patch(&patcher))
+						prog, err := expr.Compile(whenCondition, expr.AsBool(), expr.AllowUndefinedVariables(), expr.Patch(&patcher))
 
-						newWhenCondition := prog.Node().String()
-						log.Infof("New Program: %s", newWhenCondition)
+						//newWhenCondition := prog.Node().String()
+						//log.Infof("New Program: %s", newWhenCondition)
 						// We will need to visit the resulting compiled expression and rewrite anything with "[n]"
 						if err != nil {
 							log.Tracef("Invalid when condition on resource `%s` and attribute `%s`: %s", c.Resource.PluralName, attr.Key, whenCondition)
@@ -223,8 +223,6 @@ func Complete(c Request) ([]string, cobra.ShellCompDirective) {
 
 							var output any
 
-							//output, err = expr.Eval(newWhenCondition, jsonBlob)
-
 							output, err = expr.Run(prog, jsonBlob)
 
 							if err != nil {
@@ -239,7 +237,6 @@ func Complete(c Request) ([]string, cobra.ShellCompDirective) {
 						}
 
 						if err != nil {
-
 							continue
 						}
 					}
@@ -266,207 +263,106 @@ func Complete(c Request) ([]string, cobra.ShellCompDirective) {
 		}
 	}
 
-	if c.Type&CompleteAttributeValue > 0 {
-		panic("Uh you will need to handle CONDITIONAL attributes here")
-		if c.Attribute != "" {
-			attr := c.Attribute
-			i := strings.Index(attr, "[")
-			j := strings.Index(attr, "]")
-			if i != -1 && j != -1 {
-				attr = attr[:i+1] + "n" + attr[j:]
-			}
-			attribute := c.Resource.Attributes[attr]
+	if c.Type&CompleteAttributeValue > 0 && c.Attribute != "" {
+		attr := c.Attribute
+		i := strings.Index(attr, "[")
+		j := strings.Index(attr, "]")
+		if i != -1 && j != -1 {
+			attr = attr[:i+1] + "n" + attr[j:]
+		}
+		attribute := c.Resource.Attributes[attr]
 
-			if attribute == nil {
-				for k, v := range c.Resource.Attributes {
-					if k[0] == '^' && k[len(k)-1] == '$' {
-						// Unit tests should stop a panic
-						r := regexp.MustCompile(k)
+		if attribute == nil {
+			for k, v := range c.Resource.Attributes {
+				if k[0] == '^' && k[len(k)-1] == '$' {
+					// Unit tests should stop a panic
+					r := regexp.MustCompile(k)
 
-						if r.MatchString(attr) {
-							attribute = v
-							break
-						}
+					if r.MatchString(attr) {
+						attribute = v
+						break
 					}
-				}
-			}
-
-			if attribute != nil {
-				if attribute.Type == "BOOL" {
-					results = append(results, "true", "false")
-				} else if strings.HasPrefix(attribute.Type, "ENUM:") {
-					enums := strings.Replace(attribute.Type, "ENUM:", "", 1)
-					for _, k := range strings.Split(enums, ",") {
-						results = append(results, k)
-					}
-				} else if attribute.Type == "URL" {
-					results = append(results, "https://")
-					compDir = compDir | cobra.ShellCompDirectiveNoSpace
-				} else if strings.HasPrefix(attribute.Type, "RESOURCE_ID:") {
-					resourceType := strings.Replace(attribute.Type, "RESOURCE_ID:", "", 1)
-
-					if resourceType == "*" {
-						toComplete := c.ToComplete
-						fullyQualifiedAlias := strings.Split(toComplete, "/")
-
-						switch len(fullyQualifiedAlias) {
-						case 1:
-							results = append(results, "alias/")
-							compDir = compDir | cobra.ShellCompDirectiveNoSpace
-
-						case 2:
-							for _, v := range resources.GetPluralResources() {
-								results = append(results, "alias/"+v.JsonApiType+"/")
-							}
-							compDir = compDir | cobra.ShellCompDirectiveNoSpace
-
-						case 3, 4:
-							if aliasType, ok := resources.GetResourceByName(fullyQualifiedAlias[1]); ok {
-								if !c.NoAliases {
-									for alias := range aliases.GetAliasesForJsonApiTypeAndAlternates(aliasType.JsonApiType, aliasType.AlternateJsonApiTypesForAliases) {
-										results = append(results, "alias/"+aliasType.JsonApiType+"/"+alias+"/id")
-
-										if _, ok2 := aliasType.Attributes["sku"]; ok2 {
-											results = append(results, "alias/"+aliasType.JsonApiType+"/"+alias+"/sku")
-										}
-
-										if _, ok2 := aliasType.Attributes["slug"]; ok2 {
-											results = append(results, "alias/"+aliasType.JsonApiType+"/"+alias+"/slug")
-										}
-
-										if _, ok2 := aliasType.Attributes["code"]; ok2 {
-											results = append(results, "alias/"+aliasType.JsonApiType+"/"+alias+"/code")
-										}
-
-									}
-								}
-							}
-
-						}
-
-					} else if aliasType, ok := resources.GetResourceByName(resourceType); ok {
-
-						if !c.NoAliases {
-							for alias := range aliases.GetAliasesForJsonApiTypeAndAlternates(aliasType.JsonApiType, aliasType.AlternateJsonApiTypesForAliases) {
-								results = append(results, alias)
-							}
-						}
-					}
-				} else if attribute.Type == "SINGULAR_RESOURCE_TYPE" {
-					results = append(results, resources.GetSingularResourceNames()...)
-
-				} else if attribute.Type == "JSON_API_TYPE" {
-					for _, v := range resources.GetPluralResources() {
-						results = append(results, v.JsonApiType)
-					}
-
-				} else if attribute.Type == "CURRENCY" {
-					res, _ := Complete(Request{
-						Type: CompleteCurrency,
-					})
-
-					results = append(results, res...)
-
-				} else if attribute.Type == "FILE" {
-					compDir = cobra.ShellCompDirectiveFilterFileExt
-
-					// https://documentation.elasticpath/epcc-cli/docs/api/advanced/files/create-a-file.html#post-create-a-file
-					supportedFileTypes := []string{
-						"gif",
-						"jpg", "jpeg",
-						"png",
-						"webp",
-						"mp4",
-						"mov",
-						"pdf",
-						"svg",
-						"usdz",
-						"glb",
-						"jp2",
-						"jxr",
-						"aac",
-						"vrml",
-						"doc", "docx",
-						"ppt", "pptx",
-						"xls", "xlsx",
-					}
-					results = append(results, supportedFileTypes...)
-				}
-			}
-
-			if c.AllowTemplates {
-				lastPipe := strings.LastIndex(c.ToComplete, "|")
-				prefix := ""
-				if lastPipe == -1 {
-					prefix = "{{ "
-				} else {
-					prefix = c.ToComplete[0:lastPipe+1] + " "
-				}
-
-				myResults := []string{}
-				myResults = append(myResults,
-					prefix+"date",
-					prefix+"now",
-					prefix+"randAlphaNum",
-					prefix+"randAlpha",
-					prefix+"randAscii",
-					prefix+"randNumeric",
-					prefix+"randAlphaNum",
-					prefix+"randAlpha",
-					prefix+"randAscii",
-					prefix+"randNumeric",
-					prefix+"pseudoRandAlphaNum",
-					prefix+"pseudoRandAlpha",
-					prefix+"pseudoRandNumeric",
-					prefix+"pseudoRandString",
-					prefix+"pseudoRandInt",
-					prefix+"uuidv4",
-					prefix+"duration",
-				)
-
-				if prefix != "{{ " {
-					// Functions that make sense as continuations
-					myResults = append(myResults,
-						prefix+"trim",
-						prefix+"trimAll",
-						prefix+"trimSuffix",
-						prefix+"trimPrefix",
-						prefix+"upper",
-						prefix+"lower",
-						prefix+"title",
-						prefix+"repeat",
-						prefix+"substr",
-						prefix+"nospace",
-						prefix+"trunc",
-						prefix+"abbrev",
-						prefix+"initials",
-						prefix+"wrap",
-						prefix+"cat",
-						prefix+"replace",
-						prefix+"snakecase",
-						prefix+"camelcase",
-						prefix+"kebabcase",
-						prefix+"swapcase",
-						prefix+"shufflecase",
-					)
-				}
-
-				re := regexp.MustCompile(`env\s+[A-Za-z]*\s*$`)
-				if re.MatchString(c.ToComplete) {
-					for _, v := range os.Environ() {
-						myResults = append(myResults,
-							fmt.Sprintf("%venv \"%v\"", prefix, strings.Split(v, "=")[0]),
-						)
-					}
-				} else {
-					myResults = append(myResults, prefix+"env")
-				}
-				//myResults = append(myResults, strings.TrimSuffix(c.ToComplete, " ")+" }}", strings.TrimSuffix(c.ToComplete, " ")+" |")
-				for _, r := range myResults {
-					results = append(results, r+" |", r+" }}")
 				}
 			}
 		}
+
+		if attribute != nil {
+			results, compDir = resolveAttributeCompletions(c, attribute, results, compDir)
+		}
+
+		if c.AllowTemplates {
+			lastPipe := strings.LastIndex(c.ToComplete, "|")
+			prefix := ""
+			if lastPipe == -1 {
+				prefix = "{{ "
+			} else {
+				prefix = c.ToComplete[0:lastPipe+1] + " "
+			}
+
+			myResults := []string{}
+			myResults = append(myResults,
+				prefix+"date",
+				prefix+"now",
+				prefix+"randAlphaNum",
+				prefix+"randAlpha",
+				prefix+"randAscii",
+				prefix+"randNumeric",
+				prefix+"randAlphaNum",
+				prefix+"randAlpha",
+				prefix+"randAscii",
+				prefix+"randNumeric",
+				prefix+"pseudoRandAlphaNum",
+				prefix+"pseudoRandAlpha",
+				prefix+"pseudoRandNumeric",
+				prefix+"pseudoRandString",
+				prefix+"pseudoRandInt",
+				prefix+"uuidv4",
+				prefix+"duration",
+			)
+
+			if prefix != "{{ " {
+				// Functions that make sense as continuations
+				myResults = append(myResults,
+					prefix+"trim",
+					prefix+"trimAll",
+					prefix+"trimSuffix",
+					prefix+"trimPrefix",
+					prefix+"upper",
+					prefix+"lower",
+					prefix+"title",
+					prefix+"repeat",
+					prefix+"substr",
+					prefix+"nospace",
+					prefix+"trunc",
+					prefix+"abbrev",
+					prefix+"initials",
+					prefix+"wrap",
+					prefix+"cat",
+					prefix+"replace",
+					prefix+"snakecase",
+					prefix+"camelcase",
+					prefix+"kebabcase",
+					prefix+"swapcase",
+					prefix+"shufflecase",
+				)
+			}
+
+			re := regexp.MustCompile(`env\s+[A-Za-z]*\s*$`)
+			if re.MatchString(c.ToComplete) {
+				for _, v := range os.Environ() {
+					myResults = append(myResults,
+						fmt.Sprintf("%venv \"%v\"", prefix, strings.Split(v, "=")[0]),
+					)
+				}
+			} else {
+				myResults = append(myResults, prefix+"env")
+			}
+
+			for _, r := range myResults {
+				results = append(results, r+" |", r+" }}")
+			}
+		}
+
 	}
 
 	if c.Type&CompleteQueryParamKey > 0 {
@@ -590,6 +486,110 @@ func Complete(c Request) ([]string, cobra.ShellCompDirective) {
 	}
 
 	return newResults, compDir
+}
+
+func resolveAttributeCompletions(c Request, attribute *resources.CrudEntityAttribute, results []string, compDir cobra.ShellCompDirective) ([]string, cobra.ShellCompDirective) {
+	if attribute.Type == "BOOL" {
+		results = append(results, "true", "false")
+	} else if strings.HasPrefix(attribute.Type, "ENUM:") {
+		enums := strings.Replace(attribute.Type, "ENUM:", "", 1)
+		for _, k := range strings.Split(enums, ",") {
+			results = append(results, k)
+		}
+	} else if attribute.Type == "URL" {
+		results = append(results, "https://")
+		compDir = compDir | cobra.ShellCompDirectiveNoSpace
+	} else if strings.HasPrefix(attribute.Type, "RESOURCE_ID:") {
+		resourceType := strings.Replace(attribute.Type, "RESOURCE_ID:", "", 1)
+
+		if resourceType == "*" {
+			toComplete := c.ToComplete
+			fullyQualifiedAlias := strings.Split(toComplete, "/")
+
+			switch len(fullyQualifiedAlias) {
+			case 1:
+				results = append(results, "alias/")
+				compDir = compDir | cobra.ShellCompDirectiveNoSpace
+
+			case 2:
+				for _, v := range resources.GetPluralResources() {
+					results = append(results, "alias/"+v.JsonApiType+"/")
+				}
+				compDir = compDir | cobra.ShellCompDirectiveNoSpace
+
+			case 3, 4:
+				if aliasType, ok := resources.GetResourceByName(fullyQualifiedAlias[1]); ok {
+					if !c.NoAliases {
+						for alias := range aliases.GetAliasesForJsonApiTypeAndAlternates(aliasType.JsonApiType, aliasType.AlternateJsonApiTypesForAliases) {
+							results = append(results, "alias/"+aliasType.JsonApiType+"/"+alias+"/id")
+
+							if _, ok2 := aliasType.Attributes["sku"]; ok2 {
+								results = append(results, "alias/"+aliasType.JsonApiType+"/"+alias+"/sku")
+							}
+
+							if _, ok2 := aliasType.Attributes["slug"]; ok2 {
+								results = append(results, "alias/"+aliasType.JsonApiType+"/"+alias+"/slug")
+							}
+
+							if _, ok2 := aliasType.Attributes["code"]; ok2 {
+								results = append(results, "alias/"+aliasType.JsonApiType+"/"+alias+"/code")
+							}
+
+						}
+					}
+				}
+
+			}
+
+		} else if aliasType, ok := resources.GetResourceByName(resourceType); ok {
+
+			if !c.NoAliases {
+				for alias := range aliases.GetAliasesForJsonApiTypeAndAlternates(aliasType.JsonApiType, aliasType.AlternateJsonApiTypesForAliases) {
+					results = append(results, alias)
+				}
+			}
+		}
+	} else if attribute.Type == "SINGULAR_RESOURCE_TYPE" {
+		results = append(results, resources.GetSingularResourceNames()...)
+
+	} else if attribute.Type == "JSON_API_TYPE" {
+		for _, v := range resources.GetPluralResources() {
+			results = append(results, v.JsonApiType)
+		}
+
+	} else if attribute.Type == "CURRENCY" {
+		res, _ := Complete(Request{
+			Type: CompleteCurrency,
+		})
+
+		results = append(results, res...)
+
+	} else if attribute.Type == "FILE" {
+		compDir = cobra.ShellCompDirectiveFilterFileExt
+
+		// https://documentation.elasticpath/epcc-cli/docs/api/advanced/files/create-a-file.html#post-create-a-file
+		supportedFileTypes := []string{
+			"gif",
+			"jpg", "jpeg",
+			"png",
+			"webp",
+			"mp4",
+			"mov",
+			"pdf",
+			"svg",
+			"usdz",
+			"glb",
+			"jp2",
+			"jxr",
+			"aac",
+			"vrml",
+			"doc", "docx",
+			"ppt", "pptx",
+			"xls", "xlsx",
+		}
+		results = append(results, supportedFileTypes...)
+	}
+	return results, compDir
 }
 
 func resolveArrayParametersForIndexes(key string, attributes []string) []string {
