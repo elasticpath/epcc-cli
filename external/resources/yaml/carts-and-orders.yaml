@@ -10,14 +10,19 @@ carts:
     openapi-operation-id: getCarts
     query:
       - name: include
+        type: STRING
       - name: page[limit]
+        type: INT
       - name: page[offset]
+        type: INT
+
   get-entity:
     docs: "https://elasticpath.dev/docs/api/carts/get-a-cart"
     url: "/v2/carts/{carts}"
     openapi-operation-id: getACart
     query:
       - name: include
+        type: STRING
   update-entity:
     docs: "https://elasticpath.dev/docs/api/carts/create-a-cart#put-update-a-cart"
     url: "/v2/carts/{carts}"
@@ -50,6 +55,7 @@ cart-items:
     openapi-operation-id: getCartItems
     query:
       - name: include
+        type: STRING
   update-entity:
     docs: "https://elasticpath.dev/docs/carts-orders/bulk-add-to-cart"
     url: "/v2/carts/{carts}/items/{cart_items}"
@@ -241,15 +247,20 @@ orders:
     openapi-operation-id: getCustomerOrders
     query:
       - name: include
+        type: STRING
       - name: page[limit]
+        type: INT
       - name: page[offset]
+        type: INT
       - name: filter
+        type: STRING
   get-entity:
     docs: "https://elasticpath.dev/docs/api/carts/update-an-order"
     url: "/v2/orders/{orders}"
     openapi-operation-id: getAnOrder
     query:
       - name: include
+        type: STRING
   update-entity:
     docs: "https://elasticpath.dev/docs/api/carts/orders"
     url: "/v2/orders/{orders}"
@@ -290,6 +301,7 @@ order-items:
     openapi-operation-id: getOrderItems
     query:
       - name: include
+        type: STRING
 order-payments:
   singular-name: "order-payment"
   json-api-type: "order_payment"

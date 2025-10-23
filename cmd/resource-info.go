@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/elasticpath/epcc-cli/config"
+	"github.com/elasticpath/epcc-cli/external/completion"
 	"github.com/elasticpath/epcc-cli/external/openapi"
 	"github.com/elasticpath/epcc-cli/external/resources"
 	log "github.com/sirupsen/logrus"
@@ -483,15 +484,21 @@ func GenerateResourceInfo(r *resources.Resource) string {
 	sb.WriteString("Operations:\n")
 
 	// Collect all unique URL parameters across all operations
-	allUrlParams := make(map[string]bool)
+	allUrlPathParams := make(map[string]bool)
+
+	queryParams := make(map[string]*resources.QueryParameter)
 
 	if r.GetCollectionInfo != nil {
-		usageString := GetGetUsageString(r.PluralName, r.GetCollectionInfo.Url, collectionResourceRequest, *r)
+		usageString := GetGetUsageString(r.PluralName, r.GetCollectionInfo.Url, completion.GetAll, *r)
 		sb.WriteString(fmt.Sprintf("%sepcc get %s - get a page of %s\n\n", tabs, usageString, r.PluralName))
 
 		types, _ := resources.GetSingularTypesOfVariablesNeeded(r.GetCollectionInfo.Url)
 		for _, t := range types {
-			allUrlParams[t] = true
+			allUrlPathParams[t] = true
+		}
+
+		for _, v := range r.GetCollectionInfo.QueryParameters {
+			queryParams[v.Name] = &v
 		}
 	}
 
@@ -507,17 +514,25 @@ func GenerateResourceInfo(r *resources.Resource) string {
 		sb.WriteString("\n")
 		types, _ := resources.GetSingularTypesOfVariablesNeeded(r.CreateEntityInfo.Url)
 		for _, t := range types {
-			allUrlParams[t] = true
+			allUrlPathParams[t] = true
+		}
+
+		for _, v := range r.CreateEntityInfo.QueryParameters {
+			queryParams[v.Name] = &v
 		}
 	}
 
 	if r.GetEntityInfo != nil {
-		usageString := GetGetUsageString(r.SingularName, r.GetEntityInfo.Url, singularResourceRequest, *r)
+		usageString := GetGetUsageString(r.SingularName, r.GetEntityInfo.Url, completion.Get, *r)
 		sb.WriteString(fmt.Sprintf("%sepcc get %s - get %s %s\n\n", tabs, usageString, article, r.SingularName))
 
 		types, _ := resources.GetSingularTypesOfVariablesNeeded(r.GetEntityInfo.Url)
 		for _, t := range types {
-			allUrlParams[t] = true
+			allUrlPathParams[t] = true
+		}
+
+		for _, v := range r.GetEntityInfo.QueryParameters {
+			queryParams[v.Name] = &v
 		}
 	}
 
@@ -527,7 +542,11 @@ func GenerateResourceInfo(r *resources.Resource) string {
 
 		types, _ := resources.GetSingularTypesOfVariablesNeeded(r.UpdateEntityInfo.Url)
 		for _, t := range types {
-			allUrlParams[t] = true
+			allUrlPathParams[t] = true
+		}
+
+		for _, v := range r.UpdateEntityInfo.QueryParameters {
+			queryParams[v.Name] = &v
 		}
 	}
 
@@ -537,12 +556,16 @@ func GenerateResourceInfo(r *resources.Resource) string {
 
 		types, _ := resources.GetSingularTypesOfVariablesNeeded(r.DeleteEntityInfo.Url)
 		for _, t := range types {
-			allUrlParams[t] = true
+			allUrlPathParams[t] = true
+		}
+
+		for _, v := range r.DeleteEntityInfo.QueryParameters {
+			queryParams[v.Name] = &v
 		}
 	}
 
 	// Output consolidated parameters section (URL params + body params + query params)
-	if len(allUrlParams) > 0 || len(r.Attributes) > 0 {
+	if len(allUrlPathParams) > 0 || len(r.Attributes) > 0 || len(queryParams) > 0 {
 
 		// Collect all parameters with their descriptions
 		type paramInfo struct {
@@ -556,69 +579,34 @@ func GenerateResourceInfo(r *resources.Resource) string {
 		}
 
 		// Add URL parameters
-		for param := range allUrlParams {
+		for param := range allUrlPathParams {
 			paramName := ConvertSingularTypeToCmdArg(param)
 			article := getIndefiniteArticle(strings.Title(param))
 			description := fmt.Sprintf("An ID or alias for %s %s", article, strings.Title(param))
 			allParams[""] = append(allParams[""], paramInfo{name: paramName, description: description})
 		}
 
+		for param, info := range queryParams {
+
+			description := GetParameterDescription(info.Name, info.Type, info.Usage, "", true)
+
+			value := strings.Trim(NonAlphaCharacter.ReplaceAllString(strings.ToUpper(param), "_"), "_ ")
+			value = strings.ReplaceAll(value, "A_Z", "")
+			value = strings.ReplaceAll(value, "__", "_")
+
+			allParams[""] = append(allParams[""], paramInfo{name: value, description: description})
+		}
 		// Add body parameters (converted to uppercase)
 		for k, v := range r.Attributes {
 			paramName := strings.ToUpper(k)
 
-			var description string
-			if v.Usage != "" {
-				description = v.Usage
-			} else if v.Type == "BOOL" {
-				description = "A boolean value"
-			} else if v.Type == "STRING" {
-				description = "A string value"
-			} else if strings.HasPrefix(v.Type, "ENUM:") {
-				description = "One of the following values: " + strings.ReplaceAll(strings.ReplaceAll(v.Type, "ENUM:", ""), ",", ", ")
-			} else if strings.HasPrefix(v.Type, "CONST:") {
-				description = "Only: " + strings.ReplaceAll(strings.ReplaceAll(v.Type, "CONST:", ""), ",", ", ") + " (note: the epcc will auto-populate this if an adjacent attribute is set)"
-			} else if v.Type == "INT" {
-				description = "An integer value"
-			} else if v.Type == "FLOAT" {
-				description = "A floating point value"
-			} else if v.Type == "URL" {
-				description = "A url"
-			} else if v.Type == "JSON_API_TYPE" {
-				description = "A value that matches a `type` used by the API"
-			} else if v.Type == "CURRENCY" {
-				description = "A three letter currency code"
-			} else if v.Type == "FILE" {
-				description = "A filename"
-			} else if v.Type == "PRIMITIVE" {
-				description = "Any of an int, float, string, or boolean value"
-			} else if v.Type == "SINGULAR_RESOURCE_TYPE" {
-				description = "A resource name used by the epcc cli"
-			} else if strings.HasPrefix(v.Type, "RESOURCE_ID") {
-				resName := strings.ReplaceAll(v.Type, "RESOURCE_ID:", "")
-				if res, ok := resources.GetResourceByName(resName); ok {
-					attribute := "id"
-					if v.AliasAttribute != "" {
-						attribute = v.AliasAttribute
-					}
-					description = fmt.Sprintf("The %s of a %s resource", attribute, res.SingularName)
-				} else {
-					description = "A resource id for " + resName
-				}
-			} else {
-				description = "Unknown:" + v.Type
-			}
+			description := GetParameterDescription(k, v.Type, v.Usage, v.AliasAttribute, false)
 
 			if _, ok := allParams[v.When]; !ok {
 				allParams[v.When] = []paramInfo{}
 			}
 
 			allParams[v.When] = append(allParams[v.When], paramInfo{name: paramName, description: description, when: v.When})
-		}
-
-		// Add INCLUDE parameter if this resource supports it
-		if r.GetCollectionInfo != nil {
-			allParams[""] = append(allParams[""], paramInfo{name: "INCLUDE", description: "Related resources that can be included"})
 		}
 
 		allWhens := []string{}
@@ -771,4 +759,74 @@ func GenerateOpenApiInfo(resource *resources.Resource) string {
 	}
 
 	return sb.String() + opStrings.String()
+}
+
+func GetParameterDescription(aName string, aType string, usage string, aliasAttribute string, useStandardDescriptions bool) string {
+	description := ""
+	if usage != "" {
+		description = usage
+	} else if aType == "BOOL" {
+		description = "A boolean value"
+	} else if aType == "STRING" {
+		description = "A string value"
+		if useStandardDescriptions == true {
+			switch aName {
+			case "filter":
+				description = "A filtering expression"
+			case "include":
+				description = "Related resources that can be included"
+			}
+		}
+
+	} else if strings.HasPrefix(aType, "ENUM:") {
+		description = "One of the following values: " + strings.ReplaceAll(strings.ReplaceAll(aType, "ENUM:", ""), ",", ", ")
+		if useStandardDescriptions {
+			switch aName {
+			case "sort":
+				description = "Controls the order of how records are returned, one of: " + strings.ReplaceAll(strings.ReplaceAll(aType, "ENUM:", ""), ",", ", ")
+			}
+		}
+	} else if strings.HasPrefix(aType, "CONST:") {
+		description = "Only: " + strings.ReplaceAll(strings.ReplaceAll(aType, "CONST:", ""), ",", ", ") + " (note: the epcc will auto-populate this if an adjacent attribute is set)"
+	} else if aType == "INT" {
+		description = "An integer value"
+
+		if useStandardDescriptions {
+			switch aName {
+			case "page[limit]":
+				description = "The number of items to return"
+			case "page[offset]":
+				description = "The offset (in number of records) to start from"
+			}
+		}
+	} else if aType == "FLOAT" {
+		description = "A floating point value"
+	} else if aType == "URL" {
+		description = "A url"
+	} else if aType == "JSON_API_TYPE" {
+		description = "A value that matches a `type` used by the API"
+	} else if aType == "CURRENCY" {
+		description = "A three letter currency code"
+	} else if aType == "FILE" {
+		description = "A filename"
+	} else if aType == "PRIMITIVE" {
+		description = "Any of an int, float, string, or boolean value"
+	} else if aType == "SINGULAR_RESOURCE_TYPE" {
+		description = "A resource name used by the epcc cli"
+	} else if strings.HasPrefix(aType, "RESOURCE_ID") {
+		resName := strings.ReplaceAll(aType, "RESOURCE_ID:", "")
+		if res, ok := resources.GetResourceByName(resName); ok {
+			attribute := "id"
+			if aliasAttribute != "" {
+				attribute = aliasAttribute
+			}
+			description = fmt.Sprintf("The %s of a %s resource", attribute, res.SingularName)
+		} else {
+			description = "A resource id for " + resName
+		}
+	} else {
+		description = "Unknown:" + aType
+	}
+
+	return description
 }

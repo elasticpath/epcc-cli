@@ -953,3 +953,28 @@ func TestCompleteQueryParamKeyGetEntityWithFallbackParams(t *testing.T) {
 	// Should be exactly 1 completion since only "include" is the fallback for get-entity
 	require.Len(t, completions, 1)
 }
+
+func TestCompleteQueryParamValueGetCollectionWithExplicitParams(t *testing.T) {
+	// Fixture Setup
+	toComplete := ""
+	resource, _ := resources.GetResourceByName("account-members")
+	request := Request{
+		Type:       CompleteQueryParamValue,
+		ToComplete: toComplete,
+		QueryParam: "sort",
+		Resource:   resource,
+		Verb:       GetAll,
+	}
+
+	// Exercise SUT
+	completions, compDir := Complete(request)
+
+	// Verify Results
+	require.Equal(t, compDir, cobra.ShellCompDirectiveNoFileComp)
+	// Should only contain explicitly defined parameters, not hardcoded fallbacks
+
+	require.Contains(t, completions, "created_at")
+	require.Contains(t, completions, "-created_at")
+
+	require.Len(t, completions, 10)
+}

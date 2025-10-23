@@ -4,12 +4,13 @@ import (
 	"context"
 	gojson "encoding/json"
 	"fmt"
-	"github.com/elasticpath/epcc-cli/config"
 	"io"
 	"net/url"
 	"regexp"
 	"sort"
 	"strings"
+
+	"github.com/elasticpath/epcc-cli/config"
 
 	"github.com/elasticpath/epcc-cli/external/aliases"
 	"github.com/elasticpath/epcc-cli/external/authentication"
@@ -79,25 +80,25 @@ var ResetStore = &cobra.Command{
 		// We would also need locking to go faster.
 
 		// Get customer and account authentication settings to populate the aliases
-		_, err = rest.GetInternal(ctx, overrides, []string{"customer-authentication-settings"}, false)
+		_, err = rest.GetInternal(ctx, overrides, []string{"customer-authentication-settings"}, false, false)
 
 		if err != nil {
 			errors = append(errors, err.Error())
 		}
 
-		_, err = rest.GetInternal(ctx, overrides, []string{"account-authentication-settings"}, false)
+		_, err = rest.GetInternal(ctx, overrides, []string{"account-authentication-settings"}, false, false)
 
 		if err != nil {
 			errors = append(errors, err.Error())
 		}
 
-		_, err = rest.GetInternal(ctx, overrides, []string{"merchant-realm-mappings"}, false)
+		_, err = rest.GetInternal(ctx, overrides, []string{"merchant-realm-mappings"}, false, false)
 
 		if err != nil {
 			errors = append(errors, err.Error())
 		}
 
-		_, err = rest.GetInternal(ctx, overrides, []string{"authentication-realms"}, false)
+		_, err = rest.GetInternal(ctx, overrides, []string{"authentication-realms"}, false, false)
 
 		if err != nil {
 			errors = append(errors, err.Error())

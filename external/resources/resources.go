@@ -81,7 +81,10 @@ type Resource struct {
 
 type QueryParameter struct {
 	// The name of the query parameter
-	Name string `yaml:"name"`
+	Name     string `yaml:"name"`
+	Usage    string `yaml:"usage"`
+	Type     string `yaml:"type"`
+	AutoFill string `yaml:"autofill,omitempty"`
 }
 
 type VerbResource struct {

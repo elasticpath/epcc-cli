@@ -5,14 +5,15 @@ import (
 	"encoding/base64"
 	gojson "encoding/json"
 	"fmt"
+	"net/http"
+	"os"
+	"time"
+
 	"github.com/elasticpath/epcc-cli/external/authentication"
 	"github.com/elasticpath/epcc-cli/external/httpclient"
 	"github.com/elasticpath/epcc-cli/external/json"
 	"github.com/elasticpath/epcc-cli/external/rest"
 	log "github.com/sirupsen/logrus"
-	"net/http"
-	"os"
-	"time"
 )
 
 type TokenPageInfo struct {
@@ -107,7 +108,7 @@ func GetTokenData(ctx context.Context, port uint16, r *http.Request) (*TokenPage
 			authentication.ClearAccountManagementAuthenticationToken()
 		}
 
-		result, err := rest.GetInternal(context.Background(), &httpclient.HttpParameterOverrides{}, []string{"customer", custTokenStruct.CustomerId}, false)
+		result, err := rest.GetInternal(context.Background(), &httpclient.HttpParameterOverrides{}, []string{"customer", custTokenStruct.CustomerId}, false, false)
 
 		customerName := "Unknown"
 		customerEmail := "Unkwown"

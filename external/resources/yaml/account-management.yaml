@@ -68,9 +68,13 @@ account-members:
     openapi-operation-id: "get-v2-account-members"
     query:
       - name: page[limit]
+        type: INT
       - name: page[offset]
+        type: INT
       - name: sort
+        type: ENUM:created_at,-created_at,email,-email,id,-id,name,-name,updated_at,-updated_at
       - name: filter
+        type: STRING
   get-entity:
     docs: "https://elasticpath.dev/docs/api/accounts/account-members"
     url: "/v2/account-members/{account_members}"
@@ -93,17 +97,23 @@ account-memberships:
     url: "/v2/accounts/{accounts}/account-memberships"
     openapi-operation-id: "get-v2-accounts-accountID-account-memberships"
     query:
-      - name: filter
-      - name: sort
       - name: page[limit]
+        type: INT
       - name: page[offset]
+        type: INT
+      - name: sort
+        type: ENUM:created_at,-created_at,updated_at,-updated_at,id,-id
+      - name: filter
+        type: STRING
       - name: include
+        type: STRING
   get-entity:
     docs: "https://elasticpath.dev/docs/api/accounts/account-membership"
     url: "/v2/accounts/{accounts}/account-memberships/{account_memberships}"
     openapi-operation-id: "get-v2-accounts-accountID-account-memberships-membershipID"
     query:
       - name: include
+        type: STRING
   delete-entity:
     docs: "https://elasticpath.dev/docs/api/accounts/delete-v-2-accounts-account-id-account-memberships-membership-id"
     url: "/v2/accounts/{accounts}/account-memberships/{account_memberships}"
@@ -127,9 +137,13 @@ unassigned-account-memberships:
     openapi-operation-id: "get-v2-accounts-accountID-account-memberships-unassigned-account-members"
     query:
       - name: page[limit]
+        type: INT
       - name: page[offset]
+        type: INT
       - name: sort
+        type: ENUM:created_at,-created_at,updated_at,updated_at
       - name: filter
+        type: STRING
 accounts:
   singular-name: "account"
   json-api-type: "account"
@@ -140,11 +154,16 @@ accounts:
     url: "/v2/accounts"
     openapi-operation-id: "get-v2-accounts"
     query:
-      - name: filter
       - name: page[limit]
+        type: INT
       - name: page[offset]
+        type: INT
       - name: sort
+        type: ENUM:created_at,-created_at,id,-id,name,-name,updated_at,-updated_at
       - name: include
+        type: STRING
+      - name: filter
+        type: STRING
   get-entity:
     docs: "https://elasticpath.dev/docs/api/accounts/get-v-2-accounts-account-id"
     url: "/v2/accounts/{accounts}"
@@ -263,10 +282,14 @@ account-tags:
     url: "/v2/account-tags"
     openapi-operation-id: "ListAccountTags"
     query:
-      - name: filter
       - name: page[limit]
+        type: INT
       - name: page[offset]
+        type: INT
       - name: sort
+        type: ENUM:created_at,-created_at,id,-id,updated_at,-updated_at
+      - name: filter
+        type: STRING
   get-entity:
     docs: "https://elasticpath.dev/docs/api/accounts/get-an-account-tag"
     url: "/v2/account-tags/{account_tags}"

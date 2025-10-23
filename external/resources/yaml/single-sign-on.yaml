@@ -11,7 +11,9 @@ authentication-realms:
     openapi-operation-id: "get-v2-authentication-realms"
     query:
       - name: page[limit]
+        type: INT
       - name: page[offset]
+        type: INT
   get-entity:
     docs: "https://elasticpath.dev/docs/authentication/single-sign-on/authentication-realm-api/get-an-authentication-realm"
     url: "/v2/authentication-realms/{authentication_realms}"
@@ -46,7 +48,9 @@ oidc-profiles:
     openapi-operation-id: "get-v2-authentication-realms-realmId-oidc-profiles"
     query:
       - name: page[limit]
+        type: INT
       - name: page[offset]
+        type: INT
   get-entity:
     docs: "https://elasticpath.dev/docs/authentication/single-sign-on/openid-connect-profiles-api/get-an-oidc-profile"
     url: "/v2/authentication-realms/{authentication_realms}/oidc-profiles/{oidc_profiles}"
@@ -85,7 +89,9 @@ password-profiles:
     openapi-operation-id: "get-v2-authentication-realms-realmId-password-profiles"
     query:
       - name: page[limit]
+        type: INT
       - name: page[offset]
+        type: INT
   get-entity:
     docs: "https://elasticpath.dev/docs/authentication/single-sign-on/password-profiles-api/get-a-password-profile"
     url: "/v2/authentication-realms/{authentication_realms}/password-profiles/{password_profiles}"
@@ -137,9 +143,13 @@ user-authentication-infos:
     openapi-operation-id: "get-v2-authentication-realms-realmId-user-authentication-info"
     query:
       - name: page[limit]
+        type: INT
       - name: page[offset]
+        type: INT
       - name: filter
+        type: STRING
       - name: sort
+        type: ENUM:created_at,-created_at,id,-id,updated_at,-updated_at
   get-entity:
     docs: "https://elasticpath.dev/docs/authentication/single-sign-on/user-authentication-info-api/get-a-user-authentication-info"
     url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info/{user_authentication_infos}"
@@ -175,7 +185,9 @@ user-authentication-oidc-profile-infos:
     openapi-operation-id: "get-v2-authentication-realms-realmId-user-authentication-info-userAuthInfoId-user-authentication-oidc-profile-info"
     query:
       - name: page[limit]
+        type: INT
       - name: page[offset]
+        type: INT
   get-entity:
     docs: "https://elasticpath.dev/docs/authentication/single-sign-on/password-profiles-api/get-a-password-profile"
     url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info/{user_authentication_infos}/user-authentication-oidc-profile-info/{user_authentication_oidc_profile_infos}"
@@ -211,7 +223,9 @@ user-authentication-password-profile-infos:
     openapi-operation-id: "get-v2-authentication-realms-realmId-user-authentication-info-userAuthInfoId-user-authentication-password-profile-info"
     query:
       - name: page[limit]
+        type: INT
       - name: page[offset]
+        type: INT
   get-entity:
     docs: "https://elasticpath.dev/docs/authentication/single-sign-on/password-profiles-api/get-all-password-profiles"
     url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info/{user_authentication_infos}/user-authentication-password-profile-info/{user_authentication_password_profile_infos}"

@@ -1,0 +1,113 @@
+# Metrics API Resources
+# Reference: https://www.elasticpath.com/docs/api/metrics
+
+metrics-orders-summary:
+  singular-name: metrics-orders-summary
+  json-api-type: metrics_orders_summary
+  json-api-format: "legacy"
+  docs: "n/a"
+  get-collection:
+    docs: "n/a"
+    url: "/v2/metrics/orders/summary"
+    openapi-operation-id: "GetOrdersMetricsSummary"
+    query:
+      - name: start_date
+        usage: Start of the reporting window (inclusive). RFC3339 with millisecond precision.
+        type: STRING
+        autofill: VALUE:{{ now | date_modify "-168h" | date "2006-01-02T15:04:05.999Z"  }}
+      - name: end_date
+        usage: End of the reporting window (exclusive). Must be after start_date. RFC3339 with millisecond precision.
+        type: STRING
+        autofill: VALUE:{{ now | date_modify "-24h" | date "2006-01-02T15:04:05.999Z"  }}
+      - name: currency
+        usage: Three-letter currency code used to filter metrics (e.g., 'USD')
+        type: CURRENCY
+      - name: filter
+        usage: Filter attributes (product_ids, product_skus, promotion_ids, promotion_codes)
+        type: STRING
+metrics-orders-timeseries-counts:
+  singular-name: metrics-orders-timeseries-count
+  json-api-type: metrics_orders_timeseries_count
+  json-api-format: "legacy"
+  docs: "n/a"
+  get-collection:
+    docs: "n/a"
+    url: "/v2/metrics/orders/timeseries/count"
+    openapi-operation-id: "GetOrdersCountTimeSeries"
+    query:
+      - name: start_date
+        usage: Start of the reporting window (inclusive). RFC3339 with millisecond precision.
+        type: STRING
+        autofill: VALUE:{{ now | date_modify "-168h" | date "2006-01-02T15:04:05.999Z" }}
+      - name: end_date
+        usage: End of the reporting window (exclusive). Must be after start_date. RFC3339 with millisecond precision.
+        type: STRING
+        autofill: VALUE:{{ now | date_modify "-14h" | date "2006-01-02T15:04:05.999Z" }}
+      - name: currency
+        usage: Three-letter currency code used to filter metrics (e.g., 'USD')
+        type: CURRENCY
+      - name: interval
+        usage: Time interval for bucketing metrics (e.g., 'day', 'hour')
+        type: ENUM:1hr,1d,1wk
+        autofill: VALUE:1hr
+      - name: filter
+        usage: Filter attributes (product_ids, product_skus, promotion_ids, promotion_codes)
+        type: STRING
+
+metrics-orders-timeseries-values:
+  singular-name: metrics-orders-timeseries-value
+  json-api-type: metrics_orders_timeseries_value
+  json-api-format: "legacy"
+  docs: "n/a"
+  get-collection:
+    docs: "n/a"
+    url: "/v2/metrics/orders/timeseries/value"
+    openapi-operation-id: "GetOrdersDiscountTimeSeries"
+    query:
+      - name: start_date
+        usage: Start of the reporting window (inclusive). RFC3339 with millisecond precision.
+        type: STRING
+        autofill: VALUE:{{ now | date_modify "-168h" | date "2006-01-02T15:04:05.999Z" }}
+      - name: end_date
+        usage: End of the reporting window (exclusive). Must be after start_date. RFC3339 with millisecond precision.
+        type: STRING
+        autofill: VALUE:{{ now | date_modify "-24h" | date "2006-01-02T15:04:05.999Z" }}
+      - name: currency
+        usage: Three-letter currency code used to filter metrics (e.g., 'USD')
+        type: CURRENCY
+      - name: interval
+        usage: Time interval for bucketing metrics (e.g., 'day', 'hour')
+        type: ENUM:1hr,1d,1wk
+        autofill: VALUE:1hr
+      - name: filter
+        usage: Filter attributes (product_ids, product_skus, promotion_ids, promotion_codes)
+        type: STRING
+
+metrics-orders-timeseries-discounts:
+  singular-name: metrics-order-timeseries-discount
+  json-api-type: metrics_orders_timeseries_discount
+  json-api-format: "legacy"
+  docs: "n/a"
+  get-collection:
+    docs: "n/a"
+    url: "/v2/metrics/orders/timeseries/discount"
+    openapi-operation-id: "GetOrdersValueTimeSeries"
+    query:
+      - name: start_date
+        usage: Start of the reporting window (inclusive). RFC3339 with millisecond precision.
+        type: STRING
+        autofill: VALUE:{{ now | date_modify "-168h" | date "2006-01-02T15:04:05.999Z"  }}
+      - name: end_date
+        usage: End of the reporting window (exclusive). Must be after start_date. RFC3339 with millisecond precision.
+        type: STRING
+        autofill: VALUE:{{ now | date_modify "-24h" | date "2006-01-02T15:04:05.999Z"  }}
+      - name: currency
+        usage: Three-letter currency code used to filter metrics (e.g., 'USD')
+        type: CURRENCY
+      - name: interval
+        usage: Time interval for bucketing metrics (e.g., 'day', 'hour')
+        type: ENUM:1hr,1d,1wk
+        autofill: VALUE:1hr
+      - name: filter
+        usage: Filter attributes (product_ids, product_skus, promotion_ids, promotion_codes)
+        type: STRING
