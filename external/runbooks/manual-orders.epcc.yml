@@ -1,0 +1,125 @@
+# The name of the runbook is used in command lines for the 4th argument (e.g., epcc runbooks run hello-world)
+name: "manual-orders"
+description:
+  short: "A runbook for creating manual orders"
+  long: "A runbook for creating manual orders"
+actions:
+  # The action name is used in command lines for the 4th argument (e.g., epcc runbook run hello-world create-customer)
+  create-orders:
+    variables:
+      number-of-orders:
+        type: INT
+        default: 0
+        required: true
+        description:
+          short: "Number of orders to create"
+      product-price-mean:
+        type: INT
+        default: "10000"
+        description:
+          short: "The average product price (in the smallest currency subunit)."
+      product-price-stddev:
+        type: INT
+        default: "3000"
+        description:
+          short: "The average product price (in the smallest currency subunit)."
+      number-of-products:
+        type: INT
+        default: 10
+        description:
+          short: "The number of distinct products"
+      start-date:
+        type: STRING
+        default: '{{ now | date_modify "-2160h" | date "2006-01-02" }}'
+        description:
+          short: "The earliest date of the order"
+      end-date:
+        type: STRING
+        default: '{{ now | date_modify "-6h" | date "2006-01-02" }}'
+        description:
+          short: "The start date of the order"
+      order-seed:
+        type: INT
+        default: '{{ pseudoRandInt 1 360000 }}'
+
+
+    description:
+      short: "Create some addresses"
+      #language=gotemplate
+    commands:
+      #- epcc get pcm-products page[limit] 100 filter in(sku,{{ range untilStep 0 (index . "number-of-products") 1 -}}{{ if gt . 0 }},{{ end }}mod-sku-{{ . }}{{- end }})
+#
+      - |
+        {{ seed 1 }}
+        {{ $orders := index . "number-of-orders" }}
+        {{ $productPriceMean := index . "product-price-mean" | float64 }}
+        {{ $productPriceStddev := index . "product-price-stddev" | float64 }}
+        {{ $products := index . "number-of-products" }}
+        {{ $productPrices := list }}
+        {{ $productNames := list}}
+        {{ $productSkus := list}}
+        {{- range untilStep 0 $products 1 }}
+
+        {{ $currentProductPrice := (pseudoRandNorm ( $productPriceMean | float64) $productPriceStddev | printf "%0.f" | max 100 ) }}
+        {{ $currentProductName := fake "ProductName" }}
+        {{ $currentProductSku := printf "mod-sku-%d" . }}
+        {{ $productPrices = append $productPrices $currentProductPrice }}
+        {{ $productNames = append $productNames $currentProductName }}
+        {{ $productSkus = append $productSkus $currentProductSku }}
+
+
+        epcc create pcm-product -s --if-alias-does-not-exist sku=mod-sku-{{ . }}  name '{{ $currentProductName }}' description '{{ fake "ProductDescription"}}' sku 'mod-sku-{{ . }}' commodity_type physical status live product_price {{ index $productPrices .}}
+        {{- end -}}
+
+
+        {{ seed (index $ "order-seed") }}
+        {{- range untilStep 0 $orders 1 }}
+        {{ $ts := weightDatedTimeSample (index $ "start-date") (index $ "end-date") }}
+        {{ $productIdx := pseudoRandInt 0 (len $productNames) }}
+        {{ $productName := index $productNames $productIdx }}
+        {{ $productPrice := index $productPrices $productIdx | int }}
+        {{ $productSku := index $productSkus $productIdx }}
+
+        {{ $productTax := 0 | int64 }}
+        {{ $productCurrency := "USD" }}
+        {{ $productPriceWithTax := add $productPrice $productTax | int64 }}
+        {{ $productDiscount := 0 | int64 }}
+
+
+
+
+        epcc create manual-order --skip-alias-processing -s --auto-fill status complete payment paid shipping fulfilled \
+            included.items[0].meta.timestamps.updated_at '{{ now | date "2006-01-02T15:04:05Z" }}' included.items[0].meta.timestamps.created_at "{{ $ts }}" \
+            included.items[0].id '{{ uuidv4 }}' included.items[0].quantity 1 included.items[0].product_id sku={{ $productSku }} included.items[0].name "{{ $productName }}" included.items[0].sku {{ $productSku }} \
+            included.items[0].unit_price.amount {{ $productPrice }} included.items[0].unit_price.currency {{ $productCurrency }} included.items[0].unit_price.includes_tax false \
+            included.items[0].value.amount {{ $productPrice }} included.items[0].value.currency {{ $productCurrency }} included.items[0].value.includes_tax false \
+            included.items[0].meta.display_price.with_tax.unit.amount {{ $productPriceWithTax }} included.items[0].meta.display_price.with_tax.unit.formatted '{{ $productPriceWithTax | formatPrice "USD" }}' included.items[0].meta.display_price.with_tax.unit.currency {{ $productCurrency }} \
+            included.items[0].meta.display_price.with_tax.value.amount {{ $productPriceWithTax }} included.items[0].meta.display_price.with_tax.value.formatted '{{ $productPriceWithTax | formatPrice "USD" }}' included.items[0].meta.display_price.with_tax.value.currency {{ $productCurrency }} \
+            included.items[0].meta.display_price.without_tax.unit.amount {{ $productPrice }} included.items[0].meta.display_price.without_tax.unit.formatted '{{ $productPrice | formatPrice "USD" }}' included.items[0].meta.display_price.without_tax.unit.currency {{ $productCurrency }} \
+            included.items[0].meta.display_price.without_tax.value.amount {{ $productPrice }} included.items[0].meta.display_price.without_tax.value.formatted '{{ $productPrice | formatPrice "USD" }}' included.items[0].meta.display_price.without_tax.value.currency {{ $productCurrency }} \
+            included.items[0].meta.display_price.tax.unit.amount {{ $productTax }} included.items[0].meta.display_price.tax.unit.formatted '{{ $productTax | formatPrice "USD" }}' included.items[0].meta.display_price.tax.unit.currency {{ $productCurrency }} \
+            included.items[0].meta.display_price.tax.value.amount {{ $productTax }} included.items[0].meta.display_price.tax.value.formatted '{{ $productTax | formatPrice "USD" }}' included.items[0].meta.display_price.tax.value.currency {{ $productCurrency }} \
+            included.items[0].meta.display_price.discount.unit.amount {{ $productDiscount }} included.items[0].meta.display_price.discount.unit.formatted '{{ $productDiscount | formatPrice "USD" }}'  included.items[0].meta.display_price.discount.unit.currency {{ $productCurrency }} \
+            included.items[0].meta.display_price.discount.value.amount {{ $productDiscount }} included.items[0].meta.display_price.discount.value.formatted '{{ $productDiscount | formatPrice "USD" }}' included.items[0].meta.display_price.discount.value.currency {{ $productCurrency }}  \
+            included.items[0].meta.display_price.without_discount.unit.amount {{ $productPrice }} included.items[0].meta.display_price.without_discount.unit.formatted '{{ $productPrice | formatPrice "USD" }}' included.items[0].meta.display_price.without_discount.unit.currency {{ $productCurrency }} \
+            included.items[0].meta.display_price.without_discount.value.amount {{ $productPrice }} included.items[0].meta.display_price.without_discount.value.formatted '{{ $productPrice | formatPrice "USD" }}' included.items[0].meta.display_price.without_discount.value.currency {{ $productCurrency }}  \
+        {{/*                In future we will compute these based on products*/ -}}
+        {{ $totalWithoutTax := $productPrice -}}
+        {{ $totalTax := 0 -}}
+        {{ $totalWithTax := add $totalTax $totalWithoutTax -}}
+        {{ $totalDiscount := 0 -}}
+        {{ $totalShipping := 0 -}}
+        {{ $totalShippingDiscount := 0 -}}
+            meta.display_price.without_tax.amount {{ $totalWithoutTax }} meta.display_price.without_tax.formatted '{{ $totalWithoutTax | formatPrice "USD" }}' meta.display_price.without_tax.currency {{ $productCurrency }} \
+            meta.display_price.tax.amount {{ $totalTax }}  meta.display_price.tax.formatted '{{ $totalTax | formatPrice "USD" }}' meta.display_price.tax.currency {{ $productCurrency }} \
+            meta.display_price.with_tax.amount {{ $totalWithTax }} meta.display_price.with_tax.formatted '{{ $totalWithTax | formatPrice "USD" }}' meta.display_price.with_tax.currency {{ $productCurrency }} \
+            meta.display_price.paid.amount {{ $totalWithTax }} meta.display_price.paid.formatted '{{ $totalWithTax | formatPrice "USD" }}' meta.display_price.paid.currency {{ $productCurrency }} \
+            meta.display_price.balance_owing.amount 0 meta.display_price.balance_owing.formatted '{{ 0 | formatPrice "USD" }}' meta.display_price.balance_owing.currency {{ $productCurrency }} \
+            meta.display_price.discount.amount {{ $totalDiscount }} meta.display_price.discount.formatted '{{ $totalDiscount | formatPrice "USD" }}' meta.display_price.discount.currency {{ $productCurrency }} \
+            meta.display_price.authorized.amount {{ $totalWithTax }} meta.display_price.authorized.formatted '{{ $totalWithoutTax | formatPrice "USD" }}' meta.display_price.authorized.currency {{ $productCurrency }} \
+            meta.display_price.without_discount.amount {{ $totalWithTax }} meta.display_price.without_discount.formatted '{{ $totalWithoutTax | formatPrice "USD" }}' meta.display_price.without_discount.currency {{ $productCurrency }} \
+            meta.display_price.shipping.amount {{ $totalShipping }} meta.display_price.shipping.formatted '{{ $totalShippingDiscount | formatPrice "USD" }}' meta.display_price.shipping.currency {{ $productCurrency }} \
+            meta.display_price.shipping_discount.amount {{ $totalShippingDiscount }} meta.display_price.shipping_discount.formatted '{{ $totalShippingDiscount | formatPrice "USD" }}' meta.display_price.shipping_discount.currency {{ $productCurrency }} \
+            meta.timestamps.updated_at '{{ now | date "2006-01-02T15:04:05Z" }}' meta.timestamps.created_at "{{ $ts }}"
+        {{- end -}}
+        
