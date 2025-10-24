@@ -310,7 +310,7 @@ func deleteAllResourceData(resourceNames []string) (error, []string) {
 
 			if myDepth == depth {
 				log.Infof("Processing resource %s", resourceName)
-				err := deleteAllInternal(clictx.Ctx, []string{resourceName})
+				err := deleteAllInternal(clictx.Ctx, 25, []string{resourceName})
 
 				if err != nil {
 					errors = append(errors, fmt.Errorf("error while deleting %s: %w", resourceName, err).Error())

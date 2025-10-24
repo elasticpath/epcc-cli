@@ -73,6 +73,8 @@ actions:
 
 
   create-cart-and-add-ranges:
+    description:
+      short: "Create a cart with ranges"
     variables:
       cart-id:
         type: STRING
@@ -93,6 +95,20 @@ actions:
         epcc get cart test-cart --output-jq '.data | "CART: name: \\(.name), id: \\(.id), price: \\(.meta.display_price.without_discount.formatted), discount: \\(.meta.display_price.discount.formatted), total: \\(.meta.display_price.with_tax.formatted)"'
       - |
         epcc get cart test-cart include items --output-jq '.included.items[] | "  CART ITEM: name: \\(.name), sku: \\(.sku), price: \\(.meta.display_price.without_discount.value.formatted), discount: \\(.meta.display_price.discount.value.formatted), total: \\(.meta.display_price.with_tax.value.formatted)"'
+
+  display-cart:
+    description:
+      short: "Display a cart"
+    variables:
+      cart-id:
+        type: RESOURCE_ID:carts
+    commands:
+      - |
+        epcc get cart "{{ (index . "cart-id") }}" --output-jq '.data | "CART: name: \'\\(.name)\', id: \\(.id), price: \\(.meta.display_price.without_discount.formatted), discount: \\(.meta.display_price.discount.formatted), total: \\(.meta.display_price.with_tax.formatted)"'
+      - |
+        epcc get cart "{{ (index . "cart-id") }}" include items --output-jq '.included.items[] | "  CART ITEM: name: \'\\(.name)\', sku: \\(.sku), type: \\(.type), unit_price: \\(.meta.display_price.without_discount.unit.formatted), unit_discount: \\(.meta.display_price.discount.unit.formatted), unit_total: total: \\(.meta.display_price.with_tax.unit.formatted), quantity: \\(.quantity), total: \\(.meta.display_price.with_tax.value.formatted)"'
+
+
 
 
 

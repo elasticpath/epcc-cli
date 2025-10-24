@@ -1,0 +1,32 @@
+name: "currencies"
+description:
+  short: "Manage currencies in the store"
+  long: "A runbook to add common currencies and reset them safely"
+actions:
+  add-currencies:
+    description:
+      short: "Add common currencies (EUR, GBP, CAD, CHF, JPY, PLN) if they don't already exist"
+    commands:
+      # First, get all existing currencies to alias them by code
+      - epcc get currencies
+      # Create currencies only if they don't already exist, and save aliases for cleanup
+      - |
+        epcc create currency --if-alias-does-not-exist code=EUR --save-as-alias created_currency=EUR code "EUR" exchange_rate 1 format "€{price}" decimal_point "." thousand_separator "," decimal_places 2 enabled true default false
+        epcc create currency --if-alias-does-not-exist code=GBP --save-as-alias created_currency=GBP code "GBP" exchange_rate 1 format "£{price}" decimal_point "." thousand_separator "," decimal_places 2 enabled true default false
+        epcc create currency --if-alias-does-not-exist code=CAD --save-as-alias created_currency=CAD code "CAD" exchange_rate 1 format "${price}" decimal_point "." thousand_separator "," decimal_places 2 enabled true default false
+        epcc create currency --if-alias-does-not-exist code=CHF --save-as-alias created_currency=CHF code "CHF" exchange_rate 1 format "CHF {price}" decimal_point "." thousand_separator "," decimal_places 2 enabled true default false
+        epcc create currency --if-alias-does-not-exist code=JPY --save-as-alias created_currency=JPY code "JPY" exchange_rate 1 format "¥{price}" decimal_point "." thousand_separator "," decimal_places 0 enabled true default false
+        epcc create currency --if-alias-does-not-exist code=PLN --save-as-alias created_currency=PLN code "PLN" exchange_rate 1 format "{price} zł" decimal_point "," thousand_separator " " decimal_places 2 enabled true default false
+  reset:
+    description:
+      short: "Remove currencies that were added by this runbook"
+    ignore_errors: true
+    commands:
+      # Only delete currencies that were actually created by this runbook
+      - |
+        epcc delete currency --if-alias-exists created_currency=EUR created_currency=EUR --ignore-errors
+        epcc delete currency --if-alias-exists created_currency=GBP created_currency=GBP --ignore-errors
+        epcc delete currency --if-alias-exists created_currency=CAD created_currency=CAD --ignore-errors
+        epcc delete currency --if-alias-exists created_currency=CHF created_currency=CHF --ignore-errors
+        epcc delete currency --if-alias-exists created_currency=JPY created_currency=JPY --ignore-errors
+        epcc delete currency --if-alias-exists created_currency=PLN created_currency=PLN --ignore-errors

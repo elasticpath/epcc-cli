@@ -46,6 +46,20 @@ func RenderTemplates(templateName string, rawCmd string, stringVars map[string]*
 				data[key] = val
 			} else if strings.HasPrefix(variableDef.Type, "RESOURCE_ID:") {
 				data[key] = val
+			} else if strings.HasPrefix(variableDef.Type, "ENUM:") {
+				// ENUM types are treated as strings, validate the value is one of the enum options
+				enumValues := strings.Split(variableDef.Type[5:], ",")
+				validValue := false
+				for _, enumVal := range enumValues {
+					if *val == enumVal {
+						validValue = true
+						break
+					}
+				}
+				if !validValue {
+					return nil, fmt.Errorf("error processing variable %s, value %q is not a valid enum option. Valid options are: [%s]", key, *val, strings.Join(enumValues, ", "))
+				}
+				data[key] = val
 			} else {
 				return nil, fmt.Errorf("error processing variable %s, unknown type [%s] specified in template", key, variableDef.Type)
 			}

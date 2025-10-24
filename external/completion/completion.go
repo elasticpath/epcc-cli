@@ -187,6 +187,8 @@ func Complete(c Request) ([]string, cobra.ShellCompDirective) {
 
 		if regexOptions, err := rt.GetCompletionOptions(); err == nil {
 			autoCompleteAttributes = append(autoCompleteAttributes, regexOptions...)
+		} else {
+			log.Debugf("Could not complete options %v", err)
 		}
 
 		for _, k := range autoCompleteAttributes {
