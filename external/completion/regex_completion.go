@@ -2,8 +2,9 @@ package completion
 
 import (
 	"fmt"
-	"github.com/quasilyte/regex/syntax"
 	"regexp"
+
+	"github.com/quasilyte/regex/syntax"
 )
 
 func NewRegexCompletionTree() *RegexTree {
@@ -160,6 +161,19 @@ func (n *regexNode) GetCompletionOptions() ([]string, error) {
 		for _, cV := range completionOptions {
 			for nV := range n.matchesSet {
 				newCompletionOptions = append(newCompletionOptions, nV+cV)
+			}
+		}
+
+		// If we have ^foo\.(alpha|bravo)\.bar$ and we see foo.alpha.bar, we want to add foo.bravo
+		if len(n.expr.Args) == 1 {
+			op := n.expr.Args[0]
+
+			if op.Op == syntax.OpAlt {
+				for _, e := range op.Args {
+					if !n.matchesSet[e.Value] {
+						newCompletionOptions = append(newCompletionOptions, e.Value)
+					}
+				}
 			}
 		}
 
