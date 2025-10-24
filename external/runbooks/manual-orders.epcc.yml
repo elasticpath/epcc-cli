@@ -1,0 +1,73 @@
+# The name of the runbook is used in command lines for the 4th argument (e.g., epcc runbooks run hello-world)
+name: "manual-orders"
+description:
+  short: "A runbook for creating manual orders"
+  long: "A runbook for creating manual orders"
+actions:
+  # The action name is used in command lines for the 4th argument (e.g., epcc runbook run hello-world create-customer)
+  create-orders:
+    variables:
+      number-of-orders:
+        type: INT
+        default: 11
+        required: true
+        description:
+          short: "Number of orders to create"
+      average-order-value:
+        type: STRING
+        default: "10000"
+        description:
+          short: "The value of the order (in the smallest currency subunit)."
+      number-of-products:
+        type: STRING
+        default: "1"
+        description:
+          short: "The number of products in the order"
+      start-date:
+        type: STRING
+        default: '{{ now | date_modify "-2160h" | date "2006-01-02" }}'
+        description:
+          short: "The earliest date of the order"
+      end-date:
+        type: STRING
+        default: '{{ now | date_modify "-6h" | date "2006-01-02" }}'
+        description:
+          short: "The start date of the order"
+
+    description:
+      short: "Create some addresses"
+      #language=gotemplate
+    commands:
+      - |
+        {{ $orders := index . "number-of-orders" }}
+        {{ $avgValue := index . "number-of-orders" }}
+        {{ $numberOfProducts := index . "number-of-products" }}
+        {{- range untilStep 0 $orders 1 }}
+        {{ $ts := weightDatedTimeSample (index $ "start-date") (index $ "end-date") }}
+        epcc create manual-order --auto-fill status complete payment paid shipping fulfilled   \
+        meta.display_price.without_tax.amount 10000 meta.display_price.without_tax.currency USD meta.display_price.without_tax.formatted '$100.00' \
+        meta.display_price.tax.amount 1000 meta.display_price.tax.currency USD meta.display_price.tax.formatted '$10.00' \
+        meta.display_price.with_tax.amount 11000 meta.display_price.with_tax.currency USD meta.display_price.with_tax.formatted '$110.00' \
+        meta.display_price.paid.amount 11000 meta.display_price.paid.currency USD meta.display_price.paid.formatted '$110.00' \
+        meta.display_price.balance_owing.amount 0 meta.display_price.balance_owing.currency USD meta.display_price.balance_owing.formatted '$0.00' \
+        meta.display_price.discount.amount 0 meta.display_price.discount.currency USD meta.display_price.discount.formatted '$0.00' \
+        meta.display_price.authorized.amount 11000 meta.display_price.authorized.currency USD meta.display_price.authorized.formatted '$110.00' \
+        meta.display_price.without_discount.amount 11000 meta.display_price.without_discount.currency USD meta.display_price.without_discount.formatted '$110.00' \
+        meta.display_price.shipping.amount 11000 meta.display_price.shipping.currency USD meta.display_price.shipping.formatted '$0.00' \
+        meta.display_price.shipping_discount.amount 11000 meta.display_price.shipping_discount.currency USD meta.display_price.shipping_discount.formatted '$0.00' \
+        included.items[0].meta.timestamps.updated_at '{{ $ts }}' included.items[0].meta.timestamps.created_at "{{ $ts }}" \
+        included.items[0].id sku-1 included.items[0].quantity 1 included.items[0].product_id prod-id included.items[0].name "Some Product" included.items[0].sku sku-1 \
+        included.items[0].unit_price.amount 10000 included.items[0].unit_price.currency USD included.items[0].unit_price.includes_tax true \
+        included.items[0].value.amount 10000 included.items[0].value.currency USD included.items[0].value.includes_tax true \
+        included.items[0].meta.display_price.with_tax.unit.amount 11000 included.items[0].meta.display_price.with_tax.unit.currency USD included.items[0].meta.display_price.with_tax.unit.formatted '$110.00' \
+        included.items[0].meta.display_price.with_tax.value.amount 11000 included.items[0].meta.display_price.with_tax.value.currency USD included.items[0].meta.display_price.with_tax.value.formatted '$110.00' \
+        included.items[0].meta.display_price.without_tax.unit.amount 10000 included.items[0].meta.display_price.without_tax.unit.currency USD included.items[0].meta.display_price.without_tax.unit.formatted '$100.00' \
+        included.items[0].meta.display_price.without_tax.value.amount 10000 included.items[0].meta.display_price.without_tax.value.currency USD included.items[0].meta.display_price.without_tax.value.formatted '$100.00' \
+        included.items[0].meta.display_price.tax.unit.amount 1000 included.items[0].meta.display_price.tax.unit.currency USD included.items[0].meta.display_price.tax.unit.formatted '$10.00' \
+        included.items[0].meta.display_price.tax.value.amount 1000 included.items[0].meta.display_price.tax.value.currency USD included.items[0].meta.display_price.tax.value.formatted '$10.00' \
+        included.items[0].meta.display_price.discount.unit.amount 0 included.items[0].meta.display_price.discount.unit.currency USD included.items[0].meta.display_price.discount.unit.formatted '$0.00' \
+        included.items[0].meta.display_price.discount.value.amount 0 included.items[0].meta.display_price.discount.value.currency USD included.items[0].meta.display_price.discount.value.formatted '$0.00' \
+        included.items[0].meta.display_price.without_discount.unit.amount 11000 included.items[0].meta.display_price.without_discount.unit.currency USD included.items[0].meta.display_price.without_discount.unit.formatted '$110.00' \
+        included.items[0].meta.display_price.without_discount.value.amount 11000 included.items[0].meta.display_price.without_discount.value.currency USD included.items[0].meta.display_price.without_discount.value.formatted '$110.00'
+        {{- end -}}
+        

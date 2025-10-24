@@ -3,14 +3,15 @@ package json
 import (
 	gojson "encoding/json"
 	"fmt"
+	"regexp"
+	"strings"
+
 	"github.com/elasticpath/epcc-cli/external/aliases"
 	"github.com/elasticpath/epcc-cli/external/resources"
 	"github.com/elasticpath/epcc-cli/external/templates"
 	"github.com/itchyny/gojq"
 	"github.com/mitchellh/mapstructure"
 	log "github.com/sirupsen/logrus"
-	"regexp"
-	"strings"
 )
 
 var segmentRegex = regexp.MustCompile("(.+?)(\\[[0-9]+])?$")
@@ -183,7 +184,26 @@ func toJsonObject(args []string, noWrapping bool, compliant bool, attributes map
 	}
 
 	if !noWrapping {
-		result, err = RunJQ(`{ "data": . }`, result)
+
+		if rm, ok := result.(map[string]interface{}); ok {
+			var inc any
+			if included, ok := rm["included"]; ok {
+				delete(rm, "included")
+				inc = included
+
+				result, err = RunJQ(`{ "data": . }`, result)
+
+				if rm2, ok := result.(map[string]interface{}); ok {
+					rm2["included"] = inc
+				}
+			} else {
+				result, err = RunJQ(`{ "data": . }`, result)
+			}
+
+		} else {
+			result, err = RunJQ(`{ "data": . }`, result)
+		}
+
 	}
 
 	jsonStr, err := gojson.Marshal(result)

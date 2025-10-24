@@ -2,11 +2,12 @@ package templates
 
 import (
 	"bytes"
+	"strings"
+	"text/template"
+
 	"github.com/Masterminds/sprig/v3"
 	"github.com/elasticpath/epcc-cli/config"
 	log "github.com/sirupsen/logrus"
-	"strings"
-	"text/template"
 )
 
 func init() {
@@ -24,11 +25,12 @@ func Render(templateString string) string {
 
 	tpl, err := template.New("templateName").Funcs(sprig.FuncMap()).Funcs(
 		map[string]any{
-			"pseudoRandAlphaNum": RandAlphaNum,
-			"pseudoRandAlpha":    RandAlpha,
-			"pseudoRandNumeric":  RandNumeric,
-			"pseudoRandString":   RandString,
-			"pseudoRandInt":      RandInt,
+			"pseudoRandAlphaNum":    RandAlphaNum,
+			"pseudoRandAlpha":       RandAlpha,
+			"pseudoRandNumeric":     RandNumeric,
+			"pseudoRandString":      RandString,
+			"pseudoRandInt":         RandInt,
+			"weightDatedTimeSample": WeightedDateTimeSampler,
 		}).Parse(templateString)
 
 	if err != nil {
