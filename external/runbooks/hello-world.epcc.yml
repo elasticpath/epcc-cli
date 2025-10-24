@@ -25,7 +25,7 @@ actions:
         epcc create customer name "Lindsey Sexton" email "lindsey.sexton@test.example"
   create-some-customer-addresses:
     variables:
-      customer_id:
+      customer-id:
         type: RESOURCE_ID:customer
         default: 00000000-feed-dada-iced-c0ffee000000
         required: true
@@ -44,9 +44,11 @@ actions:
     description:
       short: "Create some addresses"
     commands:
+      #language=gotemplate
       - |
         {{- range untilStep 0 .number_of_addresses 1 }}
-        epcc create customer-address "{{$.customer_id }}" name "address_{{.}}" first_name "John" last_name "Smith" line_1 "1234 Main Street" county "XX" "postcode" "H0H 0H0" country "{{$.country}}"
+        epcc create customer-address "{{ index $ "customer-id" }}" name "address_{{.}}" first_name "John" \
+        last_name "Smith" line_1 "1234 Main Street" county "XX" "postcode" "H0H 0H0" country "{{$.country}}"
         {{- end -}}
   sequential-sleeps:
     variables:

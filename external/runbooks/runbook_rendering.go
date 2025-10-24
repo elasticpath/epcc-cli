@@ -3,12 +3,13 @@ package runbooks
 import (
 	"bytes"
 	"fmt"
-	"github.com/Masterminds/sprig/v3"
-	"github.com/elasticpath/epcc-cli/external/templates"
 	"math"
 	"strconv"
 	"strings"
 	"text/template"
+
+	"github.com/Masterminds/sprig/v3"
+	"github.com/elasticpath/epcc-cli/external/templates"
 )
 
 func CreateMapForRunbookArgumentPointers(runbookAction *RunbookAction) map[string]*string {
@@ -70,6 +71,8 @@ func RenderTemplates(templateName string, rawCmd string, stringVars map[string]*
 	}
 
 	// This algorithm is broken if you have an escaped "\n"
-	rawCmdLines := strings.Split(renderedTpl.String(), "\n")
+	// Remove line continuation characters
+	tmpl := strings.ReplaceAll(renderedTpl.String(), "\\\n", "")
+	rawCmdLines := strings.Split(tmpl, "\n")
 	return rawCmdLines, nil
 }
