@@ -95,30 +95,31 @@ description:
   short: "A hello world runbook"
 actions:
   create-some-customer-addresses:
-   variables:
-    customer_id:
+  variables:
+    customer-id:
       type: RESOURCE_ID:customer
       default: 00000000-feed-dada-iced-c0ffee000000
-      # When you set a variable as required with a default, the default is used only for the `show` command.
       required: true
       description:
-       short: "Customer with which to create the address"
+        short: "Customer with which to create the address"
     country:
       type: STRING
       default: "US"
       description:
-       short: "The country the address should be in"
+        short: "The country the address should be in"
     number_of_addresses:
       type: INT
       default: 10
       description:
-       short: "The number of addresses"
-   description:
+        short: "The number of addresses"
+  description:
     short: "Create some addresses"
-   commands:
+  commands:
+    #language=gotemplate
     - |
       {{- range untilStep 0 .number_of_addresses 1 }}
-      epcc create customer-address  "{{$.customer_id}}" name "address_{{.}}" first_name "John" last_name "Smith" line_1 "1234 Main Street" county "XX" "postcode" "H0H 0H0" country "{{$.country}}"
+      epcc create customer-address "{{ index $ "customer-id" }}" name "address_{{.}}" first_name "John" \
+      last_name "Smith" line_1 "1234 Main Street" county "XX" "postcode" "H0H 0H0" country "{{$.country}}"
       {{- end -}}
 ```
 
@@ -128,7 +129,15 @@ The user can then supply the variables on the command line, each type can be one
 2. STRING - A string
 3. RESOURCE_ID:<type> - A resource type (retrieved from `epcc resource-list`). This is preferable for auto complete purposes.
 
+A few additional notes:
+
+1. You can use line continuation characters `\` to extend one call to the next line
+2. If you would like to use a dashed argument name you need to use a different syntax in the chart, as shown above. `{{ index . "dashed-argument-name" }}`
+3. The syntax `#language=gotemplate` is specific for [IntelliJ Language Injections](https://www.jetbrains.com/help/idea/using-language-injections.html), and is optional. 
+
+
 When users type the command, they will see the supplied variables:
+
 
 ```text
 #epcc runbooks show hello-world create-some-customer-addresses --help
@@ -139,17 +148,14 @@ Usage:
 
 Flags:
     --country string              The country the address should be in (default "US")
-    --customer_id string          Customer with which to create the address 
+    --customer-id string          Customer with which to create the address 
   -h, --help                      help for create-some-customer-addresses
     --number_of_addresses string  The number of addresses (default "10")
 ```
-##### Dashed Argument Names
 
-If you would like to use a dashed argument name you need to use a different syntax in the chart:
 
-```
-{{ index . "dashed-argument-name" }}
-```
+
+
 
 ##### Templated Arguments
 
