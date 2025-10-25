@@ -742,3 +742,18 @@ func TestToJsonDoesNotAddsAdjacentConstantValuesWithoutAnAdjacentObject(t *testi
 		t.Fatalf("Testing json conversion of empty value %s did not match\nExpected: %s\nActually: %s", input, expected, actual)
 	}
 }
+
+// This is primarily a "hack" for manual-orders, could be improved later.
+func TestToJsonLegacyFormatIncludedKeyNotPromoted(t *testing.T) {
+	// Fixture Setup
+	input := []string{"key", "val", "included", "val"}
+	expected := `{"data":{"key":"val"},"included":"val"}`
+
+	// Execute SUT
+	actual, _ := ToJson(input, false, false, map[string]*resources.CrudEntityAttribute{}, true, true)
+
+	// Verification
+	if actual != expected {
+		t.Fatalf("Testing json conversion of empty value %s did not match expected %s, actually: %s", input, expected, actual)
+	}
+}

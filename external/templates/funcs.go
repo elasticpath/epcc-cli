@@ -7,15 +7,33 @@ import (
 	"sync"
 	"time"
 
+	"github.com/elasticpath/epcc-cli/external/faker"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cast"
 )
+
+var r = rand.New(rand.NewSource(time.Now().UnixNano()))
+
+// toFloat64 converts 64-bit floats
+func toFloat64(v interface{}) float64 {
+	return cast.ToFloat64(v)
+}
+
+func toInt(v interface{}) int {
+	return cast.ToInt(v)
+}
+
+// toInt64 converts integer types to 64-bit integers
+func toInt64(v interface{}) int64 {
+	return cast.ToInt64(v)
+}
 
 // randString is the internal function that generates a random string.
 // It takes the length of the string and a string of allowed characters as parameters.
 func RandString(letters string, n int) string {
 	b := make([]byte, n)
 	for i := range b {
-		b[i] = letters[rand.Intn(len(letters))]
+		b[i] = letters[r.Intn(len(letters))]
 	}
 	return string(b)
 }
@@ -39,12 +57,40 @@ func RandNumeric(n int) string {
 }
 
 func RandInt(min, max int) int {
-	return rand.Intn(max-min) + min
+	return r.Intn(max-min) + min
+}
+
+func RandNorm(mean float64, stdDev float64) float64 {
+	return r.NormFloat64()*stdDev + mean
 }
 
 var mutex sync.Mutex
 
 var sampler = make(map[string][]time.Time)
+
+func Fake(string string) string {
+	return faker.CallFakeFunc(string)
+}
+
+func Seed(x any) string {
+	n := toInt64(x)
+
+	faker.Seed(n)
+	r = rand.New(rand.NewSource(n))
+	return ""
+}
+
+func FormatPrice(currency string, pAny any) string {
+
+	p := toInt64(pAny)
+
+	symbol := "£"
+	if currency == "USD" {
+		symbol = "$"
+	}
+
+	return fmt.Sprintf("%s%d.%02d", symbol, p/100, p%100)
+}
 
 func WeightedDateTimeSampler(start string, end string) string {
 
@@ -53,7 +99,7 @@ func WeightedDateTimeSampler(start string, end string) string {
 	defer mutex.Unlock()
 
 	if computedTable, ok := sampler[key]; ok {
-		t := computedTable[rand.Intn(len(computedTable))]
+		t := computedTable[r.Intn(len(computedTable))]
 
 		t = t.Add(time.Duration(RandInt(0, 3600)) * time.Second)
 		return t.Format(time.RFC3339)
@@ -100,11 +146,8 @@ func WeightedDateTimeSampler(start string, end string) string {
 	lookup := make([]time.Time, 0)
 
 	currentBlock := startTime
-	for i, v := range weightedHours {
-
+	for _, v := range weightedHours {
 		sum += v
-
-		fmt.Printf("%d %d\n", i, v)
 		for j := 0; j < v; j++ {
 			lookup = append(lookup, currentBlock)
 		}
@@ -116,7 +159,7 @@ func WeightedDateTimeSampler(start string, end string) string {
 
 	sampler[key] = lookup
 
-	t := lookup[rand.Intn(len(lookup))]
+	t := lookup[r.Intn(len(lookup))]
 	t = t.Add(time.Duration(RandInt(0, 3600)) * time.Second)
 	return t.Format(time.RFC3339)
 }

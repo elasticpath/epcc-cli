@@ -4,6 +4,7 @@ import (
 	gojson "encoding/json"
 	"fmt"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/elasticpath/epcc-cli/external/aliases"
@@ -21,7 +22,26 @@ var attributeWithArrayIndex = regexp.MustCompile("\\[[0-9]+]")
 func ToJson(args []string, noWrapping bool, compliant bool, attributes map[string]*resources.CrudEntityAttribute, useAliases bool, autoAddConstantValues bool) (string, error) {
 
 	if len(args)%2 == 1 {
-		return "", fmt.Errorf("the number of arguments %d supplied isn't even, json should be passed in key value pairs. Do you have an extra/missing id?", len(args))
+		if log.IsLevelEnabled(log.DebugLevel) {
+			fmt.Printf("\n\n\nArgument Dump:\n")
+			maxlen := 0
+
+			for _, v := range args {
+				if len(v) > maxlen {
+					maxlen = len(v)
+				}
+			}
+
+			for i := 0; i < len(args); i++ {
+				fmt.Printf("%"+strconv.Itoa(maxlen)+"s ", args[i])
+
+				if i%2 == 1 {
+					fmt.Println()
+				}
+			}
+			fmt.Printf("\n\n\n\n")
+		}
+		return "", fmt.Errorf("the number of arguments %d supplied isn't even, json should be passed in key value pairs. Do you have an extra/missing id? Tip: Enable log level debug to see a dump", len(args))
 	}
 
 	firstArrayKeyIdx := -1
