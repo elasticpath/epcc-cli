@@ -3,14 +3,16 @@ package json
 import (
 	gojson "encoding/json"
 	"fmt"
+	"regexp"
+	"strconv"
+	"strings"
+
 	"github.com/elasticpath/epcc-cli/external/aliases"
 	"github.com/elasticpath/epcc-cli/external/resources"
 	"github.com/elasticpath/epcc-cli/external/templates"
 	"github.com/itchyny/gojq"
 	"github.com/mitchellh/mapstructure"
 	log "github.com/sirupsen/logrus"
-	"regexp"
-	"strings"
 )
 
 var segmentRegex = regexp.MustCompile("(.+?)(\\[[0-9]+])?$")
@@ -20,7 +22,26 @@ var attributeWithArrayIndex = regexp.MustCompile("\\[[0-9]+]")
 func ToJson(args []string, noWrapping bool, compliant bool, attributes map[string]*resources.CrudEntityAttribute, useAliases bool, autoAddConstantValues bool) (string, error) {
 
 	if len(args)%2 == 1 {
-		return "", fmt.Errorf("the number of arguments %d supplied isn't even, json should be passed in key value pairs. Do you have an extra/missing id?", len(args))
+		if log.IsLevelEnabled(log.DebugLevel) {
+			fmt.Printf("\n\nArgument Dump:\n")
+			maxlen := 0
+
+			for _, v := range args {
+				if len(v) > maxlen {
+					maxlen = len(v)
+				}
+			}
+
+			for i := 0; i < len(args); i++ {
+				fmt.Printf("%"+strconv.Itoa(maxlen)+"s ", args[i])
+
+				if i%2 == 1 {
+					fmt.Println()
+				}
+			}
+			fmt.Printf("\n\n")
+		}
+		return "", fmt.Errorf("the number of arguments %d supplied isn't even, json should be passed in key value pairs. Do you have an extra/missing id? **Tip**: Use --log debug to see a column aligned dump", len(args))
 	}
 
 	firstArrayKeyIdx := -1
@@ -183,7 +204,26 @@ func toJsonObject(args []string, noWrapping bool, compliant bool, attributes map
 	}
 
 	if !noWrapping {
-		result, err = RunJQ(`{ "data": . }`, result)
+
+		if rm, ok := result.(map[string]interface{}); ok {
+			var inc any
+			if included, ok := rm["included"]; ok {
+				delete(rm, "included")
+				inc = included
+
+				result, err = RunJQ(`{ "data": . }`, result)
+
+				if rm2, ok := result.(map[string]interface{}); ok {
+					rm2["included"] = inc
+				}
+			} else {
+				result, err = RunJQ(`{ "data": . }`, result)
+			}
+
+		} else {
+			result, err = RunJQ(`{ "data": . }`, result)
+		}
+
 	}
 
 	jsonStr, err := gojson.Marshal(result)

@@ -69,6 +69,7 @@ actions:
   delete-accounts-and-carts:
     description:
       short: "Delete all the accounts and their carts"
+    ignore_errors: true
     commands:
       - epcc get -s accounts
       - epcc delete account-cart-association id=acct1_only data[0].type account data[0].id name=acct1
