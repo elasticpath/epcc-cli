@@ -55,8 +55,8 @@ actions:
         epcc create customer --auto-fill email "cust4@example.com" password test
         epcc create customer --auto-fill email "cust5@example.com" password test
         epcc create customer --auto-fill email "cust6@example.com" password test
-        epcc create cart name "Customer 4 Cart" id cust1_only description "Customer 4 Cart"
-        epcc create cart name "Customer 4&5 Shared Cart" id cust1_and_2 description "Customer 4 & 5 Cart"
+        epcc create cart name "Customer 4 Cart" id cust4_only description "Customer 4 Cart"
+        epcc create cart name "Customer 4&5 Shared Cart" id cust4_and_5 description "Customer 4 & 5 Cart"
         epcc create cart name "No Customer Cart" id no_cust_cart_custom_items description "No Customer Cart (Custom Items)"
       - epcc create customer-cart-association id=cust4_only data[0].type customer data[0].id email=cust4@example.com
       - epcc create customer-cart-association id=cust4_and_5 data[0].type customer data[0].id email=cust4@example.com
@@ -69,7 +69,7 @@ actions:
   delete-customer-and-carts-with-product-items:
     description:
       short: "Delete all the customers and their carts"
-    ignore_errors: false
+    ignore_errors: true
     commands:
       - epcc get -s customers filter 'like(email,*@example.com)'
       - epcc delete customer-cart-association id=cust1_only data[0].type customer data[0].id email=cust1@example.com
@@ -109,7 +109,7 @@ actions:
   delete-customer-and-carts-with-custom-items:
     description:
       short: "Delete all the customers and their carts"
-    ignore_errors: false
+    ignore_errors: true
     commands:
       - epcc get -s customers filter 'like(email,*@example.com)'
       - epcc delete customer-cart-association id=cust4_only data[0].type customer data[0].id email=cust4@example.com

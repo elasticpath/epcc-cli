@@ -2,10 +2,11 @@ package json
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/elasticpath/epcc-cli/external/aliases"
 	"github.com/elasticpath/epcc-cli/external/resources"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func init() {
@@ -16,7 +17,7 @@ func init() {
 func TestErrorMessageWhenOddNumberOfValuesPassed(t *testing.T) {
 	// Fixture Setup
 	input := []string{"[0]"}
-	expected := fmt.Errorf("the number of arguments 1 supplied isn't even, json should be passed in key value pairs. Do you have an extra/missing id?")
+	expected := fmt.Errorf("the number of arguments 1 supplied isn't even, json should be passed in key value pairs. Do you have an extra/missing id? **Tip**: Use --log debug to see a column aligned dump")
 
 	// Execute SUT
 	_, actual := ToJson(input, false, true, map[string]*resources.CrudEntityAttribute{}, true, true)
@@ -740,5 +741,20 @@ func TestToJsonDoesNotAddsAdjacentConstantValuesWithoutAnAdjacentObject(t *testi
 	// Verification
 	if actual != expected {
 		t.Fatalf("Testing json conversion of empty value %s did not match\nExpected: %s\nActually: %s", input, expected, actual)
+	}
+}
+
+// This is primarily a "hack" for manual-orders, could be improved later.
+func TestToJsonLegacyFormatIncludedKeyNotPromoted(t *testing.T) {
+	// Fixture Setup
+	input := []string{"key", "val", "included", "val"}
+	expected := `{"data":{"key":"val"},"included":"val"}`
+
+	// Execute SUT
+	actual, _ := ToJson(input, false, false, map[string]*resources.CrudEntityAttribute{}, true, true)
+
+	// Verification
+	if actual != expected {
+		t.Fatalf("Testing json conversion of empty value %s did not match expected %s, actually: %s", input, expected, actual)
 	}
 }
