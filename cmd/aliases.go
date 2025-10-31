@@ -2,12 +2,13 @@ package cmd
 
 import (
 	"fmt"
+	"sort"
+
 	"github.com/elasticpath/epcc-cli/external/aliases"
 	"github.com/elasticpath/epcc-cli/external/completion"
 	"github.com/elasticpath/epcc-cli/external/resources"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"sort"
 )
 
 var aliasesCmd = &cobra.Command{
@@ -64,6 +65,10 @@ var aliasListCmd = &cobra.Command{
 
 				if aliases[alias].Slug != "" {
 					fmt.Printf(" Slug: %10s", aliases[alias].Slug)
+				}
+
+				if aliases[alias].ExternalRef != "" {
+					fmt.Printf(" External Ref: %10s", aliases[alias].ExternalRef)
 				}
 
 				fmt.Println()
