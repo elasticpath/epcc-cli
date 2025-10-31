@@ -3,11 +3,6 @@ package aliases
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/elasticpath/epcc-cli/external/id"
-	"github.com/elasticpath/epcc-cli/external/profiles"
-	"github.com/google/uuid"
-	log "github.com/sirupsen/logrus"
-	"gopkg.in/yaml.v3"
 	"os"
 	"path"
 	"path/filepath"
@@ -16,6 +11,12 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/elasticpath/epcc-cli/external/id"
+	"github.com/elasticpath/epcc-cli/external/profiles"
+	"github.com/google/uuid"
+	log "github.com/sirupsen/logrus"
+	"gopkg.in/yaml.v3"
 )
 
 var aliasMapMutex = &sync.RWMutex{}
@@ -486,6 +487,11 @@ func generateAliasesForStruct(prefix string, parentAliasType string, parentAlias
 
 		if alias := getAliasForKey("email", jsonObjectToInspect); alias != "" {
 			results[alias] = &result
+		}
+
+		if alias := getAliasForKey("external_ref", jsonObjectToInspect); alias != "" {
+			results[alias] = &result
+			result.ExternalRef = getAttributeValueForKey("external_ref", jsonObjectToInspect)
 		}
 
 	}

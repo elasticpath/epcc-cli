@@ -1,9 +1,10 @@
 package aliases
 
 import (
-	"github.com/stretchr/testify/require"
 	"os"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func init() {
@@ -578,6 +579,47 @@ func TestSavedAliasIsReturnedForANameInLegacyObjectResponse(t *testing.T) {
 
 }
 
+func TestSavedAliasIsReturnedForAnExternalRefInLegacyObjectResponse(t *testing.T) {
+
+	// Fixture Setup
+	err := ClearAllAliases()
+	if err != nil {
+		t.Fatalf("Could not clear typeToAliasNameToIdMap")
+	}
+
+	// Execute SUT
+	SaveAliasesForResources(
+		// language=JSON
+		`
+{
+	"data": {
+		"id": "123",
+		"process_limit": 66,
+		"external_ref": "abc-123",
+		"type": "foo"
+	}
+}`)
+
+	aliases := GetAliasesForJsonApiTypeAndAlternates("foo", []string{})
+
+	// Verification
+
+	require.Len(t, aliases, 3, "There should be %d typeToAliasNameToIdMap in map not %d", 3, len(aliases))
+
+	require.Contains(t, aliases, "external_ref=abc-123")
+	require.Equal(t, "123", aliases["external_ref=abc-123"].Id)
+	require.Equal(t, "abc-123", aliases["external_ref=abc-123"].ExternalRef)
+
+	require.Contains(t, aliases, "id=123")
+	require.Equal(t, "123", aliases["id=123"].Id)
+	require.Equal(t, "abc-123", aliases["id=123"].ExternalRef)
+
+	require.Contains(t, aliases, "last_read=entity")
+	require.Equal(t, "123", aliases["last_read=entity"].Id)
+	require.Equal(t, "abc-123", aliases["last_read=entity"].ExternalRef)
+
+}
+
 func TestSavedAliasIsReturnedForAnEmailInComplaintObjectResponse(t *testing.T) {
 
 	// Fixture Setup
@@ -617,7 +659,7 @@ func TestSavedAliasIsReturnedForAnEmailInComplaintObjectResponse(t *testing.T) {
 
 }
 
-func TestSavedAliasIsReturnedForAnSkuInComplaintObjectResponse(t *testing.T) {
+func TestSavedAliasIsReturnedForASkuInComplaintObjectResponse(t *testing.T) {
 
 	// Fixture Setup
 	err := ClearAllAliases()
@@ -709,6 +751,49 @@ func TestSavedAliasIsReturnedForASlugInComplaintObjectResponse(t *testing.T) {
 
 	require.Contains(t, aliases, "last_read=entity")
 	require.Equal(t, "test", aliases["last_read=entity"].Slug)
+}
+
+func TestSavedAliasIsReturnedForAnExternalRefInComplaintObjectResponse(t *testing.T) {
+
+	// Fixture Setup
+	err := ClearAllAliases()
+	if err != nil {
+		t.Fatalf("Could not clear typeToAliasNameToIdMap")
+	}
+
+	// Execute SUT
+	SaveAliasesForResources(
+		// language=JSON
+		`
+{
+	"data": {
+		"id": "123",
+		"type": "foo",
+		"attributes": {
+			"process_limit": 66,
+			"external_ref": "abc-123"
+		}
+	}
+}`)
+
+	aliases := GetAliasesForJsonApiTypeAndAlternates("foo", []string{})
+
+	// Verification
+
+	require.Len(t, aliases, 3, "There should be %d typeToAliasNameToIdMap in map not %d", 3, len(aliases))
+
+	require.Contains(t, aliases, "external_ref=abc-123")
+	require.Equal(t, "123", aliases["external_ref=abc-123"].Id)
+	require.Equal(t, "abc-123", aliases["external_ref=abc-123"].ExternalRef)
+
+	require.Contains(t, aliases, "id=123")
+	require.Equal(t, "123", aliases["id=123"].Id)
+	require.Equal(t, "abc-123", aliases["id=123"].ExternalRef)
+
+	require.Contains(t, aliases, "last_read=entity")
+	require.Equal(t, "123", aliases["last_read=entity"].Id)
+	require.Equal(t, "abc-123", aliases["last_read=entity"].ExternalRef)
+
 }
 
 func TestSavedAliasIsReturnedForANameInComplaintObjectResponse(t *testing.T) {
