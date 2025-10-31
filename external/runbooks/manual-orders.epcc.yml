@@ -7,6 +7,10 @@ actions:
   # The action name is used in command lines for the 4th argument (e.g., epcc runbook run hello-world create-customer)
   create-orders:
     variables:
+      number-of-accounts:
+        type: INT
+        default: 0
+        required: true
       number-of-orders:
         type: INT
         default: 0
@@ -41,6 +45,20 @@ actions:
       order-seed:
         type: INT
         default: '{{ pseudoRandInt 1 360000 }}'
+        description:
+          short: "The random seed to use when generating orders"
+
+      accounts-seed:
+        type: INT
+        default: '{{ pseudoRandInt 1 360000 }}'
+        description:
+          short: "The random seed to use when generating accounts"
+
+      products-seed:
+        type: INT
+        default: '{{ pseudoRandInt 1 360000 }}'
+        description:
+          short: "The random seed to use when generating products"
 
 
     description:
@@ -50,7 +68,21 @@ actions:
       #- epcc get pcm-products page[limit] 100 filter in(sku,{{ range untilStep 0 (index . "number-of-products") 1 -}}{{ if gt . 0 }},{{ end }}mod-sku-{{ . }}{{- end }})
 #
       - |
-        {{ seed 1 }}
+        {{ seed (index $ "accounts-seed") }}
+        {{ $accounts := index . "number-of-accounts" }}
+        {{ $accountNames := list }}
+        {{ $accountEmails := list }}
+        {{ $accountPasswords := list }}
+        {{- range untilStep 0 $accounts 1 }}
+        {{ $currentAccountName := fake "AccountName" }}
+        {{ $currentAccountEmail := fake "Email" }}
+        {{ $accountNames = append $accountNames $currentAccountName }}
+        {{ $accountEmails = append $accountEmails $currentAccountEmail }}
+        epcc create account name '{{ $currentAccountName }}' email '{{ $currentAccountEmail }}'
+        
+        {{- end -}}
+      - |
+        {{ seed (index $ "products-seed") }}
         {{ $orders := index . "number-of-orders" }}
         {{ $productPriceMean := index . "product-price-mean" | float64 }}
         {{ $productPriceStddev := index . "product-price-stddev" | float64 }}
