@@ -71,6 +71,40 @@ cart-items:
       type: INT
     id:
       type: RESOURCE_ID:pcm-products
+cart-custom-discounts:
+  singular-name: "cart-custom-discount"
+  json-api-type: "custom_discount"
+  json-api-format: "legacy"
+  no-wrapping: true
+  docs: "https://developer.elasticpath.com/docs/api/carts/bulk-add-custom-discounts-to-cart"
+  create-entity:
+    docs: "https://developer.elasticpath.com/docs/api/carts/bulk-add-custom-discounts-to-cart"
+    url: "/v2/carts/{carts}/custom-discounts"
+    openapi-operation-id: bulkAddCustomDiscountsToCart
+    content-type: application/json
+  delete-entity:
+    docs: "https://developer.elasticpath.com/docs/api/carts/bulk-delete-custom-discounts-from-cart"
+    url: "/v2/carts/{carts}/custom-discounts"
+    content-type: application/json
+  attributes:
+    data[n].amount:
+      type: INT
+    data[n].amount.amount:
+      type: INT
+    data[n].amount.currency:
+      type: CURRENCY
+    data[n].amount.formatted:
+      type: STRING
+    data[n].external_id:
+      type: STRING
+    data[n].discount_code:
+      type: STRING
+    data[n].type:
+      type: CONST:custom_discount
+    data[n].description:
+      type: STRING
+
+
 cart-product-items:
   singular-name: "cart-product-item"
   json-api-type: "cart_item"

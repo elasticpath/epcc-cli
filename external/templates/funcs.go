@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
+	"sort"
 	"sync"
 	"time"
 
@@ -78,6 +79,31 @@ func Seed(x any) string {
 	faker.Seed(n)
 	r = rand.New(rand.NewSource(n))
 	return ""
+}
+
+func NRandInt(nAny, minAny, maxAny any) []int {
+
+	n := toInt(nAny)
+	minInt := toInt(minAny)
+	maxInt := toInt(maxAny)
+
+	v := map[int]struct{}{}
+
+	if n > (maxInt - minInt) {
+		return []int{}
+	}
+
+	for len(v) < n {
+		v[RandInt(minInt, maxInt)] = struct{}{}
+	}
+
+	results := make([]int, 0, n)
+	for k := range v {
+		results = append(results, k)
+	}
+
+	sort.Ints(results)
+	return results
 }
 
 func FormatPrice(currency string, pAny any) string {

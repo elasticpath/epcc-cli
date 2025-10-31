@@ -24,6 +24,7 @@ var AddlFuncs = map[string]any{
 	"pseudoRandInt":         RandInt,
 	"pseudoRandNorm":        RandNorm,
 	"weightDatedTimeSample": WeightedDateTimeSampler,
+	"nRandInt":              NRandInt,
 	"fake":                  Fake,
 	"seed":                  Seed,
 	"formatPrice":           FormatPrice,
