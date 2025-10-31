@@ -117,7 +117,7 @@ func NewUpdateCommand(parentCmd *cobra.Command) func() {
 
 						if aliasId == ifAliasExists {
 							// If the aliasId is the same as requested, it means an alias did not exist.
-							log.Infof("Alias [%s] does not exist, not continuing run", ifAliasExists)
+							log.Debugf("Alias [%s] does not exist, not continuing run", ifAliasExists)
 							return nil
 						}
 					}
@@ -127,7 +127,7 @@ func NewUpdateCommand(parentCmd *cobra.Command) func() {
 
 						if aliasId != ifAliasDoesNotExist {
 							// If the aliasId is different from the request then it does exist.
-							log.Infof("Alias [%s] does exist (value: %s), not continuing run", ifAliasDoesNotExist, aliasId)
+							log.Debugf("Alias [%s] does exist (value: %s), not continuing run", ifAliasDoesNotExist, aliasId)
 							return nil
 						}
 					}
