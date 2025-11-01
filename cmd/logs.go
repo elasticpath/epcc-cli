@@ -1,14 +1,17 @@
 package cmd
 
 import (
+	gojson "encoding/json"
 	"fmt"
-	"github.com/elasticpath/epcc-cli/config"
-	"github.com/elasticpath/epcc-cli/external/profiles"
-	log "github.com/sirupsen/logrus"
-	"github.com/spf13/cobra"
 	"net/url"
 	"strconv"
 	"strings"
+
+	"github.com/elasticpath/epcc-cli/config"
+	"github.com/elasticpath/epcc-cli/external/json"
+	"github.com/elasticpath/epcc-cli/external/profiles"
+	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 )
 
 // LogsCmd represents the logs command
@@ -36,6 +39,7 @@ var LogsList = &cobra.Command{
 	},
 }
 
+var LogsShowPrettyJson = false
 var LogsShow = &cobra.Command{
 	Use:   "show <NUMBER>",
 	Short: "Show HTTP logs for specific number, negative values are from the last value",
@@ -55,7 +59,20 @@ var LogsShow = &cobra.Command{
 			return fmt.Errorf("couldn't print logs: %v", err)
 		}
 
-		fmt.Println(content)
+		if LogsShowPrettyJson {
+			for l := range strings.Lines(content) {
+
+				var s any
+				if err := gojson.Unmarshal([]byte(l), &s); err == nil {
+					json.PrintJson(l)
+				} else {
+					fmt.Print(l)
+				}
+
+			}
+		} else {
+			fmt.Println(content)
+		}
 
 		return nil
 	},

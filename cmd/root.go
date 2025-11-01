@@ -2,6 +2,12 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"os/signal"
+	"runtime"
+	"syscall"
+	"time"
+
 	"github.com/elasticpath/epcc-cli/config"
 	"github.com/elasticpath/epcc-cli/external/aliases"
 	"github.com/elasticpath/epcc-cli/external/authentication"
@@ -16,11 +22,6 @@ import (
 	"github.com/elasticpath/epcc-cli/external/version"
 	log "github.com/sirupsen/logrus"
 	"github.com/thediveo/enumflag"
-	"os"
-	"os/signal"
-	"runtime"
-	"syscall"
-	"time"
 
 	"github.com/caarlos0/env/v6"
 	"github.com/elasticpath/epcc-cli/external/json"
@@ -118,6 +119,7 @@ func InitializeCmd() {
 
 	Logs.AddCommand(LogsList, LogsShow, LogsClear, LogsCurlReplay)
 
+	LogsShow.PersistentFlags().BoolVarP(&LogsShowPrettyJson, "pretty", "", false, "If set, we will pretty print json request and responses")
 	LogsCurlReplay.PersistentFlags().BoolVarP(&CurlInlineAuth, "inline-auth", "", false, "If set, we will replace the authorization header with a curl call and our current credentials")
 
 	testJson.ResetFlags()
