@@ -31,6 +31,7 @@ func NewGetCommand(parentCmd *cobra.Command) func() {
 	var autoFillOnGet = false
 	var compactOutput = false
 	var noBodyPrint = false
+	var outputKeyVal = false
 	var retryWhileJQ = ""
 	var retryWhileJQMaxAttempts = uint16(1200)
 	var ifAliasExists = ""
@@ -49,6 +50,7 @@ func NewGetCommand(parentCmd *cobra.Command) func() {
 		autoFillOnGet = false
 		compactOutput = false
 		noBodyPrint = false
+		outputKeyVal = false
 		retryWhileJQ = ""
 		retryWhileJQMaxAttempts = uint16(1200)
 		ifAliasExists = ""
@@ -227,6 +229,23 @@ func NewGetCommand(parentCmd *cobra.Command) func() {
 
 						if noBodyPrint {
 							return retriesFailedError
+						} else if outputKeyVal {
+							kv, err := json.FromJson(body)
+
+							if err != nil {
+								return err
+							}
+
+							for i, v := range kv {
+								fmt.Print(v)
+								if i%2 == 1 {
+									fmt.Println()
+								} else {
+									fmt.Print(" ")
+								}
+							}
+
+							return nil
 						} else {
 							if compactOutput {
 								body, err = json.Compact(body)
@@ -335,6 +354,7 @@ func NewGetCommand(parentCmd *cobra.Command) func() {
 	getCmd.PersistentFlags().Uint32VarP(&repeatDelay, "repeat-delay", "", 100, "Delay (in ms) between repeats")
 	getCmd.PersistentFlags().StringVarP(&logOnSuccess, "log-on-success", "", "", "Output the following message as an info if the result is successful")
 	getCmd.PersistentFlags().StringVarP(&logOnFailure, "log-on-failure", "", "", "Output the following message as an error if the result fails")
+	getCmd.PersistentFlags().BoolVarP(&outputKeyVal, "output-key-val", "", false, "Outputs in epcc-cli json key value format")
 
 	_ = getCmd.RegisterFlagCompletionFunc("output-jq", jqCompletionFunc)
 
