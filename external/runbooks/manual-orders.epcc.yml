@@ -13,8 +13,7 @@ actions:
         required: true
       number-of-orders:
         type: INT
-        default: 0
-        required: true
+        default: 1
         description:
           short: "Number of orders to create"
       product-price-mean:
@@ -150,11 +149,13 @@ actions:
           {{- $productPrice := index $productPrices $productIdx | int }}
           {{- $productSku := index $productSkus $productIdx }}
           {{- $productTax := 0 | int64 }}
-          {{- $productPriceWithTax := add $productPrice $productTax | int64 }}
+          
           {{- $productDiscount := 0 | int64 }}
           {{- if $giveDiscount }}
             {{- $productDiscount = ( pseudoRandInt 2 10 | div $productPrice ) | int }}
           {{- end }}
+          {{- $productPriceAfterDiscount := sub $productPrice $productDiscount | int }}
+          {{- $productPriceWithTax := add $productPriceAfterDiscount $productTax | int64 }}
             {{- $quantity := 2 }}
             {{- if ge (randInt 1 100) 80 }}
                 {{- $quantity = add $quantity (randInt 1 3) }}
@@ -162,7 +163,8 @@ actions:
             {{- if ge (randInt 1 100) 95 }}
                 {{- $quantity = add $quantity (randInt 4 6) }}
             {{- end }}
-        {{- $totalWithoutTax = add $totalWithoutTax (mul $productPrice $quantity) }}
+        {{- $totalWithoutTax = add $totalWithoutTax (mul $productPriceAfterDiscount $quantity) }}
+        
         {{- $totalTax = add $totalTax (mul $productTax $quantity) }}
         {{- $totalDiscount = add $totalDiscount (mul $productDiscount $quantity) -}}
             included.items[{{.}}].meta.timestamps.created_at "{{ $ts }}" \
@@ -181,14 +183,15 @@ actions:
             included.items[{{.}}].meta.display_price.without_discount.value.amount {{ mul $quantity $productPrice }} included.items[{{.}}].meta.display_price.without_discount.value.formatted '{{ (mul $quantity $productPrice) | formatPrice "USD" }}' included.items[{{.}}].meta.display_price.without_discount.value.currency {{ $productCurrency }}  \
         {{ end }}
         {{- $totalWithTax := add $totalTax $totalWithoutTax -}}
-            meta.display_price.without_tax.amount {{ $totalWithoutTax }} meta.display_price.without_tax.formatted '{{ $totalWithoutTax | formatPrice "USD" }}' meta.display_price.without_tax.currency {{ $productCurrency }} \
+        {{- $totalBeforeDiscounts := add $totalDiscount $totalWithoutTax -}}
+            meta.display_price.without_tax.amount {{ $totalBeforeDiscounts }} meta.display_price.without_tax.formatted '{{ $totalBeforeDiscounts | formatPrice "USD" }}' meta.display_price.without_tax.currency {{ $productCurrency }} \
             meta.display_price.tax.amount {{ $totalTax }}  meta.display_price.tax.formatted '{{ $totalTax | formatPrice "USD" }}' meta.display_price.tax.currency {{ $productCurrency }} \
             meta.display_price.with_tax.amount {{ $totalWithTax }} meta.display_price.with_tax.formatted '{{ $totalWithTax | formatPrice "USD" }}' meta.display_price.with_tax.currency {{ $productCurrency }} \
             meta.display_price.paid.amount {{ $totalWithTax }} meta.display_price.paid.formatted '{{ $totalWithTax | formatPrice "USD" }}' meta.display_price.paid.currency {{ $productCurrency }} \
             meta.display_price.balance_owing.amount 0 meta.display_price.balance_owing.formatted '{{ 0 | formatPrice "USD" }}' meta.display_price.balance_owing.currency {{ $productCurrency }} \
             meta.display_price.discount.amount -{{ $totalDiscount }} meta.display_price.discount.formatted '-{{ $totalDiscount | formatPrice "USD" }}' meta.display_price.discount.currency {{ $productCurrency }} \
             meta.display_price.authorized.amount 0 meta.display_price.authorized.formatted '{{ 0 | formatPrice "USD" }}' meta.display_price.authorized.currency {{ $productCurrency }} \
-            meta.display_price.without_discount.amount {{ $totalWithTax }} meta.display_price.without_discount.formatted '{{ $totalWithoutTax | formatPrice "USD" }}' meta.display_price.without_discount.currency {{ $productCurrency }} \
+            meta.display_price.without_discount.amount {{ $totalBeforeDiscounts }} meta.display_price.without_discount.formatted '{{ $totalBeforeDiscounts | formatPrice "USD" }}' meta.display_price.without_discount.currency {{ $productCurrency }} \
             meta.display_price.shipping.amount {{ $totalShipping }} meta.display_price.shipping.formatted '{{ $totalShippingDiscount | formatPrice "USD" }}' meta.display_price.shipping.currency {{ $productCurrency }} \
             meta.display_price.shipping_discount.amount {{ $totalShippingDiscount }} meta.display_price.shipping_discount.formatted '{{ $totalShippingDiscount | formatPrice "USD" }}' meta.display_price.shipping_discount.currency {{ $productCurrency }} \
             meta.timestamps.created_at "{{ $ts }}"
