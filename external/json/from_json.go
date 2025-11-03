@@ -90,7 +90,7 @@ func FromJsonToMap(json string) (map[string]string, error) {
 			}
 
 			if s, ok := v.(string); ok {
-				out[outKey] = s
+				out[outKey] = fmt.Sprintf("\"%s\"", s)
 			} else if s, ok := v.(float64); ok {
 				if s == float64(int(s)) {
 					out[outKey] = fmt.Sprintf("%d", int(s))

@@ -3,11 +3,13 @@ package json
 import (
 	"bytes"
 	gojson "encoding/json"
-	"github.com/mattn/go-isatty"
-	log "github.com/sirupsen/logrus"
+	"fmt"
 	"io"
 	"os"
 	"time"
+
+	"github.com/mattn/go-isatty"
+	log "github.com/sirupsen/logrus"
 )
 
 var MonochromeOutput = false
@@ -30,6 +32,28 @@ func PrettyPrint(in string) string {
 		return in
 	}
 	return out.String()
+}
+
+func PrintJsonAsKeyValue(json string) error {
+
+	defer os.Stdout.Sync()
+	kv, err := FromJson(json)
+
+	if err != nil {
+		return err
+	}
+
+	for i, v := range kv {
+		fmt.Print(v)
+		if i%2 == 1 {
+			fmt.Println()
+		} else {
+			fmt.Print(" ")
+		}
+	}
+
+	return nil
+
 }
 
 func printJsonToWriter(json string, w io.Writer) error {

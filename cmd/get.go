@@ -31,6 +31,7 @@ func NewGetCommand(parentCmd *cobra.Command) func() {
 	var autoFillOnGet = false
 	var compactOutput = false
 	var noBodyPrint = false
+	var outputKeyValue = false
 	var retryWhileJQ = ""
 	var retryWhileJQMaxAttempts = uint16(1200)
 	var ifAliasExists = ""
@@ -49,6 +50,7 @@ func NewGetCommand(parentCmd *cobra.Command) func() {
 		autoFillOnGet = false
 		compactOutput = false
 		noBodyPrint = false
+		outputKeyValue = false
 		retryWhileJQ = ""
 		retryWhileJQMaxAttempts = uint16(1200)
 		ifAliasExists = ""
@@ -227,6 +229,8 @@ func NewGetCommand(parentCmd *cobra.Command) func() {
 
 						if noBodyPrint {
 							return retriesFailedError
+						} else if outputKeyValue {
+							return json.PrintJsonAsKeyValue(body)
 						} else {
 							if compactOutput {
 								body, err = json.Compact(body)
@@ -318,13 +322,14 @@ func NewGetCommand(parentCmd *cobra.Command) func() {
 		}
 	}
 
-	getCmd.PersistentFlags().BoolVarP(&noBodyPrint, "silent", "s", false, "Don't print the body on success")
 	getCmd.PersistentFlags().BoolVarP(&autoFillOnGet, "auto-fill", "", false, "Auto generate value for fields")
 	getCmd.PersistentFlags().StringVar(&overrides.OverrideUrlPath, "override-url-path", "", "Override the URL that will be used for the Request")
 	getCmd.PersistentFlags().StringSliceVarP(&overrides.QueryParameters, "query-parameters", "q", []string{}, "Pass in key=value an they will be added as query parameters")
 	getCmd.PersistentFlags().StringVarP(&outputJq, "output-jq", "", "", "A jq expression, if set we will restrict output to only this")
 	getCmd.PersistentFlags().BoolVarP(&compactOutput, "compact", "", false, "Hides some of the boiler plate keys and empty fields, etc...")
-	getCmd.PersistentFlags().BoolVarP(&ignoreErrors, "ignore-errors", "", false, "Don't return non zero on an error")
+	getCmd.PersistentFlags().BoolVarP(&noBodyPrint, "silent", "s", false, "Don't print the body on success")
+	getCmd.PersistentFlags().BoolVarP(&outputKeyValue, "output-key-val", "", false, "Outputs the result in epcc-cli json key/value format")
+	getCmd.PersistentFlags().BoolVarP(&ignoreErrors, "ignore-errors", "", false, "Don't return non-zero on an error")
 	getCmd.PersistentFlags().StringVarP(&retryWhileJQ, "retry-while-jq", "", "", "A jq expression, if set and returns true we will retry the get command (see manual for examples)")
 	getCmd.PersistentFlags().Uint16VarP(&retryWhileJQMaxAttempts, "retry-while-jq-max-attempts", "", 1200, "The maximum number of attempts we will retry with jq")
 	getCmd.PersistentFlags().StringVarP(&ifAliasExists, "if-alias-exists", "", "", "If the alias exists we will run this command, otherwise exit with no error")
@@ -336,6 +341,7 @@ func NewGetCommand(parentCmd *cobra.Command) func() {
 	getCmd.PersistentFlags().StringVarP(&logOnSuccess, "log-on-success", "", "", "Output the following message as an info if the result is successful")
 	getCmd.PersistentFlags().StringVarP(&logOnFailure, "log-on-failure", "", "", "Output the following message as an error if the result fails")
 
+	getCmd.MarkFlagsMutuallyExclusive("output-key-val", "output-jq", "silent", "compact")
 	_ = getCmd.RegisterFlagCompletionFunc("output-jq", jqCompletionFunc)
 
 	parentCmd.AddCommand(getCmd)

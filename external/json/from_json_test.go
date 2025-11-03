@@ -41,7 +41,7 @@ func TestFromJsonWithSimpleObject(t *testing.T) {
 
 	// Verification
 	require.NoError(t, err)
-	require.Equal(t, result, []string{"name", "Ron", "type", "account"})
+	require.Equal(t, result, []string{"name", "\"Ron\"", "type", "\"account\""})
 }
 
 func TestFromJsonWithSimpleObjectWithAttributes(t *testing.T) {
@@ -61,7 +61,7 @@ func TestFromJsonWithSimpleObjectWithAttributes(t *testing.T) {
 
 	// Verification
 	require.NoError(t, err)
-	require.Equal(t, result, []string{"name", "Ron", "type", "account"})
+	require.Equal(t, result, []string{"name", `"Ron"`, "type", `"account"`})
 }
 
 func TestFromJsonWithSimpleObjectWithArrayAttributes(t *testing.T) {
@@ -81,5 +81,5 @@ func TestFromJsonWithSimpleObjectWithArrayAttributes(t *testing.T) {
 
 	// Verification
 	require.NoError(t, err)
-	require.Equal(t, result, []string{"names[0]", "Ron", "names[1]", "Ulysses", "names[2]", "Swanson", "type", "account"})
+	require.Equal(t, result, []string{"names[0]", `"Ron"`, "names[1]", `"Ulysses"`, "names[2]", `"Swanson"`, "type", `"account"`})
 }
