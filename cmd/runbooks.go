@@ -80,8 +80,10 @@ func initRunbookShowCommands() *cobra.Command {
 		SilenceUsage: true,
 	}
 
+	var asBash bool
+	runbookShowCommand.PersistentFlags().BoolVarP(&asBash, "as-bash", "", false, "Display the runbook contents as bash commands")
 	runbookShowCommand.PersistentFlags().Int64("execution-timeout", 900, "Does nothing, just here in case you swap run for show to debug")
-	runbookShowCommand.PersistentFlags().Int("max-concurrency", 20, "Does nothing, just here in case you swap run for show to debugy")
+	runbookShowCommand.PersistentFlags().Int("max-concurrency", 20, "Does nothing, just here in case you swap run for show to debug")
 
 	err := runbookShowCommand.PersistentFlags().MarkHidden("execution-timeout")
 
@@ -163,11 +165,26 @@ func initRunbookShowCommands() *cobra.Command {
 							continue
 						}
 
+						fmt.Printf("# Step %d\n", stepIdx)
+
+						runConcurrently := len(rawCmdLines) > 1
 						for _, line := range rawCmdLines {
 							if len(strings.Trim(line, " \n")) > 0 {
-								println(line)
+
+								fmt.Print(line)
+
+								if runConcurrently && asBash {
+									fmt.Print("&")
+								}
+
+								fmt.Println()
 							}
 
+						}
+
+						if runConcurrently && asBash {
+							fmt.Println("# Wait for all processes to complete\nwait")
+							fmt.Println()
 						}
 					}
 					return nil
