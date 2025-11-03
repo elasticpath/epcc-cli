@@ -43,6 +43,7 @@ func NewDeleteCommand(parentCmd *cobra.Command) func() {
 	var repeatDelay uint32 = 100
 	var ignoreErrors = false
 	var noBodyPrint = false
+	var outputKeyVal = false
 	var logOnSuccess = ""
 	var logOnFailure = ""
 
@@ -53,6 +54,7 @@ func NewDeleteCommand(parentCmd *cobra.Command) func() {
 		ifAliasExists = ""
 		ifAliasDoesNotExist = ""
 		noBodyPrint = false
+		outputKeyVal = false
 		repeat = 1
 		repeatDelay = 100
 		ignoreErrors = false
@@ -125,6 +127,8 @@ func NewDeleteCommand(parentCmd *cobra.Command) func() {
 
 					if noBodyPrint {
 						return nil
+					} else if outputKeyVal {
+						return json.PrintJsonAsKeyValue(body)
 					} else {
 						return json.PrintJson(body)
 					}
@@ -217,13 +221,16 @@ func NewDeleteCommand(parentCmd *cobra.Command) func() {
 	deleteCmd.PersistentFlags().StringVarP(&ifAliasExists, "if-alias-exists", "", "", "If the alias exists we will run this command, otherwise exit with no error")
 	deleteCmd.PersistentFlags().StringVarP(&ifAliasDoesNotExist, "if-alias-does-not-exist", "", "", "If the alias does not exist we will run this command, otherwise exit with no error")
 	deleteCmd.PersistentFlags().BoolVarP(&noBodyPrint, "silent", "s", false, "Don't print the body on success")
+	deleteCmd.PersistentFlags().BoolVarP(&outputKeyVal, "output-key-val", "", false, "Outputs the result in epcc-cli json key/value format")
 	deleteCmd.MarkFlagsMutuallyExclusive("if-alias-exists", "if-alias-does-not-exist")
 	deleteCmd.PersistentFlags().Uint32VarP(&repeat, "repeat", "", 1, "Number of times to repeat the command")
 	deleteCmd.PersistentFlags().Uint32VarP(&repeatDelay, "repeat-delay", "", 100, "Delay (in ms) between repeats")
-	deleteCmd.PersistentFlags().BoolVarP(&ignoreErrors, "ignore-errors", "", false, "Don't return non zero on an error")
+	deleteCmd.PersistentFlags().BoolVarP(&ignoreErrors, "ignore-errors", "", false, "Don't return non-zero on an error")
 	deleteCmd.PersistentFlags().StringVarP(&logOnSuccess, "log-on-success", "", "", "Output the following message as an info if the result is successful")
 	deleteCmd.PersistentFlags().StringVarP(&logOnFailure, "log-on-failure", "", "", "Output the following message as an error if the result fails")
 	parentCmd.AddCommand(deleteCmd)
+
+	deleteCmd.MarkFlagsMutuallyExclusive("output-key-val", "silent")
 
 	return resetFunc
 }

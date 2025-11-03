@@ -40,6 +40,7 @@ func NewCreateCommand(parentCmd *cobra.Command) func() {
 	// Ensure that any new options here are added to the resetFunc
 	var autoFillOnCreate = false
 	var noBodyPrint = false
+	var outputKeyValue = false
 	var outputJq = ""
 	var compactOutput = true
 	var setAlias = ""
@@ -57,6 +58,7 @@ func NewCreateCommand(parentCmd *cobra.Command) func() {
 	resetFunc := func() {
 		autoFillOnCreate = false
 		noBodyPrint = false
+		outputKeyValue = false
 		outputJq = ""
 		setAlias = ""
 		ifAliasExists = ""
@@ -158,6 +160,8 @@ func NewCreateCommand(parentCmd *cobra.Command) func() {
 
 					if noBodyPrint {
 						return nil
+					} else if outputKeyValue {
+						return json.PrintJsonAsKeyValue(body)
 					} else {
 						if compactOutput {
 							body, err = json.Compact(body)
@@ -261,10 +265,11 @@ func NewCreateCommand(parentCmd *cobra.Command) func() {
 	createCmd.PersistentFlags().StringVar(&overrides.OverrideUrlPath, "override-url-path", "", "Override the URL that will be used for the Request")
 	createCmd.PersistentFlags().BoolVarP(&autoFillOnCreate, "auto-fill", "", false, "Auto generate value for fields")
 	createCmd.PersistentFlags().BoolVarP(&noBodyPrint, "silent", "s", false, "Don't print the body on success")
+	createCmd.PersistentFlags().BoolVarP(&outputKeyValue, "output-key-val", "", false, "Outputs the result in epcc-cli json key/value format")
 	createCmd.PersistentFlags().StringSliceVarP(&overrides.QueryParameters, "query-parameters", "q", []string{}, "Pass in key=value an they will be added as query parameters")
 	createCmd.PersistentFlags().StringVarP(&outputJq, "output-jq", "", "", "A jq expression, if set we will restrict output to only this")
 	createCmd.PersistentFlags().BoolVarP(&compactOutput, "compact", "", false, "Hides some of the boiler plate keys and empty fields, etc...")
-	createCmd.PersistentFlags().BoolVarP(&ignoreErrors, "ignore-errors", "", false, "Don't return non zero on an error")
+	createCmd.PersistentFlags().BoolVarP(&ignoreErrors, "ignore-errors", "", false, "Don't return non-zero on an error")
 	createCmd.PersistentFlags().StringVarP(&setAlias, "save-as-alias", "", "", "A name to save the created resource as")
 	createCmd.PersistentFlags().StringVarP(&ifAliasExists, "if-alias-exists", "", "", "If the alias exists we will run this command, otherwise exit with no error")
 	createCmd.PersistentFlags().StringVarP(&ifAliasDoesNotExist, "if-alias-does-not-exist", "", "", "If the alias does not exist we will run this command, otherwise exit with no error")
@@ -278,6 +283,7 @@ func NewCreateCommand(parentCmd *cobra.Command) func() {
 	createCmd.PersistentFlags().StringVarP(&logOnFailure, "log-on-failure", "", "", "Output the following message as an error if the result fails")
 	createCmd.PersistentFlags().StringVarP(&data, "data", "d", "", "Raw JSON data to use as the request body. If provided, positional arguments will be ignored.")
 
+	createCmd.MarkFlagsMutuallyExclusive("output-key-val", "output-jq", "silent", "compact")
 	_ = createCmd.RegisterFlagCompletionFunc("output-jq", jqCompletionFunc)
 
 	return resetFunc

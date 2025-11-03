@@ -39,6 +39,7 @@ func NewUpdateCommand(parentCmd *cobra.Command) func() {
 	var outputJq = ""
 	var compactOutput = false
 	var noBodyPrint = false
+	var outputKeyVal = false
 	var ifAliasExists = ""
 	var ifAliasDoesNotExist = ""
 	var skipAliases = false
@@ -56,6 +57,7 @@ func NewUpdateCommand(parentCmd *cobra.Command) func() {
 		outputJq = ""
 		compactOutput = false
 		noBodyPrint = false
+		outputKeyVal = false
 		ifAliasExists = ""
 		ifAliasDoesNotExist = ""
 		skipAliases = false
@@ -164,6 +166,8 @@ func NewUpdateCommand(parentCmd *cobra.Command) func() {
 
 					if noBodyPrint {
 						return nil
+					} else if outputKeyVal {
+						return json.PrintJsonAsKeyValue(body)
 					} else {
 						if compactOutput {
 							body, err = json.Compact(body)
@@ -283,9 +287,10 @@ func NewUpdateCommand(parentCmd *cobra.Command) func() {
 	updateCmd.PersistentFlags().StringVar(&overrides.OverrideUrlPath, "override-url-path", "", "Override the URL that will be used for the Request")
 	updateCmd.PersistentFlags().StringSliceVarP(&overrides.QueryParameters, "query-parameters", "q", []string{}, "Pass in key=value an they will be added as query parameters")
 	updateCmd.PersistentFlags().BoolVarP(&noBodyPrint, "silent", "s", false, "Don't print the body on success")
+	updateCmd.PersistentFlags().BoolVarP(&outputKeyVal, "output-key-val", "", false, "Outputs the result in epcc-cli json key/value format")
 	updateCmd.PersistentFlags().StringVarP(&outputJq, "output-jq", "", "", "A jq expression, if set we will restrict output to only this")
 	updateCmd.PersistentFlags().BoolVarP(&compactOutput, "compact", "", false, "Hides some of the boiler plate keys and empty fields, etc...")
-	updateCmd.PersistentFlags().BoolVarP(&ignoreErrors, "ignore-errors", "", false, "Don't return non zero on an error")
+	updateCmd.PersistentFlags().BoolVarP(&ignoreErrors, "ignore-errors", "", false, "Don't return non-zero on an error")
 	updateCmd.PersistentFlags().StringVarP(&ifAliasExists, "if-alias-exists", "", "", "If the alias exists we will run this command, otherwise exit with no error")
 	updateCmd.PersistentFlags().StringVarP(&ifAliasDoesNotExist, "if-alias-does-not-exist", "", "", "If the alias does not exist we will run this command, otherwise exit with no error")
 	updateCmd.MarkFlagsMutuallyExclusive("if-alias-exists", "if-alias-does-not-exist")
@@ -299,6 +304,7 @@ func NewUpdateCommand(parentCmd *cobra.Command) func() {
 	updateCmd.PersistentFlags().StringVarP(&logOnFailure, "log-on-failure", "", "", "Output the following message as an error if the result fails")
 	updateCmd.PersistentFlags().StringVarP(&data, "data", "d", "", "Raw JSON data to use as the request body. If provided, positional arguments will be ignored.")
 
+	updateCmd.MarkFlagsMutuallyExclusive("output-key-val", "output-jq", "silent", "compact")
 	parentCmd.AddCommand(updateCmd)
 
 	return resetFunc
