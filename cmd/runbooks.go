@@ -3,6 +3,11 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"strconv"
+	"strings"
+	"sync/atomic"
+	"time"
+
 	"github.com/buildkite/shellwords"
 	"github.com/elasticpath/epcc-cli/external/completion"
 	"github.com/elasticpath/epcc-cli/external/misc"
@@ -16,10 +21,6 @@ import (
 	"github.com/spf13/cobra"
 	"golang.org/x/sync/semaphore"
 	"gopkg.in/yaml.v3"
-	"strconv"
-	"strings"
-	"sync/atomic"
-	"time"
 )
 
 var runbookGlobalCmd = &cobra.Command{
@@ -429,7 +430,12 @@ func processRunbookVariablesOnCommand(runbookActionRunActionCommand *cobra.Comma
 		variable := variable
 
 		if variable.Required && enableRequiredVars {
-			runbookActionRunActionCommand.Flags().StringVar(runbookStringArguments[key], key, "", variable.Description.Short)
+
+			description := ""
+			if variable.Description != nil {
+				description = variable.Description.Short
+			}
+			runbookActionRunActionCommand.Flags().StringVar(runbookStringArguments[key], key, "", description)
 			err := runbookActionRunActionCommand.MarkFlagRequired(key)
 
 			if err != nil {
