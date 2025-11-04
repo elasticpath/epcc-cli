@@ -1,13 +1,13 @@
 package cmd
 
 import (
-	"context"
 	gojson "encoding/json"
 	"fmt"
 	"time"
 
 	"github.com/elasticpath/epcc-cli/config"
 	"github.com/elasticpath/epcc-cli/external/aliases"
+	"github.com/elasticpath/epcc-cli/external/clictx"
 	"github.com/elasticpath/epcc-cli/external/completion"
 	"github.com/elasticpath/epcc-cli/external/httpclient"
 	"github.com/elasticpath/epcc-cli/external/json"
@@ -173,7 +173,7 @@ func NewGetCommand(parentCmd *cobra.Command) func() {
 						retriesFailedError := fmt.Errorf("Maximum number of retries hit %d and condition [%s] always true", retryWhileJQMaxAttempts, retryWhileJQ)
 
 						for attempt := uint16(0); attempt < retryWhileJQMaxAttempts; attempt++ {
-							body, err = rest.GetInternal(context.Background(), overrides, append([]string{resourceName}, args...), autoFillOnGet, skipAliases)
+							body, err = rest.GetInternal(clictx.Ctx, overrides, append([]string{resourceName}, args...), autoFillOnGet, skipAliases)
 							if retryWhileJQ == "" {
 								retriesFailedError = nil
 								break

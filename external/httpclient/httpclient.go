@@ -259,7 +259,7 @@ func doRequestInternal(ctx context.Context, method string, contentType string, p
 		payload = bytes.NewReader(bodyBuf)
 	}
 
-	req, err := http.NewRequest(method, reqURL.String(), payload)
+	req, err := http.NewRequestWithContext(ctx, method, reqURL.String(), payload)
 	if err != nil {
 		return nil, err
 	}
@@ -313,6 +313,7 @@ func doRequestInternal(ctx context.Context, method string, contentType string, p
 
 	log.Tracef("Waiting for rate limiter")
 	if err := Limit.Wait(ctx); err != nil {
+		log.Tracef("Rate limiter aborted with error %v", err)
 		return nil, fmt.Errorf("rate limiter returned error %v, %w", err, err)
 	}
 
@@ -326,6 +327,7 @@ func doRequestInternal(ctx context.Context, method string, contentType string, p
 	corrID, _ := uuid.NewUUID()
 
 	log.Tracef("Starting HTTP Request %s %s (Correlation ID: %s [not request id])", req.Method, req.URL.String(), corrID.String())
+
 	resp, err := HttpClient.Do(req)
 	requestTime := time.Since(start)
 

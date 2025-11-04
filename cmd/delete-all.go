@@ -3,21 +3,23 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"github.com/elasticpath/epcc-cli/config"
-	"github.com/elasticpath/epcc-cli/external/aliases"
-	"github.com/elasticpath/epcc-cli/external/apihelper"
-	"github.com/elasticpath/epcc-cli/external/httpclient"
-	"github.com/elasticpath/epcc-cli/external/id"
-	"github.com/elasticpath/epcc-cli/external/json"
-	"github.com/elasticpath/epcc-cli/external/resources"
-	log "github.com/sirupsen/logrus"
-	"github.com/spf13/cobra"
 	"io"
 	"net/url"
 	"reflect"
 	"regexp"
 	"strings"
 	"sync"
+
+	"github.com/elasticpath/epcc-cli/config"
+	"github.com/elasticpath/epcc-cli/external/aliases"
+	"github.com/elasticpath/epcc-cli/external/apihelper"
+	"github.com/elasticpath/epcc-cli/external/clictx"
+	"github.com/elasticpath/epcc-cli/external/httpclient"
+	"github.com/elasticpath/epcc-cli/external/id"
+	"github.com/elasticpath/epcc-cli/external/json"
+	"github.com/elasticpath/epcc-cli/external/resources"
+	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 )
 
 func NewDeleteAllCommand(parentCmd *cobra.Command) func() {
@@ -69,7 +71,7 @@ func NewDeleteAllCommand(parentCmd *cobra.Command) func() {
 			Short:  GetDeleteAllShort(resource),
 			Hidden: false,
 			RunE: func(cmd *cobra.Command, args []string) error {
-				return deleteAllInternal(context.Background(), append([]string{resourceName}, args...))
+				return deleteAllInternal(clictx.Ctx, append([]string{resourceName}, args...))
 			},
 		}
 		deleteAll.AddCommand(deleteAllResourceCmd)
