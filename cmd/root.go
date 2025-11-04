@@ -131,7 +131,7 @@ func InitializeCmd() {
 	RootCmd.PersistentFlags().BoolVarP(&json.MonochromeOutput, "monochrome-output", "M", false, "By default, epcc will output using colors if the terminal supports this. Use this option to disable it.")
 	RootCmd.PersistentFlags().StringSliceVarP(&httpclient.RawHeaders, "header", "H", []string{}, "Extra headers and values to include in the request when sending HTTP to a server. You may specify any number of extra headers.")
 	RootCmd.PersistentFlags().StringVarP(&profileNameFromCommandLine, "profile", "P", "", "overrides the current EPCC_PROFILE var to run the command with the chosen profile.")
-	RootCmd.PersistentFlags().Uint16VarP(&rateLimit, "rate-limit", "", 10, "Request limit per second")
+	RootCmd.PersistentFlags().Uint16VarP(&rateLimit, "rate-limit", "", 0, "Request limit per second")
 	RootCmd.PersistentFlags().BoolVarP(&httpclient.Retry5xx, "retry-5xx", "", false, "Whether we should retry requests with HTTP 5xx response code")
 	RootCmd.PersistentFlags().BoolVarP(&httpclient.Retry429, "retry-429", "", false, "Whether we should retry requests with HTTP 429 response code")
 	RootCmd.PersistentFlags().BoolVarP(&httpclient.RetryConnectionErrors, "retry-connection-errors", "", false, "Whether we should retry requests with connection errors")
@@ -229,14 +229,21 @@ Environment Variables
 - EPCC_RUNBOOK_DIRECTORY - Directory to scan for additional runbooks
 - EPCC_CLI_DISABLE_TEMPLATE_EXECUTION - Disables template execution (recommended if input is untrusted).
 - EPCC_CLI_DISABLE_RESOURCES - A comma seperated list of resources that will be hidden in command lists
+- EPCC_CLI_RATE_LIMIT - The default rate limit to use.
+- EPCC_CLI_DISABLE_HTTP_LOGGING - Disables writing of HTTP logs
 `,
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 			log.SetLevel(logger.Loglevel)
 
 			e := config.GetEnv()
-			if e.EPCC_RATE_LIMIT != 0 {
-				rateLimit = e.EPCC_RATE_LIMIT
+			if rateLimit == 0 {
+				rateLimit = e.EPCC_CLI_RATE_LIMIT
 			}
+
+			if rateLimit == 0 {
+				rateLimit = 20
+			}
+
 			authentication.Initialize()
 
 			log.Debugf("Rate limit set to %d request per second, printing statistics every %d seconds ", rateLimit, statisticsFrequency)

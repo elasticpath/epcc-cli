@@ -5,16 +5,6 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
-	"github.com/elasticpath/epcc-cli/config"
-	"github.com/elasticpath/epcc-cli/external/authentication"
-	"github.com/elasticpath/epcc-cli/external/headergroups"
-	"github.com/elasticpath/epcc-cli/external/json"
-	"github.com/elasticpath/epcc-cli/external/profiles"
-	"github.com/elasticpath/epcc-cli/external/shutdown"
-	"github.com/elasticpath/epcc-cli/external/version"
-	"github.com/google/uuid"
-	log "github.com/sirupsen/logrus"
-	"golang.org/x/time/rate"
 	"io"
 	"net/http"
 	"net/http/httputil"
@@ -26,6 +16,17 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/elasticpath/epcc-cli/config"
+	"github.com/elasticpath/epcc-cli/external/authentication"
+	"github.com/elasticpath/epcc-cli/external/headergroups"
+	"github.com/elasticpath/epcc-cli/external/json"
+	"github.com/elasticpath/epcc-cli/external/profiles"
+	"github.com/elasticpath/epcc-cli/external/shutdown"
+	"github.com/elasticpath/epcc-cli/external/version"
+	"github.com/google/uuid"
+	log "github.com/sirupsen/logrus"
+	"golang.org/x/time/rate"
 )
 
 var RawHeaders []string
@@ -313,6 +314,10 @@ func doRequestInternal(ctx context.Context, method string, contentType string, p
 	log.Tracef("Waiting for rate limiter")
 	if err := Limit.Wait(ctx); err != nil {
 		return nil, fmt.Errorf("rate limiter returned error %v, %w", err, err)
+	}
+
+	if shutdown.ShutdownFlag.Load() {
+		return nil, fmt.Errorf("Shutting down")
 	}
 
 	rateLimitTime := time.Since(start)
