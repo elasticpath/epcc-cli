@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"context"
 	gojson "encoding/json"
 	"errors"
 	"fmt"
@@ -12,6 +11,7 @@ import (
 
 	"github.com/elasticpath/epcc-cli/config"
 	"github.com/elasticpath/epcc-cli/external/aliases"
+	"github.com/elasticpath/epcc-cli/external/clictx"
 	"github.com/elasticpath/epcc-cli/external/completion"
 	"github.com/elasticpath/epcc-cli/external/httpclient"
 	"github.com/elasticpath/epcc-cli/external/json"
@@ -134,7 +134,7 @@ func NewUpdateCommand(parentCmd *cobra.Command) func() {
 						}
 					}
 
-					body, err := rest.UpdateInternal(context.Background(), overrides, skipAliases, disableConstants, append([]string{resourceName}, args...), data)
+					body, err := rest.UpdateInternal(clictx.Ctx, overrides, skipAliases, disableConstants, append([]string{resourceName}, args...), data)
 
 					if err != nil {
 						return err
@@ -344,7 +344,7 @@ func GetCurrentResourceState(resourceName string, ids []string, overrides *httpc
 		}
 	}
 
-	result, err := rest.GetInternal(context.Background(), overrides, append([]string{resourceName}, ids...), false, true)
+	result, err := rest.GetInternal(clictx.Ctx, overrides, append([]string{resourceName}, ids...), false, true)
 
 	if err != nil {
 		cache = ResourceCache{

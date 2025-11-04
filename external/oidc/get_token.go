@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/elasticpath/epcc-cli/external/authentication"
+	"github.com/elasticpath/epcc-cli/external/clictx"
 	"github.com/elasticpath/epcc-cli/external/httpclient"
 	"github.com/elasticpath/epcc-cli/external/json"
 	"github.com/elasticpath/epcc-cli/external/rest"
@@ -108,7 +109,7 @@ func GetTokenData(ctx context.Context, port uint16, r *http.Request) (*TokenPage
 			authentication.ClearAccountManagementAuthenticationToken()
 		}
 
-		result, err := rest.GetInternal(context.Background(), &httpclient.HttpParameterOverrides{}, []string{"customer", custTokenStruct.CustomerId}, false, false)
+		result, err := rest.GetInternal(clictx.Ctx, &httpclient.HttpParameterOverrides{}, []string{"customer", custTokenStruct.CustomerId}, false, false)
 
 		customerName := "Unknown"
 		customerEmail := "Unkwown"

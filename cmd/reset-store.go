@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/elasticpath/epcc-cli/config"
+	"github.com/elasticpath/epcc-cli/external/clictx"
 
 	"github.com/elasticpath/epcc-cli/external/aliases"
 	"github.com/elasticpath/epcc-cli/external/authentication"
@@ -30,7 +31,7 @@ var ResetStore = &cobra.Command{
 	Long:  "This command resets a store to it's initial state. There are some limitations to this as for instance orders cannot be deleted, nor can audit entries.",
 	Args:  cobra.MinimumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
-		ctx := context.Background()
+		ctx := clictx.Ctx
 
 		e := config.GetEnv()
 
@@ -309,7 +310,7 @@ func deleteAllResourceData(resourceNames []string) (error, []string) {
 
 			if myDepth == depth {
 				log.Infof("Processing resource %s", resourceName)
-				err := deleteAllInternal(context.Background(), []string{resourceName})
+				err := deleteAllInternal(clictx.Ctx, []string{resourceName})
 
 				if err != nil {
 					errors = append(errors, fmt.Errorf("error while deleting %s: %w", resourceName, err).Error())
