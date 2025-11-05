@@ -18,6 +18,7 @@ import (
 	"github.com/expr-lang/expr"
 	"github.com/expr-lang/expr/ast"
 	"github.com/expr-lang/expr/parser"
+	"github.com/quasilyte/regex/syntax"
 	"github.com/santhosh-tekuri/jsonschema/v4"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
@@ -34,7 +35,7 @@ func TestExpectedNumberOfResources(t *testing.T) {
 	resourceCount := len(resources.GetPluralResources())
 
 	// Verification
-	require.Equal(t, resourceCount, 138)
+	require.Equal(t, resourceCount, 140)
 }
 
 func TestCreatedByTemplatesAllReferenceValidResource(t *testing.T) {
@@ -244,6 +245,15 @@ func validateAttributeInfo(info *resources.CrudEntityAttribute) string {
 				errors += fmt.Sprintf("\t attribute `%s` is a regex, but the completion tree doesn't support it: %v", info.Key, err)
 			}
 
+			p := syntax.NewParser(&syntax.ParserOptions{})
+			parse, err := p.Parse(info.Key)
+
+			err = validateRegexTreeContainsNoSingleCharClass(parse)
+
+			if err != nil {
+				errors += fmt.Sprintf("\t attribute `%s` is a regex, but it contains a single char class: %v", info.Key, err)
+			}
+
 		}
 	}
 	if match {
@@ -264,6 +274,34 @@ func validateAttributeInfo(info *resources.CrudEntityAttribute) string {
 
 	return errors
 }
+
+func validateRegexTreeContainsNoSingleCharClass(tree *syntax.Regexp) error {
+
+	var checkChildren func(e *syntax.Expr) error
+	checkChildren = func(e *syntax.Expr) error {
+
+		if e.Op == syntax.OpCharClass {
+			if len(e.Args) == 1 {
+				return fmt.Errorf("single char class found: %v", e.Value)
+			}
+		}
+
+		for _, child := range e.Args {
+
+			err := checkChildren(&child)
+
+			if err != nil {
+				return err
+			}
+
+		}
+
+		return nil
+	}
+
+	return checkChildren(&tree.Expr)
+}
+
 func validateCrudEntityInfo(info resources.CrudEntityInfo) string {
 	errors := ""
 
