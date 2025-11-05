@@ -2,17 +2,20 @@ package oidc
 
 import (
 	"bytes"
-	"context"
 	"embed"
 	"fmt"
+
 	"github.com/elasticpath/epcc-cli/external/browser"
+	"github.com/elasticpath/epcc-cli/external/clictx"
+
 	"path/filepath"
 	"time"
 
-	log "github.com/sirupsen/logrus"
 	"net/http"
 	"strings"
 	"text/template"
+
+	log "github.com/sirupsen/logrus"
 )
 
 //go:embed site/*
@@ -29,7 +32,7 @@ func StartOIDCServer(port uint16) error {
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 
-		ctx := context.Background()
+		ctx := clictx.Ctx
 		log.Tracef("Handling request %s %s", r.Method, r.URL.Path)
 
 		// Remove leading "/" and sanitize the path

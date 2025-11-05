@@ -9,6 +9,9 @@ import (
 	"sort"
 	"strings"
 	"time"
+
+	"github.com/elasticpath/epcc-cli/config"
+	log "github.com/sirupsen/logrus"
 )
 
 var SanitizeLogs = true
@@ -80,17 +83,23 @@ func ClearAllRequestLogs() error {
 
 func LogRequestToDisk(requestMethod string, requestPath string, requestBytes []byte, responseBytes []byte, responseCode int) error {
 
+	statusCode := fmt.Sprintf("%d", responseCode)
+
+	if responseCode == 0 {
+		statusCode = "ERROR"
+	}
+
+	if config.GetEnv().EPCC_CLI_DISABLE_HTTP_LOGGING {
+		log.Tracef("Logging of requests is disabled, dropping log %s %s ==> %s", requestMethod, requestPath, statusCode)
+		return nil
+	}
+
 	if SanitizeLogs {
 		regex1 := regexp.MustCompile(`(?i)client_secret\s*[^A-Za-z0-9]\s*[A-Za-z0-9]*`)
 		requestBytes = regex1.ReplaceAll(requestBytes, []byte("client_secret=*****"))
 		responseBytes = regex1.ReplaceAll(responseBytes, []byte("client_secret=*****"))
 	}
 
-	statusCode := fmt.Sprintf("%d", responseCode)
-
-	if responseCode == 0 {
-		statusCode = "ERROR"
-	}
 	return SaveRequest(fmt.Sprintf("%s %s ==> %s", requestMethod, requestPath, statusCode), requestBytes, responseBytes)
 }
 

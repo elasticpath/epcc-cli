@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/buildkite/shellwords"
+	"github.com/elasticpath/epcc-cli/external/clictx"
 	"github.com/elasticpath/epcc-cli/external/completion"
 	"github.com/elasticpath/epcc-cli/external/misc"
 	"github.com/elasticpath/epcc-cli/external/resources"
@@ -263,7 +264,7 @@ func initRunbookRunCommands() *cobra.Command {
 				RunE: func(cmd *cobra.Command, args []string) error {
 					numSteps := len(runbookAction.RawCommands)
 
-					parentCtx := context.Background()
+					parentCtx := clictx.Ctx
 
 					ctx, cancelFunc := context.WithCancel(parentCtx)
 
@@ -351,6 +352,7 @@ func initRunbookRunCommands() *cobra.Command {
 									tweakedArguments := misc.AddImplicitDoubleDash(rawCmdArguments)
 									stepCmd.SetArgs(tweakedArguments[1:])
 
+									stepCmd.SilenceErrors = true
 									log.Tracef("(Step %d/%d Command %d/%d) Starting Command", stepIdx+1, numSteps, commandIdx+1, len(funcs))
 
 									stepCmd.ResetFlags()

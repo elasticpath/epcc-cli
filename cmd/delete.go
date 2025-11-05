@@ -1,11 +1,11 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/elasticpath/epcc-cli/config"
 	"github.com/elasticpath/epcc-cli/external/aliases"
+	"github.com/elasticpath/epcc-cli/external/clictx"
 	"github.com/elasticpath/epcc-cli/external/completion"
 	"github.com/elasticpath/epcc-cli/external/httpclient"
 	"github.com/elasticpath/epcc-cli/external/json"
@@ -114,7 +114,7 @@ func NewDeleteCommand(parentCmd *cobra.Command) func() {
 						}
 					}
 
-					body, err := rest.DeleteInternal(context.Background(), overrides, allow404, append([]string{resourceName}, args...))
+					body, err := rest.DeleteInternal(clictx.Ctx, overrides, allow404, append([]string{resourceName}, args...))
 
 					if err != nil {
 						if body != "" {

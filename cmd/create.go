@@ -1,12 +1,12 @@
 package cmd
 
 import (
-	"context"
 	gojson "encoding/json"
 	"fmt"
 	"strings"
 
 	"github.com/elasticpath/epcc-cli/config"
+	"github.com/elasticpath/epcc-cli/external/clictx"
 
 	"github.com/elasticpath/epcc-cli/external/aliases"
 	"github.com/elasticpath/epcc-cli/external/completion"
@@ -129,7 +129,7 @@ func NewCreateCommand(parentCmd *cobra.Command) func() {
 						}
 					}
 
-					body, err := rest.CreateInternal(context.Background(), overrides, append([]string{resourceName}, args...), autoFillOnCreate, setAlias, skipAliases, disableConstants, data)
+					body, err := rest.CreateInternal(clictx.Ctx, overrides, append([]string{resourceName}, args...), autoFillOnCreate, setAlias, skipAliases, disableConstants, data)
 
 					if err != nil {
 						return err

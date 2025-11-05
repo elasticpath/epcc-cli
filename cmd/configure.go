@@ -3,14 +3,15 @@ package cmd
 import (
 	"bufio"
 	"fmt"
+	"os"
+	"strconv"
+	"strings"
+
 	"github.com/elasticpath/epcc-cli/config"
 	"github.com/elasticpath/epcc-cli/external/profiles"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"gopkg.in/ini.v1"
-	"os"
-	"strconv"
-	"strings"
 )
 
 var configure = &cobra.Command{
@@ -62,9 +63,9 @@ var configure = &cobra.Command{
 				log.Errorf("Invalid rate limit %s, error: %v", input, err)
 				os.Exit(2)
 			}
-			newProfile.EPCC_RATE_LIMIT = uint16(rateLimit)
+			newProfile.EPCC_CLI_RATE_LIMIT = uint16(rateLimit)
 		} else {
-			newProfile.EPCC_RATE_LIMIT = 10
+			newProfile.EPCC_CLI_RATE_LIMIT = 20
 		}
 
 		section, err := cfg.NewSection(profileName)

@@ -79,7 +79,6 @@ func CreateInternal(ctx context.Context, overrides *httpclient.HttpParameterOver
 		}
 
 		var body string
-		var err error
 
 		if data != "" {
 			// Use the provided data as the request body

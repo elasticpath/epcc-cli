@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"context"
 	gojson "encoding/json"
 	"fmt"
 	"net/url"
@@ -11,6 +10,7 @@ import (
 	"github.com/elasticpath/epcc-cli/external/aliases"
 	"github.com/elasticpath/epcc-cli/external/authentication"
 	"github.com/elasticpath/epcc-cli/external/browser"
+	"github.com/elasticpath/epcc-cli/external/clictx"
 	"github.com/elasticpath/epcc-cli/external/completion"
 	"github.com/elasticpath/epcc-cli/external/headergroups"
 	"github.com/elasticpath/epcc-cli/external/httpclient"
@@ -301,7 +301,7 @@ var loginCustomer = &cobra.Command{
 			OverrideUrlPath: "",
 		}
 
-		ctx := context.Background()
+		ctx := clictx.Ctx
 		newArgs := make([]string, 0)
 		newArgs = append(newArgs, "customer-token")
 		newArgs = append(newArgs, args...)
@@ -421,7 +421,7 @@ var loginAccountManagement = &cobra.Command{
 	},
 
 	RunE: func(cmd *cobra.Command, args []string) error {
-		ctx := context.Background()
+		ctx := clictx.Ctx
 		overrides := &httpclient.HttpParameterOverrides{
 			QueryParameters: nil,
 			OverrideUrlPath: "",
