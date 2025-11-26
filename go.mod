@@ -31,7 +31,7 @@ require (
 	github.com/iancoleman/strcase v0.2.0
 	github.com/jolestar/go-commons-pool/v2 v2.1.2
 	github.com/mitchellh/mapstructure v1.5.0
-	github.com/pb33f/libopenapi v0.28.1
+	github.com/pb33f/libopenapi v0.28.2
 	github.com/yukithm/json2csv v0.1.2
 )
 
