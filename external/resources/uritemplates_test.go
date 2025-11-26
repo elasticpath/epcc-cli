@@ -1,8 +1,9 @@
 package resources
 
 import (
-	"github.com/elasticpath/epcc-cli/external/aliases"
 	"testing"
+
+	"github.com/elasticpath/epcc-cli/external/aliases"
 )
 
 func TestGetNumberOfVariablesReturnsErrorOnTemplate(t *testing.T) {

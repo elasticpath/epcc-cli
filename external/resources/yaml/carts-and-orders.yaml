@@ -431,6 +431,17 @@ manual-orders:
   create-entity:
     docs: "https://elasticpath.dev/docs/api/carts/orders"
     url: "/v2/orders"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/carts/orders"
+    url: "/v2/orders"
+    default-query-params:
+      filter: "eq(manual,true)"
+    openapi-operation-id: getCustomerOrders
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/api/carts/orders"
+    url: "/v2/orders/{orders}"
+
+
   attributes:
     id:
       type: STRING

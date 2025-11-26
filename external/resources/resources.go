@@ -116,6 +116,8 @@ type CrudEntityInfo struct {
 
 	// Only valid on create, if set we report that the type created by this is different.
 	Creates string `yaml:"creates"`
+
+	DefaultQueryParams map[string]string `yaml:"default-query-params,omitempty"`
 }
 
 type CrudEntityAttribute struct {
