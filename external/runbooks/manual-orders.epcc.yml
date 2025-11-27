@@ -182,7 +182,7 @@ actions:
             {{ end }}
             {{- $totalWithTax := add $totalTax $totalWithoutTax -}}
             {{- $totalBeforeDiscounts := add $totalDiscount $totalWithoutTax -}}
-                meta.display_price.without_tax.amount {{ $totalBeforeDiscounts }} meta.display_price.without_tax.formatted '{{ $totalBeforeDiscounts | formatPrice "USD" }}' meta.display_price.without_tax.currency {{ $productCurrency }} \
+                meta.display_price.without_tax.amount {{ $totalWithoutTax }} meta.display_price.without_tax.formatted '{{ $totalWithoutTax | formatPrice "USD" }}' meta.display_price.without_tax.currency {{ $productCurrency }} \
                 meta.display_price.tax.amount {{ $totalTax }}  meta.display_price.tax.formatted '{{ $totalTax | formatPrice "USD" }}' meta.display_price.tax.currency {{ $productCurrency }} \
                 meta.display_price.with_tax.amount {{ $totalWithTax }} meta.display_price.with_tax.formatted '{{ $totalWithTax | formatPrice "USD" }}' meta.display_price.with_tax.currency {{ $productCurrency }} \
                 meta.display_price.paid.amount {{ $totalWithTax }} meta.display_price.paid.formatted '{{ $totalWithTax | formatPrice "USD" }}' meta.display_price.paid.currency {{ $productCurrency }} \
