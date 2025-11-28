@@ -125,6 +125,11 @@ func deleteAllInternal(ctx context.Context, args []string) error {
 				return err
 			}
 
+			if resp.StatusCode >= 400 {
+				log.Warnf("Could not retrieve page of data, aborting")
+				break
+			}
+
 			ids, totalCount, err := apihelper.GetResourceIdsFromHttpResponse(resp)
 			resp.Body.Close()
 

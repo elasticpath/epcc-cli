@@ -64,7 +64,7 @@ var LogsShow = &cobra.Command{
 
 				var s any
 				if err := gojson.Unmarshal([]byte(l), &s); err == nil {
-					json.PrintJson(l)
+					json.PrintJsonToStdout(l)
 				} else {
 					fmt.Print(l)
 				}
