@@ -371,12 +371,19 @@ func RunJQWithArray(queryStr string, result interface{}) ([]interface{}, error) 
 	}
 	return queryResult, nil
 }
+
+var TreatAsLiterals = regexp.MustCompile("^(-?[0-9]+(\\.[0-9]+)?|false|true|null)$")
+
+var QuotedString = regexp.MustCompile("^\\\".+\\\"$")
+
+var EmptyArray = regexp.MustCompile("^\\[]$")
+
 func formatValue(v string) string {
-	if match, _ := regexp.MatchString("^(-?[0-9]+(\\.[0-9]+)?|false|true|null)$", v); match {
+	if match := TreatAsLiterals.MatchString(v); match {
 		return v
-	} else if match, _ := regexp.MatchString("^\\\".+\\\"$", v); match {
+	} else if match := QuotedString.MatchString(v); match {
 		return v
-	} else if match, _ := regexp.MatchString("^\\[\\]$", v); match {
+	} else if match := EmptyArray.MatchString(v); match {
 		return v
 	} else {
 		v = strings.ReplaceAll(v, "\\", "\\\\")

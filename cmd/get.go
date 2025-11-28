@@ -217,7 +217,7 @@ func NewGetCommand(parentCmd *cobra.Command) func() {
 									return err
 								}
 
-								err = json.PrintJson(string(outputJson))
+								err = json.PrintJsonToStdout(string(outputJson))
 
 								if err != nil {
 									return err
@@ -240,7 +240,7 @@ func NewGetCommand(parentCmd *cobra.Command) func() {
 								}
 							}
 
-							printError := json.PrintJson(body)
+							printError := json.PrintJsonToStdout(body)
 
 							if retriesFailedError != nil {
 								return retriesFailedError

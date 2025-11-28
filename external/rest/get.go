@@ -38,7 +38,7 @@ func GetInternal(ctx context.Context, overrides *httpclient.HttpParameterOverrid
 
 		// Check if error response
 		if resp.StatusCode >= 400 && resp.StatusCode <= 600 {
-			json.PrintJson(string(body))
+			json.PrintJsonToStdout(string(body))
 			return "", fmt.Errorf("%s", resp.Status)
 		}
 

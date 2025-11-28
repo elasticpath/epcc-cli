@@ -16,7 +16,7 @@ var testJson = &cobra.Command{
 		res, err := json.ToJson(args, noWrapping, compliant, map[string]*resources.CrudEntityAttribute{}, true, true)
 
 		if res != "" {
-			json.PrintJson(res)
+			json.PrintJsonToStdout(res)
 
 		}
 		return err
