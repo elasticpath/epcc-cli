@@ -2,12 +2,13 @@ package resources
 
 import (
 	"fmt"
+	"net/url"
+	"strings"
+
 	"github.com/elasticpath/epcc-cli/external/aliases"
 	"github.com/elasticpath/epcc-cli/external/id"
 	log "github.com/sirupsen/logrus"
 	"github.com/yosida95/uritemplate/v3"
-	"net/url"
-	"strings"
 )
 
 func GenerateUrlViaIdableAttributes(urlInfo *CrudEntityInfo, args []id.IdableAttributes) (string, error) {

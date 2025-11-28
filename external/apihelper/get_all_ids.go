@@ -3,15 +3,16 @@ package apihelper
 import (
 	"context"
 	"fmt"
+	"net/url"
+	"reflect"
+
 	"github.com/elasticpath/epcc-cli/external/httpclient"
 	"github.com/elasticpath/epcc-cli/external/id"
 	"github.com/elasticpath/epcc-cli/external/resources"
 	log "github.com/sirupsen/logrus"
-	"net/url"
-	"reflect"
 )
 
-func GetAllIds(ctx context.Context, resource *resources.Resource) ([][]id.IdableAttributes, error) {
+func GetAllIds(ctx context.Context, pageLength uint16, resource *resources.Resource) ([][]id.IdableAttributes, error) {
 	// TODO make this a channel based instead of array based
 	// This must be an unbuffered channel since the receiver won't get the channel until after we have sent in some cases.
 	//myEntityIds := make(chan<- []string, 1024)
@@ -49,7 +50,7 @@ func GetAllIds(ctx context.Context, resource *resources.Resource) ([][]id.Idable
 		parentResource = &myParentResource
 	}
 
-	myParentEntityIds, err := GetAllIds(ctx, parentResource)
+	myParentEntityIds, err := GetAllIds(ctx, pageLength, parentResource)
 	if err != nil {
 		return myEntityIds, err
 	}
@@ -66,8 +67,12 @@ func GetAllIds(ctx context.Context, resource *resources.Resource) ([][]id.Idable
 		lastPageIds := make([]id.IdableAttributes, 125)
 		for i := 0; i < 10000; i += 25 {
 			params := url.Values{}
-			params.Add("page[limit]", "25")
+			params.Add("page[limit]", fmt.Sprintf("%d", pageLength))
 			params.Add("page[offset]", fmt.Sprintf("%d", i))
+
+			for k, v := range resource.GetCollectionInfo.DefaultQueryParams {
+				params.Add(k, v)
+			}
 
 			resp, err := httpclient.DoRequest(ctx, "GET", resourceURL, params.Encode(), nil)
 

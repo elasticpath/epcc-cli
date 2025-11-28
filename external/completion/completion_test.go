@@ -821,6 +821,35 @@ func TestCompleteAttributeKeyWithWhenAndSatisfiedExistingValuesReturnsSatisfiedC
 	require.Len(t, completions, 9)
 }
 
+// This test might be redundant but regex was broken for this resource at a time
+func TestCompleteAttributeKeyWithEmptyExistingValuesReturnsAllIncludingRegex(t *testing.T) {
+	// Fixture Setup
+	toComplete := ""
+	manualOrder := resources.MustGetResourceByName("manual-order")
+	request := Request{
+		Type:       CompleteAttributeKey,
+		Verb:       Create,
+		ToComplete: toComplete,
+		Resource:   manualOrder,
+		Attributes: map[string]string{
+			"meta.display_price.with_tax.currency":       "USD",
+			"meta.display_price.balance_owing.formatted": "$10.00",
+		},
+	}
+
+	// Exercise SUT
+	completions, compDir := Complete(request)
+
+	// Verify Results
+	require.Equal(t, compDir, cobra.ShellCompDirectiveNoFileComp)
+
+	require.Contains(t, completions, "meta.display_price.with_tax.amount")
+	require.Contains(t, completions, "meta.display_price.balance_owing.currency")
+	require.NotContains(t, completions, "meta.display_price.with_tax.currency")
+	require.NotContains(t, completions, "meta.display_price.balance_owing.formatted")
+	require.Contains(t, completions, "meta.display_price.paid")
+}
+
 func TestCompleteAttributeKeyWithWhenSkippingWhen(t *testing.T) {
 	// Fixture Setup
 	toComplete := ""

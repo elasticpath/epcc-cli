@@ -24,6 +24,12 @@ import (
 
 func NewDeleteAllCommand(parentCmd *cobra.Command) func() {
 
+	var pageLength uint16 = 25
+
+	resetFunc := func() {
+		pageLength = 25
+	}
+
 	var deleteAll = &cobra.Command{
 		Use:          "delete-all",
 		Short:        "Deletes all of a resource",
@@ -36,6 +42,8 @@ func NewDeleteAllCommand(parentCmd *cobra.Command) func() {
 			}
 		},
 	}
+
+	deleteAll.PersistentFlags().Uint16VarP(&pageLength, "page-length", "", pageLength, "page length to use when deleting")
 
 	e := config.GetEnv()
 	hiddenResources := map[string]struct{}{}
@@ -71,16 +79,16 @@ func NewDeleteAllCommand(parentCmd *cobra.Command) func() {
 			Short:  GetDeleteAllShort(resource),
 			Hidden: false,
 			RunE: func(cmd *cobra.Command, args []string) error {
-				return deleteAllInternal(clictx.Ctx, append([]string{resourceName}, args...))
+				return deleteAllInternal(clictx.Ctx, pageLength, append([]string{resourceName}, args...))
 			},
 		}
 		deleteAll.AddCommand(deleteAllResourceCmd)
 	}
 	parentCmd.AddCommand(deleteAll)
-	return func() {}
+	return resetFunc
 
 }
-func deleteAllInternal(ctx context.Context, args []string) error {
+func deleteAllInternal(ctx context.Context, pageLength uint16, args []string) error {
 	// Find Resource
 	resource, ok := resources.GetResourceByName(args[0])
 	if !ok {
@@ -95,7 +103,7 @@ func deleteAllInternal(ctx context.Context, args []string) error {
 		return fmt.Errorf("resource %s doesn't support DELETE", args[0])
 	}
 
-	allParentEntityIds, err := getParentIds(ctx, resource)
+	allParentEntityIds, err := getParentIds(ctx, pageLength, resource)
 
 	if err != nil {
 		return fmt.Errorf("could not retrieve parent ids for for resource %s, error: %w", resource.PluralName, err)
@@ -117,7 +125,11 @@ func deleteAllInternal(ctx context.Context, args []string) error {
 			}
 
 			params := url.Values{}
-			params.Add("page[limit]", "25")
+			params.Add("page[limit]", fmt.Sprintf("%d", pageLength))
+
+			for k, v := range resource.GetCollectionInfo.DefaultQueryParams {
+				params.Add(k, v)
+			}
 
 			resp, err := httpclient.DoRequest(ctx, "GET", resourceURL, params.Encode(), nil)
 
@@ -175,7 +187,7 @@ func deleteAllInternal(ctx context.Context, args []string) error {
 	return aliases.ClearAllAliasesForJsonApiType(resource.JsonApiType)
 }
 
-func getParentIds(ctx context.Context, resource resources.Resource) ([][]id.IdableAttributes, error) {
+func getParentIds(ctx context.Context, pageLength uint16, resource resources.Resource) ([][]id.IdableAttributes, error) {
 
 	myEntityIds := make([][]id.IdableAttributes, 0)
 	if resource.GetCollectionInfo == nil {
@@ -200,7 +212,7 @@ func getParentIds(ctx context.Context, resource resources.Resource) ([][]id.Idab
 			return myEntityIds, fmt.Errorf("could not find parent resource %s", immediateParentType)
 		}
 
-		return apihelper.GetAllIds(ctx, &parentResource)
+		return apihelper.GetAllIds(ctx, pageLength, &parentResource)
 	}
 }
 
