@@ -116,6 +116,10 @@ func GetResource(ctx context.Context, overrides *httpclient.HttpParameterOverrid
 		}
 	}
 
+	for k, v := range resourceUrlInfo.DefaultQueryParams {
+		params.Add(k, v)
+	}
+
 	for i := idCount + 1; i+1 < len(args); i = i + 2 {
 		params.Add(args[i], args[i+1])
 	}

@@ -4,9 +4,9 @@ authentication-realms:
   alternate-json-type-for-aliases:
     - authentication_realm
   json-api-format: "legacy"
-  docs: "https://elasticpath.dev/docs/authentication/single-sign-on/authentication-realm-api/authentication-realm-api-overview"
+  docs: "https://elasticpath.dev/docs/api/single-sign-on/authentication-realms"
   get-collection:
-    docs: "https://elasticpath.dev/docs/authentication/single-sign-on/authentication-realm-api/get-all-authentication-realms"
+    docs: "https://elasticpath.dev/docs/api/single-sign-on/get-v-2-authentication-realms"
     url: "/v2/authentication-realms"
     openapi-operation-id: "get-v2-authentication-realms"
     query:
@@ -15,11 +15,11 @@ authentication-realms:
       - name: page[offset]
         type: INT
   get-entity:
-    docs: "https://elasticpath.dev/docs/authentication/single-sign-on/authentication-realm-api/get-an-authentication-realm"
+    docs: "https://elasticpath.dev/docs/api/single-sign-on/get-v-2-authentication-realms-realm-id"
     url: "/v2/authentication-realms/{authentication_realms}"
     openapi-operation-id: "get-v2-authentication-realms-realmId"
   update-entity:
-    docs: "https://elasticpath.dev/docs/authentication/single-sign-on/authentication-realm-api/update-an-authentication-realm"
+    docs: "https://elasticpath.dev/docs/api/single-sign-on/put-v-2-authentication-realms-realm-id"
     url: "/v2/authentication-realms/{authentication_realms}"
     openapi-operation-id: "put-v2-authentication-realms-realmId"
   attributes:
@@ -41,9 +41,9 @@ oidc-profiles:
   singular-name: "oidc-profile"
   json-api-type: "oidc-profile"
   json-api-format: "legacy"
-  docs: "https://elasticpath.dev/docs/authentication/single-sign-on/openid-connect-profiles-api/openid-connect-profiles-api-overview"
+  docs: "https://developer.elasticpath.com/docs/api/single-sign-on/oidc-profiles"
   get-collection:
-    docs: "https://elasticpath.dev/docs/authentication/single-sign-on/openid-connect-profiles-api/get-all-oidc-profiles"
+    docs: "https://developer.elasticpath.com/docs/api/single-sign-on/get-v-2-authentication-realms-realm-id-oidc-profiles"
     url: "/v2/authentication-realms/{authentication_realms}/oidc-profiles"
     openapi-operation-id: "get-v2-authentication-realms-realmId-oidc-profiles"
     query:
@@ -52,19 +52,19 @@ oidc-profiles:
       - name: page[offset]
         type: INT
   get-entity:
-    docs: "https://elasticpath.dev/docs/authentication/single-sign-on/openid-connect-profiles-api/get-an-oidc-profile"
+    docs: "https://developer.elasticpath.com/docs/api/single-sign-on/get-v-2-authentication-realms-realm-id-oidc-profiles-profile-id"
     url: "/v2/authentication-realms/{authentication_realms}/oidc-profiles/{oidc_profiles}"
     openapi-operation-id: "get-v2-authentication-realms-realmId-oidc-profiles-profileId"
   update-entity:
-    docs: "https://elasticpath.dev/docs/authentication/single-sign-on/openid-connect-profiles-api/update-an-oidc-profile"
+    docs: "https://developer.elasticpath.com/docs/api/single-sign-on/put-v-2-authentication-realms-realm-id-oidc-profiles-profile-id"
     url: "/v2/authentication-realms/{authentication_realms}/oidc-profiles/{oidc_profiles}"
     openapi-operation-id: "put-v2-authentication-realms-realmId-oidc-profiles-profileId"
   delete-entity:
-    docs: "https://elasticpath.dev/docs/authentication/single-sign-on/openid-connect-profiles-api/delete-an-oidc-profile"
+    docs: "https://developer.elasticpath.com/docs/api/single-sign-on/delete-v-2-authentication-realms-realm-id-oidc-profiles-profile-id"
     url: "/v2/authentication-realms/{authentication_realms}/oidc-profiles/{oidc_profiles}"
     openapi-operation-id: "delete-v2-authentication-realms-realmId-oidc-profiles-profileId"
   create-entity:
-    docs: "https://elasticpath.dev/docs/authentication/single-sign-on/openid-connect-profiles-api/create-an-oidc-profile"
+    docs: "https://developer.elasticpath.com/docs/api/single-sign-on/post-v-2-authentication-realms-realm-id-oidc-profiles"
     url: "/v2/authentication-realms/{authentication_realms}/oidc-profiles"
     openapi-operation-id: "post-v2-authentication-realms-realmId-oidc-profiles"
     content-type: application/json
@@ -82,9 +82,9 @@ password-profiles:
   singular-name: "password-profile"
   json-api-type: "password_profile"
   json-api-format: "legacy"
-  docs: "https://elasticpath.dev/docs/authentication/single-sign-on/password-profiles-api/overview"
+  docs: "https://elasticpath.dev/docs/api/single-sign-on/password-profiles"
   get-collection:
-    docs: "https://elasticpath.dev/docs/authentication/single-sign-on/password-profiles-api/get-all-password-profiles"
+    docs: "https://elasticpath.dev/docs/api/single-sign-on/get-v-2-authentication-realms-realm-id-password-profiles"
     url: "/v2/authentication-realms/{authentication_realms}/password-profiles"
     openapi-operation-id: "get-v2-authentication-realms-realmId-password-profiles"
     query:
@@ -93,19 +93,19 @@ password-profiles:
       - name: page[offset]
         type: INT
   get-entity:
-    docs: "https://elasticpath.dev/docs/authentication/single-sign-on/password-profiles-api/get-a-password-profile"
+    docs: "https://elasticpath.dev/docs/api/single-sign-on/get-v-2-authentication-realms-realm-id-password-profiles-profile-id"
     url: "/v2/authentication-realms/{authentication_realms}/password-profiles/{password_profiles}"
     openapi-operation-id: "get-v2-authentication-realms-realmId-password-profiles-profileId"
   update-entity:
-    docs: "https://elasticpath.dev/docs/authentication/single-sign-on/password-profiles-api/update-a-password-profile"
+    docs: "https://elasticpath.dev/docs/api/single-sign-on/put-v-2-authentication-realms-realm-id-password-profiles-profile-id"
     url: "/v2/authentication-realms/{authentication_realms}/password-profiles/{password_profiles}"
     openapi-operation-id: "put-v2-authentication-realms-realmId-password-profiles-profileId"
   delete-entity:
-    docs: "https://elasticpath.dev/docs/authentication/single-sign-on/password-profiles-api/delete-a-password-profile"
+    docs: "https://elasticpath.dev/docs/api/single-sign-on/delete-v-2-authentication-realms-realm-id-password-profiles-profile-id"
     url: "/v2/authentication-realms/{authentication_realms}/password-profiles/{password_profiles}"
     openapi-operation-id: "delete-v2-authentication-realms-realmId-password-profiles-profileId"
   create-entity:
-    docs: "https://elasticpath.dev/docs/authentication/single-sign-on/password-profiles-api/overview"
+    docs: "https://elasticpath.dev/docs/api/single-sign-on/password-profiles"
     url: "/v2/authentication-realms/{authentication_realms}/password-profiles"
     openapi-operation-id: "post-v2-authentication-realms-realmId-password-profiles"
     content-type: application/json
@@ -120,9 +120,9 @@ one-time-password-token-requests:
   singular-name: "one-time-password-token-request"
   json-api-type: "one_time_password_token_request"
   json-api-format: "legacy"
-  docs: "https://elasticpath.dev/docs/authentication/single-sign-on/password-profiles-api/create-one-time-password-token-request"
+  docs: "https://elasticpath.dev/docs/api/single-sign-on/post-v-2-authentication-realms-realm-id-password-profiles-profile-id-one-time-password-token-request"
   create-entity:
-    docs: "https://elasticpath.dev/docs/authentication/single-sign-on/password-profiles-api/create-one-time-password-token-request"
+    docs: "https://elasticpath.dev/docs/api/single-sign-on/post-v-2-authentication-realms-realm-id-password-profiles-profile-id-one-time-password-token-request"
     url: "/v2/authentication-realms/{authentication_realms}/password-profiles/{password_profiles}/one-time-password-token-request"
     openapi-operation-id: "post-v2-authentication-realms-realmId-password-profiles-profileId-one-time-password-token-request"
     content-type: application/json
@@ -136,9 +136,9 @@ user-authentication-infos:
   singular-name: "user-authentication-info"
   json-api-type: "user_authentication_info"
   json-api-format: "legacy"
-  docs: "https://elasticpath.dev/docs/authentication/single-sign-on/user-authentication-info-api/overview"
+  docs: "https://elasticpath.dev/docs/api/single-sign-on/user-authentication-infos"
   get-collection:
-    docs: "https://elasticpath.dev/docs/authentication/single-sign-on/user-authentication-info-api/get-all-user-authentication-info"
+    docs: "https://elasticpath.dev/docs/api/single-sign-on/get-v-2-authentication-realms-realm-id-user-authentication-info"
     url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info"
     openapi-operation-id: "get-v2-authentication-realms-realmId-user-authentication-info"
     query:
@@ -151,19 +151,19 @@ user-authentication-infos:
       - name: sort
         type: ENUM:created_at,-created_at,id,-id,updated_at,-updated_at
   get-entity:
-    docs: "https://elasticpath.dev/docs/authentication/single-sign-on/user-authentication-info-api/get-a-user-authentication-info"
+    docs: "https://elasticpath.dev/docs/api/single-sign-on/get-v-2-authentication-realms-realm-id-user-authentication-info-user-auth-info-id"
     url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info/{user_authentication_infos}"
     openapi-operation-id: "get-v2-authentication-realms-realmId-user-authentication-info-userAuthInfoId"
   update-entity:
-    docs: "https://elasticpath.dev/docs/authentication/single-sign-on/user-authentication-info-api/update-a-user-authentication-info"
+    docs: "https://elasticpath.dev/docs/api/single-sign-on/put-v-2-authentication-realms-realm-id-user-authentication-info-user-auth-info-id"
     url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info/{user_authentication_infos}"
     openapi-operation-id: "put-v2-authentication-realms-realmId-user-authentication-info-userAuthInfoId"
   delete-entity:
-    docs: "https://elasticpath.dev/docs/authentication/single-sign-on/user-authentication-info-api/delete-a-user-authentication-info"
+    docs: "https://elasticpath.dev/docs/api/single-sign-on/delete-v-2-authentication-realms-realm-id-user-authentication-info-user-auth-info-id"
     url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info/{user_authentication_infos}"
     openapi-operation-id: "delete-v2-authentication-realms-realmId-user-authentication-info-userAuthInfoId"
   create-entity:
-    docs: "https://elasticpath.dev/docs/authentication/single-sign-on/user-authentication-info-api/create-a-user-authentication-info"
+    docs: "https://elasticpath.dev/docs/api/single-sign-on/post-v-2-authentication-realms-realm-id-user-authentication-info"
     url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info"
     openapi-operation-id: "post-v2-authentication-realms-realmId-user-authentication-info"
     content-type: application/json
@@ -178,9 +178,9 @@ user-authentication-oidc-profile-infos:
   singular-name: "user-authentication-oidc-profile-info"
   json-api-type: "user_authentication_oidc_profile_info"
   json-api-format: "legacy"
-  docs: "https://elasticpath.dev/docs/authentication/single-sign-on/openid"
+  docs: "https://elasticpath.dev/docs/api/single-sign-on"
   get-collection:
-    docs: "https://elasticpath.dev/docs/authentication/single-sign-on/password-profiles-api/get-all-password-profiles"
+    docs: "https://elasticpath.dev/docs/api/single-sign-on/get-v-2-authentication-realms-realm-id-password-profiles"
     url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info/{user_authentication_infos}/user-authentication-oidc-profile-info"
     openapi-operation-id: "get-v2-authentication-realms-realmId-user-authentication-info-userAuthInfoId-user-authentication-oidc-profile-info"
     query:
@@ -189,19 +189,19 @@ user-authentication-oidc-profile-infos:
       - name: page[offset]
         type: INT
   get-entity:
-    docs: "https://elasticpath.dev/docs/authentication/single-sign-on/password-profiles-api/get-a-password-profile"
+    docs: "https://elasticpath.dev/docs/api/single-sign-on/get-v-2-authentication-realms-realm-id-password-profiles-profile-id"
     url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info/{user_authentication_infos}/user-authentication-oidc-profile-info/{user_authentication_oidc_profile_infos}"
     openapi-operation-id: "get-v2-authentication-realms-realmId-user-authentication-info-userAuthInfoId-user-authentication-oidc-profile-info-oidcInfoId"
   update-entity:
-    docs: "https://elasticpath.dev/docs/authentication/single-sign-on/password-profiles-api/overview"
+    docs: "https://elasticpath.dev/docs/api/single-sign-on/password-profiles"
     url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info/{user_authentication_infos}/user-authentication-oidc-profile-info/{user_authentication_oidc_profile_infos}"
     openapi-operation-id: "put-v2-authentication-realms-realmId-user-authentication-info-userAuthInfoId-user-authentication-oidc-profile-info-oidcInfoId"
   delete-entity:
-    docs: "https://elasticpath.dev/docs/authentication/single-sign-on/password-profiles-api/delete-a-password-profile"
+    docs: "https://elasticpath.dev/docs/api/single-sign-on/delete-v-2-authentication-realms-realm-id-password-profiles-profile-id"
     url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info/{user_authentication_infos}/user-authentication-oidc-profile-info/{user_authentication_oidc_profile_infos}"
     openapi-operation-id: "delete-v2-authentication-realms-realmId-user-authentication-info-userAuthInfoId-user-authentication-oidc-profile-info-oidcInfoId"
   create-entity:
-    docs: "https://elasticpath.dev/docs/authentication/single-sign-on/password-profiles-api/overview"
+    docs: "https://elasticpath.dev/docs/api/single-sign-on/password-profiles"
     url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info/{user_authentication_infos}/user-authentication-oidc-profile-info"
     openapi-operation-id: "post-v2-authentication-realms-realmId-user-authentication-info-userAuthInfoId-user-authentication-oidc-profile-info"
     content-type: application/json
@@ -216,9 +216,9 @@ user-authentication-password-profile-infos:
   singular-name: "user-authentication-password-profile-info"
   json-api-type: "user_authentication_password_profile_info"
   json-api-format: "legacy"
-  docs: "https://elasticpath.dev/docs/authentication/single-sign-on/password-profiles-api/overview"
+  docs: "https://elasticpath.dev/docs/api/single-sign-on/password-profiles"
   get-collection:
-    docs: "https://elasticpath.dev/docs/authentication/single-sign-on/password-profiles-api/get-all-password-profiles"
+    docs: "https://elasticpath.dev/docs/api/single-sign-on/get-v-2-authentication-realms-realm-id-password-profiles"
     url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info/{user_authentication_infos}/user-authentication-password-profile-info"
     openapi-operation-id: "get-v2-authentication-realms-realmId-user-authentication-info-userAuthInfoId-user-authentication-password-profile-info"
     query:
@@ -227,19 +227,19 @@ user-authentication-password-profile-infos:
       - name: page[offset]
         type: INT
   get-entity:
-    docs: "https://elasticpath.dev/docs/authentication/single-sign-on/password-profiles-api/get-all-password-profiles"
+    docs: "https://elasticpath.dev/docs/api/single-sign-on/get-v-2-authentication-realms-realm-id-password-profiles"
     url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info/{user_authentication_infos}/user-authentication-password-profile-info/{user_authentication_password_profile_infos}"
     openapi-operation-id: "get-v2-authentication-realms-realmId-user-authentication-info-userAuthInfoId-user-authentication-password-profile-info-passwordProfileInfoId"
   update-entity:
-    docs: "https://elasticpath.dev/docs/authentication/single-sign-on/password-profiles-api/overview"
+    docs: "https://elasticpath.dev/docs/api/single-sign-on/password-profiles"
     url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info/{user_authentication_infos}/user-authentication-password-profile-info/{user_authentication_password_profile_infos}"
     openapi-operation-id: "put-v2-authentication-realms-realmId-user-authentication-info-userAuthInfoId-user-authentication-password-profile-info-passwordProfileInfoId"
   delete-entity:
-    docs: "https://elasticpath.dev/docs/authentication/single-sign-on/password-profiles-api/overview"
+    docs: "https://elasticpath.dev/docs/api/single-sign-on/password-profiles"
     url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info/{user_authentication_infos}/user-authentication-password-profile-info/{user_authentication_password_profile_infos}"
     openapi-operation-id: "delete-v2-authentication-realms-realmId-user-authentication-info-userAuthInfoId-user-authentication-password-profile-info-passwordProfileInfoId"
   create-entity:
-    docs: "https://elasticpath.dev/docs/authentication/single-sign-on/password-profiles-api/overview"
+    docs: "https://elasticpath.dev/docs/api/single-sign-on/password-profiles"
     url: "/v2/authentication-realms/{authentication_realms}/user-authentication-info/{user_authentication_infos}/user-authentication-password-profile-info"
     openapi-operation-id: "post-v2-authentication-realms-realmId-user-authentication-info-userAuthInfoId-user-authentication-password-profile-info"
     content-type: application/json

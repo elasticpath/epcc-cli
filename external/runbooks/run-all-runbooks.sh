@@ -13,12 +13,20 @@ set -x
 #Let's test that epcc command works after an embarrassing bug that caused it to panic :(
 epcc
 
+
+echo "Starting Currencies Runbook"
+epcc reset-store .+
+epcc runbooks run currencies add-currencies
+epcc runbooks run currencies reset
+
 echo "Starting Rule Promotions Runbook"
 epcc reset-store .+
 epcc runbooks run rule-promotions-how-to create-prequisites
 epcc runbooks run rule-promotions-how-to create-rule-promotions
 epcc runbooks run rule-promotions-how-to create-cart-and-add-ranges
+epcc runbooks run rule-promotions-how-to display-cart --cart-id "test-cart"
 epcc runbooks run rule-promotions-how-to reset
+
 
 echo "Starting Multi Location Inventory Runbook"
 epcc reset-store .+
@@ -125,6 +133,46 @@ epcc runbooks run customer-cart-associations delete-customer-and-carts-with-prod
 epcc runbooks run customer-cart-associations create-customers-and-carts-with-custom-items
 epcc runbooks run customer-cart-associations delete-customer-and-carts-with-custom-items
 epcc runbooks run customer-cart-associations reset
+
+echo "Starting Manual Orders Runbook"
+epcc reset-store .+
+epcc aliases clear
+sleep 1.5
+NUMBER_OF_ORDERS=$(epcc get orders --output-jq .meta.results.total)
+epcc runbooks run manual-orders create-orders --number-of-accounts 3 --number-of-products 4 --number-of-orders 7
+epcc runbooks run manual-orders create-orders --number-of-accounts 3 --number-of-products 4 --number-of-orders 6
+
+# Allow for eventual consistency.
+sleep 1.5
+NUMBER_OF_ORDERS_NOW=$(epcc get orders --output-jq .meta.results.total)
+
+EXPECTED_DIFF=13
+ACTUAL_DIFF=$((NUMBER_OF_ORDERS_NOW - NUMBER_OF_ORDERS))
+
+if [ "$ACTUAL_DIFF" -eq "$EXPECTED_DIFF" ]; then
+  echo "✅ Correct number of orders added: $ACTUAL_DIFF"
+else
+  echo "❌ Expected to add $EXPECTED_DIFF orders, but added $ACTUAL_DIFF"
+  exit 1
+fi
+
+# Check number of accounts
+NUM_ACCOUNTS=$(epcc get accounts --output-jq .meta.results.total)
+if [ "$NUM_ACCOUNTS" -eq 3 ]; then
+  echo "✅ Correct number of accounts: 3"
+else
+  echo "❌ Expected 3 accounts, but found $NUM_ACCOUNTS"
+  exit 1
+fi
+
+# Check number of products
+NUM_PRODUCTS=$(epcc get pcm-products --output-jq .meta.results.total)
+if [ "$NUM_PRODUCTS" -eq 4 ]; then
+  echo "✅ Correct number of products: 4"
+else
+  echo "❌ Expected 4 products, but found $NUM_PRODUCTS"
+  exit 1
+fi
 
 
 echo "SUCCESS"

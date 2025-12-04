@@ -71,6 +71,41 @@ cart-items:
       type: INT
     id:
       type: RESOURCE_ID:pcm-products
+cart-custom-discounts:
+  singular-name: "cart-custom-discount"
+  json-api-type: "custom_discount"
+  json-api-format: "legacy"
+  no-wrapping: true
+  docs: "https://developer.elasticpath.com/docs/api/carts/bulk-add-custom-discounts-to-cart"
+  create-entity:
+    docs: "https://developer.elasticpath.com/docs/api/carts/bulk-add-custom-discounts-to-cart"
+    url: "/v2/carts/{carts}/custom-discounts"
+    openapi-operation-id: bulkAddCustomDiscountsToCart
+    content-type: application/json
+  delete-entity:
+    docs: "https://developer.elasticpath.com/docs/api/carts/bulk-delete-custom-discounts-from-cart"
+    url: "/v2/carts/{carts}/custom-discounts"
+    openapi-operation-id: bulkDeleteCustomDiscountsFromCart
+    content-type: application/json
+  attributes:
+    data[n].amount:
+      type: INT
+    data[n].amount.amount:
+      type: INT
+    data[n].amount.currency:
+      type: CURRENCY
+    data[n].amount.formatted:
+      type: STRING
+    data[n].external_id:
+      type: STRING
+    data[n].discount_code:
+      type: STRING
+    data[n].type:
+      type: CONST:custom_discount
+    data[n].description:
+      type: STRING
+
+
 cart-product-items:
   singular-name: "cart-product-item"
   json-api-type: "cart_item"
@@ -387,3 +422,173 @@ order-transaction-refund:
     docs: "https://elasticpath.dev/docs/carts-orders/refund-a-transaction"
     url: "/v2/orders/{orders}/transactions/{order_transactions}/refund"
     openapi-operation-id: refundATransaction
+
+manual-orders:
+  singular-name: "manual-order"
+  json-api-type: order
+  json-api-format: legacy
+  docs: "https://elasticpath.dev/docs/api/carts/orders"
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/carts/orders"
+    url: "/v2/orders"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/carts/orders"
+    url: "/v2/orders"
+    default-query-params:
+      filter: "eq(manual,true)"
+    openapi-operation-id: getCustomerOrders
+    query:
+      - name: include
+        type: STRING
+      - name: page[limit]
+        type: INT
+      - name: page[offset]
+        type: INT
+      - name: filter
+        type: STRING
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/api/carts/orders"
+    url: "/v2/orders/{orders}"
+
+
+  attributes:
+    id:
+      type: STRING
+      usage: "Optional custom order ID. If not provided, a UUID will be generated."
+    status:
+      type: ENUM:incomplete,processing,cancelled,complete
+      usage: "The status of the order."
+    payment:
+      type: ENUM:paid,unpaid,refunded,partially_authorized,partially_paid
+      usage: "The payment status of the order."
+    shipping:
+      type: ENUM:fulfilled,unfulfilled
+      usage: "The shipping status of the order."
+    anonymized:
+      type: BOOL
+      usage: "Whether the order should be anonymized."
+    account.id:
+      type: RESOURCE_ID:account
+      usage: "The unique identifier of the account."
+    account.member_id:
+      type: RESOURCE_ID:account-member
+      usage: "The unique identifier of the account member."
+    contact.name:
+      type: STRING
+      usage: "Contact name for the order."
+    contact.email:
+      type: STRING
+      usage: "Contact email for the order."
+    customer.id:
+      type: RESOURCE_ID:customer
+      usage: "The unique identifier of the customer."
+      autofill: FUNC:UUID
+    customer.email:
+      type: STRING
+      usage: "Customer email address."
+      autofill: FUNC:Email
+    customer.name:
+      type: STRING
+      usage: "Customer name."
+      autofill: FUNC:Name
+    shipping_address.first_name:
+      type: STRING
+      autofill: FUNC:FirstName
+    shipping_address.last_name:
+      type: STRING
+      autofill: FUNC:LastName
+    shipping_address.company_name:
+      type: STRING
+      autofill: FUNC:Company
+    shipping_address.line_1:
+      type: STRING
+      autofill: FUNC:Street
+    shipping_address.line_2:
+      type: STRING
+    shipping_address.city:
+      type: STRING
+      autofill: FUNC:City
+    shipping_address.county:
+      type: STRING
+    shipping_address.region:
+      type: STRING
+      autofill: FUNC:State
+    shipping_address.postcode:
+      type: STRING
+      autofill: FUNC:Zip
+    shipping_address.country:
+      type: STRING
+      autofill: FUNC:Country
+    billing_address.first_name:
+      type: STRING
+      autofill: FUNC:FirstName
+    billing_address.last_name:
+      type: STRING
+      autofill: FUNC:LastName
+    billing_address.company_name:
+      type: STRING
+      autofill: FUNC:Company
+    billing_address.line_1:
+      type: STRING
+      autofill: FUNC:Street
+    billing_address.line_2:
+      type: STRING
+    billing_address.city:
+      type: STRING
+      autofill: FUNC:City
+    billing_address.county:
+      type: STRING
+    billing_address.region:
+      type: STRING
+      autofill: FUNC:State
+    billing_address.postcode:
+      type: STRING
+      autofill: FUNC:Zip
+    billing_address.country:
+      type: STRING
+      autofill: FUNC:Country
+    ^meta\.display_price\.(with_tax|without_tax|tax|discount|balance_owing|paid|authorized|without_discount|shipping|shipping_discount)\.amount$:
+      type: INT
+      usage: "The amount of the order specified in currency subunits"
+    ^meta\.display_price\.(with_tax|without_tax|tax|discount|balance_owing|paid|authorized|without_discount|shipping|shipping_discount)\.currency$:
+      type: CURRENCY
+      usage: "The currency"
+    ^meta\.display_price\.(with_tax|without_tax|tax|discount|balance_owing|paid|authorized|without_discount|shipping|shipping_discount)\.formatted$:
+      type: STRING
+      usage: "The amount of the order specified as a formatted string"
+    included.items[n].id:
+      type: STRING
+      usage: "The unique identifier of the item."
+    included.items[n].type:
+      type: CONST:order_item
+    included.items[n].quantity:
+      type: INT
+    included.items[n].location:
+      type: STRING
+    included.items[n].product_id:
+      type: RESOURCE_ID:pcm-product
+    included.items[n].subscription_offering_id:
+      type: RESOURCE_ID:subscription-offerings
+    included.items[n].name:
+      type: STRING
+    included.items[n].sku:
+      type: STRING
+    ^included\.items\[n\]\.(unit_price|value)\.amount$:
+      type: INT
+      usage: "An amount in currency subunits if applicable (e.g., $100.00 would be 10000)"
+    ^included\.items\[n\]\.(unit_price|value)\.currency$:
+      type: CURRENCY
+    ^included\.items\[n\]\.(unit_price|value)\.include_tax$:
+      type: BOOL
+    ^included\.items\[n\]\.meta\.display_price\.(with_tax|without_tax|tax|discount_without_discount)\.(unit|value)\.amount$:
+      type: INT
+      usage: "An amount in currency subunits if applicable (e.g., $100.00 would be 10000)"
+    ^included\.items\[n\]\.meta\.display_price\.(with_tax|without_tax|tax|discount_without_discount)\.(unit|value)\.currency$:
+      type: CURRENCY
+    ^included\.items\[n\]\.meta\.display_price\.(with_tax|without_tax|tax|discount_without_discount)\.(unit|value)\.formatted$:
+      usage: "A formatted amount e.g., $100.00"
+      type: STRING
+    included.items[n].meta.timestamps.created_at:
+      type: STRING
+    included.items[n].meta.timestamps.updated_at:
+      type: STRING

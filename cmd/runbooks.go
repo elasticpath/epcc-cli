@@ -466,6 +466,15 @@ func processRunbookVariablesOnCommand(runbookActionRunActionCommand *cobra.Comma
 				description = variable.Description.Short
 			}
 
+			// Add ENUM options to description
+			if strings.HasPrefix(variable.Type, "ENUM:") {
+				enumValues := strings.Split(variable.Type[5:], ",")
+				if description != "" {
+					description += ". "
+				}
+				description += "Options: [" + strings.Join(enumValues, ", ") + "]"
+			}
+
 			runbookActionRunActionCommand.Flags().StringVar(runbookStringArguments[key], key, templates.Render(variable.Default), description)
 		}
 
@@ -479,6 +488,10 @@ func processRunbookVariablesOnCommand(runbookActionRunActionCommand *cobra.Comma
 					})
 
 				}
+			} else if strings.HasPrefix(variable.Type, "ENUM:") {
+				// Extract enum values from "ENUM:val1,val2,val3"
+				enumValues := strings.Split(variable.Type[5:], ",")
+				return enumValues, cobra.ShellCompDirectiveNoFileComp
 			}
 			return []string{}, cobra.ShellCompDirectiveNoFileComp
 

@@ -5,6 +5,7 @@ import (
 	"math"
 	"math/rand"
 	"sort"
+	"strings"
 	"sync"
 	"time"
 
@@ -132,16 +133,82 @@ func NRandInt(nAny, minAny, maxAny any) []int {
 	}
 }
 
+type CurrencyConfig struct {
+	DecimalPlaces     int
+	DecimalPoint      string
+	ThousandSeparator string
+	Format            string
+}
+
+var currencyConfigs = map[string]CurrencyConfig{
+	"USD": {DecimalPlaces: 2, DecimalPoint: ".", ThousandSeparator: ",", Format: "${price}"},
+	"EUR": {DecimalPlaces: 2, DecimalPoint: ".", ThousandSeparator: ",", Format: "€{price}"},
+	"GBP": {DecimalPlaces: 2, DecimalPoint: ".", ThousandSeparator: ",", Format: "£{price}"},
+	"CAD": {DecimalPlaces: 2, DecimalPoint: ".", ThousandSeparator: ",", Format: "${price}"},
+	"CHF": {DecimalPlaces: 2, DecimalPoint: ".", ThousandSeparator: ",", Format: "CHF {price}"},
+	"JPY": {DecimalPlaces: 0, DecimalPoint: ".", ThousandSeparator: ",", Format: "¥{price}"},
+	"PLN": {DecimalPlaces: 2, DecimalPoint: ",", ThousandSeparator: " ", Format: "{price} zł"},
+}
+
 func FormatPrice(currency string, pAny any) string {
+	amount := toInt64(pAny)
 
-	p := toInt64(pAny)
-
-	symbol := "£"
-	if currency == "USD" {
-		symbol = "$"
+	// Get currency config, default to USD if not found
+	config, ok := currencyConfigs[currency]
+	if !ok {
+		config = currencyConfigs["USD"]
 	}
 
-	return fmt.Sprintf("%s%d.%02d", symbol, p/100, p%100)
+	// Handle negative amounts
+	isNegative := amount < 0
+	if isNegative {
+		amount = -amount
+	}
+
+	// Calculate floated value: amount / 10^decimal_places
+	divisor := int64(math.Pow10(config.DecimalPlaces))
+	floatedValue := float64(amount) / float64(divisor)
+
+	// Format the number with proper separators
+	formattedNumber := formatNumber(floatedValue, config.DecimalPlaces, config.DecimalPoint, config.ThousandSeparator)
+
+	// Add negative sign if needed
+	if isNegative {
+		formattedNumber = "-" + formattedNumber
+	}
+
+	// Replace {price} in format string (similar to money.go logic)
+	return strings.Replace(config.Format, "{price}", formattedNumber, -1)
+}
+
+func formatNumber(value float64, precision int, decimalPoint string, thousandSeparator string) string {
+	// Round to precision
+	multiplier := math.Pow10(precision)
+	rounded := math.Round(value * multiplier)
+	intPart := int64(rounded / multiplier)
+	fracPart := int64(rounded) - intPart*int64(multiplier)
+
+	// Format integer part with thousand separators
+	intStr := fmt.Sprintf("%d", intPart)
+	if intPart < 0 {
+		intStr = fmt.Sprintf("%d", -intPart)
+	}
+
+	// Add thousand separators
+	var formatted string
+	for i, digit := range intStr {
+		if i > 0 && (len(intStr)-i)%3 == 0 && thousandSeparator != "" {
+			formatted += thousandSeparator
+		}
+		formatted += string(digit)
+	}
+
+	// Add decimal part if precision > 0
+	if precision > 0 {
+		formatted += decimalPoint + fmt.Sprintf("%0*d", precision, fracPart)
+	}
+
+	return formatted
 }
 
 func WeightedDateTimeSampler(start string, end string) string {
