@@ -200,19 +200,33 @@ account-addresses:
   get-collection:
     docs: "https://elasticpath.dev/docs/api/addresses/get-v-2-account-addresses"
     url: "/v2/accounts/{accounts}/addresses"
+    openapi-operation-id: "get-v2-account-addresses"
+    query:
+      - name: page[limit]
+        type: INT
+      - name: page[offset]
+        type: INT
+      - name: page[total_method]
+        type: ENUM:lower_bound,observed
+      - name: filter
+        type: STRING
   get-entity:
     docs: "https://elasticpath.dev/docs/api/addresses/get-v-2-account-address"
     url: "/v2/accounts/{accounts}/addresses/{account_addresses}"
+    openapi-operation-id: "get-v2-account-address"
   update-entity:
     docs: "https://elasticpath.dev/docs/api/addresses/put-v-2-account-address"
     url: "/v2/accounts/{accounts}/addresses/{account_addresses}"
+    openapi-operation-id: "put-v2-account-address"
   delete-entity:
     docs: "https://elasticpath.dev/docs/api/addresses/delete-v-2-account-address"
     url: "/v2/accounts/{accounts}/addresses/{account_addresses}"
+    openapi-operation-id: "delete-v2-account-address"
   create-entity:
     docs: "https://elasticpath.dev/docs/api/addresses/post-v-2-account-address"
     url: "/v2/accounts/{accounts}/addresses"
     content-type: application/json
+    openapi-operation-id: "post-v2-account-address"
   attributes:
     first_name:
       type: STRING
