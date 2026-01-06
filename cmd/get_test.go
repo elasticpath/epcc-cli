@@ -1,10 +1,11 @@
 package cmd
 
 import (
+	"testing"
+
 	"github.com/elasticpath/epcc-cli/external/aliases"
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func init() {
@@ -85,9 +86,9 @@ func TestGetCompletionForCollectionWithParentResourceReturnsStandardFields(t *te
 	// Fixture Setup
 	rootCmd := &cobra.Command{}
 	NewGetCommand(rootCmd)
-	getCmd := getCommandForResource(rootCmd.Commands()[0], "account-addresses")
+	getCmd := getCommandForResource(rootCmd.Commands()[0], "customer-addresses")
 
-	require.NotNil(t, getCmd, "Get command for account should exist")
+	require.NotNil(t, getCmd, "Get command for customer address should exist")
 
 	// Execute SUT
 	completionResult, _ := getCmd.ValidArgsFunction(getCmd, []string{"foo"}, "")
@@ -106,9 +107,9 @@ func TestGetCompletionForCollectionResourceWithParentReturnsValuesForStandardFie
 	// Fixture Setup
 	rootCmd := &cobra.Command{}
 	NewGetCommand(rootCmd)
-	getCmd := getCommandForResource(rootCmd.Commands()[0], "account-addresses")
+	getCmd := getCommandForResource(rootCmd.Commands()[0], "customer-addresses")
 
-	require.NotNil(t, getCmd, "Get command for account should exist")
+	require.NotNil(t, getCmd, "Get command for customer address should exist")
 
 	// Execute SUT
 	completionResult, _ := getCmd.ValidArgsFunction(getCmd, []string{"foo", "sort"}, "")

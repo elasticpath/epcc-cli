@@ -40,8 +40,8 @@ info:
   license:
     name: MIT
     url: assets/LICENSE
-  version: 1.1.6584534
-  x-version-timestamp: 2025-09-16T17:51:22Z
+  version: 1.1.6682092
+  x-version-timestamp: 2025-10-09T02:22:37Z
 servers:
   - url: https://useast.api.elasticpath.com
     description: US East
@@ -531,14 +531,13 @@ paths:
       description: |
         Get all account members contained within your store.
 
-        ### Filtering
+            ### Filtering
 
-        The following operators and attributes are available for [filtering](/guides/Getting-Started/filtering) account members.
 
-        | Attribute | Type | Operator | Example |
-        | :--- | :--- | :--- | :--- |
-        | `email` | `string` | `eq` / `like` | `eq(email,ronswanson@example.com)` |
-        | `name` | `string` | `eq` / `like` | `like(name,*swan*)` |
+            The following operators and attributes are available for
+        [filtering](/guides/Getting-Started/filtering) account members.
+
+        | Attribute | Type | Operator | Example | | :--- | :--- | :--- | :--- | | `email`       | `string` | `ilike`           | `ilike(email,'ronswanson@example.com')` | | `name`        | `string` | `ilike`           | `ilike(name,'*swan*')`                  | | `given_name`  | `string` | `ilike`/`is_null` | `ilike(given_name,'ron*')`              | | `middle_name` | `string` | `ilike`/`is_null` | `is_null(middle_name)`                  | | `family_name` | `string` | `ilike`/`is_null` | `is_null(family_name)`                  |
       operationId: get-v2-account-members
       parameters:
         - $ref: '#/components/parameters/page-limit'
@@ -1007,8 +1006,6 @@ paths:
         | :------- | :--------------------------------------------------------------------------------------------------- |
         | `eq`     | Checks whether the values of two operands are equal. If the values are equal, the condition is true. |
         | `like`   | Checks if the operand contains the specified string. You can use wildcard characters in operand.     |
-
-        The following attributes are available for [filtering](/guides/Getting-Started/filtering) unassigned account members.
 
         | Attribute | Type     | Operator      | Example |
         | :-------- | :------- | :------------ | :--------------------------------- |
@@ -1696,7 +1693,7 @@ components:
       schema:
         type: string
         format: string
-        example: like(name,*swan*)
+        example: ilike(name,"*swan*")
     page-limit:
       name: page[limit]
       in: query
@@ -1994,6 +1991,24 @@ components:
           description: The name of the account member.
           type: string
           example: Ron Swanson
+        given_name:
+          description: The given name of the account member. This field is optional and not computed or extracted from the name field.
+          type:
+            - string
+            - 'null'
+          example: Ron
+        middle_name:
+          description: The middle name of the account member. This field is optional and not computed or extracted from the name field.
+          type:
+            - string
+            - 'null'
+          example: Ulysses
+        family_name:
+          description: The family name of the account member. This field is optional and not computed or extracted from the name field.
+          type:
+            - string
+            - 'null'
+          example: Swanson
         email:
           description: The email address of the account member.
           type: string
@@ -2317,6 +2332,24 @@ components:
               description: The name.
               type: string
               example: Ron Swanson
+            given_name:
+              description: The given name for the user.
+              type:
+                - string
+                - 'null'
+              example: Ron
+            middle_name:
+              description: The middle name for the user.
+              type:
+                - string
+                - 'null'
+              example: Ulysses
+            family_name:
+              description: The family name for the user.
+              type:
+                - string
+                - 'null'
+              example: Swanson
             email:
               description: The email.
               type: string

@@ -179,8 +179,8 @@ info:
       - `fixed_price` – Sets a fixed total price for the group (e.g., If the fixed price is set at $100, then the group's subtotal is exactly $100)
       - `percent` – Applies a percentage-based discount to the group.
       - `fixed` – Deducts a fixed amount from the group's total price.
-  version: 1.1.6592073
-  x-version-timestamp: 2025-09-17T18:47:53Z
+  version: 25.1204.6913617
+  x-version-timestamp: 2025-12-04T20:35:52Z
   contact:
     name: Elastic Path
     url: https://elasticpath.com
@@ -213,12 +213,11 @@ paths:
 
         :::note
 
-        The minimum item discount amount is zero, both for amounts and percentages
+        The minimum item discount amount is zero, both for amounts and percentages.
+
+        A store can have a maximum of **50 active and future automatic rule promotions**.
 
         :::
-
-        Please refer to the **OpenAPI examples** section on this page for detailed request payloads illustrating different 
-        promotion structures, including cart discounts, item discounts, and rule-based conditions.
       operationId: createRulePromotion
       security:
         - bearerAuth: []
@@ -433,6 +432,102 @@ paths:
                           args:
                             - percent
                             - 50
+              CartCustomAttributeEqualPromotion:
+                summary: Create a Cart Discount for carts where a custom attribute equals a specific value.
+                value:
+                  data:
+                    type: rule_promotion
+                    name: VIP customer discount
+                    description: 15 percent off for VIP customers
+                    enabled: true
+                    automatic: true
+                    start: '2025-01-01'
+                    end: '2030-12-31'
+                    rule_set:
+                      rules:
+                        strategy: cart_custom_attribute
+                        operator: eq
+                        args:
+                          - is_vip
+                          - boolean
+                          - true
+                      actions:
+                        - strategy: cart_discount
+                          args:
+                            - percent
+                            - 15
+              CartCustomAttributeGreaterThanPromotion:
+                summary: Create a Cart Discount for carts where a custom attribute is greater than a value.
+                value:
+                  data:
+                    type: rule_promotion
+                    name: Loyal customer reward
+                    description: $5 off for customers with more than 5 previous checkouts
+                    enabled: true
+                    automatic: true
+                    start: '2025-01-01'
+                    end: '2030-12-31'
+                    rule_set:
+                      rules:
+                        strategy: cart_custom_attribute
+                        operator: gt
+                        args:
+                          - checkout_count
+                          - integer
+                          - 5
+                      actions:
+                        - strategy: cart_discount
+                          args:
+                            - fixed
+                            - 500
+              CartCustomAttributeLessThanOrEqualPromotion:
+                summary: Create a Cart Discount for carts where a custom attribute is less than or equal to a value.
+                value:
+                  data:
+                    type: rule_promotion
+                    name: New customer discount
+                    description: 20 percent off for customers with 3 or fewer checkouts
+                    enabled: true
+                    automatic: true
+                    start: '2025-01-01'
+                    end: '2030-12-31'
+                    rule_set:
+                      rules:
+                        strategy: cart_custom_attribute
+                        operator: lte
+                        args:
+                          - checkout_count
+                          - integer
+                          - 3
+                      actions:
+                        - strategy: cart_discount
+                          args:
+                            - percent
+                            - 20
+              CartCustomAttributeFloatComparisonPromotion:
+                summary: Create a Cart Discount for carts where a float custom attribute exceeds a threshold.
+                value:
+                  data:
+                    type: rule_promotion
+                    name: High loyalty score bonus
+                    description: 25 percent off for customers with loyalty score above 75.5
+                    enabled: true
+                    automatic: true
+                    start: '2025-01-01'
+                    end: '2030-12-31'
+                    rule_set:
+                      rules:
+                        strategy: cart_custom_attribute
+                        operator: gt
+                        args:
+                          - loyalty_score
+                          - float
+                          - 75.5
+                      actions:
+                        - strategy: cart_discount
+                          args:
+                            - percent
+                            - 25
               CartPercentDiscountExcludingItem:
                 summary: Create a Cart Percent Discount Excluding Specific Item.
                 value:
@@ -463,7 +558,8 @@ paths:
                           condition:
                             strategy: item_sku
                             operator: nin
-                            args: excludedItemSku
+                            args:
+                              - excludedItemSku
               ItemDiscountWithLimitations:
                 summary: Create Item Discount Promotion with Max Quantity Limitation.
                 value:
@@ -869,6 +965,52 @@ paths:
                           args:
                             - percent
                             - 50
+              AccountTagsNotContainsAnyPromotion:
+                summary: Create a promotion excluding accounts with any restricted tags. Eligible if account has none of the specified tags.
+                value:
+                  data:
+                    type: rule_promotion
+                    name: 10 percent off for non-denylisted accounts
+                    description: Accounts without any of the restricted tags (denylist or fraud) receive a 10% cart discount
+                    enabled: true
+                    automatic: false
+                    start: '2025-06-01'
+                    end: '2026-06-30'
+                    rule_set:
+                      rules:
+                        strategy: account_tags
+                        operator: not_contains_any
+                        args:
+                          - 3fa12770-cdf5-4168-a893-9a29eb1b43cc
+                          - 31d60110-d492-4f93-983a-7cc466f12c54
+                      actions:
+                        - strategy: cart_discount
+                          args:
+                            - percent
+                            - 10
+              AccountTagsNotContainsAllPromotion:
+                summary: Create a promotion excluding accounts with all restricted tags. Eligible if account is missing at least one of the specified tags.
+                value:
+                  data:
+                    type: rule_promotion
+                    name: 15 percent off for partially restricted accounts
+                    description: Accounts that don't have ALL of the specified tags receive a 15% cart discount. Eligible if missing at least one tag.
+                    enabled: true
+                    automatic: false
+                    start: '2025-06-01'
+                    end: '2026-06-30'
+                    rule_set:
+                      rules:
+                        strategy: account_tags
+                        operator: not_contains_all
+                        args:
+                          - 3fa12770-cdf5-4168-a893-9a29eb1b43cc
+                          - 31d60110-d492-4f93-983a-7cc466f12c54
+                      actions:
+                        - strategy: cart_discount
+                          args:
+                            - percent
+                            - 15
               AutoAddGiftPromotion:
                 summary: Create an auto add gift promotion. When cart has eligible item,  the discounted item is automatically added to cart.
                 value:
@@ -937,6 +1079,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Response.Error'
+              examples:
+                TooManyAutomaticRulePromotions:
+                  summary: Error When Attempting to Create an Automatic Rule Promotion While Limit is Reached
+                  description: |
+                    This error occurs when attempting to **create an automatic rule promotion while the store has already reached the maximum limit** of 50 active and future automatic rule promotions.
+                  value:
+                    errors:
+                      - status: '400'
+                        title: Too many automatic rule promotions
+                        detail: Only 50 active automatic rule promotions are allowed per store
         '422':
           description: Duplicate Priority
           content:
@@ -1053,7 +1205,11 @@ paths:
         - `override_stacking`
         - `rule_set`
 
-        Please refer to the **OpenAPI examples** section on this page for sample update requests.
+        :::note
+
+        When updating the `automatic` field from `false` to `true`, the store must not exceed the maximum limit of **50 active and future automatic rule promotions**.
+
+        :::
       operationId: updateRulePromotion
       security:
         - bearerAuth: []
@@ -1099,6 +1255,22 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RulePromotionResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response.Error'
+              examples:
+                TooManyAutomaticRulePromotions:
+                  summary: Error When Attempting to Update a Manual Promotion to Automatic While Limit is Reached
+                  description: |
+                    This error occurs when attempting to **update a manual rule promotion to automatic while the store has already reached the maximum limit** of 50 active and future automatic rule promotions.
+                  value:
+                    errors:
+                      - status: '400'
+                        title: Too many automatic rule promotions
+                        detail: Only 50 active and future automatic rule promotions are allowed per store
         '422':
           description: Unprocessable Entity
           content:
@@ -3408,12 +3580,16 @@ components:
         operator:
           type: string
           x-enumDescriptions:
-            contains_all: All tags must be present in the cart.
-            contains_any: At least one tag must be present in the cart.
+            contains_all: All tags must be present in the account.
+            contains_any: At least one tag must be present in the account.
+            not_contains_any: None of the specified tags must be present in the account (eligible if account has none of these tags).
+            not_contains_all: All of the specified tags must not be present in the account (eligible if account is missing at least one tag).
           enum:
             - contains_all
             - contains_any
-          description: Specifies how the arguments are evaluated against the item.
+            - not_contains_any
+            - not_contains_all
+          description: Specifies how the arguments are evaluated against the account tags.
         args:
           type: array
           minItems: 1
@@ -3434,14 +3610,29 @@ components:
           enum:
             - in
             - nin
+            - eq
+            - gt
+            - lt
+            - gte
+            - lte
           x-enumDescriptions:
-            in: The custom attribute on the cart must match one of the values specified in arguments.
-            nin: The custom attribute on the cart must **NOT** match one of the values specified in the arguments.
-          description: Specifies the restriction on cart custom_attributes for this rule promotion.
+            in: The custom attribute on the cart must match one of the values specified in arguments. Supports all types with multiple values.
+            nin: The custom attribute on the cart must **NOT** match one of the values specified in the arguments. Supports all types with multiple values.
+            eq: The custom attribute on the cart must equal the specified value. Supports string, boolean, and integer types. Requires exactly 3 arguments [key, type, value].
+            gt: The custom attribute on the cart must be greater than the specified value. Supports integer and float types. Requires exactly 3 arguments [key, type, value].
+            lt: The custom attribute on the cart must be less than the specified value. Supports integer and float types. Requires exactly 3 arguments [key, type, value].
+            gte: The custom attribute on the cart must be greater than or equal to the specified value. Supports integer type only. Requires exactly 3 arguments [key, type, value].
+            lte: The custom attribute on the cart must be less than or equal to the specified value. Supports integer type only. Requires exactly 3 arguments [key, type, value].
+          description: |-
+            Specifies the restriction on cart custom_attributes for this rule promotion.
+            **Operator-Type Compatibility:** - `in` and `nin`: Support all types (string, boolean, integer, float) - `eq`: Supports string, boolean, and integer types with exactly 3 arguments - `gt` and `lt`: Support integer and float types with exactly 3 arguments - `gte` and `lte`: Support integer type only with exactly 3 arguments
         args:
           type: array
           minItems: 3
           maxItems: 22
+          description: |-
+            Arguments for the cart custom attribute rule. The structure depends on the operator:
+            - For `in` and `nin`: [key, type, value1, value2, ...valueN] where N can be 1-20 values - For comparison operators (`eq`, `gt`, `lt`, `gte`, `lte`): [key, type, value] - exactly 3 arguments
           prefixItems:
             - type: string
               pattern: ^[A-Za-z0-9_-]{1,255}$
@@ -3454,7 +3645,7 @@ components:
                 - integer
                 - float
           items:
-            description: The remaining arguments are specific values for the `custom_attributes` on a cart, and should be of the same type specified in the second argument.
+            description: The remaining arguments are specific values for the `custom_attributes` on a cart, and should be of the same type specified in the second argument. For comparison operators (eq, gt, lt, gte, lte), only one value is allowed.
             type:
               - string
               - boolean

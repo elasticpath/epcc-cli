@@ -24,8 +24,8 @@ info:
   contact:
     name: Elastic Path
     url: https://elasticpath.com
-  version: 1.1.6677996
-  x-version-timestamp: 2025-10-08T02:37:35Z
+  version: 25.1204.6914283
+  x-version-timestamp: 2025-12-04T22:44:56Z
   license:
     name: MIT
     url: assets/LICENSE
@@ -152,7 +152,7 @@ tags:
 
       ### Checkout
 
-      You can checkout a cart with an associated customer name and email (customer object). Typically, this would be used for new customers or ones that prefer to shop as guests. Use the customer.id checkout option to checkout for an existing customer. After a successful checkout is completed, the response contains an order.
+      You can checkout a cart with an associated customer name and email (customer object). Typically, this would be used for new customers or ones that prefer to shop as guests. Use the `customer.id` checkout option to checkout for an existing customer. After a successful checkout is completed, the response contains an order.
 
       Email addresses that either begin or end with a period, or contain consecutive periods, are considered invalid, resulting in the following error:
       ```json
@@ -215,7 +215,7 @@ tags:
 
       You can partially pay funds using purchase method. The gateway attempts to charge the customer immediately, and the payment status for an order shows `partially_paid`.
 
-      When you Get an order, you can see the following fields in the meta object:
+      When you Get an order, you can see the following fields in the `meta` object:
 
       - `balance_owing`: Specifies the outstanding funds required to complete an order. It considers all complete or pending transactions, including authorized, paid, and captured transactions. (`balance_owing` = order total - `authorized` amount - `paid` amount).
       - `paid`: Specifies the total amount of purchased or captured transactions.
@@ -260,7 +260,7 @@ tags:
 
       You can use your payment gateway's console to process a refund. Process the refund first in the payment gateway and then use the **Mark as Refunded** capability in Composable Commerce to complete the process.
 
-      When an order is **Marked as refunded**, the payment status `order.payment.status` is set to refunded. In this case, the `order.updated`, `transaction.updated` and `order.refunded` events are generated.
+      When an order is **Marked as refunded**, the payment status `order.payment.status` is set to `refunded`. In this case, the `order.updated`, `transaction.updated` and `order.refunded` events are generated.
   - name: Custom Discounts
     description: |
       With custom discounts, you can allow your shoppers to apply discounts from external services to their purchases. To apply custom discounts to carts and cart items, you need to set `custom_discounts_enabled` field to `true` in your [Cart Settings](/docs/api/settings/put-v-2-settings-cart).
@@ -295,17 +295,23 @@ paths:
     get:
       tags:
         - Cart Management
-      summary: Get Shopper Carts
+      summary: Get Carts
       description: |
-        You can retrieve the carts that are associated with an [account](/docs/api/carts/account-cart-associations) or a [customer](/docs/api/carts/customer-cart-associations).
+        Retrieves a list of carts. The carts returned depend on the authentication method used:
 
-        When a shopper retrieves their latest carts, the carts are sorted in descending order by the updated_date. For more information, see [Pagination](/guides/Getting-Started/pagination).
+        | Authentication Method | Header | Returns |
+        | :--- | :--- | :--- |
+        | **Customer Token** | `X-Moltin-Customer-Token` | Carts for the specified customer. See [Customer Tokens](/docs/customer-management/customer-management-api/customer-tokens). |
+        | **Account Token** | `EP-Account-Management-Authentication-Token` | Carts for the specified account. See [Account Management Token](/docs/api/accounts/post-v-2-account-members-tokens). |
+        | **Client Credentials** | `Authorization: Bearer <token>` | All carts or only registered carts, controlled by the `show_all_carts` setting. See [Cart Settings](/docs/api/settings/put-v-2-settings-cart). |
 
-        :::note
+        **Client Credentials Behavior:**
+        - When `show_all_carts` is `true`: Returns all carts in the store.
+        - When `show_all_carts` is `false`: Returns only registered carts (associated with customers or accounts).
 
-        Requires an `implicit` token with only one of [Account Management Authentication Token](/docs/api/accounts/post-v-2-account-members-tokens) or [customer token](/docs/customer-management/customer-management-api/customer-tokens).
+        **Sorting**
 
-        :::
+        Carts are sorted in descending order by `updated_date`. For more information, see [Pagination](/guides/Getting-Started/pagination).
       operationId: getCarts
       parameters:
         - name: EP-Account-Management-Authentication-Token
@@ -316,7 +322,7 @@ paths:
             type: string
             examples:
               - '{{accountToken}}'
-        - name: x-moltin-customer-token
+        - name: X-Moltin-Customer-Token
           in: header
           description: A customer token to access a specific customer's carts.
           style: simple
@@ -359,6 +365,33 @@ paths:
             minimum: 0
             maximum: 10000
             default: 0
+        - name: filter
+          in: query
+          description: |
+            Filter expression for searching carts. For more information about filtering, see [Filtering](/guides/Getting-Started/filtering).
+
+            **Supported Fields:**
+            - `account_ids`: Filter carts by associated account ID (UUID format)
+            - `name`: Filter carts by cart name (case-insensitive)
+
+            **Supported Operators:**
+            - `contains(field,value)`: Contains value in array field
+            - `ilike(field,value)`: Case-insensitive string matching
+
+            **Examples:**
+            - `contains(account_ids,"c24e5698-3b54-491b-9225-559c7a9cf2b2")` - Find carts associated with a specific account
+            - `ilike(name,"Shopping Cart")` - Find carts with name matching "Shopping Cart" (case-insensitive)
+            - `ilike(name,"*cart*")` - Find carts with names containing "cart" (wildcard search)
+
+            **Combining Filters:**
+            You can combine multiple filters using the `:`, and `|` operator for and and or respectively:
+            - `contains(account_ids,"abc123"):ilike(name,"Holiday Cart")` - Find carts matching both conditions
+            - `contains(account_ids,"abc123")|ilike(name,"Holiday Cart")` - Find carts matching either condition.
+          required: false
+          style: form
+          explode: false
+          schema:
+            type: string
       responses:
         '200':
           description: ''
@@ -372,19 +405,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  errors:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        detail:
-                          type: string
-                          example: Could not parse the supplied filter
-                        title:
-                          type: string
-                          example: Bad Request
+                $ref: '#/components/schemas/Response.ErrorResponse'
         '403':
           description: Unauthorized call
           content:
@@ -406,7 +427,7 @@ paths:
 
         You can create a cart to specify custom discounts. You can enable custom discounts when the `discount_settings.custom_discounts_enabled` field is set to `true`. Default is set from cart discount settings for the store. See [Update Cart Settings](/docs/api/settings/put-v-2-settings-cart).
 
-        You can also create a cart when inventory checks are not performed until checkout by setting the `inventory_settings.defer_inventory_checks` field to `true`. Again the default is set from cart discount settings for the store. See [Update Cart Settings](/docs/api/settings/put-v-2-settings-cart).
+        You can also create a cart when inventory checks are not performed until checkout by setting the `inventory_settings.defer_inventory_check` field to `true`. Again the default is set from cart discount settings for the store. See [Update Cart Settings](/docs/api/settings/put-v-2-settings-cart).
 
         ### Preview Cart
 
@@ -458,10 +479,20 @@ paths:
            - In the case of preview carts (those with `snapshot_date`), an error is returned for invalid actions, such as removing the preview date, setting a preview date in the past, or attempting to checkout a cart with a `snapshot_date`.
       operationId: createACart
       parameters:
-        - name: x-moltin-customer-token
+        - name: EP-Account-Management-Authentication-Token
           in: header
-          description: A customer token to be associated with the cart.
+          description: An Account Management Authentication token for the account to be associated with the cart.
           style: simple
+          required: false
+          schema:
+            type: string
+            examples:
+              - '{{accountToken}}'
+        - name: X-Moltin-Customer-Token
+          in: header
+          description: A customer token for the customer to be associated with the cart.
+          style: simple
+          required: false
           schema:
             type: string
             examples:
@@ -606,7 +637,7 @@ paths:
 
         You can update a cart to specify custom discounts. You can enable custom discounts when the `discount_settings.custom_discounts_enabled` field is set to `true`. Default is set from cart discount settings for the store. See [Cart Settings](/docs/api/settings/put-v-2-settings-cart).
 
-        You can also create a cart when inventory checks are not performed until checkout by setting the `inventory_settings.defer_inventory_checks` field to `true`. Again the default is set from cart discount settings for the store. See [Update Cart Settings](/docs/api/settings/put-v-2-settings-cart).
+        You can also create a cart when inventory checks are not performed until checkout by setting the `inventory_settings.defer_inventory_check` field to `true`. Again the default is set from cart discount settings for the store. See [Update Cart Settings](/docs/api/settings/put-v-2-settings-cart).
       operationId: updateACart
       parameters:
         - name: cartID
@@ -1513,7 +1544,7 @@ paths:
                     shipping_group_id: eb063818-939a-458f-97a4-2601c0c2b445
       responses:
         '201':
-          description: Successfully added item(s) to cart. When promotions are added, the response includes informational messages in the meta.messages field describing the promotion and discount effects.
+          description: Successfully added item(s) to cart. When promotions are added, the response includes informational messages in the `meta.messages` field describing the promotion and discount effects.
           headers: {}
           content:
             application/json:
@@ -2618,7 +2649,7 @@ paths:
           style: simple
           schema:
             type: string
-        - name: x-moltin-customer-token
+        - name: X-Moltin-Customer-Token
           in: header
           description: A customer token to access a specific customer's carts.
           style: simple
@@ -2688,7 +2719,7 @@ paths:
           style: simple
           schema:
             type: string
-        - name: x-moltin-customer-token
+        - name: X-Moltin-Customer-Token
           in: header
           description: A customer token to access a specific customer's carts.
           style: simple
@@ -4545,13 +4576,17 @@ paths:
                 $ref: '#/components/schemas/Response.ErrorResponse'
       deprecated: false
     parameters: []
+  /v2/quotes:
+    parameters: []
+  /v2/quotes/{quoteID}:
+    parameters: []
   /v2/orders:
     get:
       tags:
         - Orders
       summary: Get all Orders
       description: |
-        This endpoint returns all orders with custom flow fields. The pagination offset is set to fetch a maximum of 10,000 orders. If the store has 10,000 orders and you fetch the orders without using filters, an error is returned. Use a filter to view orders when the order is beyond the 10,000 mark.
+        This endpoint returns all orders with custom flow fields. The pagination offset is set to fetch a maximum of 10,000 orders. If the store has 10,000 orders, and you fetch the orders without using filters, an error is returned. Use a filter to view orders when the order is beyond the 10,000 mark.
 
         :::note
 
@@ -5898,17 +5933,13 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/RelationshipItem'
-    CartResponse:
-      title: CartResponse
+    BaseCartResponse:
+      title: BaseCartResponse
       type: object
       properties:
         id:
           description: The unique identifier for the cart. Use SDK or create it yourself.
           type: string
-        type:
-          description: The type of object being returned.
-          type: string
-          const: cart
         name:
           description: The name of this cart.
           type: string
@@ -6034,6 +6065,16 @@ components:
               $ref: '#/components/schemas/RelationshipArray'
             promotions:
               $ref: '#/components/schemas/RelationshipArray'
+    CartResponse:
+      title: CartResponse
+      allOf:
+        - $ref: '#/components/schemas/BaseCartResponse'
+        - type: object
+          properties:
+            type:
+              description: The type of object being returned.
+              type: string
+              const: cart
     Response.PageLinks:
       type: object
       properties:
@@ -6468,10 +6509,9 @@ components:
         created_at:
           description: The date this was created.
           type: string
-          example: '2023-11-07T23:04:18.845Z'
         updated_at:
           description: The date this was last updated.
-          example: '2023-11-07T23:04:18.845Z'
+          type: string
     CartItemResponse:
       title: Cart Item Response
       type: object
@@ -7991,29 +8031,72 @@ components:
       required:
         - total
         - base
+    NonNegativeFormattedPriceData:
+      title: NonNegativeFormattedPriceData
+      type: object
+      properties:
+        amount:
+          description: The raw total. Must be non-negative.
+          type: number
+          minimum: 0
+          examples:
+            - 10000
+        currency:
+          description: The currency set for this amount.
+          type: string
+          examples:
+            - USD
+        formatted:
+          description: The formatted total based on the amount and currency.
+          type: string
+          examples:
+            - $10.00
+    DiscountFormattedPriceData:
+      title: DiscountFormattedPriceData
+      type: object
+      properties:
+        amount:
+          description: The discount amount. Must be non-positive (zero or negative).
+          type: number
+          maximum: 0
+          examples:
+            - -1000
+            - 0
+        currency:
+          description: The currency set for this amount.
+          type: string
+          examples:
+            - USD
+        formatted:
+          description: The formatted total based on the amount and currency.
+          type: string
+          examples:
+            - '-$10.00'
+            - $0.00
     OrderPriceWrapperMeta:
+      description: Order pricing information.
       type: object
       properties:
         with_tax:
-          $ref: '#/components/schemas/FormattedPriceData'
+          $ref: '#/components/schemas/NonNegativeFormattedPriceData'
         without_tax:
-          $ref: '#/components/schemas/FormattedPriceData'
+          $ref: '#/components/schemas/NonNegativeFormattedPriceData'
         tax:
-          $ref: '#/components/schemas/FormattedPriceData'
+          $ref: '#/components/schemas/NonNegativeFormattedPriceData'
         discount:
-          $ref: '#/components/schemas/FormattedPriceData'
+          $ref: '#/components/schemas/DiscountFormattedPriceData'
         balance_owing:
-          $ref: '#/components/schemas/FormattedPriceData'
+          $ref: '#/components/schemas/NonNegativeFormattedPriceData'
         paid:
-          $ref: '#/components/schemas/FormattedPriceData'
+          $ref: '#/components/schemas/NonNegativeFormattedPriceData'
         authorized:
-          $ref: '#/components/schemas/FormattedPriceData'
+          $ref: '#/components/schemas/NonNegativeFormattedPriceData'
         without_discount:
-          $ref: '#/components/schemas/FormattedPriceData'
+          $ref: '#/components/schemas/NonNegativeFormattedPriceData'
         shipping:
-          $ref: '#/components/schemas/FormattedPriceData'
+          $ref: '#/components/schemas/NonNegativeFormattedPriceData'
         shipping_discount:
-          $ref: '#/components/schemas/FormattedPriceData'
+          $ref: '#/components/schemas/DiscountFormattedPriceData'
       required:
         - with_tax
         - without_tax
@@ -8624,35 +8707,48 @@ components:
               $ref: '#/components/schemas/BillingAddress'
             shipping_address:
               $ref: '#/components/schemas/ShippingAddress'
+    OrderTimestamps:
+      type: object
+      properties:
+        created_at:
+          description: The date this order was created.
+          type: string
+        updated_at:
+          description: The date this order was last updated.
+          type: string
+        fully_paid_at:
+          description: The date this order was fully paid. Only present for orders with payment status 'paid'.
+          type: string
     OrderMeta:
       title: OrderMeta
       type: object
       properties:
         timestamps:
-          $ref: '#/components/schemas/Timestamps'
+          $ref: '#/components/schemas/OrderTimestamps'
         display_price:
+          description: Order pricing information including amounts, tax, discounts, and payment details.
           type: object
           properties:
             with_tax:
-              $ref: '#/components/schemas/FormattedPriceData'
+              $ref: '#/components/schemas/NonNegativeFormattedPriceData'
             without_tax:
-              $ref: '#/components/schemas/FormattedPriceData'
+              $ref: '#/components/schemas/NonNegativeFormattedPriceData'
             tax:
-              $ref: '#/components/schemas/FormattedPriceData'
+              $ref: '#/components/schemas/NonNegativeFormattedPriceData'
             discount:
-              $ref: '#/components/schemas/FormattedPriceData'
+              $ref: '#/components/schemas/DiscountFormattedPriceData'
             balance_owing:
-              $ref: '#/components/schemas/FormattedPriceData'
+              $ref: '#/components/schemas/NonNegativeFormattedPriceData'
             paid:
-              $ref: '#/components/schemas/FormattedPriceData'
+              $ref: '#/components/schemas/NonNegativeFormattedPriceData'
             authorized:
-              $ref: '#/components/schemas/FormattedPriceData'
+              $ref: '#/components/schemas/NonNegativeFormattedPriceData'
             without_discount:
-              $ref: '#/components/schemas/FormattedPriceData'
+              $ref: '#/components/schemas/NonNegativeFormattedPriceData'
             shipping:
-              $ref: '#/components/schemas/FormattedPriceData'
+              $ref: '#/components/schemas/NonNegativeFormattedPriceData'
             shipping_discount:
-              $ref: '#/components/schemas/FormattedPriceData'
+              $ref: '#/components/schemas/DiscountFormattedPriceData'
         is_manual:
           description: Specifies if the order was created manually.
           type: boolean
