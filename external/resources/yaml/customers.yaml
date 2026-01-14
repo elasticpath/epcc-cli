@@ -39,6 +39,8 @@ customers:
       autofill: FUNC:Email
     password:
       type: STRING
+  excluded-json-pointers-from-import:
+    - password
 customer-cart-associations:
   singular-name: customer-cart-association
   json-api-type: customer-cart-relationship

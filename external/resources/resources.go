@@ -75,6 +75,14 @@ type Resource struct {
 	// If another resource is used to create this resource, list it here
 	CreatedBy []VerbResource `yaml:"created_by,omitempty"`
 
+	// Explicit dependencies for export ordering (resources that must be exported/created first)
+	// This is used when dependencies aren't visible in URL structure (e.g., custom-fields -> custom-api-settings-entries)
+	ExportDependsOn []string `yaml:"export-depends-on,omitempty"`
+
+	// JSON pointers to exclude when generating epcc-cli import commands
+	// Useful for fields that are read-only or have different semantics on create (e.g., password on customers)
+	ExcludedJsonPointersFromImport []string `yaml:"excluded-json-pointers-from-import,omitempty"`
+
 	// Source Filename
 	SourceFile string
 }

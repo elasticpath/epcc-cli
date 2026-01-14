@@ -264,6 +264,16 @@
             "required": ["verb", "resource"],
             "additionalProperties": false
           }
+        },
+        "export-depends-on": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Resources that must be exported/created before this one (for dependencies not visible in URL structure)"
+        },
+        "excluded-json-pointers-from-import": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "JSON pointers to exclude when generating epcc-cli import commands (e.g., read-only fields)"
         }
       },
       "required": [ "json-api-type", "json-api-format", "docs", "singular-name"]
