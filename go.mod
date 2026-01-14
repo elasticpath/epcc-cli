@@ -20,7 +20,7 @@ require (
 	github.com/yosida95/uritemplate/v3 v3.0.2
 	golang.org/x/sync v0.19.0
 	golang.org/x/time v0.14.0
-	gopkg.in/ini.v1 v1.67.0
+	gopkg.in/ini.v1 v1.67.1
 	gopkg.in/yaml.v3 v3.0.1
 )
 
