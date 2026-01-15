@@ -73,7 +73,14 @@ func NewUpdateCommand(parentCmd *cobra.Command) func() {
 	var updateCmd = &cobra.Command{
 		Use:          "update",
 		Short:        "Updates a resource",
+		Hidden:       IsReadOnly(),
 		SilenceUsage: false,
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			if IsReadOnly() {
+				return ErrReadOnlyMode
+			}
+			return RootCmd.PersistentPreRunE(RootCmd, args)
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
 				return fmt.Errorf("please specify a resource, epcc update [RESOURCE], see epcc update --help")

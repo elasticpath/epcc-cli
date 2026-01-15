@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"os/signal"
@@ -63,6 +64,14 @@ var jqCompletionFunc = func(cmd *cobra.Command, args []string, toComplete string
 
 var profileNameFromCommandLine = ""
 
+// ErrReadOnlyMode is returned when a write operation is attempted in read-only mode
+var ErrReadOnlyMode = errors.New("operation not permitted: EPCC_CLI_READ_ONLY is enabled")
+
+// IsReadOnly returns true if the CLI is in read-only mode
+func IsReadOnly() bool {
+	return config.GetEnv().EPCC_CLI_READ_ONLY
+}
+
 func InitializeCmd() {
 
 	DumpTraces()
@@ -83,6 +92,13 @@ func InitializeCmd() {
 
 	applyLogLevelEarlyDetectionHack()
 	log.Tracef("Root Command Building In Progress")
+
+	// Check for read-only mode and hide write commands
+	readOnlyMode := IsReadOnly()
+	if readOnlyMode {
+		log.Debugf("Read-only mode is enabled (EPCC_CLI_READ_ONLY=true)")
+		ResetStore.Hidden = true
+	}
 
 	resources.PublicInit()
 	initRunbookCommands()
@@ -231,6 +247,7 @@ Environment Variables
 - EPCC_CLI_DISABLE_RESOURCES - A comma seperated list of resources that will be hidden in command lists
 - EPCC_CLI_RATE_LIMIT - The default rate limit to use.
 - EPCC_CLI_DISABLE_HTTP_LOGGING - Disables writing of HTTP logs
+- EPCC_CLI_READ_ONLY - Enables read-only mode, blocking create/update/delete operations
 `,
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 			log.SetLevel(logger.Loglevel)
@@ -311,8 +328,11 @@ func Execute() {
 	<-shutdownHandlerDone
 
 	if err != nil {
+		if errors.Is(err, ErrReadOnlyMode) {
+			log.Errorf("Error: %s", err)
+			os.Exit(4)
+		}
 		log.Errorf("Error occurred while processing command: %s", err)
-
 		os.Exit(1)
 	} else {
 		os.Exit(0)
