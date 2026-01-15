@@ -28,6 +28,54 @@ const (
 	ClientSecret = "client_secret"
 )
 
+// getStoreName fetches the store name using the settings and stores endpoints
+// Returns empty string if unable to fetch (e.g., insufficient permissions)
+func getStoreName() string {
+	ctx := clictx.Ctx
+	overrides := &httpclient.HttpParameterOverrides{
+		QueryParameters: nil,
+		OverrideUrlPath: "",
+	}
+
+	// First get the store ID from settings
+	settingsBody, err := rest.GetInternal(ctx, overrides, []string{"setting"}, false, false)
+	if err != nil {
+		log.Debugf("Could not get settings to determine store name: %v", err)
+		return ""
+	}
+
+	storeId, err := json.RunJQOnString(".data.id", settingsBody)
+	if err != nil || storeId == nil {
+		log.Debugf("Could not extract store ID from settings: %v", err)
+		return ""
+	}
+
+	storeIdStr, ok := storeId.(string)
+	if !ok || storeIdStr == "" {
+		log.Debugf("Store ID is not a valid string")
+		return ""
+	}
+
+	// Now get the store name
+	storeBody, err := rest.GetInternal(ctx, overrides, []string{"store", storeIdStr}, false, false)
+	if err != nil {
+		log.Debugf("Could not get store details: %v", err)
+		return ""
+	}
+
+	storeName, err := json.RunJQOnString(".data.name", storeBody)
+	if err != nil || storeName == nil {
+		log.Debugf("Could not extract store name: %v", err)
+		return ""
+	}
+
+	if storeNameStr, ok := storeName.(string); ok {
+		return storeNameStr
+	}
+
+	return ""
+}
+
 var LoginCmd = &cobra.Command{
 	Use:          "login",
 	Short:        "Login to the API via client_credentials, implicit, customer or account management tokens.",
@@ -56,6 +104,14 @@ var loginInfo = &cobra.Command{
 				log.Infof("We are logged into the API with a %s type, but the token expired at: %s ", apiTokenResponse.Identifier, time.Unix(apiTokenResponse.Expires, 0).Format(time.RFC1123Z))
 			} else {
 				log.Infof("We are logged into the API with a %s type, the token expires at: %s", apiTokenResponse.Identifier, time.Unix(apiTokenResponse.Expires, 0).Format(time.RFC1123Z))
+			}
+
+			// Show store name if logged in with client_credentials
+			if apiTokenResponse.Identifier == "client_credentials" {
+				storeName := getStoreName()
+				if storeName != "" {
+					log.Infof("Store name: %s", storeName)
+				}
 			}
 		} else {
 			log.Infof("We are *NOT* logged into the API")
@@ -229,7 +285,12 @@ var loginClientCredentials = &cobra.Command{
 		}
 
 		if token != nil {
-			log.Infof("Successfully authenticated with client_credentials, session expires %s", time.Unix(token.Expires, 0).Format(time.RFC1123Z))
+			storeName := getStoreName()
+			if storeName != "" {
+				log.Infof("Successfully authenticated with client_credentials to store \"%s\", session expires %s", storeName, time.Unix(token.Expires, 0).Format(time.RFC1123Z))
+			} else {
+				log.Infof("Successfully authenticated with client_credentials, session expires %s", time.Unix(token.Expires, 0).Format(time.RFC1123Z))
+			}
 		} else {
 			log.Warn("Did not successfully authenticate against the API")
 		}
