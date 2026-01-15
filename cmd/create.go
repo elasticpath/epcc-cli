@@ -21,8 +21,15 @@ import (
 func NewCreateCommand(parentCmd *cobra.Command) func() {
 
 	var createCmd = &cobra.Command{
-		Use:   "create",
-		Short: "Creates a resource",
+		Use:    "create",
+		Short:  "Creates a resource",
+		Hidden: IsReadOnly(),
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			if IsReadOnly() {
+				return ErrReadOnlyMode
+			}
+			return RootCmd.PersistentPreRunE(RootCmd, args)
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
 				return fmt.Errorf("please specify a resource, epcc create [RESOURCE], see epcc create --help")

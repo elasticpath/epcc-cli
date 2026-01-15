@@ -30,6 +30,12 @@ var ResetStore = &cobra.Command{
 	Short: "Resets a store to it's initial state on a \"best effort\" basis.",
 	Long:  "This command resets a store to it's initial state. There are some limitations to this as for instance orders cannot be deleted, nor can audit entries.",
 	Args:  cobra.MinimumNArgs(1),
+	PreRunE: func(cmd *cobra.Command, args []string) error {
+		if IsReadOnly() {
+			return ErrReadOnlyMode
+		}
+		return RootCmd.PersistentPreRunE(RootCmd, args)
+	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := clictx.Ctx
 

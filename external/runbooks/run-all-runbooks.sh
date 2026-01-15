@@ -13,6 +13,17 @@ set -x
 #Let's test that epcc command works after an embarrassing bug that caused it to panic :(
 epcc
 
+# Smoke test for EPCC_CLI_READ_ONLY
+echo "Starting Read-Only Mode Smoke Test"
+epcc reset-store .+
+
+EPCC_CLI_READ_ONLY=true epcc create account --auto-fill && exit 1 || test $? -eq 4
+EPCC_CLI_READ_ONLY=true epcc update account 00000000-0000-0000-0000-000000000000 name foo && exit 1 || test $? -eq 4
+EPCC_CLI_READ_ONLY=true epcc delete account 00000000-0000-0000-0000-000000000000 && exit 1 || test $? -eq 4
+EPCC_CLI_READ_ONLY=true epcc reset-store .+ && exit 1 || test $? -eq 4
+EPCC_CLI_READ_ONLY=true epcc delete-all accounts && exit 1 || test $? -eq 4
+
+echo "Read-Only Mode Smoke Test Passed"
 
 echo "Starting Currencies Runbook"
 epcc reset-store .+

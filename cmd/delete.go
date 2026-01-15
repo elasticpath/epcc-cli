@@ -20,7 +20,14 @@ func NewDeleteCommand(parentCmd *cobra.Command) func() {
 	var deleteCmd = &cobra.Command{
 		Use:          "delete",
 		Short:        "Deletes a resource",
+		Hidden:       IsReadOnly(),
 		SilenceUsage: false,
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			if IsReadOnly() {
+				return ErrReadOnlyMode
+			}
+			return RootCmd.PersistentPreRunE(RootCmd, args)
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if len(args) == 0 {
 				return fmt.Errorf("please specify a resource, epcc delete [RESOURCE], see epcc delete --help")

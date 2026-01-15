@@ -14,6 +14,7 @@ type Env struct {
 	EPCC_CLI_DISABLE_RESOURCES          []string `env:"EPCC_CLI_DISABLE_RESOURCES" envSeparator:","`
 	EPCC_CLI_DISABLE_TEMPLATE_EXECUTION bool     `env:"EPCC_CLI_DISABLE_TEMPLATE_EXECUTION"`
 	EPCC_CLI_DISABLE_HTTP_LOGGING       bool     `env:"EPCC_CLI_DISABLE_HTTP_LOGGING"`
+	EPCC_CLI_READ_ONLY                  bool     `env:"EPCC_CLI_READ_ONLY"`
 }
 
 var env = atomic.Pointer[Env]{}

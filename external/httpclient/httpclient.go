@@ -205,6 +205,15 @@ func doRequestInternal(ctx context.Context, method string, contentType string, p
 
 	env := config.GetEnv()
 
+	// Read-only mode: block POST, PUT, DELETE, PATCH requests (except auth endpoints)
+	if env.EPCC_CLI_READ_ONLY {
+		if method == "POST" || method == "PUT" || method == "DELETE" || method == "PATCH" {
+			if !isExemptAuthPath(path) {
+				return nil, fmt.Errorf("HTTP %s request blocked: EPCC_CLI_READ_ONLY is enabled", method)
+			}
+		}
+	}
+
 	reqURL, err := url.Parse(env.EPCC_API_BASE_URL)
 	if err != nil {
 		return nil, err
@@ -497,4 +506,18 @@ func AddAdditionalHeadersSpecifiedByFlag(r *http.Request) error {
 	}
 
 	return nil
+}
+
+// isExemptAuthPath returns true if the path is an authentication endpoint
+// that should be allowed even in read-only mode.
+func isExemptAuthPath(path string) bool {
+	// Allow customer token creation
+	if strings.Contains(path, "customer-token") {
+		return true
+	}
+	// Allow account management token creation
+	if strings.Contains(path, "account-management-authentication-token") {
+		return true
+	}
+	return false
 }
