@@ -3,10 +3,11 @@ package apihelper
 import (
 	json2 "encoding/json"
 	"fmt"
-	"github.com/elasticpath/epcc-cli/external/id"
-	log "github.com/sirupsen/logrus"
 	"io"
 	"net/http"
+
+	"github.com/elasticpath/epcc-cli/external/id"
+	log "github.com/sirupsen/logrus"
 )
 
 func GetResourceIdsFromHttpResponse(resp *http.Response) ([]id.IdableAttributes, int, error) {
@@ -17,8 +18,14 @@ func GetResourceIdsFromHttpResponse(resp *http.Response) ([]id.IdableAttributes,
 		log.Fatal(err)
 	}
 
+	return GetResourceIdsFromBody(body)
+}
+
+// GetResourceIdsFromBody parses a JSON response body and extracts resource IDs.
+// This is useful when you need to process the raw body bytes separately.
+func GetResourceIdsFromBody(body []byte) ([]id.IdableAttributes, int, error) {
 	var jsonStruct = map[string]interface{}{}
-	err = json2.Unmarshal(body, &jsonStruct)
+	err := json2.Unmarshal(body, &jsonStruct)
 	if err != nil {
 		return nil, 0, fmt.Errorf("response for get was not JSON: %w", err)
 	}

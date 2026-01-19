@@ -195,12 +195,12 @@ payment-gateways-stripe-payment-intents:
   singular-name: "payment-gateway-stripe-payment-intent"
   json-api-type: "gateway"
   json-api-format: "legacy"
-  docs: "https://elasticpath.dev/docs/studio/Integrations/stripe-payment-intents"
+  docs: "https://developer.elasticpath.com/docs/api/payments/update-stripe-intents-gateway"
   get-entity:
     docs: "https://elasticpath.dev/docs/api/payments/gateways"
     url: "/v2/gateways/stripe_payment_intents"
   update-entity:
-    docs: "https://elasticpath.dev/docs/studio/Integrations/stripe-payment-intents"
+    docs: "https://developer.elasticpath.com/docs/api/payments/update-stripe-intents-gateway"
     url: "/v2/gateways/stripe_payment_intents"
   attributes:
     login:

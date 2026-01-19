@@ -4,6 +4,8 @@ custom-apis:
   json-api-type: custom_api
   json-api-format: "legacy"
   docs: "https://elasticpath.dev/docs/api/commerce-extensions/custom-ap-is"
+  excluded-json-pointers-from-import:
+    - relationships.parent_apis
   delete-entity:
     docs: "https://elasticpath.dev/docs/api/commerce-extensions/delete-a-custom-api"
     url: "/v2/settings/extensions/custom-apis/{custom_apis}"
@@ -114,6 +116,8 @@ custom-api-settings-entries:
   json-api-type: custom_entry
   json-api-format: "legacy"
   no-wrapping: true
+  export-depends-on:
+    - custom-fields
   docs: "https://elasticpath.dev/docs/api/commerce-extensions/custom-api-entries"
   delete-entity:
     docs: "https://elasticpath.dev/docs/api/commerce-extensions/delete-a-custom-entry"
@@ -140,6 +144,8 @@ custom-api-extensions-entries:
   json-api-type: custom_entry
   json-api-format: "legacy"
   no-wrapping: true
+  export-depends-on:
+    - custom-fields
   docs: "https://elasticpath.dev/docs/api/commerce-extensions/custom-api-entries"
   delete-entity:
     docs: "https://elasticpath.dev/docs/api/commerce-extensions/delete-a-custom-entry-settings"
@@ -222,3 +228,14 @@ custom-api-role-policies:
       type: CONST:built_in_role
     relationships.role.data.id:
       type: RESOURCE_ID:built-in-role
+#custom-api-openapi-specifications:
+#  singular-name: custom-api-openapi-specification
+#  json_api_type: custom_api_openapi_specification
+#  json-api-format: legacy
+#  no-wrapping: true
+#  get-entity:
+#    docs: "https://elasticpath.dev/docs/api/permissions/get-a-custom-api-role-policy"
+#    url: "/v2/settings/extensions/specifications/openapi"
+#  get-collection:
+#    docs: "https://elasticpath.dev/docs/api/permissions/list-custom-api-role-policies"
+#    url: "/v2/settings/extensions/specifications/openapi"

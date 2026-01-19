@@ -392,3 +392,9 @@ func formatValue(v string) string {
 		return fmt.Sprintf("\"%s\"", v)
 	}
 }
+
+// ValueNeedsQuotes returns true if a value would be treated as a literal (number, bool, null)
+// and thus needs to be quoted if it should be treated as a string.
+func ValueNeedsQuotes(v string) bool {
+	return TreatAsLiterals.MatchString(v)
+}

@@ -128,6 +128,8 @@ pcm-hierarchies:
       type: STRING
     locales.en-US.description:
       type: STRING
+  excluded-json-pointers-from-import:
+    - relationships.children.links.related
 pcm-hierarchy-node-children:
   singular-name: "pcm-hierarchy-node-child"
   json-api-type: "node"
@@ -162,6 +164,11 @@ pcm-node-products:
       type: RESOURCE_ID:pcm-product
     "data[n].type":
       type: CONST:product
+  excluded-json-pointers-from-import:
+    - attributes.
+    - relationships.
+    - meta.
+    - links.
 pcm-node-parents:
   singular-name: "pcm-node-parent"
   json-api-type: "node"
@@ -212,6 +219,9 @@ pcm-nodes:
       type: CONST:node
     relationships.parent.data.id:
       type: RESOURCE_ID:pcm-nodes
+  excluded-json-pointers-from-import:
+    - relationships.children.
+    - relationships.products.
 pcm-product-main-image:
   singular-name: "pcm-product-main-image"
   json-api-type: "file"
@@ -308,6 +318,14 @@ pcm-products:
       type: CONST:product
     ^components\.([a-zA-Z0-9-_]+)\.options\.quantity$:
       type: INT
+  excluded-json-pointers-from-import:
+    - relationships.children.
+    - relationships.component_products.
+    - relationships.custom_relationships.
+    - relationships.files.
+    - relationships.main_image
+    - relationships.templates.
+    - relationships.variations.
 pcm-product-templates:
   singular-name: "pcm-product-template"
   json-api-type: "template"

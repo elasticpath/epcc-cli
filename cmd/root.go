@@ -130,6 +130,9 @@ func InitializeCmd() {
 	log.Tracef("Building Delete All Commands")
 	NewDeleteAllCommand(RootCmd)
 
+	log.Tracef("Building Get All Commands")
+	NewGetAllCommand(RootCmd)
+
 	log.Tracef("Building Resource Info Commands")
 	NewResourceInfoCommand(RootCmd)
 
