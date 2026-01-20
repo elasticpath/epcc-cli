@@ -63,7 +63,7 @@ custom-fields:
     slug:
       type: STRING
     field_type:
-      type: ENUM:string,integer,boolean,float
+      type: ENUM:string,integer,boolean,float,any
     description:
       type: STRING
       autofill: FUNC:Phrase
@@ -111,6 +111,12 @@ custom-fields:
     validation.boolean.immutable:
       type: BOOL
       when: field_type == "boolean"
+    validation.any.immutable:
+      type: BOOL
+      when: field_type == "any"
+    validation.any.allow_null_values:
+      type: BOOL
+      when: field_type == "any"
 custom-api-settings-entries:
   singular-name: custom-api-settings-entry
   json-api-type: custom_entry
@@ -228,14 +234,14 @@ custom-api-role-policies:
       type: CONST:built_in_role
     relationships.role.data.id:
       type: RESOURCE_ID:built-in-role
-#custom-api-openapi-specifications:
-#  singular-name: custom-api-openapi-specification
-#  json_api_type: custom_api_openapi_specification
-#  json-api-format: legacy
-#  no-wrapping: true
-#  get-entity:
-#    docs: "https://elasticpath.dev/docs/api/permissions/get-a-custom-api-role-policy"
-#    url: "/v2/settings/extensions/specifications/openapi"
-#  get-collection:
-#    docs: "https://elasticpath.dev/docs/api/permissions/list-custom-api-role-policies"
-#    url: "/v2/settings/extensions/specifications/openapi"
+custom-api-openapi-specifications:
+  singular-name: custom-api-openapi-specification
+  json_api_type: custom_api_openapi_specification
+  json-api-format: legacy
+  no-wrapping: true
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/permissions/get-a-custom-api-role-policy"
+    url: "/v2/settings/extensions/specifications/openapi"
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/permissions/list-custom-api-role-policies"
+    url: "/v2/settings/extensions/specifications/openapi"
