@@ -62,8 +62,20 @@ func init() {
 
 var Limit *rate.Limiter = nil
 
-func Initialize(rateLimit uint16, requestTimeout float32, statisticsFrequency int) {
+var initOnce sync.Once
 
+func Initialize(rateLimit uint16, requestTimeout float32, statisticsFrequency int) {
+	// Rate limiter and timeout can be updated on each call
+	Limit = rate.NewLimiter(rate.Limit(rateLimit), 1)
+	HttpClient.Timeout = time.Duration(int64(requestTimeout*1000) * int64(time.Millisecond))
+
+	// Everything else should only run once
+	initOnce.Do(func() {
+		initializeOnce(statisticsFrequency)
+	})
+}
+
+func initializeOnce(statisticsFrequency int) {
 	urlMatchRegexp := regexp.MustCompile(EnvUrlMatch)
 
 	for _, env := range os.Environ() {
@@ -111,9 +123,6 @@ func Initialize(rateLimit uint16, requestTimeout float32, statisticsFrequency in
 			}
 		}
 	}
-
-	Limit = rate.NewLimiter(rate.Limit(rateLimit), 1)
-	HttpClient.Timeout = time.Duration(int64(requestTimeout*1000) * int64(time.Millisecond))
 
 	if statisticsFrequency > 0 {
 		go func() {

@@ -11,7 +11,7 @@ custom-apis:
     url: "/v2/settings/extensions/custom-apis/{custom_apis}"
   create-entity:
     docs: "https://elasticpath.dev/docs/api/commerce-extensions/create-a-custom-api"
-    url: "/v2/settings/extensions/custom-apis/"
+    url: "/v2/settings/extensions/custom-apis"
   update-entity:
     docs: "https://elasticpath.dev/docs/api/commerce-extensions/update-a-custom-api"
     url: "/v2/settings/extensions/custom-apis/{custom_apis}"
