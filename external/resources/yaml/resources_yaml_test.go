@@ -35,7 +35,7 @@ func TestExpectedNumberOfResources(t *testing.T) {
 	resourceCount := len(resources.GetPluralResources())
 
 	// Verification
-	require.Equal(t, resourceCount, 140)
+	require.Equal(t, resourceCount, 159)
 }
 
 func TestCreatedByTemplatesAllReferenceValidResource(t *testing.T) {

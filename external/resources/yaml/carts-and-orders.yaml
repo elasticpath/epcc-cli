@@ -141,6 +141,26 @@ cart-product-items:
     location:
       type: RESOURCE_ID:mli-inventory-locations
       alias_attribute: slug
+cart-subscription-items:
+  singular-name: "cart-subscription-item"
+  json-api-type: "subscription_item"
+  json-api-format: "legacy"
+  docs: "https://elasticpath.dev/docs/api/carts/manage-carts#add-subscription-item-to-cart"
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/carts/manage-carts#add-subscription-item-to-cart"
+    url: "/v2/carts/{carts}/items"
+    openapi-operation-id: manageCarts
+    content-type: application/json
+  attributes:
+    id:
+      type: RESOURCE_ID:subscription-offerings
+    quantity:
+      type: INT
+      autofill: VALUE:1
+    subscription_configuration.plan:
+      type: STRING
+    subscription_configuration.pricing_option:
+      type: STRING
 cart-custom-items:
   singular-name: "cart-custom-item"
   json-api-type: "custom_item"

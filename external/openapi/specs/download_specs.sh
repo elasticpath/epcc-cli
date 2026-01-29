@@ -42,6 +42,7 @@ download_spec "https://developer.elasticpath.com/assets/openapispecs/promotions-
 download_spec "https://developer.elasticpath.com/assets/openapispecs/single-sign-on/OpenAPISpec.yaml" "single-sign-on.yaml"
 download_spec "https://developer.elasticpath.com/assets/openapispecs/addresses/AccountAddresses.OpenAPISpec.yaml" "account-addresses.yaml"
 download_spec "https://developer.elasticpath.com/assets/openapispecs/settings/OpenAPISpec.yaml" "settings.yaml"
+download_spec "https://developer.elasticpath.com/assets/openapispecs/subscriptions/public_openapi.yaml" "subscriptions.yaml"
 
 
 # Integrations doesn't have matching URLs.
