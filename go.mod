@@ -31,7 +31,7 @@ require (
 	github.com/iancoleman/strcase v0.2.0
 	github.com/jolestar/go-commons-pool/v2 v2.1.2
 	github.com/mitchellh/mapstructure v1.5.0
-	github.com/pb33f/libopenapi v0.31.2
+	github.com/pb33f/libopenapi v0.33.0
 	github.com/yukithm/json2csv v0.1.2
 )
 
@@ -39,9 +39,9 @@ require (
 	dario.cat/mergo v1.0.1 // indirect
 	github.com/bahlo/generic-list-go v0.2.0 // indirect
 	github.com/buger/jsonparser v1.1.1 // indirect
-	github.com/pb33f/jsonpath v0.7.0 // indirect
+	github.com/pb33f/jsonpath v0.7.1 // indirect
 	github.com/pb33f/ordered-map/v2 v2.3.0 // indirect
-	go.yaml.in/yaml/v4 v4.0.0-rc.3 // indirect
+	go.yaml.in/yaml/v4 v4.0.0-rc.4 // indirect
 )
 
 require (
