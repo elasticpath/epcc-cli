@@ -6,3 +6,5 @@ epcc
 epcc-test
 .envrc
 build/
+
+*.env

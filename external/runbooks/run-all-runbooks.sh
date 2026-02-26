@@ -63,8 +63,7 @@ epcc runbooks run commerce-extensions create-review-for-random-product
 epcc runbooks run commerce-extensions delete-product-review-custom-api
 
 echo "Starting Subscriptions Tests"
-epcc reset-store .+
-epcc runbooks run subscriptions create-subscription-offerings
+"$SCRIPT_DIR/run-subscriptions-runbooks.sh"
 
 echo "Starting Account Cart Association Tests"
 epcc reset-store .+
