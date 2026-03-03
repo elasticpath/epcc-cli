@@ -19,7 +19,7 @@ custom-apis:
     docs: "https://elasticpath.dev/docs/api/commerce-extensions/get-a-custom-api"
     url: "/v2/settings/extensions/custom-apis/{custom_apis}"
   get-collection:
-    docs: "https://elasticpath.dev/docs/api/commerce-extensions/get-all-custom-apis"
+    docs: "https://elasticpath.dev/docs/api/commerce-extensions/list-custom-ap-is"
     url: "/v2/settings/extensions/custom-apis"
   attributes:
     name:
@@ -54,7 +54,7 @@ custom-fields:
     docs: "https://elasticpath.dev/docs/api/commerce-extensions/get-a-custom-field"
     url: "/v2/settings/extensions/custom-apis/{custom_apis}/fields/{custom_fields}"
   get-collection:
-    docs: "https://elasticpath.dev/docs/api/commerce-extensions/get-all-custom-fields"
+    docs: "https://elasticpath.dev/docs/api/commerce-extensions/list-custom-fields"
     url: "/v2/settings/extensions/custom-apis/{custom_apis}/fields/"
   attributes:
     name:
@@ -118,21 +118,21 @@ custom-api-settings-entries:
   no-wrapping: true
   export-depends-on:
     - custom-fields
-  docs: "https://elasticpath.dev/docs/api/commerce-extensions/custom-api-entries"
+  docs: "https://developer.elasticpath.com/docs/api/commerce-extensions/custom-ap-is"
   delete-entity:
-    docs: "https://elasticpath.dev/docs/api/commerce-extensions/delete-a-custom-entry"
+    docs: "https://developer.elasticpath.com/docs/api/commerce-extensions/delete-a-custom-entry"
     url: "/v2/settings/extensions/custom-apis/{custom_apis}/entries/{custom_api_settings_entries}"
   create-entity:
-    docs: "https://elasticpath.dev/docs/api/commerce-extensions/create-a-custom-entry"
+    docs: "https://developer.elasticpath.com/docs/api/commerce-extensions/create-a-custom-api-entry"
     url: "/v2/settings/extensions/custom-apis/{custom_apis}/entries"
   update-entity:
-    docs: "https://elasticpath.dev/docs/api/commerce-extensions/update-a-custom-entry"
+    docs: "https://developer.elasticpath.com/docs/api/commerce-extensions/update-a-custom-entry"
     url: "/v2/settings/extensions/custom-apis/{custom_apis}/entries/{custom_api_settings_entries}"
   get-entity:
-    docs: "https://elasticpath.dev/docs/api/commerce-extensions/get-a-custom-entry"
+    docs: "https://developer.elasticpath.com/docs/api/commerce-extensions/get-a-custom-entry"
     url: "/v2/settings/extensions/custom-apis/{custom_apis}/entries/{custom_api_settings_entries}"
   get-collection:
-    docs: "https://elasticpath.dev/docs/api/commerce-extensions/get-all-custom-entries"
+    docs: "https://elasticpath.dev/docs/api/commerce-extensions/list-custom-api-entries"
     url: "/v2/settings/extensions/custom-apis/{custom_apis}/entries/"
   attributes:
     data.type:
@@ -148,28 +148,28 @@ custom-api-extensions-entries:
     - custom-fields
   docs: "https://elasticpath.dev/docs/api/commerce-extensions/custom-api-entries"
   delete-entity:
-    docs: "https://elasticpath.dev/docs/api/commerce-extensions/delete-a-custom-entry-settings"
+    docs: "https://elasticpath.dev/docs/api/commerce-extensions/get-open-api-specification"
     url: "/v2/extensions/{custom_apis}/{custom_api_extensions_entries}"
     parent_resource_value_overrides:
       custom_apis: slug
   create-entity:
-    docs: "https://elasticpath.dev/docs/api/commerce-extensions/create-a-custom-entry-settings"
+    docs: "https://elasticpath.dev/docs/api/commerce-extensions/get-open-api-specification"
     url: "/v2/extensions/{custom_apis}"
     # BUG: Why doesn't this work
     parent_resource_value_overrides:
       custom_apis: slug
   update-entity:
-    docs: "https://elasticpath.dev/docs/api/commerce-extensions/put-a-custom-entry-settings"
+    docs: "https://elasticpath.dev/docs/api/commerce-extensions/get-open-api-specification"
     url: "/v2/extensions/{custom_apis}/{custom_api_extensions_entries}"
     parent_resource_value_overrides:
       custom_apis: slug
   get-entity:
-    docs: "https://elasticpath.dev/docs/api/commerce-extensions/get-a-custom-entry-settings"
+    docs: "https://elasticpath.dev/docs/api/commerce-extensions/get-open-api-specification"
     url: "/v2/extensions/{custom_apis}/{custom_api_extensions_entries}"
     parent_resource_value_overrides:
       custom_apis: slug
   get-collection:
-    docs: "https://elasticpath.dev/docs/api/commerce-extensions/get-custom-entries-settings"
+    docs: "https://elasticpath.dev/docs/api/commerce-extensions/get-open-api-specification"
     url: "/v2/extensions/{custom_apis}/"
     parent_resource_value_overrides:
       custom_apis: slug
