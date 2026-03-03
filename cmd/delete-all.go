@@ -24,10 +24,10 @@ import (
 
 func NewDeleteAllCommand(parentCmd *cobra.Command) func() {
 
-	var pageLength uint16 = 25
+	var pageLength uint16 = 100
 
 	resetFunc := func() {
-		pageLength = 25
+		pageLength = 100
 	}
 
 	var deleteAll = &cobra.Command{
