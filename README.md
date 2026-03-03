@@ -68,6 +68,7 @@ Key and Value pairs are specified in a specific format documented in the [Tutori
 | `epcc runbooks show <RUNBOOK> <ACTION>` | Show a specific runbook (script)                                           |
 | `epcc runbooks validate`                | Validates all runbooks (built in and user supplied, outputting any errors) |
 | `epcc runbooks run <RUNBOOK> <ACTION>`  | Run a specific runbook (script)                                            |
+| `epcc runbooks exec-script <FILE>`      | Execute a standalone YAML script file containing epcc commands             |
 
 #### Tuning Runbooks
 

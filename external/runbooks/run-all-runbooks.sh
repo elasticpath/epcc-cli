@@ -116,6 +116,11 @@ epcc runbooks run extend-customer-resources-how-to update-example-customer
 epcc runbooks run extend-customer-resources-how-to reset
 
 
+echo "Starting exec-script Tests"
+epcc reset-store .+
+epcc runbooks exec-script "$SCRIPT_DIR/scripts/account-sequential-script.yml"
+epcc runbooks exec-script "$SCRIPT_DIR/scripts/account-parallel-script.yml"
+
 echo "Starting Account Management Runbook"
 
 epcc reset-store .+
