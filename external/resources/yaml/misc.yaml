@@ -4,13 +4,16 @@ application-keys:
   json-api-format: "legacy"
   docs: "https://elasticpath.dev/docs/api/application-keys/application-keys"
   get-collection:
-    docs: "https://elasticpath.dev/docs/api/application-keys/get-all-keys"
+    docs: "https://elasticpath.dev/docs/api/application-keys/list-application-keys"
     url: "/v2/application-keys"
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/application-keys/get-an-application-key"
+    url: "/v2/application-keys/{application_keys}"
   create-entity:
-    docs: "https://elasticpath.dev/docs/api/application-keys/create-key"
+    docs: "https://elasticpath.dev/docs/api/application-keys/create-an-application-key"
     url: "/v2/application-keys"
   delete-entity:
-    docs: "https://elasticpath.dev/docs/api/application-keys/delete-key"
+    docs: "https://elasticpath.dev/docs/api/application-keys/delete-an-application-key"
     url: "/v2/application-keys/{application_keys}"
   attributes:
     name:

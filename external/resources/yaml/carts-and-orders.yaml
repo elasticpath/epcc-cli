@@ -59,7 +59,7 @@ cart-items:
       - name: include
         type: STRING
   update-entity:
-    docs: "https://elasticpath.dev/docs/carts-orders/bulk-add-to-cart"
+    docs: "https://developer.elasticpath.com/docs/api/carts/update-a-cart-item"
     url: "/v2/carts/{carts}/items/{cart_items}"
     openapi-operation-id: updateACartItem
   delete-entity:
@@ -73,6 +73,30 @@ cart-items:
       type: INT
     id:
       type: RESOURCE_ID:pcm-products
+bulk-cart-items:
+  singular-name: "bulk-cart-items"
+  json-api-type: "cart_item"
+  json-api-format: "legacy"
+  no-wrapping: true
+  suppress-reset-warning: true
+  docs: "https://elasticpath.dev/docs/api/carts/bulk-update-items-in-cart"
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/carts/bulk-update-items-in-cart"
+    url: "/v2/carts/{carts}/items"
+    openapi-operation-id: bulkUpdateItemsInCart
+  attributes:
+    data[n].id:
+      type: STRING
+    data[n].quantity:
+      type: INT
+    data[n].type:
+      type: ENUM:cart_item,custom_item
+    data[n].custom_inputs:
+      type: PRIMITIVE
+    data[n].shipping_group_id:
+      type: STRING
+    options.update_all_or_nothing:
+      type: BOOL
 cart-custom-discounts:
   singular-name: "cart-custom-discount"
   json-api-type: "custom_discount"
