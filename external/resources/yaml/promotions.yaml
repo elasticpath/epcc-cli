@@ -151,14 +151,14 @@ rule-promotions:
     rule_set.rules.strategy:
       type: ENUM:account_tags,cart_total,cart_custom_attribute,item_price,item_sku,item_product_id,item_quantity,item_category,item_attribute,item_identifier,items_bundle,and,or
     rule_set.rules.operator:
-      type: ENUM:in,nin,eq,lt,lte,gt,gte,range
-      usage: "The strategies cart_total, item_price, and item_quantity support the operators [gt, lt, gte, lte, eq].  Strategies cart_custom_attribute, item_sku, item_product_id, item_identifier, item_category, and item_attribute support the operators [in, nin]."
+      type: ENUM:in,nin,eq,lt,lte,gt,gte,range,contains_all,contains_any,not_contains_any,not_contains_all
+      usage: "The strategies cart_total, item_price, and item_quantity support the operators [gt, lt, gte, lte, eq].  Strategies cart_custom_attribute, item_sku, item_product_id, item_identifier, item_category, and item_attribute support the operators [in, nin].  Strategy account_tags supports the operators [contains_all, contains_any, not_contains_any, not_contains_all]."
     rule_set.rules.args[n]:
       type: STRING
     rule_set.rules.children[n].strategy:
       type: ENUM:account_tags,cart_total,cart_custom_attribute,item_price,item_sku,item_product_id,item_quantity,item_category,item_attribute,item_identifier,items_bundle,and,or
     rule_set.rules.children[n].operator:
-      type: ENUM:in,nin,eq,lt,lte,gt,gte
+      type: ENUM:in,nin,eq,lt,lte,gt,gte,contains_all,contains_any,not_contains_any,not_contains_all
     rule_set.rules.children[n].args[n]:
       type: STRING
     rule_set.catalog_ids[n]:
