@@ -1,106 +1,3 @@
-#subscription-products:
-#  docs: "https://elasticpath.dev/docs/api/subscriptions/products"
-#  json-api-type: subscription_product
-#  json-api-format: compliant
-#  singular-name: subscription-product
-#  get-collection:
-#    docs: "https://elasticpath.dev/docs/api/subscriptions/list-products"
-#    url: /v2/subscriptions/products
-#  get-entity:
-#    docs: "https://elasticpath.dev/docs/api/subscriptions/get-product"
-#    url: /v2/subscriptions/products/{subscription_products}
-#  create-entity:
-#    docs: "https://elasticpath.dev/docs/api/subscriptions/create-product"
-#    url: /v2/subscriptions/products
-#  update-entity:
-#    docs: "https://elasticpath.dev/docs/api/subscriptions/update-product"
-#    url: /v2/subscriptions/products/{subscription_products}
-#  delete-entity:
-#    docs: "https://elasticpath.dev/docs/api/subscriptions/delete-product"
-#    url: /v2/subscriptions/products/{subscription_products}
-#  attributes:
-#    ^price\.([a-zA-Z0-9-_]+)\.amount$:
-#      type: INT
-#    ^price\.([a-zA-Z0-9-_]+)\.includes_tax$:
-#      type: BOOL
-#    description:
-#      type: STRING
-#      autofill: VALUE:Auto Generated
-#    external_ref:
-#      type: STRING
-#    main_image:
-#      type: STRING
-#    name:
-#      type: STRING
-#      autofill: FUNC:Name
-#    price_units.amount:
-#      type: INT
-#    price_units.unit:
-#      type: ENUM:day,month
-#    sku:
-#      type: STRING
-#subscription-plans:
-#  docs: "https://elasticpath.dev/docs/api/subscriptions/plans"
-#  json-api-type: subscription_plan
-#  json-api-format: compliant
-#  singular-name: subscription-plan
-#  get-collection:
-#    docs: "https://elasticpath.dev/docs/api/subscriptions/list-plans"
-#    url: /v2/subscriptions/plans
-#  get-entity:
-#    docs: "https://elasticpath.dev/docs/api/subscriptions/get-plan"
-#    url: /v2/subscriptions/plans/{subscription_plans}
-#  create-entity:
-#    docs: "https://elasticpath.dev/docs/api/subscriptions/create-plan"
-#    url: /v2/subscriptions/plans
-#  update-entity:
-#    docs: "https://elasticpath.dev/docs/api/subscriptions/update-plan"
-#    url: /v2/subscriptions/plans/{subscription_plans}
-#  delete-entity:
-#    docs: "https://elasticpath.dev/docs/api/subscriptions/delete-plan"
-#    url: /v2/subscriptions/plans/{subscription_plans}
-#  attributes:
-#    ^fixed_price\.(USD|[a-zA-Z0-9-_]+)\.amount$:
-#      type: INT
-#    ^fixed_price\.(USD|[a-zA-Z0-9-_]+)\.includes_tax$:
-#      type: BOOL
-#    billing_day:
-#      type: INT
-#    billing_frequency:
-#      type: INT
-#      autofill: VALUE:1
-#    billing_interval_type:
-#      type: ENUM:day,week,month,year
-#      autofill: VALUE:day
-#    billing_month_day:
-#      type: INT
-#    can_cancel:
-#      type: BOOL
-#      autofill: VALUE:true
-#    can_pause:
-#      type: BOOL
-#      autofill: VALUE:true
-#    can_resume:
-#      type: BOOL
-#      autofill: VALUE:true
-#    description:
-#      type: STRING
-#      autofill: VALUE:Auto Generated
-#    end_behavior:
-#      type: ENUM:close,roll
-#      autofill: VALUE:close
-#    external_ref:
-#      type: STRING
-#    name:
-#      type: STRING
-#      autofill: FUNC:Name
-#    plan_length:
-#      type: INT
-#      autofill: VALUE:1
-#    status:
-#      type: ENUM:active,draft,archive
-#    trial_period:
-#      type: INT
 subscription-offerings:
   docs: "https://elasticpath.dev/docs/api/subscriptions/offerings"
   json-api-type: subscription_offering
@@ -109,18 +6,35 @@ subscription-offerings:
   get-collection:
     docs: "https://elasticpath.dev/docs/api/subscriptions/create-offering"
     url: /v2/subscriptions/offerings
+    openapi-operation-id: ListOfferings
+    query:
+      - name: filter
+        type: STRING
+      - name: page[offset]
+        type: INT
+      - name: page[limit]
+        type: INT
+      - name: include
+        type: STRING
   get-entity:
     docs: "https://elasticpath.dev/docs/api/subscriptions/get-offering"
     url: /v2/subscriptions/offerings/{subscription_offerings}
+    openapi-operation-id: GetOffering
+    query:
+      - name: include
+        type: STRING
   create-entity:
     docs: "https://elasticpath.dev/docs/api/subscriptions/create-offering"
     url: /v2/subscriptions/offerings
+    openapi-operation-id: CreateOffering
   update-entity:
     docs: "https://elasticpath.dev/docs/api/subscriptions/update-offering"
     url: /v2/subscriptions/offerings/{subscription_offerings}
+    openapi-operation-id: UpdateOffering
   delete-entity:
     docs: "https://elasticpath.dev/docs/api/subscriptions/delete-offering"
     url: /v2/subscriptions/offerings/{subscription_offerings}
+    openapi-operation-id: DeleteOffering
   attributes:
     description:
       type: STRING
@@ -144,22 +58,673 @@ subscription-proration-policies:
   get-collection:
     docs: "https://elasticpath.dev/docs/api/subscriptions/list-proration-policies"
     url: /v2/subscriptions/proration-policies
+    openapi-operation-id: ListProrationPolicies
+    query:
+      - name: page[offset]
+        type: INT
+      - name: page[limit]
+        type: INT
   get-entity:
     docs: "https://elasticpath.dev/docs/api/subscriptions/get-proration-policy"
     url: /v2/subscriptions/proration-policies/{subscription_proration_policies}
+    openapi-operation-id: GetProrationPolicy
   create-entity:
     docs: "https://elasticpath.dev/docs/api/subscriptions/create-proration-policy"
     url: /v2/subscriptions/proration-policies
+    openapi-operation-id: CreateProrationPolicy
   update-entity:
     docs: "https://elasticpath.dev/docs/api/subscriptions/update-proration-policy"
     url: /v2/subscriptions/proration-policies/{subscription_proration_policies}
+    openapi-operation-id: UpdateProrationPolicy
   delete-entity:
     docs: "https://elasticpath.dev/docs/api/subscriptions/delete-proration-policy"
     url: /v2/subscriptions/proration-policies/{subscription_proration_policies}
+    openapi-operation-id: DeleteProrationPolicy
   attributes:
     external_ref:
       type: STRING
     name:
       type: STRING
+      autofill: FUNC:Company
     rounding:
       type: ENUM:up,down,nearest
+subscription-features:
+  docs: "https://elasticpath.dev/docs/api/subscriptions/features"
+  json-api-type: subscription_feature
+  json-api-format: compliant
+  singular-name: subscription-feature
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/list-features"
+    url: /v2/subscriptions/features
+    openapi-operation-id: ListFeatures
+    query:
+      - name: filter
+        type: STRING
+      - name: page[offset]
+        type: INT
+      - name: page[limit]
+        type: INT
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/get-feature"
+    url: /v2/subscriptions/features/{subscription_features}
+    openapi-operation-id: GetFeature
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/create-feature"
+    url: /v2/subscriptions/features
+    openapi-operation-id: CreateFeature
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/update-feature"
+    url: /v2/subscriptions/features/{subscription_features}
+    openapi-operation-id: UpdateFeature
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/delete-feature"
+    url: /v2/subscriptions/features/{subscription_features}
+    openapi-operation-id: DeleteFeature
+  attributes:
+    name:
+      type: STRING
+      autofill: FUNC:Name
+    description:
+      type: STRING
+      autofill: VALUE:Auto Generated
+    external_ref:
+      type: STRING
+    configuration.type:
+      type: ENUM:access,promotion,usage
+    configuration.tag:
+      type: STRING
+      autofill: FUNC:BuzzWord
+    configuration.label:
+      type: STRING
+    configuration.default_value:
+      type: STRING
+    configuration.promotions[n].name:
+      type: STRING
+    configuration.promotions[n].tag:
+      type: STRING
+    configuration.promotions[n].promotion_id:
+      type: RESOURCE_ID:rule-promotions
+subscription-subscribers:
+  docs: "https://elasticpath.dev/docs/api/subscriptions/subscribers"
+  json-api-type: subscription_subscriber
+  json-api-format: compliant
+  singular-name: subscription-subscriber
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/list-subscribers"
+    url: /v2/subscriptions/subscribers
+    openapi-operation-id: ListSubscribers
+    query:
+      - name: filter
+        type: STRING
+      - name: page[offset]
+        type: INT
+      - name: page[limit]
+        type: INT
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/get-subscriber"
+    url: /v2/subscriptions/subscribers/{subscription_subscribers}
+    openapi-operation-id: GetSubscriber
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/create-subscriber"
+    url: /v2/subscriptions/subscribers
+    openapi-operation-id: CreateSubscriber
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/update-subscriber"
+    url: /v2/subscriptions/subscribers/{subscription_subscribers}
+    openapi-operation-id: UpdateSubscriber
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/delete-subscriber"
+    url: /v2/subscriptions/subscribers/{subscription_subscribers}
+    openapi-operation-id: DeleteSubscriber
+  attributes:
+    account_id:
+      type: RESOURCE_ID:accounts
+    name:
+      type: STRING
+      autofill: FUNC:Name
+    email:
+      type: STRING
+      autofill: FUNC:Email
+subscriptions:
+  docs: "https://elasticpath.dev/docs/api/subscriptions/subscriptions"
+  json-api-type: subscription
+  json-api-format: compliant
+  singular-name: subscription
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/list-subscriptions"
+    url: /v2/subscriptions/subscriptions
+    openapi-operation-id: ListSubscriptions
+    query:
+      - name: filter
+        type: STRING
+      - name: page[offset]
+        type: INT
+      - name: page[limit]
+        type: INT
+      - name: include
+        type: STRING
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/get-subscription"
+    url: /v2/subscriptions/subscriptions/{subscriptions}
+    openapi-operation-id: GetSubscription
+    query:
+      - name: include
+        type: STRING
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/update-subscription"
+    url: /v2/subscriptions/subscriptions/{subscriptions}
+    openapi-operation-id: UpdateSubscription
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/delete-subscription"
+    url: /v2/subscriptions/subscriptions/{subscriptions}
+    openapi-operation-id: DeleteSubscription
+  attributes:
+    pricing_option_id:
+      type: RESOURCE_ID:subscription-offering-pricing-options
+    plan_id:
+      type: RESOURCE_ID:subscription-offering-plans
+    address_id:
+      type: STRING
+    go_live_after:
+      type: STRING
+subscription-create:
+  docs: "https://elasticpath.dev/docs/api/subscriptions/subscriptions"
+  json-api-type: subscription
+  json-api-format: compliant
+  singular-name: subscription-create
+  no-wrapping: true
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/create-subscription"
+    url: /v2/subscriptions/subscriptions
+    openapi-operation-id: CreateSubscription
+    creates: subscriptions
+  attributes:
+    data.account_id:
+      type: RESOURCE_ID:accounts
+    data.currency:
+      type: STRING
+      autofill: VALUE:USD
+    data.name:
+      type: STRING
+      autofill: FUNC:Name
+    data.email:
+      type: STRING
+      autofill: FUNC:Email
+    data.manual_payments:
+      type: BOOL
+    data.external_ref:
+      type: STRING
+    data.offering_id:
+      type: RESOURCE_ID:subscription-offerings
+    data.plan_id:
+      type: RESOURCE_ID:subscription-offering-plans
+    data.pricing_option_id:
+      type: RESOURCE_ID:subscription-offering-pricing-options
+    data.address_id:
+      type: STRING
+    data.pending:
+      type: BOOL
+subscription-schedules:
+  docs: "https://elasticpath.dev/docs/api/subscriptions/schedules"
+  json-api-type: subscription_schedule
+  json-api-format: compliant
+  singular-name: subscription-schedule
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/list-schedules"
+    url: /v2/subscriptions/schedules
+    openapi-operation-id: ListSchedules
+    query:
+      - name: filter
+        type: STRING
+      - name: page[offset]
+        type: INT
+      - name: page[limit]
+        type: INT
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/get-schedule"
+    url: /v2/subscriptions/schedules/{subscription_schedules}
+    openapi-operation-id: GetSchedule
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/create-schedule"
+    url: /v2/subscriptions/schedules
+    openapi-operation-id: CreateSchedule
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/update-schedule"
+    url: /v2/subscriptions/schedules/{subscription_schedules}
+    openapi-operation-id: UpdateSchedule
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/delete-schedule"
+    url: /v2/subscriptions/schedules/{subscription_schedules}
+    openapi-operation-id: DeleteSchedule
+  attributes:
+    name:
+      type: STRING
+      autofill: FUNC:Name
+    external_ref:
+      type: STRING
+    specification:
+      type: STRING
+    location:
+      type: STRING
+    job.job_type:
+      type: ENUM:billing-run,tax-run,payment-run,import
+subscription-dunning-rules:
+  docs: "https://elasticpath.dev/docs/api/subscriptions/dunning-rules"
+  json-api-type: subscription_dunning_rule
+  json-api-format: compliant
+  singular-name: subscription-dunning-rule
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/list-dunning-rules"
+    url: /v2/subscriptions/dunning-rules
+    openapi-operation-id: ListDunningRules
+    query:
+      - name: filter
+        type: STRING
+      - name: page[offset]
+        type: INT
+      - name: page[limit]
+        type: INT
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/get-dunning-rule"
+    url: /v2/subscriptions/dunning-rules/{subscription_dunning_rules}
+    openapi-operation-id: GetDunningRule
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/create-dunning-rule"
+    url: /v2/subscriptions/dunning-rules
+    openapi-operation-id: CreateDunningRule
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/update-dunning-rule"
+    url: /v2/subscriptions/dunning-rules/{subscription_dunning_rules}
+    openapi-operation-id: UpdateDunningRule
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/delete-dunning-rule"
+    url: /v2/subscriptions/dunning-rules/{subscription_dunning_rules}
+    openapi-operation-id: DeleteDunningRule
+  attributes:
+    payment_retry_type:
+      type: ENUM:fixed,backoff,tiered
+    payment_retry_interval:
+      type: INT
+      autofill: VALUE:1
+    payment_retry_unit:
+      type: ENUM:day,week
+    payment_retry_multiplier:
+      type: FLOAT
+    payment_retries_limit:
+      type: INT
+      autofill: VALUE:3
+    action:
+      type: ENUM:none,pause,close,suspend
+    default:
+      type: BOOL
+subscription-jobs:
+  docs: "https://elasticpath.dev/docs/api/subscriptions/jobs"
+  json-api-type: subscription_job
+  json-api-format: compliant
+  singular-name: subscription-job
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/list-jobs"
+    url: /v2/subscriptions/jobs
+    openapi-operation-id: ListJobs
+    query:
+      - name: filter
+        type: STRING
+      - name: page[offset]
+        type: INT
+      - name: page[limit]
+        type: INT
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/get-job"
+    url: /v2/subscriptions/jobs/{subscription_jobs}
+    openapi-operation-id: GetJob
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/create-job"
+    url: /v2/subscriptions/jobs
+    openapi-operation-id: CreateJob
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/delete-job"
+    url: /v2/subscriptions/jobs/{subscription_jobs}
+    openapi-operation-id: DeleteJob
+  attributes:
+    external_ref:
+      type: STRING
+    job_type:
+      type: ENUM:billing-run,tax-run,payment-run,import
+subscription-offering-plans:
+  docs: "https://elasticpath.dev/docs/api/subscriptions/offerings"
+  json-api-type: subscription_offering_plan
+  json-api-format: compliant
+  singular-name: subscription-offering-plan
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/list-offering-plans"
+    url: /v2/subscriptions/offerings/{subscription_offerings}/plans
+    openapi-operation-id: ListOfferingPlans
+    query:
+      - name: page[offset]
+        type: INT
+      - name: page[limit]
+        type: INT
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/get-offering-plan"
+    url: /v2/subscriptions/offerings/{subscription_offerings}/plans/{subscription_offering_plans}
+    openapi-operation-id: GetOfferingPlan
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/create-offering-plan"
+    url: /v2/subscriptions/offerings/{subscription_offerings}/plans
+    openapi-operation-id: CreateOfferingPlan
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/update-offering-plan"
+    url: /v2/subscriptions/offerings/{subscription_offerings}/plans/{subscription_offering_plans}
+    openapi-operation-id: UpdateOfferingPlan
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/delete-offering-plan"
+    url: /v2/subscriptions/offerings/{subscription_offerings}/plans/{subscription_offering_plans}
+    openapi-operation-id: DeleteOfferingPlan
+  attributes:
+    name:
+      type: STRING
+      autofill: FUNC:Name
+    description:
+      type: STRING
+      autofill: VALUE:Auto Generated
+    sku:
+      type: STRING
+      autofill: FUNC:BuzzWord
+    main_image:
+      type: STRING
+    external_ref:
+      type: STRING
+    ^price\.(.+)\.amount$:
+      type: INT
+    ^price\.(.+)\.includes_tax$:
+      type: BOOL
+    price_units.unit:
+      type: ENUM:day,month
+    price_units.amount:
+      type: INT
+subscription-offering-pricing-options:
+  docs: "https://elasticpath.dev/docs/api/subscriptions/offerings"
+  json-api-type: subscription_offering_pricing_option
+  json-api-format: compliant
+  singular-name: subscription-offering-pricing-option
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/list-offering-pricing-options"
+    url: /v2/subscriptions/offerings/{subscription_offerings}/pricing-options
+    openapi-operation-id: ListOfferingPricingOptions
+    query:
+      - name: page[offset]
+        type: INT
+      - name: page[limit]
+        type: INT
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/get-offering-pricing-option"
+    url: /v2/subscriptions/offerings/{subscription_offerings}/pricing-options/{subscription_offering_pricing_options}
+    openapi-operation-id: GetOfferingPricingOption
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/create-offering-pricing-option"
+    url: /v2/subscriptions/offerings/{subscription_offerings}/pricing-options
+    openapi-operation-id: CreateOfferingPricingOption
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/update-offering-pricing-option"
+    url: /v2/subscriptions/offerings/{subscription_offerings}/pricing-options/{subscription_offering_pricing_options}
+    openapi-operation-id: UpdateOfferingPricingOption
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/delete-offering-pricing-option"
+    url: /v2/subscriptions/offerings/{subscription_offerings}/pricing-options/{subscription_offering_pricing_options}
+    openapi-operation-id: DeleteOfferingPricingOption
+  attributes:
+    name:
+      type: STRING
+      autofill: FUNC:Name
+    description:
+      type: STRING
+      autofill: VALUE:Auto Generated
+    external_ref:
+      type: STRING
+    billing_interval_type:
+      type: ENUM:day,week,month,year
+    billing_frequency:
+      type: INT
+      autofill: VALUE:1
+    trial_period:
+      type: INT
+    plan_length:
+      type: INT
+      autofill: VALUE:12
+    end_behavior:
+      type: ENUM:close,roll
+    can_pause:
+      type: BOOL
+    can_resume:
+      type: BOOL
+    can_cancel:
+      type: BOOL
+    base_price_percentage:
+      type: FLOAT
+      autofill: VALUE:100
+    ^fixed_price\.(.+)\.amount$:
+      type: INT
+    ^fixed_price\.(.+)\.includes_tax$:
+      type: BOOL
+    lead_time.type:
+      type: ENUM:day,week
+    lead_time.time:
+      type: INT
+subscription-offering-features:
+  docs: "https://elasticpath.dev/docs/api/subscriptions/offerings"
+  json-api-type: subscription_offering_feature
+  json-api-format: compliant
+  singular-name: subscription-offering-feature
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/list-offering-features"
+    url: /v2/subscriptions/offerings/{subscription_offerings}/features
+    openapi-operation-id: ListOfferingFeatures
+    query:
+      - name: page[offset]
+        type: INT
+      - name: page[limit]
+        type: INT
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/get-offering-feature"
+    url: /v2/subscriptions/offerings/{subscription_offerings}/features/{subscription_offering_features}
+    openapi-operation-id: GetOfferingFeature
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/create-offering-feature"
+    url: /v2/subscriptions/offerings/{subscription_offerings}/features
+    openapi-operation-id: CreateOfferingFeature
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/update-offering-feature"
+    url: /v2/subscriptions/offerings/{subscription_offerings}/features/{subscription_offering_features}
+    openapi-operation-id: UpdateOfferingFeature
+  delete-entity:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/delete-offering-feature"
+    url: /v2/subscriptions/offerings/{subscription_offerings}/features/{subscription_offering_features}
+    openapi-operation-id: DeleteOfferingFeature
+  attributes:
+    name:
+      type: STRING
+      autofill: FUNC:Name
+    description:
+      type: STRING
+      autofill: VALUE:Auto Generated
+    external_ref:
+      type: STRING
+    configuration.type:
+      type: ENUM:access,promotion,usage
+    configuration.tag:
+      type: STRING
+      autofill: FUNC:BuzzWord
+    configuration.label:
+      type: STRING
+    configuration.default_value:
+      type: STRING
+    configuration.promotions[n].name:
+      type: STRING
+    configuration.promotions[n].tag:
+      type: STRING
+    configuration.promotions[n].promotion_id:
+      type: RESOURCE_ID:rule-promotions
+subscription-invoices:
+  docs: "https://elasticpath.dev/docs/api/subscriptions/invoices"
+  json-api-type: subscription_invoice
+  json-api-format: compliant
+  singular-name: subscription-invoice
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/list-invoices"
+    url: /v2/subscriptions/invoices
+    openapi-operation-id: ListInvoices
+    query:
+      - name: filter
+        type: STRING
+      - name: page[offset]
+        type: INT
+      - name: page[limit]
+        type: INT
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/get-invoice"
+    url: /v2/subscriptions/invoices/{subscription_invoices}
+    openapi-operation-id: GetInvoice
+subscription-invoice-payments:
+  docs: "https://elasticpath.dev/docs/api/subscriptions/invoices"
+  json-api-type: subscription_invoice_payment
+  json-api-format: compliant
+  singular-name: subscription-invoice-payment
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/list-invoice-payments"
+    url: /v2/subscriptions/invoices/{subscription_invoices}/payments
+    openapi-operation-id: ListInvoicePayments
+    query:
+      - name: page[offset]
+        type: INT
+      - name: page[limit]
+        type: INT
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/get-invoice-payment"
+    url: /v2/subscriptions/invoices/{subscription_invoices}/payments/{subscription_invoice_payments}
+    openapi-operation-id: GetInvoicePayment
+  update-entity:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/update-invoice-payment"
+    url: /v2/subscriptions/invoices/{subscription_invoices}/payments/{subscription_invoice_payments}
+    openapi-operation-id: UpdateInvoicePayment
+  attributes:
+    success:
+      type: BOOL
+    external_payment_id:
+      type: STRING
+    failure_detail.reason:
+      type: STRING
+    payment_taken_at:
+      type: STRING
+subscription-states:
+  docs: "https://elasticpath.dev/docs/api/subscriptions/subscriptions"
+  json-api-type: subscription_state
+  json-api-format: compliant
+  singular-name: subscription-state
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/list-subscription-states"
+    url: /v2/subscriptions/subscriptions/{subscriptions}/states
+    openapi-operation-id: ListSubscriptionStates
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/get-subscription-state"
+    url: /v2/subscriptions/subscriptions/{subscriptions}/states/{subscription_states}
+    openapi-operation-id: GetSubscriptionState
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/create-subscription-state"
+    url: /v2/subscriptions/subscriptions/{subscriptions}/states
+    openapi-operation-id: CreateSubscriptionState
+  attributes:
+    action:
+      type: ENUM:cancel,pause,resume,pending
+subscription-plans:
+  docs: "https://elasticpath.dev/docs/api/subscriptions/subscriptions"
+  json-api-type: subscription_offering_plan
+  json-api-format: compliant
+  singular-name: subscription-plan
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/list-subscription-plans"
+    url: /v2/subscriptions/subscriptions/{subscriptions}/plans
+    openapi-operation-id: ListSubscriptionPlans
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/get-subscription-plan"
+    url: /v2/subscriptions/subscriptions/{subscriptions}/plans/{subscription_plans}
+    openapi-operation-id: GetSubscriptionPlan
+subscription-pricing-options:
+  docs: "https://elasticpath.dev/docs/api/subscriptions/subscriptions"
+  json-api-type: subscription_offering_pricing_option
+  json-api-format: compliant
+  singular-name: subscription-pricing-option
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/list-subscription-pricing-options"
+    url: /v2/subscriptions/subscriptions/{subscriptions}/pricing-options
+    openapi-operation-id: ListSubscriptionPricingOptions
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/get-subscription-pricing-option"
+    url: /v2/subscriptions/subscriptions/{subscriptions}/pricing-options/{subscription_pricing_options}
+    openapi-operation-id: GetSubscriptionPricingOption
+subscription-entitlements:
+  docs: "https://elasticpath.dev/docs/api/subscriptions/subscriptions"
+  json-api-type: subscription_offering_feature
+  json-api-format: compliant
+  singular-name: subscription-entitlement
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/list-subscription-features"
+    url: /v2/subscriptions/subscriptions/{subscriptions}/features
+    openapi-operation-id: ListSubscriptionFeatures
+    query:
+      - name: page[offset]
+        type: INT
+      - name: page[limit]
+        type: INT
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/get-subscription-feature"
+    url: /v2/subscriptions/subscriptions/{subscriptions}/features/{subscription_entitlements}
+    openapi-operation-id: GetSubscriptionFeature
+subscription-imports:
+  docs: "https://elasticpath.dev/docs/api/subscriptions/imports"
+  json-api-type: subscription_import
+  json-api-format: compliant
+  singular-name: subscription-import
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/list-import-jobs"
+    url: /v2/subscriptions/imports
+    openapi-operation-id: ListImportJobs
+    query:
+      - name: filter
+        type: STRING
+      - name: page[offset]
+        type: INT
+      - name: page[limit]
+        type: INT
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/get-import"
+    url: /v2/subscriptions/imports/{subscription_imports}
+    openapi-operation-id: GetImport
+    query:
+      - name: page[offset]
+        type: INT
+      - name: page[limit]
+        type: INT
+  create-entity:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/create-import"
+    url: /v2/subscriptions/imports
+    openapi-operation-id: CreateImport
+    content-type: "multipart/form-data"
+  attributes:
+    import_file:
+      type: FILE
+    external_ref:
+      type: STRING
+subscription-import-errors:
+  docs: "https://elasticpath.dev/docs/api/subscriptions/imports"
+  json-api-type: subscription_import_error
+  json-api-format: compliant
+  singular-name: subscription-import-error
+  get-collection:
+    docs: "https://elasticpath.dev/docs/api/subscriptions/get-import-errors"
+    url: /v2/subscriptions/imports/{subscription_imports}/errors
+    openapi-operation-id: GetImportErrors
+    query:
+      - name: page[offset]
+        type: INT
+      - name: page[limit]
+        type: INT
