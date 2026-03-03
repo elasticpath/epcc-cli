@@ -1,45 +1,292 @@
 name: "subscriptions"
 description:
-  long: "Utilities for working with subscriptions"
-  short: "Utilities for working with subscriptions"
+  long: "End-to-end subscription workflows: create offerings, add to cart, checkout, manage lifecycle, and handle invoices"
+  short: "Subscription offering, checkout, and lifecycle workflows"
 actions:
-#  create-subscription-products:
-#    variables:
-#      count:
-#        type: INT
-#        default: 10
-#        description:
-#          short: "Create a lot of subscription products"
-#    description:
-#      short: "Create a number of products"
-#    commands:
-#      - |
-#        {{ range untilStep 0 .count  1 -}}epcc create --skip-alias-processing -s subscription-product --auto-fill
-#        {{ end }}
-#  create-subscription-plans:
-#    variables:
-#      count:
-#        type: INT
-#        default: 10
-#        description:
-#          short: "Create a lot of subscription plans"
-#    description:
-#      short: "Create a number of orders"
-#    commands:
-#      - |
-#        {{ range untilStep 0 .count  1 -}}epcc create --skip-alias-processing -s subscription-plan status active --auto-fill billing_interval_type day billing_frequency 214 plan_length 1 end_behavior close can_pause true can_resume true can_cancel true fixed_price.USD.amount {{ pseudoRandInt 1 200 }}00 fixed_price.USD.includes_tax true
-#        {{ end }}
+  create-offering:
+    description:
+      short: "Create a complete subscription offering with a plan, pricing option, and feature"
+    variables:
+      offering-name:
+        type: STRING
+        default: "Streaming Service"
+        description:
+          short: "Name of the offering"
+      plan-name:
+        type: STRING
+        default: "HD Plan"
+        description:
+          short: "Name of the plan"
+      plan-price:
+        type: INT
+        default: 999
+        description:
+          short: "Plan price in smallest currency unit (e.g., 999 = $9.99)"
+      currency:
+        type: STRING
+        default: "USD"
+        description:
+          short: "Currency code for plan pricing"
+      pricing-option-name:
+        type: STRING
+        default: "Monthly"
+        description:
+          short: "Name of the pricing option"
+      billing-interval:
+        type: ENUM:day,week,month,year
+        default: "month"
+        description:
+          short: "Billing interval type"
+      billing-frequency:
+        type: INT
+        default: 1
+        description:
+          short: "How often to bill (e.g., 1 = every interval, 2 = every other)"
+      plan-length:
+        type: INT
+        default: 12
+        description:
+          short: "Length of the plan in billing intervals (e.g., 12 months)"
+      feature-name:
+        type: STRING
+        default: "Premium Access"
+        description:
+          short: "Name of the feature/entitlement"
+      feature-type:
+        type: ENUM:access,promotion,usage
+        default: "access"
+        description:
+          short: "Type of feature"
+      feature-tag:
+        type: STRING
+        default: "premium"
+        description:
+          short: "Tag for the feature"
+    commands:
+      # Create the offering
+      - epcc create subscription-offering name "{{ index . "offering-name" }}" description "{{ index . "offering-name" }}"
+      # Create a plan within the offering
+      - epcc create subscription-offering-plan last_read=entity name "{{ index . "plan-name" }}" description "{{ index . "plan-name" }}" price.{{ .currency }}.amount {{ index . "plan-price" }} price.{{ .currency }}.includes_tax false price_units.unit month price_units.amount 1
+      # Create a pricing option within the offering
+      - epcc create subscription-offering-pricing-option name=Streaming_Service name "{{ index . "pricing-option-name" }}" description "{{ index . "pricing-option-name" }}" billing_interval_type {{ index . "billing-interval" }} billing_frequency {{ index . "billing-frequency" }} plan_length {{ index . "plan-length" }} base_price_percentage 100.0 end_behavior roll can_pause true can_resume true can_cancel true
+      # Create a feature within the offering
+      - epcc create subscription-offering-feature name=Streaming_Service name "{{ index . "feature-name" }}" description "{{ index . "feature-name" }}" configuration.type {{ index . "feature-type" }} configuration.tag {{ index . "feature-tag" }}
+
+  create-offering-promotion:
+    description:
+      short: "Create an account tag, a rule promotion triggered by that tag, and link it to an offering as a promotion feature"
+    variables:
+      promotion-name:
+        type: STRING
+        default: "Subscriber Discount"
+        description:
+          short: "Name of the rule promotion"
+      discount-percent:
+        type: INT
+        default: 10
+        description:
+          short: "Percent discount to apply to the cart"
+      promotion-tag:
+        type: STRING
+        default: "subscriber_discount"
+        description:
+          short: "Account tag name that triggers the promotion"
+    commands:
+      # Create an account tag - when a subscriber activates, this tag is applied to their account
+      - epcc create account-tag name "{{ index . "promotion-tag" }}" description "Tag applied to subscriber accounts for promotion eligibility"
+      # Create a rule promotion that fires when an account has this tag (args are account tag UUIDs)
+      - epcc create rule-promotion --auto-fill name "{{ index . "promotion-name" }}" description "{{ index . "discount-percent" }}% cart discount for subscribers with tag {{ index . "promotion-tag" }}" enabled true automatic true rule_set.rules.strategy account_tags rule_set.rules.operator contains_any rule_set.rules.args[0] alias/account_tag/name={{ index . "promotion-tag" }}/id rule_set.actions[0].strategy cart_discount rule_set.actions[0].args[0] percent rule_set.actions[0].args[1] {{ index . "discount-percent" }}
+      # Create a promotion feature on the offering that links to the rule promotion via promotion_id
+      - epcc create subscription-offering-feature name=Streaming_Service name "{{ index . "promotion-name" }} Feature" description "Applies {{ index . "promotion-name" }} via rule promotion" configuration.type promotion configuration.promotions[0].tag "{{ index . "promotion-tag" }}" configuration.promotions[0].name "{{ index . "promotion-name" }}" configuration.promotions[0].promotion_id alias/rule_promotion/name=Subscriber_Discount/id
+
+  create-account-and-subscriber:
+    description:
+      short: "Create an account and linked subscriber"
+    variables:
+      account-name:
+        type: STRING
+        default: "Acme Corp"
+        description:
+          short: "Name of the account"
+      member-name:
+        type: STRING
+        default: "Jane Doe"
+        description:
+          short: "Name of the subscriber"
+      member-email:
+        type: STRING
+        default: "jane@acme.com"
+        description:
+          short: "Email of the subscriber"
+    commands:
+      # Create account
+      - epcc create -s account name "{{ index . "account-name" }}" legal_name "{{ index . "account-name" }}"
+      # Create subscriber linked to the account
+      - epcc create subscription-subscriber account_id name=Acme_Corp name "{{ index . "member-name" }}" email "{{ index . "member-email" }}"
+
+  subscribe-via-cart:
+    description:
+      short: "Add a subscription offering to a cart and check out with an account"
+    variables:
+      cart-name:
+        type: STRING
+        default: "subscription-cart"
+        description:
+          short: "Cart ID to use"
+    commands:
+      # Create a cart
+      - epcc create cart name "{{ index . "cart-name" }}" id {{ index . "cart-name" }} description "Subscription checkout cart"
+      # Add subscription offering to cart (requires offering, plan, and pricing option IDs)
+      - epcc create cart-subscription-item id={{ index . "cart-name" }} id name=Streaming_Service quantity 1 subscription_configuration.plan last_read=subscription-offering-plan subscription_configuration.pricing_option last_read=subscription-offering-pricing-option
+      # Checkout with the account
+      - epcc create cart-checkout {{ index . "cart-name" }} account.id name=Acme_Corp contact.name "Jane Doe" contact.email "jane@acme.com" billing_address.first_name Jane billing_address.last_name Doe billing_address.line_1 "123 Main St" billing_address.city "Anytown" billing_address.postcode '"12345"' billing_address.county "State" billing_address.country US shipping_address.first_name Jane shipping_address.last_name Doe shipping_address.line_1 "123 Main St" shipping_address.city "Anytown" shipping_address.postcode '"12345"' shipping_address.county "State" shipping_address.country US
+
+  setup-billing:
+    description:
+      short: "Create a billing schedule and dunning rule for failed payment retries"
+    variables:
+      schedule-name:
+        type: STRING
+        default: "Daily Billing"
+        description:
+          short: "Name of the billing schedule"
+      cron:
+        type: STRING
+        default: "0 2 * * *"
+        description:
+          short: "Cron specification for the schedule"
+      timezone:
+        type: STRING
+        default: "America/New_York"
+        description:
+          short: "Timezone for the schedule"
+    commands:
+      # Create a billing schedule
+      - epcc create subscription-schedule name "{{ index . "schedule-name" }}" specification "{{ .cron }}" location "{{ .timezone }}" job.job_type billing-run
+      # Create a dunning rule for retrying failed payments
+      - epcc create subscription-dunning-rule payment_retry_type backoff payment_retry_interval 1 payment_retry_unit day payment_retry_multiplier 2.0 payment_retries_limit 5 action suspend default true
+
+  manage-subscription-lifecycle:
+    description:
+      short: "Pause, resume, or cancel a subscription"
+    variables:
+      action:
+        type: ENUM:pause,resume,cancel
+        default: "pause"
+        description:
+          short: "Lifecycle action to perform"
+    commands:
+      # List subscriptions to find the one to manage
+      - epcc get subscriptions
+      # Perform the lifecycle action
+      - epcc create subscription-state last_read=entity action {{ .action }}
+      # View the state history
+      - epcc get subscription-states last_read=entity
+
+  view-subscription-details:
+    description:
+      short: "View a subscription with its plans, pricing options, entitlements, and states"
+    commands:
+      # List subscriptions
+      - epcc get subscriptions
+      # View details of the most recent subscription
+      - epcc get subscription last_read=entity
+      # View the plans attached to this subscription
+      - epcc get subscription-plans last_read=entity
+      # View the pricing options
+      - epcc get subscription-pricing-options last_read=entity
+      # View entitlements (features)
+      - epcc get subscription-entitlements last_read=entity
+      # View state history
+      - epcc get subscription-states last_read=entity
+
+  view-invoices:
+    description:
+      short: "List invoices and view payment details"
+    commands:
+      # List all invoices
+      - epcc get subscription-invoices
+      # View the most recent invoice
+      - epcc get subscription-invoice last_read=entity
+      # View payments for the invoice
+      - epcc get subscription-invoice-payments last_read=entity
+
+  record-manual-payment:
+    description:
+      short: "Record a manual payment against an invoice"
+    variables:
+      external-payment-id:
+        type: STRING
+        default: "manual-pay-001"
+        description:
+          short: "External payment reference ID"
+    commands:
+      # List invoices to find one to pay
+      - epcc get subscription-invoices
+      # View payments for the most recent invoice
+      - epcc get subscription-invoice-payments last_read=entity
+      # Mark the payment as successful
+      - epcc update subscription-invoice-payment last_read=entity last_read=entity success true external_payment_id "{{ index . "external-payment-id" }}"
+
+  run-billing-job:
+    description:
+      short: "Manually trigger a billing run job"
+    commands:
+      - epcc create subscription-job job_type billing-run
+      - epcc get subscription-job last_read=entity
+
+  import-subscribers:
+    description:
+      short: "Import subscribers from a CSV file and check for errors"
+    variables:
+      file:
+        type: STRING
+        default: "import.csv"
+        description:
+          short: "Path to the CSV import file"
+    commands:
+      # Upload the import file
+      - epcc create subscription-import import_file {{ .file }}
+      # Check import status
+      - epcc get subscription-import last_read=entity
+      # Check for errors
+      - epcc get subscription-import-errors last_read=entity
+
   create-subscription-offerings:
     variables:
       count:
         type: INT
         default: 10
         description:
-          short: "Create a lot of subscription offerings"
+          short: "Number of subscription offerings to create"
     description:
-      short: "Create a number of offerings"
+      short: "Create a number of offerings (bulk)"
     commands:
       - |
         {{ range untilStep 0 .count  1 -}}epcc create --skip-alias-processing -s subscription-offering --auto-fill
         {{ end }}
-  
+
+  reset:
+    description:
+      short: "Clean up resources created by this runbook"
+    ignore_errors: true
+    commands:
+      - |
+        epcc get -s subscription-offerings
+        epcc get -s subscription-schedules
+        epcc get -s subscription-dunning-rules
+        epcc get -s subscriptions
+        epcc get -s subscription-subscribers
+        epcc get -s accounts
+        epcc get -s rule-promotions
+        epcc get -s account-tags
+      - |
+        epcc delete subscription-offering name=Streaming_Service --if-alias-exists name=Streaming_Service
+        epcc delete subscription-schedule name=Daily_Billing --if-alias-exists name=Daily_Billing
+        epcc delete subscription-dunning-rule last_read=entity --if-alias-exists last_read=entity
+        epcc delete subscription-subscriber name=Jane_Doe --if-alias-exists name=Jane_Doe
+        epcc delete account name=Acme_Corp --if-alias-exists name=Acme_Corp
+        epcc delete rule-promotion name=Subscriber_Discount --if-alias-exists name=Subscriber_Discount
+        epcc delete account-tag name=subscriber_discount --if-alias-exists name=subscriber_discount
+      - |
+        epcc delete cart subscription-cart

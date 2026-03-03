@@ -4,13 +4,16 @@ application-keys:
   json-api-format: "legacy"
   docs: "https://elasticpath.dev/docs/api/application-keys/application-keys"
   get-collection:
-    docs: "https://elasticpath.dev/docs/api/application-keys/get-all-keys"
+    docs: "https://elasticpath.dev/docs/api/application-keys/list-application-keys"
     url: "/v2/application-keys"
+  get-entity:
+    docs: "https://elasticpath.dev/docs/api/application-keys/get-an-application-key"
+    url: "/v2/application-keys/{application_keys}"
   create-entity:
-    docs: "https://elasticpath.dev/docs/api/application-keys/create-key"
+    docs: "https://elasticpath.dev/docs/api/application-keys/create-an-application-key"
     url: "/v2/application-keys"
   delete-entity:
-    docs: "https://elasticpath.dev/docs/api/application-keys/delete-key"
+    docs: "https://elasticpath.dev/docs/api/application-keys/delete-an-application-key"
     url: "/v2/application-keys/{application_keys}"
   attributes:
     name:
@@ -121,12 +124,15 @@ settings:
   get-collection:
     docs: "https://elasticpath.dev/docs/api/settings/get-v-2-settings"
     url: "/v2/settings"
+    openapi-operation-id: get-v2-settings
   get-entity:
     docs: "https://elasticpath.dev/docs/api/settings/get-v-2-settings"
     url: "/v2/settings"
+    openapi-operation-id: get-v2-settings
   update-entity:
     docs: "https://elasticpath.dev/docs/api/settings/put-v-2-settings"
     url: "/v2/settings"
+    openapi-operation-id: put-v2-settings
   attributes:
     page_length:
       type: STRING
@@ -158,12 +164,15 @@ cart-settings:
   get-collection:
     docs: "https://elasticpath.dev/docs/api/settings/get-v-2-settings-cart"
     url: "/v2/settings/cart"
+    openapi-operation-id: get-v2-settings-cart
   get-entity:
     docs: "https://elasticpath.dev/docs/api/settings/get-v-2-settings-cart"
     url: "/v2/settings/cart"
+    openapi-operation-id: get-v2-settings-cart
   update-entity:
     docs: "https://elasticpath.dev/docs/api/settings/get-v-2-settings-cart"
     url: "/v2/settings/cart"
+    openapi-operation-id: put-v2-settings-cart
   attributes:
     cart_expiry_days:
       type: INT
