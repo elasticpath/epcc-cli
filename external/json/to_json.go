@@ -10,6 +10,7 @@ import (
 	"github.com/elasticpath/epcc-cli/external/aliases"
 	"github.com/elasticpath/epcc-cli/external/resources"
 	"github.com/elasticpath/epcc-cli/external/templates"
+	"github.com/elasticpath/epcc-cli/external/variables"
 	"github.com/itchyny/gojq"
 	"github.com/mitchellh/mapstructure"
 	log "github.com/sirupsen/logrus"
@@ -173,6 +174,7 @@ func toJsonObject(args []string, noWrapping bool, compliant bool, attributes map
 			}
 		}
 
+		val = variables.ResolveVariableOrReturnIdentity(val)
 		val = formatValue(val)
 		processedArgs = append(processedArgs, jsonKey, val)
 	}

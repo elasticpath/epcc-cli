@@ -72,6 +72,7 @@ func NewCreateCommand(parentCmd *cobra.Command) func() {
 		ifAliasDoesNotExist = ""
 		overrides.OverrideUrlPath = ""
 		overrides.QueryParameters = nil
+		overrides.SetVar = nil
 		skipAliases = false
 		compactOutput = false
 		repeat = 1
@@ -289,6 +290,7 @@ func NewCreateCommand(parentCmd *cobra.Command) func() {
 	createCmd.PersistentFlags().StringVarP(&logOnSuccess, "log-on-success", "", "", "Output the following message as an info if the result is successful")
 	createCmd.PersistentFlags().StringVarP(&logOnFailure, "log-on-failure", "", "", "Output the following message as an error if the result fails")
 	createCmd.PersistentFlags().StringVarP(&data, "data", "d", "", "Raw JSON data to use as the request body. If provided, positional arguments will be ignored.")
+	createCmd.PersistentFlags().StringArrayVarP(&overrides.SetVar, "set-var", "", nil, "Extract a value from the response using a jq expression and store it as a variable (e.g., --set-var myid=.data.id)")
 
 	createCmd.MarkFlagsMutuallyExclusive("output-key-val", "output-jq", "silent", "compact")
 	_ = createCmd.RegisterFlagCompletionFunc("output-jq", jqCompletionFunc)

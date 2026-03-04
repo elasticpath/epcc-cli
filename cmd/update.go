@@ -54,6 +54,7 @@ func NewUpdateCommand(parentCmd *cobra.Command) func() {
 	resetFunc := func() {
 		overrides.QueryParameters = nil
 		overrides.OverrideUrlPath = ""
+		overrides.SetVar = nil
 		outputJq = ""
 		compactOutput = false
 		noBodyPrint = false
@@ -310,6 +311,7 @@ func NewUpdateCommand(parentCmd *cobra.Command) func() {
 	updateCmd.PersistentFlags().StringVarP(&logOnSuccess, "log-on-success", "", "", "Output the following message as an info if the result is successful")
 	updateCmd.PersistentFlags().StringVarP(&logOnFailure, "log-on-failure", "", "", "Output the following message as an error if the result fails")
 	updateCmd.PersistentFlags().StringVarP(&data, "data", "d", "", "Raw JSON data to use as the request body. If provided, positional arguments will be ignored.")
+	updateCmd.PersistentFlags().StringArrayVarP(&overrides.SetVar, "set-var", "", nil, "Extract a value from the response using a jq expression and store it as a variable (e.g., --set-var myid=.data.id)")
 
 	updateCmd.MarkFlagsMutuallyExclusive("output-key-val", "output-jq", "silent", "compact")
 	parentCmd.AddCommand(updateCmd)

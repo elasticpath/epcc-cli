@@ -46,6 +46,7 @@ func NewGetCommand(parentCmd *cobra.Command) func() {
 	resetFunc := func() {
 		overrides.QueryParameters = nil
 		overrides.OverrideUrlPath = ""
+		overrides.SetVar = nil
 		outputJq = ""
 		autoFillOnGet = false
 		compactOutput = false
@@ -340,6 +341,7 @@ func NewGetCommand(parentCmd *cobra.Command) func() {
 	getCmd.PersistentFlags().Uint32VarP(&repeatDelay, "repeat-delay", "", 100, "Delay (in ms) between repeats")
 	getCmd.PersistentFlags().StringVarP(&logOnSuccess, "log-on-success", "", "", "Output the following message as an info if the result is successful")
 	getCmd.PersistentFlags().StringVarP(&logOnFailure, "log-on-failure", "", "", "Output the following message as an error if the result fails")
+	getCmd.PersistentFlags().StringArrayVarP(&overrides.SetVar, "set-var", "", nil, "Extract a value from the response using a jq expression and store it as a variable (e.g., --set-var myid=.data.id)")
 
 	getCmd.MarkFlagsMutuallyExclusive("output-key-val", "output-jq", "silent", "compact")
 	_ = getCmd.RegisterFlagCompletionFunc("output-jq", jqCompletionFunc)

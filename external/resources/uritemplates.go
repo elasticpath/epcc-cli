@@ -7,6 +7,7 @@ import (
 
 	"github.com/elasticpath/epcc-cli/external/aliases"
 	"github.com/elasticpath/epcc-cli/external/id"
+	"github.com/elasticpath/epcc-cli/external/variables"
 	log "github.com/sirupsen/logrus"
 	"github.com/yosida95/uritemplate/v3"
 )
@@ -92,6 +93,7 @@ func GenerateUrl(urlInfo *CrudEntityInfo, args []string, useAliases bool) (strin
 	values := uritemplate.Values{}
 
 	for idx, varName := range vars {
+		argVal := variables.ResolveVariableOrReturnIdentity(args[idx])
 		resourceType := ConvertUriTemplateValueToType(varName)
 		varType, ok := GetResourceByName(resourceType)
 		if ok {
@@ -101,13 +103,13 @@ func GenerateUrl(urlInfo *CrudEntityInfo, args []string, useAliases bool) (strin
 				attribute = override
 			}
 			if useAliases {
-				values[varName] = uritemplate.String(aliases.ResolveAliasValuesOrReturnIdentity(varType.JsonApiType, varType.AlternateJsonApiTypesForAliases, args[idx], attribute))
+				values[varName] = uritemplate.String(aliases.ResolveAliasValuesOrReturnIdentity(varType.JsonApiType, varType.AlternateJsonApiTypesForAliases, argVal, attribute))
 			} else {
-				values[varName] = uritemplate.String(args[idx])
+				values[varName] = uritemplate.String(argVal)
 			}
 		} else {
 			log.Warnf("Could not find a resource with type %s, aliases are probably broken", resourceType)
-			values[varName] = uritemplate.String(args[idx])
+			values[varName] = uritemplate.String(argVal)
 		}
 
 	}

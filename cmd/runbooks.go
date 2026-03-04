@@ -573,6 +573,7 @@ func generateRunbookCmd() *CommandAndReset {
 	resetDeleteCmd := NewDeleteCommand(root)
 	resetGetCmd := NewGetCommand(root)
 	resetDeleteAllCmd := NewDeleteAllCommand(root)
+	NewVariablesCommand(root)
 	getDevCommands(root)
 
 	return &CommandAndReset{

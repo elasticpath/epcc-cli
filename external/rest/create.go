@@ -15,6 +15,7 @@ import (
 	"github.com/elasticpath/epcc-cli/external/json"
 	"github.com/elasticpath/epcc-cli/external/resources"
 	"github.com/elasticpath/epcc-cli/external/shutdown"
+	"github.com/elasticpath/epcc-cli/external/variables"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -136,6 +137,10 @@ func CreateInternal(ctx context.Context, overrides *httpclient.HttpParameterOver
 
 		if aliasName != "" {
 			aliases.SetAliasForResource(string(resBody), aliasName)
+		}
+
+		if len(overrides.SetVar) > 0 {
+			variables.ExtractAndSetVariables(overrides.SetVar, string(resBody))
 		}
 
 		return string(resBody), nil

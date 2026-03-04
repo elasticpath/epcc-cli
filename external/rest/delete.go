@@ -8,6 +8,7 @@ import (
 	"github.com/elasticpath/epcc-cli/external/json"
 	"github.com/elasticpath/epcc-cli/external/resources"
 	"github.com/elasticpath/epcc-cli/external/shutdown"
+	"github.com/elasticpath/epcc-cli/external/variables"
 	log "github.com/sirupsen/logrus"
 	"io"
 	"net/http"
@@ -115,6 +116,10 @@ func DeleteInternal(ctx context.Context, overrides *httpclient.HttpParameterOver
 			if resp.StatusCode != 404 || !allow404 {
 				return string(body), fmt.Errorf("%s", resp.Status)
 			}
+		}
+
+		if resp.StatusCode < 400 && len(overrides.SetVar) > 0 {
+			variables.ExtractAndSetVariables(overrides.SetVar, string(body))
 		}
 
 		return string(body), nil

@@ -20,6 +20,7 @@ import (
 	"github.com/elasticpath/epcc-cli/external/profiles"
 	"github.com/elasticpath/epcc-cli/external/resources"
 	"github.com/elasticpath/epcc-cli/external/shutdown"
+	"github.com/elasticpath/epcc-cli/external/variables"
 	"github.com/elasticpath/epcc-cli/external/version"
 	log "github.com/sirupsen/logrus"
 	"github.com/thediveo/enumflag"
@@ -110,6 +111,7 @@ func InitializeCmd() {
 		Logs,
 		resourceListCommand,
 		aliasesCmd,
+		variablesCmd,
 		configure,
 		LoginCmd,
 		logoutCmd,
@@ -166,6 +168,7 @@ func InitializeCmd() {
 	ResetStore.PersistentFlags().BoolVarP(&DeleteApplicationKeys, "delete-application-keys", "", false, "if set, we delete application keys as well")
 
 	aliasesCmd.AddCommand(aliasListCmd, aliasClearCmd)
+	variablesCmd.AddCommand(variableListCmd, variableClearCmd, variableSetCmd)
 
 	LoginCmd.AddCommand(loginClientCredentials)
 	LoginCmd.AddCommand(loginImplicit)
@@ -318,6 +321,7 @@ func Execute() {
 		httpclient.LogStats()
 		aliases.FlushAliases()
 		headergroups.FlushHeaderGroups()
+		variables.FlushVariables()
 
 		if exit {
 			os.Exit(3)

@@ -57,6 +57,7 @@ func NewDeleteCommand(parentCmd *cobra.Command) func() {
 	resetFunc := func() {
 		overrides.QueryParameters = nil
 		overrides.OverrideUrlPath = ""
+		overrides.SetVar = nil
 		allow404 = false
 		ifAliasExists = ""
 		ifAliasDoesNotExist = ""
@@ -235,6 +236,7 @@ func NewDeleteCommand(parentCmd *cobra.Command) func() {
 	deleteCmd.PersistentFlags().BoolVarP(&ignoreErrors, "ignore-errors", "", false, "Don't return non-zero on an error")
 	deleteCmd.PersistentFlags().StringVarP(&logOnSuccess, "log-on-success", "", "", "Output the following message as an info if the result is successful")
 	deleteCmd.PersistentFlags().StringVarP(&logOnFailure, "log-on-failure", "", "", "Output the following message as an error if the result fails")
+	deleteCmd.PersistentFlags().StringArrayVarP(&overrides.SetVar, "set-var", "", nil, "Extract a value from the response using a jq expression and store it as a variable (e.g., --set-var myid=.data.id)")
 	parentCmd.AddCommand(deleteCmd)
 
 	deleteCmd.MarkFlagsMutuallyExclusive("output-key-val", "silent")
