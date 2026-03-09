@@ -278,6 +278,39 @@ actions:
 
 
 
+### Standalone Script Files
+
+If you want to run a set of epcc commands without defining a full runbook, you can use `exec-script` to execute a standalone YAML file:
+
+```bash
+epcc runbooks exec-script my-script.yml
+```
+
+The YAML file is simply a list of commands, using the same syntax as the `commands` block in a runbook action. Sequential execution uses one command per list element:
+
+```yaml
+- epcc create -s account name Account1 --auto-fill
+- epcc create -s account name Account2 --auto-fill
+- epcc create -s account-address name=Account1 --auto-fill
+- epcc create -s account-address name=Account2 --auto-fill
+```
+
+Parallel execution uses YAML block scalars (`|`) so multiple commands share a single list element:
+
+```yaml
+- |
+  epcc create -s account name Account1 --auto-fill
+  epcc create -s account name Account2 --auto-fill
+
+- |
+  epcc create -s account-address name=Account1 --auto-fill
+  epcc create -s account-address name=Account2 --auto-fill
+```
+
+The `--execution-timeout` and `--max-concurrency` flags are supported, just like `runbooks run`.
+
+Example script files can be found in `external/runbooks/scripts/`.
+
 ### Output JQ
 
 You will need to escape \ when using the `--output-jq` argument.
