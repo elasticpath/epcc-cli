@@ -885,7 +885,7 @@ func TestCompleteAttributeKeyWithWhenSkippingWhen(t *testing.T) {
 	require.Contains(t, completions, "validation.string.regex")
 	require.Contains(t, completions, "validation.integer.allow_null_values")
 	require.Contains(t, completions, "validation.integer.immutable")
-	require.Len(t, completions, 18)
+	require.Len(t, completions, 33)
 }
 
 func TestCompleteQueryParamKeyGetCollectionWithExplicitParams(t *testing.T) {
