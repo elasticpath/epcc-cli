@@ -21,6 +21,15 @@ custom-apis:
   get-collection:
     docs: "https://elasticpath.dev/docs/api/commerce-extensions/list-custom-ap-is"
     url: "/v2/settings/extensions/custom-apis"
+    query:
+      - name: page[offset]
+        type: INT
+      - name: page[limit]
+        type: INT
+      - name: filter
+        type: STRING
+      - name: sort
+        type: ENUM:id,-id,created_at,-created_at,updated_at,-updated_at,api_type,-api_type,name,-name,slug,-slug
   attributes:
     name:
       type: STRING
@@ -32,6 +41,12 @@ custom-apis:
     description:
       type: STRING
       autofill: FUNC:Phrase
+    allow_upserts:
+      type: BOOL
+    presentation.page:
+      type: STRING
+    presentation.section:
+      type: STRING
     relationships.parent_apis[n].type:
       type: ENUM:api_location,custom_api
     relationships.parent_apis[n].id:
@@ -56,6 +71,15 @@ custom-fields:
   get-collection:
     docs: "https://elasticpath.dev/docs/api/commerce-extensions/list-custom-fields"
     url: "/v2/settings/extensions/custom-apis/{custom_apis}/fields/"
+    query:
+      - name: page[offset]
+        type: INT
+      - name: page[limit]
+        type: INT
+      - name: filter
+        type: STRING
+      - name: sort
+        type: ENUM:id,-id,created_at,-created_at,updated_at,-updated_at,field_type,-field_type,name,-name,slug,-slug
   attributes:
     name:
       type: STRING
@@ -63,7 +87,7 @@ custom-fields:
     slug:
       type: STRING
     field_type:
-      type: ENUM:string,integer,boolean,float
+      type: ENUM:string,integer,boolean,float,any,list
     description:
       type: STRING
       autofill: FUNC:Phrase
@@ -111,6 +135,51 @@ custom-fields:
     validation.boolean.immutable:
       type: BOOL
       when: field_type == "boolean"
+    validation.float.min_value:
+      type: INT
+      when: field_type == "float"
+    validation.float.max_value:
+      type: INT
+      when: field_type == "float"
+    validation.float.allow_null_values:
+      type: BOOL
+      when: field_type == "float"
+    validation.float.immutable:
+      type: BOOL
+      when: field_type == "float"
+    validation.any.allow_null_values:
+      type: BOOL
+      when: field_type == "any"
+    validation.any.immutable:
+      type: BOOL
+      when: field_type == "any"
+    validation.any.json_schema.version:
+      type: STRING
+      when: field_type == "any"
+    validation.any.json_schema.schema:
+      type: STRING
+      when: field_type == "any"
+    validation.list.allow_null_values:
+      type: BOOL
+      when: field_type == "list"
+    validation.list.immutable:
+      type: BOOL
+      when: field_type == "list"
+    validation.list.min_length:
+      type: INT
+      when: field_type == "list"
+    validation.list.max_length:
+      type: INT
+      when: field_type == "list"
+    validation.list.allowed_type:
+      type: ENUM:any,string,integer,boolean,float
+      when: field_type == "list"
+    validation.list.json_schema.version:
+      type: STRING
+      when: field_type == "list"
+    validation.list.json_schema.schema:
+      type: STRING
+      when: field_type == "list"
 custom-api-settings-entries:
   singular-name: custom-api-settings-entry
   json-api-type: custom_entry
@@ -134,6 +203,17 @@ custom-api-settings-entries:
   get-collection:
     docs: "https://elasticpath.dev/docs/api/commerce-extensions/list-custom-api-entries"
     url: "/v2/settings/extensions/custom-apis/{custom_apis}/entries/"
+    query:
+      - name: page[offset]
+        type: INT
+      - name: page[limit]
+        type: INT
+      - name: filter
+        type: STRING
+      - name: sort
+        type: ENUM:id,-id,created_at,-created_at,updated_at,-updated_at
+      - name: timeout
+        type: INT
   attributes:
     data.type:
       type: STRING
@@ -173,6 +253,17 @@ custom-api-extensions-entries:
     url: "/v2/extensions/{custom_apis}/"
     parent_resource_value_overrides:
       custom_apis: slug
+    query:
+      - name: page[offset]
+        type: INT
+      - name: page[limit]
+        type: INT
+      - name: filter
+        type: STRING
+      - name: sort
+        type: ENUM:id,-id,created_at,-created_at,updated_at,-updated_at
+      - name: timeout
+        type: INT
   attributes:
     data.type:
       type: STRING
