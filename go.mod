@@ -18,7 +18,7 @@ require (
 	github.com/stretchr/testify v1.11.1
 	github.com/thediveo/enumflag v0.10.1
 	github.com/yosida95/uritemplate/v3 v3.0.2
-	golang.org/x/sync v0.19.0
+	golang.org/x/sync v0.20.0
 	golang.org/x/time v0.14.0
 	gopkg.in/ini.v1 v1.67.1
 	gopkg.in/yaml.v3 v3.0.1
@@ -31,16 +31,16 @@ require (
 	github.com/iancoleman/strcase v0.2.0
 	github.com/jolestar/go-commons-pool/v2 v2.1.2
 	github.com/mitchellh/mapstructure v1.5.0
-	github.com/pb33f/libopenapi v0.34.0
+	github.com/pb33f/libopenapi v0.35.0
 	github.com/yukithm/json2csv v0.1.2
 )
 
 require (
 	dario.cat/mergo v1.0.1 // indirect
 	github.com/bahlo/generic-list-go v0.2.0 // indirect
-	github.com/buger/jsonparser v1.1.1 // indirect
-	github.com/pb33f/jsonpath v0.8.1 // indirect
-	github.com/pb33f/ordered-map/v2 v2.3.0 // indirect
+	github.com/buger/jsonparser v1.1.2 // indirect
+	github.com/pb33f/jsonpath v0.8.2 // indirect
+	github.com/pb33f/ordered-map/v2 v2.3.1 // indirect
 	go.yaml.in/yaml/v4 v4.0.0-rc.4 // indirect
 )
 
